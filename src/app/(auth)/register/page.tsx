@@ -51,19 +51,18 @@ export default function RegisterPage() {
         return;
       }
 
-      // Create a corresponding record in the users table
+      // Create a corresponding profile in the users table via registration API
       if (signUpData.user) {
-        await supabase.from("users").upsert(
-          {
+        await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             auth_id: signUpData.user.id,
             email,
             first_name: firstName,
             last_name: lastName,
-            role: "learner",
-            status: "active",
-          },
-          { onConflict: "auth_id" }
-        );
+          }),
+        });
       }
 
       router.push("/dashboard");
