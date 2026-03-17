@@ -1,0 +1,223 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { authorize } from "@/lib/auth/authorize";
+import type { ApprovalStatus } from "@/types/database";
+
+/**
+ * GET /api/approvals
+ * Fetch approval requests with optional filters.
+ *
+ * Query params:
+ *   - status: ApprovalStatus (pending | approved | rejected | cancelled)
+ *   - approver_id: string
+ *   - learner_id: string
+ */
+export async function GET(request: NextRequest) {
+  const auth = await authorize("admin", "manager");
+  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const supabase = await createClient();
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status") as ApprovalStatus | null;
+  const approverId = searchParams.get("approver_id");
+  const learnerId = searchParams.get("learner_id");
+
+  let query = supabase
+    .from("enrollment_approvals")
+    .select("*")
+    .order("requested_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+  if (approverId) {
+    query = query.eq("approver_id", approverId);
+  }
+  if (learnerId) {
+    query = query.eq("learner_id", learnerId);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    data: data ?? [],
+    total: data?.length ?? 0,
+  });
+}
+
+/**
+ * POST /api/approvals
+ * Create a new enrollment approval request.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await request.json();
+
+    if (!body.course_id || !body.learner_id) {
+      return NextResponse.json(
+        { error: "course_id and learner_id are required" },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("enrollment_approvals")
+      .insert({
+        enrollment_id: body.enrollment_id || null,
+        course_id: body.course_id,
+        learner_id: body.learner_id,
+        approver_id: body.approver_id || null,
+        status: "pending",
+        reason: body.reason || null,
+        notes: body.notes || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ data }, { status: 201 });
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/approvals
+ * Update an approval status (approve or reject).
+ */
+export async function PATCH(request: NextRequest) {
+  const auth = await authorize("admin", "manager");
+  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  try {
+    const supabase = await createClient();
+    const body = await request.json();
+
+    if (!body.id || !body.status) {
+      return NextResponse.json(
+        { error: "id and status are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!["approved", "rejected"].includes(body.status)) {
+      return NextResponse.json(
+        { error: "status must be 'approved' or 'rejected'" },
+        { status: 400 }
+      );
+    }
+
+    if (body.status === "rejected" && !body.rejection_reason) {
+      return NextResponse.json(
+        { error: "rejection_reason is required when rejecting" },
+        { status: 400 }
+      );
+    }
+
+    // Check current status
+    const { data: existing, error: fetchError } = await supabase
+      .from("enrollment_approvals")
+      .select("status")
+      .eq("id", body.id)
+      .single();
+
+    if (fetchError || !existing) {
+      return NextResponse.json(
+        { error: "Approval request not found" },
+        { status: 404 }
+      );
+    }
+
+    if (existing.status !== "pending") {
+      return NextResponse.json(
+        { error: "Only pending requests can be updated" },
+        { status: 409 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("enrollment_approvals")
+      .update({
+        status: body.status,
+        decided_at: new Date().toISOString(),
+        rejection_reason: body.status === "rejected" ? body.rejection_reason : null,
+        notes: body.notes ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", body.id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // When approved, create the actual enrollment and notify the user
+    if (body.status === "approved") {
+      const { data: approval } = await supabase
+        .from("enrollment_approvals")
+        .select("learner_id, course_id")
+        .eq("id", body.id)
+        .single();
+
+      if (approval) {
+        // Create the actual enrollment
+        await supabase.from("enrollments").insert({
+          user_id: approval.learner_id,
+          course_id: approval.course_id,
+          status: "not_started",
+          enrolled_at: new Date().toISOString(),
+        });
+
+        // Notify the user
+        await supabase.from("notifications").insert({
+          user_id: approval.learner_id,
+          title: "Enrollment Approved",
+          body: "Your enrollment request has been approved. You can now start the course.",
+          type: "enrollment",
+          is_read: false,
+        });
+      }
+    }
+
+    // When rejected, notify the user
+    if (body.status === "rejected") {
+      const { data: approval } = await supabase
+        .from("enrollment_approvals")
+        .select("learner_id")
+        .eq("id", body.id)
+        .single();
+
+      if (approval) {
+        await supabase.from("notifications").insert({
+          user_id: approval.learner_id,
+          title: "Enrollment Rejected",
+          body: body.rejection_reason || "Your enrollment request was not approved.",
+          type: "enrollment",
+          is_read: false,
+        });
+      }
+    }
+
+    return NextResponse.json({ data });
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
+}
