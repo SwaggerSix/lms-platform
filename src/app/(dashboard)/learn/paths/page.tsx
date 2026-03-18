@@ -2,8 +2,23 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import PathsClient, { pickGradient } from "./paths-client";
+import PathsClient from "./paths-client";
 import type { LearningPath } from "./paths-client";
+
+const GRADIENT_PALETTE = [
+  "from-purple-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+  "from-orange-500 to-red-600",
+  "from-pink-500 to-rose-600",
+  "from-cyan-500 to-blue-600",
+  "from-amber-500 to-orange-600",
+  "from-violet-500 to-purple-600",
+  "from-sky-500 to-blue-600",
+];
+
+function pickGradient(index: number): string {
+  return GRADIENT_PALETTE[index % GRADIENT_PALETTE.length];
+}
 
 export const metadata: Metadata = {
   title: "Learning Paths | LMS Platform",
