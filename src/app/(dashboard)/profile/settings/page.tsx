@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import SettingsClient from "./settings-client";
 import type { SettingsData } from "./settings-client";
@@ -19,7 +20,8 @@ export default async function SettingsPage() {
   }
 
   // Fetch user with organization
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select(`
       id,
@@ -55,7 +57,7 @@ export default async function SettingsPage() {
   const preferences = userData.preferences || {};
 
   // Fetch platform_settings for defaults (optional fallback)
-  const { data: platformSettings } = await supabase
+  const { data: platformSettings } = await service
     .from("platform_settings")
     .select("key, value")
     .in("key", ["default_language", "default_timezone", "default_theme", "default_date_format"]);

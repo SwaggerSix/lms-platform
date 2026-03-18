@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import CourseDetailClient from "./course-detail-client";
 import type { CourseData, Module, Lesson } from "./course-detail-client";
 
@@ -78,7 +79,8 @@ export default async function CourseDetailPage({
   }
 
   // Look up internal user
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("auth_id", user.id)
@@ -89,7 +91,7 @@ export default async function CourseDetailPage({
   }
 
   // Fetch course with category
-  const { data: courseRow, error: courseError } = await supabase
+  const { data: courseRow, error: courseError } = await service
     .from("courses")
     .select("*, categories(id, name, slug)")
     .eq("slug", slug)
@@ -102,7 +104,7 @@ export default async function CourseDetailPage({
   const course = courseRow as any;
 
   // Fetch instructor info
-  const { data: instructorRow } = await supabase
+  const { data: instructorRow } = await service
     .from("users")
     .select("id, first_name, last_name, bio")
     .eq("id", course.created_by)
@@ -111,7 +113,7 @@ export default async function CourseDetailPage({
   const instructor = instructorRow as any;
 
   // Fetch modules with lessons
-  const { data: modulesData } = await supabase
+  const { data: modulesData } = await service
     .from("modules")
     .select("id, title, description, sequence_order, lessons(id, title, content_type, duration, sequence_order, is_required)")
     .eq("course_id", course.id)
@@ -135,7 +137,7 @@ export default async function CourseDetailPage({
   });
 
   // Check enrollment
-  const { data: enrollmentRow } = await supabase
+  const { data: enrollmentRow } = await service
     .from("enrollments")
     .select("id, status")
     .eq("user_id", dbUser.id)
@@ -148,7 +150,7 @@ export default async function CourseDetailPage({
   if (isEnrolled) {
     const allLessonIds = modules.flatMap((m) => m.lessons.map((l) => l.id));
     if (allLessonIds.length > 0) {
-      const { data: progressData } = await supabase
+      const { data: progressData } = await service
         .from("lesson_progress")
         .select("lesson_id, status")
         .eq("user_id", dbUser.id)
@@ -170,14 +172,14 @@ export default async function CourseDetailPage({
   }
 
   // Count enrollments for this course
-  const { count: enrolledCount } = await supabase
+  const { count: enrolledCount } = await service
     .from("enrollments")
     .select("id", { count: "exact", head: true })
     .eq("course_id", course.id)
     .neq("status", "dropped");
 
   // Fetch related courses (same category, excluding current)
-  const { data: relatedRows } = await supabase
+  const { data: relatedRows } = await service
     .from("courses")
     .select("slug, title, created_by, estimated_duration, metadata, categories(slug)")
     .eq("category_id", course.category_id)
@@ -188,7 +190,7 @@ export default async function CourseDetailPage({
   // Get instructor names for related courses
   const relatedCourses = [];
   for (const rc of (relatedRows || []) as any[]) {
-    const { data: rcInstructor } = await supabase
+    const { data: rcInstructor } = await service
       .from("users")
       .select("first_name, last_name")
       .eq("id", rc.created_by)

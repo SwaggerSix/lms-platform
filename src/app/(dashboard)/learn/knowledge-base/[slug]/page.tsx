@@ -12,7 +12,7 @@ export default async function KBArticlePage({
   const supabase = await createClient();
 
   // Fetch the article by slug with category and author joins
-  const { data: rawArticle } = await supabase
+  const { data: rawArticle } = await service
     .from("kb_articles")
     .select(
       `
@@ -79,7 +79,7 @@ export default async function KBArticlePage({
   };
 
   // Fetch related articles from the same category
-  const { data: rawRelated } = await supabase
+  const { data: rawRelated } = await service
     .from("kb_articles")
     .select("id, title, slug, view_count")
     .eq("category_id", article.categoryId)

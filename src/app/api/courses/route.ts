@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "12");
   const offset = (page - 1) * limit;
 
-  let query = supabase
+  let query = service
     .from("courses")
     .select("*, category:categories(*)", { count: "exact" })
     .eq("status", status)
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       + "-" + Date.now().toString(36);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("courses")
     .insert({ ...courseData, created_by: auth.user.id })
     .select()
@@ -113,7 +113,7 @@ export async function PATCH(request: NextRequest) {
 
   // If instructor (not admin), verify they own the course
   if (auth.user.role === "instructor") {
-    const { data: course } = await supabase
+    const { data: course } = await service
       .from("courses")
       .select("created_by")
       .eq("id", id)
@@ -124,7 +124,7 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("courses")
     .update(updates)
     .eq("id", id)
@@ -160,7 +160,7 @@ export async function DELETE(request: NextRequest) {
 
   // If instructor (not admin), verify they own the course
   if (auth.user.role === "instructor") {
-    const { data: course } = await supabase
+    const { data: course } = await service
       .from("courses")
       .select("created_by")
       .eq("id", id)
@@ -171,7 +171,7 @@ export async function DELETE(request: NextRequest) {
     }
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("courses")
     .delete()
     .eq("id", id);

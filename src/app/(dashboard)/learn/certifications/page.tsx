@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import CertificationsClient from "./certifications-client";
 import type { Certificate, CertStatus } from "./certifications-client";
 
@@ -33,7 +34,8 @@ export default async function CertificationsPage() {
   if (!user) redirect("/login");
 
   // Fetch user profile for name
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("auth_id", user.id)
@@ -44,7 +46,7 @@ export default async function CertificationsPage() {
   const userName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Learner";
 
   // Query user_certifications joined with certifications and the recertification course
-  const { data: rows } = await supabase
+  const { data: rows } = await service
     .from("user_certifications")
     .select(
       `

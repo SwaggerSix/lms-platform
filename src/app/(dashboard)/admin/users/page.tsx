@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from "@/lib/supabase/service";
 import UsersClient from './users-client';
 import type { UserItem } from './users-client';
 
@@ -29,14 +30,15 @@ export default async function UsersPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
   if (!dbUser || dbUser.role !== "admin") redirect("/dashboard");
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error } = await service
     .from('users')
     .select('*, organization:organizations(name)')
     .order('created_at', { ascending: false });

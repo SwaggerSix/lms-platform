@@ -8,7 +8,7 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("organizations")
     .select("*")
     .order("name", { ascending: true });
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     Object.entries(validation.data).filter(([key]) => allowedPostFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("organizations")
     .insert(sanitized)
     .select()
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest) {
     Object.entries(updates).filter(([key]) => allowedPatchFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("organizations")
     .update(sanitizedUpdates)
     .eq("id", id)
@@ -94,7 +94,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Organization id is required" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("organizations")
     .delete()
     .eq("id", id);

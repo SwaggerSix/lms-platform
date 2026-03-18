@@ -15,14 +15,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearUser = useAuthStore((s) => s.clearUser);
 
   useEffect(() => {
-    // Fetch the profile for the currently authenticated user
     const hydrate = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (user) {
-        await fetchProfile(supabase, user.id);
+        await fetchProfile();
       } else {
         clearUser();
       }
@@ -30,12 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     hydrate();
 
-    // Listen for auth state changes (sign-in, sign-out, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        await fetchProfile(supabase, session.user.id);
+        await fetchProfile();
       } else {
         clearUser();
       }

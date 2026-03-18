@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import MessagesClient from "./messages-client";
 
@@ -55,7 +56,8 @@ export default async function MessagesPage() {
   }
 
   // Get the current user's profile from the users table
-  const { data: currentProfile } = await supabase
+  const service = createServiceClient();
+  const { data: currentProfile } = await service
     .from("users")
     .select("*")
     .eq("auth_id", authUser.id)
@@ -64,7 +66,7 @@ export default async function MessagesPage() {
   const currentUserId = currentProfile?.id ?? authUser.id;
 
   // Get conversation IDs where user is a participant
-  const { data: participantRows } = await supabase
+  const { data: participantRows } = await service
     .from("conversation_participants")
     .select("conversation_id")
     .eq("user_id", currentUserId);
@@ -97,7 +99,7 @@ export default async function MessagesPage() {
   }
 
   // Fetch conversations with their participants (including user profiles)
-  const { data: rawConversations } = await supabase
+  const { data: rawConversations } = await service
     .from("conversations")
     .select("*, conversation_participants(*, user:users(*))")
     .in("id", conversationIds)
@@ -148,7 +150,7 @@ export default async function MessagesPage() {
   }
 
   // Fetch all messages for all conversations in one query
-  const { data: rawMessages } = await supabase
+  const { data: rawMessages } = await service
     .from("messages")
     .select("*")
     .in("conversation_id", conversationIds)

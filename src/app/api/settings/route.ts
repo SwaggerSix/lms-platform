@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Missing key or value" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("platform_settings")
     .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" })
     .select()

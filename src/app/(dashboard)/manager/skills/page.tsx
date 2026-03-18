@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import SkillsClient, { type TeamMemberSkills } from "./skills-client";
 
@@ -21,7 +22,8 @@ export default async function SkillsPage() {
   }
 
   // Look up the current user in the users table via auth_id
-  const { data: currentUser } = await supabase
+  const service = createServiceClient();
+  const { data: currentUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -32,7 +34,7 @@ export default async function SkillsPage() {
   }
 
   // Fetch team members where manager_id = current user's id
-  const { data: teamMembers } = await supabase
+  const { data: teamMembers } = await service
     .from("users")
     .select("id, first_name, last_name, job_title")
     .eq("manager_id", currentUser.id);
@@ -41,7 +43,7 @@ export default async function SkillsPage() {
   const memberIds = members.map((m: any) => m.id);
 
   // Fetch user_skills with skill joins for all team members
-  const { data: userSkillsData } = await supabase
+  const { data: userSkillsData } = await service
     .from("user_skills")
     .select("user_id, proficiency_level, skill:skills(id, name)")
     .in("user_id", memberIds.length > 0 ? memberIds : ["__none__"]);

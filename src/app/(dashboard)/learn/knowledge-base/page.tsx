@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import KnowledgeBaseClient from "./knowledge-base-client";
 import type { KBCategoryView, KBArticleView } from "./knowledge-base-client";
 
@@ -15,7 +16,8 @@ export default async function KnowledgeBasePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -24,14 +26,14 @@ export default async function KnowledgeBasePage() {
 
   // Fetch articles and categories in parallel (same pattern as the API route)
   const [articlesResult, categoriesResult] = await Promise.all([
-    supabase
+    service
       .from("kb_articles")
       .select(
         "*, category:kb_categories(*), author:users(id, email, first_name, last_name, avatar_url, role, job_title)"
       )
       .eq("status", "published")
       .order("created_at", { ascending: false }),
-    supabase
+    service
       .from("kb_categories")
       .select("*")
       .order("sort_order", { ascending: true }),

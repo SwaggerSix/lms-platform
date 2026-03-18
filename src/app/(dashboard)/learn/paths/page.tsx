@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import PathsClient, { pickGradient } from "./paths-client";
 import type { LearningPath } from "./paths-client";
 
@@ -22,7 +23,8 @@ export default async function LearningPathsPage() {
   }
 
   // Fetch user profile from users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.id)
@@ -33,7 +35,7 @@ export default async function LearningPathsPage() {
   }
 
   // Fetch published learning paths with item counts
-  const { data: rawPaths } = await supabase
+  const { data: rawPaths } = await service
     .from("learning_paths")
     .select(
       "id, slug, title, description, estimated_duration, tags, learning_path_items(id, course_id)"
@@ -42,7 +44,7 @@ export default async function LearningPathsPage() {
     .order("created_at", { ascending: false });
 
   // Fetch user's enrollments for learning paths
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("learning_path_enrollments")
     .select("path_id, status")
     .eq("user_id", profile.id);
@@ -75,7 +77,7 @@ export default async function LearningPathsPage() {
   let completedCourseIds = new Set<string>();
 
   if (allCourseIds.length > 0) {
-    const { data: completedEnrollments } = await supabase
+    const { data: completedEnrollments } = await service
       .from("enrollments")
       .select("course_id")
       .eq("user_id", profile.id)

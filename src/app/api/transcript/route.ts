@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { EnrollmentStatus, CourseType } from "@/types/database";
 
 /**
@@ -24,7 +25,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Look up the profile ID from the users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest) {
     targetUserId = userId;
   }
 
-  let query = supabase
+  let query = service
     .from("enrollments")
     .select("*, course:courses(title, course_type, estimated_duration)")
     .order("enrolled_at", { ascending: false });

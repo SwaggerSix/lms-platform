@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import GamificationClient from "./gamification-client";
 import type { PointRule, BadgeItem, LeaderboardUser } from "./gamification-client";
@@ -28,7 +29,8 @@ export default async function GamificationPage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -41,7 +43,7 @@ export default async function GamificationPage() {
   // --- Fetch badges with awarded counts ---
   let badges: BadgeItem[] = [];
   try {
-    const { data: badgeRows } = await supabase
+    const { data: badgeRows } = await service
       .from("badges")
       .select("*, user_badges(count)")
       .order("created_at", { ascending: true });
@@ -65,7 +67,7 @@ export default async function GamificationPage() {
   // --- Fetch leaderboard: aggregate points per user, join user info and badge counts ---
   let leaderboard: LeaderboardUser[] = [];
   try {
-    const { data: pointsRows } = await supabase
+    const { data: pointsRows } = await service
       .from("points_ledger")
       .select("user_id, points, user:users(first_name, last_name)")
       .order("created_at", { ascending: false })
@@ -90,7 +92,7 @@ export default async function GamificationPage() {
     }
 
     // Fetch badge counts per user
-    const { data: badgeCounts } = await supabase
+    const { data: badgeCounts } = await service
       .from("user_badges")
       .select("user_id, badge_id")
       .limit(500);

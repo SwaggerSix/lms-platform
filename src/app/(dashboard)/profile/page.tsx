@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import ProfileClient from "./profile-client";
 import type { ProfileData, ProfileSkill, ProfileCertification } from "./profile-client";
@@ -19,7 +20,8 @@ export default async function ProfilePage() {
   }
 
   // Fetch user with organization
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select(`
       id,
@@ -52,7 +54,7 @@ export default async function ProfilePage() {
   // Fetch manager name if manager_id exists
   let managerName = "Not assigned";
   if (userData.manager_id) {
-    const { data: manager } = await supabase
+    const { data: manager } = await service
       .from("users")
       .select("first_name, last_name")
       .eq("id", userData.manager_id)
@@ -63,7 +65,7 @@ export default async function ProfilePage() {
   }
 
   // Fetch user skills with skill names
-  const { data: userSkillsRaw } = await supabase
+  const { data: userSkillsRaw } = await service
     .from("user_skills")
     .select(`
       proficiency_level,
@@ -79,7 +81,7 @@ export default async function ProfilePage() {
   }));
 
   // Fetch user certifications
-  const { data: userCertsRaw } = await supabase
+  const { data: userCertsRaw } = await service
     .from("user_certifications")
     .select(`
       issued_date,
@@ -118,7 +120,7 @@ export default async function ProfilePage() {
   });
 
   // Fetch enrollment stats
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("enrollments")
     .select("id, status, completed_at")
     .eq("user_id", userData.id);

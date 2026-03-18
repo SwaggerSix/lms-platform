@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import SkillsClient from "./skills-client";
 import type { Skill } from "./skills-client";
@@ -13,7 +14,8 @@ export default async function SkillsManagementPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -24,7 +26,7 @@ export default async function SkillsManagementPage() {
   }
 
   // Fetch all skills with user_skills count, course_skills count, and avg proficiency
-  const { data: skillsRaw } = await supabase
+  const { data: skillsRaw } = await service
     .from("skills")
     .select(`
       id,

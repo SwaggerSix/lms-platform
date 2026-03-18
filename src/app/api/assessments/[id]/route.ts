@@ -13,7 +13,7 @@ export async function GET(
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("assessments")
     .select("*, questions(*)")
     .eq("id", id)

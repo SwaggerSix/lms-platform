@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createEnrollmentSchema } from "@/lib/validations";
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase.from("users").select("id, role").eq("auth_id", user.id).single();
+  const service = createServiceClient();
+  const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   if (!profile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const { searchParams } = new URL(request.url);
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status");
   const courseId = searchParams.get("course_id");
 
-  let query = supabase
+  let query = service
     .from("enrollments")
     .select("*, course:courses(*, category:categories(*))")
     .order("enrolled_at", { ascending: false });
@@ -60,7 +62,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Get the user profile
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", authUser.user.id)
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Check if the course requires approval for enrollment
-  const { data: course } = await supabase
+  const { data: course } = await service
     .from("courses")
     .select("enrollment_type")
     .eq("id", validation.data.course_id)
@@ -90,7 +93,7 @@ export async function POST(request: NextRequest) {
 
   if (course?.enrollment_type === "approval" && !["admin", "manager"].includes(profile.role)) {
     // Create an approval request instead of directly enrolling
-    const { data: approvalData, error: approvalError } = await supabase
+    const { data: approvalData, error: approvalError } = await service
       .from("enrollment_approvals")
       .insert({
         course_id: validation.data.course_id,
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
     assigned_by: assignedBy,
   };
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("enrollments")
     .insert(enrollmentData)
     .select("*, course:courses(*)")
@@ -134,7 +137,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Award points for enrollment
-  await supabase.from("points_ledger").insert({
+  await service.from("points_ledger").insert({
     user_id: enrollmentData.user_id,
     action_type: "enrollment",
     points: 10,
@@ -160,7 +163,8 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", authUser.user.id)
@@ -178,7 +182,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // IDOR fix: verify enrollment belongs to authenticated user or user is admin
-  const { data: enrollment } = await supabase
+  const { data: enrollment } = await service
     .from("enrollments")
     .select("user_id")
     .eq("id", id)
@@ -192,7 +196,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("enrollments")
     .delete()
     .eq("id", id);

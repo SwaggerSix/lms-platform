@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import type { ILTSessionStatus } from "@/types/database";
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
   const dateFrom = searchParams.get("date_from");
   const dateTo = searchParams.get("date_to");
 
-  let query = supabase
+  let query = service
     .from("ilt_sessions")
     .select("*, ilt_attendance(*)")
     .order("session_date", { ascending: true });
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("ilt_sessions")
     .insert({
       course_id: body.course_id,
@@ -137,7 +138,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // IDOR fix: always use authenticated user's profile, never from body
-    const { data: profile } = await supabase
+    const service = createServiceClient();
+    const { data: profile } = await service
       .from("users")
       .select("id")
       .eq("auth_id", authUser.id)
@@ -148,7 +150,7 @@ export async function PATCH(request: NextRequest) {
     const user_id = profile.id;
 
     // Check session capacity
-    const { data: session } = await supabase
+    const { data: session } = await service
       .from("ilt_sessions")
       .select("max_capacity, status")
       .eq("id", session_id)
@@ -161,7 +163,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Session is cancelled" }, { status: 400 });
     }
 
-    const { count: registeredCount } = await supabase
+    const { count: registeredCount } = await service
       .from("ilt_attendance")
       .select("id", { count: "exact", head: true })
       .eq("session_id", session_id)
@@ -170,7 +172,7 @@ export async function PATCH(request: NextRequest) {
     const isFull = (registeredCount ?? 0) >= session.max_capacity;
 
     // Check if already registered
-    const { data: existing } = await supabase
+    const { data: existing } = await service
       .from("ilt_attendance")
       .select("id, registration_status")
       .eq("session_id", session_id)
@@ -183,7 +185,7 @@ export async function PATCH(request: NextRequest) {
 
     if (existing) {
       // Update existing record back to registered
-      const { error: updateError } = await supabase
+      const { error: updateError } = await service
         .from("ilt_attendance")
         .update({
           registration_status: isFull ? "waitlisted" : "registered",
@@ -196,7 +198,7 @@ export async function PATCH(request: NextRequest) {
       }
     } else {
       // Create new attendance record
-      const { error: insertError } = await supabase
+      const { error: insertError } = await service
         .from("ilt_attendance")
         .insert({
           session_id,
@@ -239,7 +241,7 @@ export async function PATCH(request: NextRequest) {
       updateData.check_in_time = new Date().toISOString();
     }
 
-    const { error: attendError } = await supabase
+    const { error: attendError } = await service
       .from("ilt_attendance")
       .update(updateData)
       .eq("id", attendee_id);
@@ -249,7 +251,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Return updated session with attendance
-    const { data: session } = await supabase
+    const { data: session } = await service
       .from("ilt_sessions")
       .select("*, ilt_attendance(*)")
       .eq("id", session_id)
@@ -273,7 +275,7 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("ilt_sessions")
       .update(updates)
       .eq("id", session_id)
@@ -306,7 +308,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("ilt_sessions")
     .update({ status: "cancelled", updated_at: new Date().toISOString() })
     .eq("id", sessionId);

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import KnowledgeBaseClient from "./knowledge-base-client";
 import type { AdminArticle, AdminCategory } from "./knowledge-base-client";
 
@@ -14,7 +15,8 @@ export default async function AdminKnowledgeBasePage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -25,13 +27,13 @@ export default async function AdminKnowledgeBasePage() {
   }
 
   // Fetch all articles (including drafts) with category and author joins
-  const { data: articleRows } = await supabase
+  const { data: articleRows } = await service
     .from("kb_articles")
     .select("*, category:kb_categories!category_id(id, name), author:users!author_id(id, first_name, last_name, email)")
     .order("created_at", { ascending: false });
 
   // Fetch all categories with article counts
-  const { data: categoryRows } = await supabase
+  const { data: categoryRows } = await service
     .from("kb_categories")
     .select("*, kb_articles(id)")
     .order("sort_order", { ascending: true });

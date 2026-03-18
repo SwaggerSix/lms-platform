@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 import Sidebar from "./sidebar";
 import Header from "./header";
@@ -13,8 +14,14 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile sidebar on navigation
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // Close mobile sidebar on resize
   useEffect(() => {
@@ -69,7 +76,6 @@ export default function AppShell({ children }: AppShellProps) {
               <Sidebar
                 collapsed={false}
                 onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-                onClose={() => setMobileOpen(false)}
               />
               <button
                 onClick={() => setMobileOpen(false)}

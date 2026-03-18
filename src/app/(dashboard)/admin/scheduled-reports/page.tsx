@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ScheduledReportsClient from "./scheduled-reports-client";
 import type { ScheduledReportWithHistory } from "./scheduled-reports-client";
 
@@ -16,7 +17,8 @@ export default async function ScheduledReportsPage() {
   }
 
   // Look up internal user by auth_id
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -27,7 +29,7 @@ export default async function ScheduledReportsPage() {
   }
 
   // ── Fetch scheduled reports with creator join ──
-  const { data: reportsRaw } = await supabase
+  const { data: reportsRaw } = await service
     .from("scheduled_reports")
     .select(`
       *,

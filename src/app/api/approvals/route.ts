@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import type { ApprovalStatus } from "@/types/database";
 
@@ -21,8 +22,9 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status") as ApprovalStatus | null;
   const approverId = searchParams.get("approver_id");
   const learnerId = searchParams.get("learner_id");
+  const service = createServiceClient();
 
-  let query = supabase
+  let query = service
     .from("enrollment_approvals")
     .select("*")
     .order("requested_at", { ascending: false });
@@ -67,8 +69,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const service = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("enrollment_approvals")
       .insert({
         enrollment_id: body.enrollment_id || null,
@@ -127,9 +130,10 @@ export async function PATCH(request: NextRequest) {
         { status: 400 }
       );
     }
+    const service = createServiceClient();
 
     // Check current status
-    const { data: existing, error: fetchError } = await supabase
+    const { data: existing, error: fetchError } = await service
       .from("enrollment_approvals")
       .select("status")
       .eq("id", body.id)
@@ -149,7 +153,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("enrollment_approvals")
       .update({
         status: body.status,
@@ -168,7 +172,7 @@ export async function PATCH(request: NextRequest) {
 
     // When approved, create the actual enrollment and notify the user
     if (body.status === "approved") {
-      const { data: approval } = await supabase
+      const { data: approval } = await service
         .from("enrollment_approvals")
         .select("learner_id, course_id")
         .eq("id", body.id)
@@ -176,7 +180,7 @@ export async function PATCH(request: NextRequest) {
 
       if (approval) {
         // Create the actual enrollment
-        await supabase.from("enrollments").insert({
+        await service.from("enrollments").insert({
           user_id: approval.learner_id,
           course_id: approval.course_id,
           status: "not_started",
@@ -184,7 +188,7 @@ export async function PATCH(request: NextRequest) {
         });
 
         // Notify the user
-        await supabase.from("notifications").insert({
+        await service.from("notifications").insert({
           user_id: approval.learner_id,
           title: "Enrollment Approved",
           body: "Your enrollment request has been approved. You can now start the course.",
@@ -196,14 +200,14 @@ export async function PATCH(request: NextRequest) {
 
     // When rejected, notify the user
     if (body.status === "rejected") {
-      const { data: approval } = await supabase
+      const { data: approval } = await service
         .from("enrollment_approvals")
         .select("learner_id")
         .eq("id", body.id)
         .single();
 
       if (approval) {
-        await supabase.from("notifications").insert({
+        await service.from("notifications").insert({
           user_id: approval.learner_id,
           title: "Enrollment Rejected",
           body: body.rejection_reason || "Your enrollment request was not approved.",

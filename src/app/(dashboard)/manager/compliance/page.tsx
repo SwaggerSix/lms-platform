@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ComplianceClient, {
   type ComplianceRequirement,
   type MemberCompliance,
@@ -33,7 +34,8 @@ export default async function CompliancePage() {
   }
 
   // Look up user in users table via auth_id
-  const { data: currentUser } = await supabase
+  const service = createServiceClient();
+  const { data: currentUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -44,7 +46,7 @@ export default async function CompliancePage() {
   }
 
   // Fetch team members (users where manager_id = current user's id)
-  const { data: teamMembers } = await supabase
+  const { data: teamMembers } = await service
     .from("users")
     .select("id, first_name, last_name, role")
     .eq("manager_id", currentUser.id)
@@ -54,7 +56,7 @@ export default async function CompliancePage() {
   const memberIds = members.map((m: any) => m.id);
 
   // Fetch all compliance requirements with their linked course
-  const { data: complianceReqs } = await supabase
+  const { data: complianceReqs } = await service
     .from("compliance_requirements")
     .select("*, course:courses(id, title)")
     .eq("is_mandatory", true)
@@ -63,7 +65,7 @@ export default async function CompliancePage() {
   const reqs = (complianceReqs ?? []) as any[];
 
   // Fetch all enrollments for team members
-  const { data: allEnrollments } = await supabase
+  const { data: allEnrollments } = await service
     .from("enrollments")
     .select("id, user_id, course_id, status, completed_at, due_date")
     .in("user_id", memberIds.length > 0 ? memberIds : ["__none__"]);
@@ -78,7 +80,7 @@ export default async function CompliancePage() {
   let lessonProgressMap: Record<string, { completed: number; total: number }> = {};
 
   if (inProgressEnrollmentIds.length > 0) {
-    const { data: lessonProgressData } = await supabase
+    const { data: lessonProgressData } = await service
       .from("lesson_progress")
       .select("enrollment_id, status")
       .in("enrollment_id", inProgressEnrollmentIds);

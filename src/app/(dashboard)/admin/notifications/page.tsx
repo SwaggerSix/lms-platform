@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import NotificationsClient from "./notifications-client";
 import type { Announcement, NotificationTemplate } from "./notifications-client";
 
@@ -35,7 +36,8 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -46,7 +48,7 @@ export default async function NotificationsPage() {
   }
 
   // Fetch all notifications with user joins (admin view)
-  const { data: rows } = await supabase
+  const { data: rows } = await service
     .from("notifications")
     .select("*, user:users(id, first_name, last_name, email, role)")
     .order("created_at", { ascending: false })

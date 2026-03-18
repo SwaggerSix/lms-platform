@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import PathDetailClient from "./path-detail-client";
 import type { PathDetailData, PathCourse } from "./path-detail-client";
 import { pickGradient } from "../paths-client";
@@ -22,7 +23,8 @@ export default async function PathDetailPage({
   }
 
   // Fetch user profile from users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.id)
@@ -33,7 +35,7 @@ export default async function PathDetailPage({
   }
 
   // Fetch the learning path by slug with its items and courses
-  const { data: rawPath } = await supabase
+  const { data: rawPath } = await service
     .from("learning_paths")
     .select(
       "id, slug, title, description, estimated_duration, tags, is_sequential, created_at, learning_path_items(id, course_id, sequence_order, is_required, courses(id, title, slug, description, difficulty_level, estimated_duration))"
@@ -47,7 +49,7 @@ export default async function PathDetailPage({
   }
 
   // Fetch user's enrollment for this learning path
-  const { data: enrollment } = await supabase
+  const { data: enrollment } = await service
     .from("learning_path_enrollments")
     .select("id, status, enrolled_at, completed_at")
     .eq("user_id", profile.id)
@@ -68,7 +70,7 @@ export default async function PathDetailPage({
   // Fetch user's course enrollments to determine per-course status and progress
   let courseEnrollmentMap = new Map<string, { status: string; time_spent: number; score: number | null }>();
   if (courseIds.length > 0) {
-    const { data: courseEnrollments } = await supabase
+    const { data: courseEnrollments } = await service
       .from("enrollments")
       .select("course_id, status, time_spent, score")
       .eq("user_id", profile.id)
@@ -86,7 +88,7 @@ export default async function PathDetailPage({
   }
 
   // Count total enrollments for this path (for display)
-  const { count: enrolledCount } = await supabase
+  const { count: enrolledCount } = await service
     .from("learning_path_enrollments")
     .select("id", { count: "exact", head: true })
     .eq("path_id", rawPath.id);

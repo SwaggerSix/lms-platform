@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   // Find reports due to run
   const now = new Date().toISOString();
-  const { data: dueReports } = await supabase
+  const { data: dueReports } = await service
     .from("scheduled_reports")
     .select("*")
     .eq("is_active", true)
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       const nextRun = calculateNextRun(report.frequency, report.timezone);
 
       // Update last_run and next_run
-      await supabase
+      await service
         .from("scheduled_reports")
         .update({ last_run_at: now, next_run_at: nextRun })
         .eq("id", report.id);
@@ -70,7 +70,7 @@ async function generateReport(supabase: any, report: any) {
   switch (report_type) {
     case "enrollment":
     case "Enrollment Summary": {
-      const { data } = await supabase
+      const { data } = await service
         .from("enrollments")
         .select("status", { count: "exact" });
       const total = data?.length || 0;
@@ -87,7 +87,7 @@ async function generateReport(supabase: any, report: any) {
     }
     case "completion":
     case "Course Completion": {
-      const { data } = await supabase
+      const { data } = await service
         .from("enrollments")
         .select("*, course:courses(title)")
         .eq("status", "completed")
@@ -97,13 +97,13 @@ async function generateReport(supabase: any, report: any) {
     }
     case "compliance":
     case "Compliance Status": {
-      const { data } = await supabase
+      const { data } = await service
         .from("compliance_requirements")
         .select("*");
       return { requirements: data || [] };
     }
     default: {
-      const { count } = await supabase
+      const { count } = await service
         .from("enrollments")
         .select("*", { count: "exact", head: true });
       return { totalEnrollments: count || 0 };

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -18,7 +19,8 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: existingUser } = await supabase
+        const service = createServiceClient();
+        const { data: existingUser } = await service
           .from("users")
           .select("id")
           .eq("auth_id", user.id)
@@ -31,7 +33,7 @@ export async function GET(request: Request) {
             meta.first_name || emailValue.split("@")[0] || "";
           const lastName = meta.last_name || "";
 
-          await supabase.from("users").upsert(
+          await service.from("users").upsert(
             {
               auth_id: user.id,
               email: emailValue,

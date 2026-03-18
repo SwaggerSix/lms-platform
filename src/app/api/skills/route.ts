@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createSkillSchema } from "@/lib/validations";
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase.from("users").select("id, role").eq("auth_id", user.id).single();
+  const service = createServiceClient();
+  const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   if (!profile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const { searchParams } = new URL(request.url);
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (userId) {
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("user_skills")
       .select("*, skill:skills(*)")
       .eq("user_id", userId)
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("skills")
     .select("*")
     .order("category", { ascending: true })
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("skills")
     .insert(validation.data)
     .select()
@@ -80,7 +82,7 @@ export async function PATCH(request: NextRequest) {
 
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("skills")
     .update(updates)
     .eq("id", id)
@@ -104,7 +106,7 @@ export async function DELETE(request: NextRequest) {
 
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const { error } = await supabase
+  const { error } = await service
     .from("skills")
     .delete()
     .eq("id", id);

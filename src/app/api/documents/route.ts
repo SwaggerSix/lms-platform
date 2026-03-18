@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import type { DocumentVisibility } from "@/types/database";
 
@@ -18,8 +19,9 @@ export async function GET(request: NextRequest) {
   const folderId = searchParams.get("folder_id");
   const search = searchParams.get("search");
   const visibility = searchParams.get("visibility") as DocumentVisibility | null;
+  const service = createServiceClient();
 
-  let query = supabase.from("documents").select("*").order("updated_at", { ascending: false });
+  let query = service.from("documents").select("*").order("updated_at", { ascending: false });
 
   if (folderId) {
     query = query.eq("folder_id", folderId);
@@ -64,8 +66,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const service = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("documents")
       .insert({
         folder_id: body.folder_id ?? null,
@@ -128,8 +131,9 @@ export async function PATCH(request: NextRequest) {
     for (const field of allowedFields) {
       if (body[field] !== undefined) updates[field] = body[field];
     }
+    const service = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("documents")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", id)
@@ -171,8 +175,9 @@ export async function DELETE(request: NextRequest) {
       { status: 400 }
     );
   }
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("documents")
     .delete()
     .eq("id", id)

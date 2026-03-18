@@ -129,6 +129,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
   const user = useAuthStore((s) => s.user);
   const currentRole: Role = (user?.role as Role) ?? "learner";
 
+
   const filteredSections = navSections.filter((section) =>
     section.roles.includes(currentRole)
   );
@@ -174,7 +175,6 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      onClick={onClose}
                       title={collapsed ? item.label : undefined}
                       aria-label={collapsed ? item.label : undefined}
                       aria-current={isActive ? "page" : undefined}

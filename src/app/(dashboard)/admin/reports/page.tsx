@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ReportsClient from "./reports-client";
 import type { ReportRow, RecentReport, ReportSummary } from "./reports-client";
 
@@ -37,7 +38,8 @@ export default async function ReportsPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -58,42 +60,42 @@ export default async function ReportsPage() {
     enrollmentRowsResult,
   ] = await Promise.all([
     // Total enrollments count
-    supabase
+    service
       .from("enrollments")
       .select("*", { count: "exact", head: true }),
 
     // In-progress enrollments count
-    supabase
+    service
       .from("enrollments")
       .select("*", { count: "exact", head: true })
       .eq("status", "in_progress"),
 
     // Completed enrollments count
-    supabase
+    service
       .from("enrollments")
       .select("*", { count: "exact", head: true })
       .eq("status", "completed"),
 
     // Active users count
-    supabase
+    service
       .from("users")
       .select("*", { count: "exact", head: true })
       .eq("status", "active"),
 
     // Published courses count
-    supabase
+    service
       .from("courses")
       .select("*", { count: "exact", head: true })
       .eq("status", "published"),
 
     // Compliance requirements with enrollments for compliance rate
-    supabase
+    service
       .from("compliance_requirements")
       .select("id, course_id")
       .limit(100),
 
     // Recent enrollments with user and course details for report table
-    supabase
+    service
       .from("enrollments")
       .select("id, status, score, completed_at, time_spent, user:users(first_name, last_name, department), course:courses(title)")
       .order("created_at", { ascending: false })
@@ -110,11 +112,11 @@ export default async function ReportsPage() {
 
     if (courseIds.length > 0) {
       const [complianceTotal, complianceCompleted] = await Promise.all([
-        supabase
+        service
           .from("enrollments")
           .select("*", { count: "exact", head: true })
           .in("course_id", courseIds),
-        supabase
+        service
           .from("enrollments")
           .select("*", { count: "exact", head: true })
           .in("course_id", courseIds)

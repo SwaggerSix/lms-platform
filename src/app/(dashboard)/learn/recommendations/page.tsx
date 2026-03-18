@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import RecommendationsClient from "./recommendations-client";
 import type { RecommendedCourse, SkillGapItem } from "./recommendations-client";
 
@@ -95,7 +96,8 @@ export default async function RecommendationsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, organization_id, job_title, role")
     .eq("auth_id", user.id)
@@ -111,7 +113,7 @@ export default async function RecommendationsPage() {
   /*  2. Get user's enrolled course IDs & completed course metadata    */
   /* ================================================================ */
 
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("enrollments")
     .select("course_id, status, course:courses!enrollments_course_id_fkey ( category_id, tags )")
     .eq("user_id", userId);
@@ -136,7 +138,7 @@ export default async function RecommendationsPage() {
   /*  3. Get user's skills & find skill gaps via course_skills         */
   /* ================================================================ */
 
-  const { data: userSkillRows } = await supabase
+  const { data: userSkillRows } = await service
     .from("user_skills")
     .select("skill_id, proficiency_level, skill:skills!user_skills_skill_id_fkey ( id, name, category )")
     .eq("user_id", userId);
@@ -154,7 +156,7 @@ export default async function RecommendationsPage() {
 
   // Get course_skills to find courses that teach skills the user has at low proficiency
   // or skills the user doesn't have at all
-  const { data: courseSkillRows } = await supabase
+  const { data: courseSkillRows } = await service
     .from("course_skills")
     .select("course_id, skill_id, proficiency_gained, skill:skills!course_skills_skill_id_fkey ( id, name )")
     .order("proficiency_gained", { ascending: false });
@@ -179,7 +181,7 @@ export default async function RecommendationsPage() {
 
   let requiredSkillIds = new Set<string>();
   if (jobTitle) {
-    const { data: frameworks } = await supabase
+    const { data: frameworks } = await service
       .from("competency_frameworks")
       .select("skills")
       .contains("applicable_roles", [jobTitle]);
@@ -198,7 +200,7 @@ export default async function RecommendationsPage() {
   /*  5. Fetch all published courses the user is NOT enrolled in       */
   /* ================================================================ */
 
-  let query = supabase
+  let query = service
     .from("courses")
     .select(COURSE_SELECT)
     .eq("status", "published")
@@ -403,7 +405,7 @@ export default async function RecommendationsPage() {
   if (orgId) {
     // Prefer courses where peers in the same org are enrolled
     // We check if any user in the same org is enrolled in these courses
-    const { data: orgUserIds } = await supabase
+    const { data: orgUserIds } = await service
       .from("users")
       .select("id")
       .eq("organization_id", orgId)
@@ -413,7 +415,7 @@ export default async function RecommendationsPage() {
     const peerIds = (orgUserIds ?? []).map((u: any) => u.id);
 
     if (peerIds.length > 0) {
-      const { data: peerEnrollments } = await supabase
+      const { data: peerEnrollments } = await service
         .from("enrollments")
         .select("course_id")
         .in("user_id", peerIds);
@@ -510,7 +512,7 @@ export default async function RecommendationsPage() {
 
   if (jobTitle || orgId) {
     // Check compliance requirements
-    let complianceQuery = supabase
+    let complianceQuery = service
       .from("compliance_requirements")
       .select("course_id, name")
       .eq("is_mandatory", true);

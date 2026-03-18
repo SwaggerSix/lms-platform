@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ReportsClient, {
   type TeamMember,
   type MonthlyActivity,
@@ -26,7 +27,8 @@ export default async function ReportsPage() {
   }
 
   // Look up the current user in the users table
-  const { data: currentUser } = await supabase
+  const service = createServiceClient();
+  const { data: currentUser } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("auth_id", user.id)
@@ -37,7 +39,7 @@ export default async function ReportsPage() {
   }
 
   // Fetch team members (users where manager_id = current user)
-  const { data: teamUsers } = await supabase
+  const { data: teamUsers } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("manager_id", currentUser.id);
@@ -46,7 +48,7 @@ export default async function ReportsPage() {
   const memberIds = members.map((u: any) => u.id);
 
   // Fetch all enrollments for team members
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("enrollments")
     .select("user_id, status, score, due_date, completed_at, enrolled_at, time_spent")
     .in("user_id", memberIds.length > 0 ? memberIds : ["__none__"]);

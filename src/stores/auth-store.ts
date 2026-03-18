@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { User } from "@/types/database";
 
 interface AuthState {
@@ -7,7 +6,7 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: User | null) => void;
   clearUser: () => void;
-  fetchProfile: (supabase: SupabaseClient, authUserId: string) => Promise<void>;
+  fetchProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -18,21 +17,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearUser: () => set({ user: null }),
 
-  fetchProfile: async (supabase, authUserId) => {
+  fetchProfile: async () => {
     set({ isLoading: true });
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*, organization:organizations(*)")
-        .eq("auth_id", authUserId)
-        .single();
-
-      if (error) {
-        console.error("Failed to fetch user profile:", error.message);
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        console.error("Failed to fetch user profile:", res.status);
         set({ user: null });
         return;
       }
-
+      const data = await res.json();
       set({ user: data as User });
     } catch (err) {
       console.error("Unexpected error fetching profile:", err);

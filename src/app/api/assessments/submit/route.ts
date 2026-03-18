@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.user.id)
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Fetch assessment and questions
-  const { data: assessment } = await supabase
+  const { data: assessment } = await service
     .from("assessments")
     .select("*, questions(*)")
     .eq("id", assessment_id)
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
   const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
   const passed = score >= assessment.passing_score;
 
-  const { data: attempt, error } = await supabase
+  const { data: attempt, error } = await service
     .from("assessment_attempts")
     .insert({
       user_id: profile.id,
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
 
   // Award points
   const points = passed ? 50 : 10;
-  await supabase.from("points_ledger").insert({
+  await service.from("points_ledger").insert({
     user_id: profile.id,
     action_type: passed ? "quiz_pass" : "quiz_attempt",
     points,
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
 
   // Bonus for perfect score
   if (score === 100) {
-    await supabase.from("points_ledger").insert({
+    await service.from("points_ledger").insert({
       user_id: profile.id,
       action_type: "perfect_score",
       points: 25,

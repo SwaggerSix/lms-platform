@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import AchievementsClient from "./achievements-client";
 import type { AchievementsData, BadgeData, LeaderboardEntry, ActivityEntry } from "./achievements-client";
 
@@ -145,13 +146,15 @@ export default async function AchievementsPage() {
       return <AchievementsClient data={achievementsData} />;
     }
 
+    const service = createServiceClient();
+
     // ---- Query points_ledger for total points and recent activity ----
     let totalPoints = 0;
     let activities: ActivityEntry[] = [];
     let hasPointsData = false;
 
     try {
-      const { data: pointsRows, error: pointsError } = await supabase
+      const { data: pointsRows, error: pointsError } = await service
         .from("points_ledger")
         .select("id, points, action_type, created_at")
         .eq("user_id", userId)
@@ -185,7 +188,7 @@ export default async function AchievementsPage() {
     let streak = 0;
     if (hasPointsData) {
       try {
-        const { data: streakRows } = await supabase
+        const { data: streakRows } = await service
           .from("points_ledger")
           .select("created_at")
           .eq("user_id", userId)
@@ -222,10 +225,10 @@ export default async function AchievementsPage() {
     try {
       const [allBadgesRes, userBadgesRes, enrollCountRes, completionCountRes] =
         await Promise.all([
-          supabase.from("badges").select("*").order("category"),
-          supabase.from("user_badges").select("badge_id, awarded_at").eq("user_id", userId),
-          supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("user_id", userId),
-          supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("status", "completed"),
+          service.from("badges").select("*").order("category"),
+          service.from("user_badges").select("badge_id, awarded_at").eq("user_id", userId),
+          service.from("enrollments").select("id", { count: "exact", head: true }).eq("user_id", userId),
+          service.from("enrollments").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("status", "completed"),
         ]);
 
       if (!allBadgesRes.error && allBadgesRes.data) {
@@ -298,7 +301,7 @@ export default async function AchievementsPage() {
 
     try {
       // Try to get leaderboard from points_ledger grouped by user
-      const { data: lbRows, error: lbError } = await supabase
+      const { data: lbRows, error: lbError } = await service
         .rpc("get_leaderboard", {})
         .limit(10);
 
@@ -333,7 +336,7 @@ export default async function AchievementsPage() {
     // If we didn't get leaderboard from RPC, try a simpler query
     if (!hasLeaderboardData) {
       try {
-        const { data: usersWithPoints, error: uwpError } = await supabase
+        const { data: usersWithPoints, error: uwpError } = await service
           .from("points_ledger")
           .select("user_id, points")
           .order("points", { ascending: false });

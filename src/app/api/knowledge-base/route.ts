@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { validateBody, createArticleSchema } from "@/lib/validations";
 
@@ -16,10 +17,11 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search");
   const faqOnly = searchParams.get("faq") === "true";
   const slug = searchParams.get("slug");
+  const service = createServiceClient();
 
   // Single article by slug
   if (slug) {
-    const { data: article, error } = await supabase
+    const { data: article, error } = await service
       .from("kb_articles")
       .select("*, category:kb_categories(*), author:users(id, email, first_name, last_name, avatar_url, role, job_title)")
       .eq("slug", slug)
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Build articles query
-  let articlesQuery = supabase
+  let articlesQuery = service
     .from("kb_articles")
     .select("*, category:kb_categories(*), author:users(id, email, first_name, last_name, avatar_url, role, job_title)")
     .eq("status", "published")
@@ -54,7 +56,7 @@ export async function GET(request: NextRequest) {
   // Fetch articles and categories in parallel
   const [articlesResult, categoriesResult] = await Promise.all([
     articlesQuery,
-    supabase.from("kb_categories").select("*").order("sort_order", { ascending: true }),
+    service.from("kb_categories").select("*").order("sort_order", { ascending: true }),
   ]);
 
   if (articlesResult.error) {
@@ -86,10 +88,11 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
   const body = await request.json();
+  const service = createServiceClient();
 
   // ── Create Category ──
   if (body.type === "category") {
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("kb_categories")
       .insert({
         name: body.name,
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("kb_articles")
     .insert({
       category_id: body.category_id || null,
@@ -146,6 +149,7 @@ export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
   const { id, action, ...updates } = body;
+  const service = createServiceClient();
 
   // Actions that any authenticated user can perform
   if (action === "increment_view" || action === "helpful" || action === "not_helpful") {
@@ -168,7 +172,7 @@ export async function PATCH(request: NextRequest) {
     if (body.icon !== undefined) updateFields.icon = body.icon;
     if (body.sort_order !== undefined) updateFields.sort_order = body.sort_order;
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("kb_categories")
       .update(updateFields)
       .eq("id", id)
@@ -190,26 +194,26 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (action === "increment_view") {
-    const { data, error } = await supabase.rpc("increment_field", {
+    const { data, error } = await service.rpc("increment_field", {
       table_name: "kb_articles",
       field_name: "view_count",
       row_id: id,
     });
     // Fallback: just fetch and update manually
     if (error) {
-      const { data: article } = await supabase
+      const { data: article } = await service
         .from("kb_articles")
         .select("view_count")
         .eq("id", id)
         .single();
       if (article) {
-        await supabase
+        await service
           .from("kb_articles")
           .update({ view_count: (article.view_count || 0) + 1 })
           .eq("id", id);
       }
     }
-    const { data: updated } = await supabase
+    const { data: updated } = await service
       .from("kb_articles")
       .select("*")
       .eq("id", id)
@@ -218,18 +222,18 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (action === "helpful") {
-    const { data: article } = await supabase
+    const { data: article } = await service
       .from("kb_articles")
       .select("helpful_count")
       .eq("id", id)
       .single();
     if (article) {
-      await supabase
+      await service
         .from("kb_articles")
         .update({ helpful_count: (article.helpful_count || 0) + 1 })
         .eq("id", id);
     }
-    const { data: updated } = await supabase
+    const { data: updated } = await service
       .from("kb_articles")
       .select("*")
       .eq("id", id)
@@ -238,18 +242,18 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (action === "not_helpful") {
-    const { data: article } = await supabase
+    const { data: article } = await service
       .from("kb_articles")
       .select("not_helpful_count")
       .eq("id", id)
       .single();
     if (article) {
-      await supabase
+      await service
         .from("kb_articles")
         .update({ not_helpful_count: (article.not_helpful_count || 0) + 1 })
         .eq("id", id);
     }
-    const { data: updated } = await supabase
+    const { data: updated } = await service
       .from("kb_articles")
       .select("*")
       .eq("id", id)
@@ -264,7 +268,7 @@ export async function PATCH(request: NextRequest) {
     if (updates[field] !== undefined) safeUpdates[field] = updates[field];
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("kb_articles")
     .update({ ...safeUpdates, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -298,10 +302,11 @@ export async function DELETE(request: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "ID required" }, { status: 400 });
   }
+  const service = createServiceClient();
 
   // ── Delete Category ──
   if (type === "category") {
-    const { error } = await supabase
+    const { error } = await service
       .from("kb_categories")
       .delete()
       .eq("id", id);
@@ -314,7 +319,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // ── Delete Article ──
-  const { error } = await supabase
+  const { error } = await service
     .from("kb_articles")
     .delete()
     .eq("id", id);

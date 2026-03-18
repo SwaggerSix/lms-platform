@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import AssessmentResultsClient from "./assessment-results-client";
 import type { AssessmentResultsData, ReviewQuestion } from "./assessment-results-client";
 
@@ -20,7 +21,8 @@ export default async function AssessmentResultsPage({
   }
 
   // Get the user record from the users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -33,13 +35,13 @@ export default async function AssessmentResultsPage({
   // Fetch assessment details, latest attempt, questions, and total attempts in parallel
   const [assessmentResult, latestAttemptResult, questionsResult, totalAttemptsResult] =
     await Promise.all([
-      supabase
+      service
         .from("assessments")
         .select("id, title, passing_score, max_attempts, show_correct_answers")
         .eq("id", id)
         .single(),
 
-      supabase
+      service
         .from("assessment_attempts")
         .select("id, score, passed, answers, started_at, completed_at, time_spent")
         .eq("user_id", dbUser.id)
@@ -48,13 +50,13 @@ export default async function AssessmentResultsPage({
         .limit(1)
         .single(),
 
-      supabase
+      service
         .from("questions")
         .select("id, question_text, question_type, points, explanation, options, sequence_order")
         .eq("assessment_id", id)
         .order("sequence_order", { ascending: true }),
 
-      supabase
+      service
         .from("assessment_attempts")
         .select("id", { count: "exact", head: true })
         .eq("user_id", dbUser.id)

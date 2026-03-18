@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "20");
   const offset = (page - 1) * limit;
 
-  let query = supabase
+  let query = service
     .from("users")
     .select("id, first_name, last_name, email, role, status, job_title, avatar_url, organization_id, manager_id, hire_date, created_at, updated_at, preferences, organization:organizations(*)", { count: "exact" })
     .eq("status", status)
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     Object.entries(validation.data).filter(([key]) => allowedFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("users")
     .insert(sanitized)
     .select()

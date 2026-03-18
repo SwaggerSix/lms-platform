@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ILTSessionsClient from "./ilt-sessions-client";
 import type { LearnerSession } from "./ilt-sessions-client";
 
@@ -22,7 +23,8 @@ export default async function LearnerILTSessionsPage() {
   }
 
   // Fetch user profile from users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.id)
@@ -35,7 +37,7 @@ export default async function LearnerILTSessionsPage() {
   const userId = profile.id;
 
   // Fetch all ILT sessions with course and instructor joins
-  const { data: rawSessions, error } = await supabase
+  const { data: rawSessions, error } = await service
     .from("ilt_sessions")
     .select(
       "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, meeting_url, max_capacity, status, course:courses(title), instructor:users!ilt_sessions_instructor_id_fkey(first_name, last_name)"
@@ -51,7 +53,7 @@ export default async function LearnerILTSessionsPage() {
 
   // Fetch registration counts for all sessions
   const { data: registrationCounts } = sessionIds.length > 0
-    ? await supabase
+    ? await service
         .from("ilt_attendance")
         .select("session_id")
         .in("session_id", sessionIds)
@@ -66,7 +68,7 @@ export default async function LearnerILTSessionsPage() {
 
   // Fetch current user's attendance records for all sessions
   const { data: userAttendance } = sessionIds.length > 0
-    ? await supabase
+    ? await service
         .from("ilt_attendance")
         .select("session_id, registration_status, attendance_status")
         .eq("user_id", userId)

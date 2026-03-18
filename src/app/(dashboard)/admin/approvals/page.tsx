@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ApprovalsClient from "./approvals-client";
 import type { ApprovalRequest } from "./approvals-client";
 
@@ -18,7 +19,8 @@ export default async function AdminApprovalsPage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -28,7 +30,7 @@ export default async function AdminApprovalsPage() {
     redirect("/login");
   }
 
-  const { data: rows } = await supabase
+  const { data: rows } = await service
     .from("enrollment_approvals")
     .select(
       "*, course:courses!course_id(id, title, category:categories!category_id(name)), learner:users!learner_id(id, first_name, last_name, email, organization_id, manager_id, organization:organizations!organization_id(name)), approver:users!approver_id(id, first_name, last_name)"
@@ -47,7 +49,7 @@ export default async function AdminApprovalsPage() {
   // Fetch manager names in a single query
   let managerMap: Record<string, string> = {};
   if (managerIds.size > 0) {
-    const { data: managers } = await supabase
+    const { data: managers } = await service
       .from("users")
       .select("id, first_name, last_name")
       .in("id", Array.from(managerIds));

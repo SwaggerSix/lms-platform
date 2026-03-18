@@ -23,7 +23,7 @@ export default async function CertificationsPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const { data: dbUser } = await service
     .from('users')
     .select('id')
     .eq('auth_id', user.id)
@@ -34,13 +34,13 @@ export default async function CertificationsPage() {
   }
 
   // Fetch certifications with linked course/path names
-  const { data: rows } = await supabase
+  const { data: rows } = await service
     .from('certifications')
     .select('*, recertification_course:courses!recertification_course_id(title), recertification_path:learning_paths!recertification_path_id(title)')
     .order('created_at', { ascending: false });
 
   // Fetch user_certifications status counts grouped by certification_id
-  const { data: statusRows } = await supabase
+  const { data: statusRows } = await service
     .from('user_certifications')
     .select('certification_id, status')
     .limit(200);

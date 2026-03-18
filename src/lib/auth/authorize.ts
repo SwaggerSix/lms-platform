@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export type Role = "admin" | "manager" | "instructor" | "learner";
 
@@ -7,7 +8,9 @@ export async function authorize(...allowedRoles: Role[]) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { authorized: false, error: "Not authenticated", status: 401 } as const;
 
-  const { data: dbUser } = await supabase
+  // Use service client to bypass RLS (avoids infinite recursion in users policy)
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -35,7 +36,8 @@ export default async function AuditLogPage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -45,7 +47,7 @@ export default async function AuditLogPage() {
     redirect("/login");
   }
 
-  const { data: auditRows } = await supabase
+  const { data: auditRows } = await service
     .from("audit_logs")
     .select("*, user:users!user_id(id, first_name, last_name, email)")
     .order("created_at", { ascending: false })

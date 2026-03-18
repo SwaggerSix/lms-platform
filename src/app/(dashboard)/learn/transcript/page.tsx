@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import TranscriptClient from "./transcript-client";
 import type { TranscriptRecord, TranscriptUser } from "./transcript-client";
 
@@ -22,7 +23,8 @@ export default async function TranscriptPage() {
   }
 
   // Fetch user profile from users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id, first_name, last_name, email, job_title, hire_date, organization:organizations(name), manager:users!users_manager_id_fkey(first_name, last_name)")
     .eq("auth_id", authUser.id)
@@ -50,7 +52,7 @@ export default async function TranscriptPage() {
   };
 
   // Fetch enrollments with course data (mirrors the API route pattern)
-  const { data: enrollments, error } = await supabase
+  const { data: enrollments, error } = await service
     .from("enrollments")
     .select("id, status, enrolled_at, completed_at, score, certificate_issued, course:courses(title, course_type, estimated_duration)")
     .eq("user_id", profile.id)

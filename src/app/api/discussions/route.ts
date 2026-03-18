@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createDiscussionSchema } from "@/lib/validations";
 
 /**
@@ -19,7 +20,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authData.user.id)
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Optionally resolve course name to course_id
     let courseId: string | null = null;
     if (course) {
-      const { data: courseRow } = await supabase
+      const { data: courseRow } = await service
         .from("courses")
         .select("id")
         .ilike("title", `%${course.replace(/[%_\\'"()]/g, "")}%`)
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
       courseId = courseRow?.id ?? null;
     }
 
-    const { data: thread, error } = await supabase
+    const { data: thread, error } = await service
       .from("discussions")
       .insert({
         user_id: profile.id,
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: reply, error } = await supabase
+    const { data: reply, error } = await service
       .from("discussions")
       .insert({
         user_id: profile.id,
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Increment upvotes
-    const { data: current } = await supabase
+    const { data: current } = await service
       .from("discussions")
       .select("upvotes")
       .eq("id", discussion_id)
@@ -136,7 +138,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await service
       .from("discussions")
       .update({ upvotes: (current.upvotes ?? 0) + 1 })
       .eq("id", discussion_id)

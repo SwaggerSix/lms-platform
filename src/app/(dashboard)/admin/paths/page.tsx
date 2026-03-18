@@ -20,7 +20,7 @@ export default async function PathsPage() {
   }
 
   // Fetch all learning paths with their items (including linked course info) and enrollment counts
-  const { data: rows } = await supabase
+  const { data: rows } = await service
     .from('learning_paths')
     .select(
       '*, items:learning_path_items(id, sequence_order, course:courses(id, title, estimated_duration, course_type)), enrollments:learning_path_enrollments(id)'

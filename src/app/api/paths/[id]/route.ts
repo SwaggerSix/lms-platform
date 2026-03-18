@@ -8,7 +8,7 @@ export async function GET(
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("learning_paths")
     .select("*, items:learning_path_items(*, course:courses(*))")
     .eq("id", id)

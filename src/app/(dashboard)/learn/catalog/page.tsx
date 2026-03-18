@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import CatalogClient, { type CatalogCourse } from "./catalog-client";
 
 export const metadata: Metadata = {
@@ -60,14 +61,15 @@ export default async function CourseCatalogPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
     .single();
   if (!dbUser) redirect("/login");
 
-  const { data: dbCourses } = await supabase
+  const { data: dbCourses } = await service
     .from("courses")
     .select("*, category:categories(name)")
     .eq("status", "published")

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import DiscussionsClient from "./discussions-client";
 import type { Thread, Reply } from "./discussions-client";
 
@@ -63,7 +64,8 @@ export default async function DiscussionsPage() {
   }
 
   // Get the current user record
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("auth_id", user.id)
@@ -77,7 +79,7 @@ export default async function DiscussionsPage() {
     : "U";
 
   // Fetch top-level discussion threads (parent_id IS NULL means root threads)
-  const { data: threadsData } = await supabase
+  const { data: threadsData } = await service
     .from("discussions")
     .select(
       `
@@ -98,7 +100,7 @@ export default async function DiscussionsPage() {
 
   // Fetch all replies for these threads
   const { data: repliesData } = threadIds.length > 0
-    ? await supabase
+    ? await service
         .from("discussions")
         .select(
           `

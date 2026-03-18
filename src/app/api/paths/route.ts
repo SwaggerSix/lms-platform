@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createPathSchema } from "@/lib/validations";
@@ -7,8 +8,9 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "published";
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("learning_paths")
     .select("*, items:learning_path_items(*, course:courses(*))")
     .eq("status", status)
@@ -32,8 +34,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
   const { items, ...pathData } = validation.data;
+  const service = createServiceClient();
 
-  const { data: path, error } = await supabase
+  const { data: path, error } = await service
     .from("learning_paths")
     .insert(pathData)
     .select()
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
       path_id: path.id,
       sequence_order: i + 1,
     }));
-    await supabase.from("learning_path_items").insert(pathItems);
+    await service.from("learning_path_items").insert(pathItems);
   }
 
   return NextResponse.json(path, { status: 201 });
@@ -73,8 +76,9 @@ export async function PATCH(request: NextRequest) {
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("learning_paths")
     .update(updates)
     .eq("id", id)
@@ -87,13 +91,13 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (items?.length) {
-    await supabase.from("learning_path_items").delete().eq("path_id", id);
+    await service.from("learning_path_items").delete().eq("path_id", id);
     const pathItems = items.map((item: Record<string, unknown>, i: number) => ({
       ...item,
       path_id: id,
       sequence_order: i + 1,
     }));
-    await supabase.from("learning_path_items").insert(pathItems);
+    await service.from("learning_path_items").insert(pathItems);
   }
 
   return NextResponse.json(data);
@@ -110,8 +114,9 @@ export async function DELETE(request: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "Learning path id is required" }, { status: 400 });
   }
+  const service = createServiceClient();
 
-  const { error } = await supabase
+  const { error } = await service
     .from("learning_paths")
     .delete()
     .eq("id", id);

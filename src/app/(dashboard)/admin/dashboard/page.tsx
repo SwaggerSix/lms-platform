@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from "@/lib/supabase/service";
 import DashboardClient, { type DashboardData } from './dashboard-client';
 
 export const metadata: Metadata = {
@@ -14,7 +15,8 @@ export default async function AdminDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -23,10 +25,10 @@ export default async function AdminDashboardPage() {
 
   // Fetch aggregate stats in parallel
   const [usersResult, coursesResult, enrollmentsResult, topCoursesResult] = await Promise.all([
-    supabase.from('users').select('id', { count: 'exact', head: true }),
-    supabase.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('enrollments').select('id, status, score', { count: 'exact' }),
-    supabase.from('courses').select('title').eq('status', 'published').order('created_at', { ascending: false }).limit(5),
+    service.from('users').select('id', { count: 'exact', head: true }),
+    service.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+    service.from('enrollments').select('id, status, score', { count: 'exact' }),
+    service.from('courses').select('title').eq('status', 'published').order('created_at', { ascending: false }).limit(5),
   ]);
 
   const totalUsers = usersResult.count ?? 0;
@@ -50,7 +52,7 @@ export default async function AdminDashboardPage() {
   }));
 
   // Build recent activity from recent enrollments
-  const { data: recentEnrollments } = await supabase
+  const { data: recentEnrollments } = await service
     .from('enrollments')
     .select('*, user:users(first_name, last_name), course:courses(title)')
     .order('enrolled_at', { ascending: false })

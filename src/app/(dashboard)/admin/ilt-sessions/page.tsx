@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ILTSessionsClient, {
   type SessionItem,
   type AttendeeItem,
@@ -20,7 +21,8 @@ export default async function AdminILTSessionsPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -31,7 +33,7 @@ export default async function AdminILTSessionsPage() {
   }
 
   // ─── Fetch sessions with course + instructor joins ────────────
-  const { data: sessionsRows } = await supabase
+  const { data: sessionsRows } = await service
     .from("ilt_sessions")
     .select(
       "*, course:courses(id, title), instructor:users!ilt_sessions_instructor_id_fkey(id, first_name, last_name, email)"
@@ -39,20 +41,20 @@ export default async function AdminILTSessionsPage() {
     .order("session_date", { ascending: false });
 
   // ─── Fetch attendance records for all sessions ────────────────
-  const { data: attendanceRows } = await supabase
+  const { data: attendanceRows } = await service
     .from("ilt_attendance")
     .select(
       "*, user:users!ilt_attendance_user_id_fkey(id, first_name, last_name, email)"
     );
 
   // ─── Fetch courses for the create-session dropdown ────────────
-  const { data: coursesRows } = await supabase
+  const { data: coursesRows } = await service
     .from("courses")
     .select("id, title")
     .order("title");
 
   // ─── Fetch instructors (users who could instruct) ─────────────
-  const { data: instructorsRows } = await supabase
+  const { data: instructorsRows } = await service
     .from("users")
     .select("id, first_name, last_name")
     .order("last_name");

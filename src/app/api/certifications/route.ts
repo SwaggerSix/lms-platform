@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createCertificationSchema } from "@/lib/validations";
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase.from("users").select("id, role").eq("auth_id", user.id).single();
+  const service = createServiceClient();
+  const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   if (!profile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const { searchParams } = new URL(request.url);
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (userId) {
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("user_certifications")
       .select("*, certification:certifications(*)")
       .eq("user_id", userId)
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("certifications")
     .select("*")
     .order("created_at", { ascending: false });
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
     Object.entries(validation.data).filter(([key]) => allowedPostFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("certifications")
     .insert(sanitized)
     .select()
@@ -93,7 +95,7 @@ export async function PATCH(request: NextRequest) {
     Object.entries(updates).filter(([key]) => allowedPatchFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("certifications")
     .update(sanitizedUpdates)
     .eq("id", id)
@@ -119,7 +121,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Certification id is required" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("certifications")
     .delete()
     .eq("id", id);

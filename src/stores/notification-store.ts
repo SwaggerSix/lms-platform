@@ -1,14 +1,13 @@
 import { create } from "zustand";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Notification } from "@/types/database";
 
 interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
-  fetchNotifications: (supabase: SupabaseClient, userId: string) => Promise<void>;
-  markAsRead: (supabase: SupabaseClient, notificationId: string) => Promise<void>;
-  markAllAsRead: (supabase: SupabaseClient, userId: string) => Promise<void>;
+  fetchNotifications: () => Promise<void>;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -16,25 +15,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   unreadCount: 0,
   isLoading: false,
 
-  fetchNotifications: async (supabase, userId) => {
+  fetchNotifications: async () => {
     set({ isLoading: true });
     try {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("channel", "in_app")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error("Failed to fetch notifications:", error.message);
+      const res = await fetch("/api/notifications");
+      if (!res.ok) {
+        console.error("Failed to fetch notifications:", res.status);
         return;
       }
-
-      const notifications = (data ?? []) as Notification[];
-      const unreadCount = notifications.filter((n) => !n.is_read).length;
-      set({ notifications, unreadCount });
+      const { notifications, unreadCount } = await res.json();
+      set({ notifications: (notifications ?? []) as Notification[], unreadCount });
     } catch (err) {
       console.error("Unexpected error fetching notifications:", err);
     } finally {
@@ -42,7 +32,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  markAsRead: async (supabase, notificationId) => {
+  markAsRead: async (notificationId) => {
     const { notifications } = get();
     const updated = notifications.map((n) =>
       n.id === notificationId ? { ...n, is_read: true } : n
@@ -50,21 +40,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const unreadCount = updated.filter((n) => !n.is_read).length;
     set({ notifications: updated, unreadCount });
 
-    await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", notificationId);
+    await fetch(`/api/notifications`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "mark_read", notification_id: notificationId }),
+    }).catch(() => {});
   },
 
-  markAllAsRead: async (supabase, userId) => {
+  markAllAsRead: async () => {
     const { notifications } = get();
     const updated = notifications.map((n) => ({ ...n, is_read: true }));
     set({ notifications: updated, unreadCount: 0 });
 
-    await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("user_id", userId)
-      .eq("is_read", false);
+    await fetch(`/api/notifications`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "mark_all_read" }),
+    }).catch(() => {});
   },
 }));

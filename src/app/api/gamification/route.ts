@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,7 +10,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase.from("users").select("id, role").eq("auth_id", user.id).single();
+  const service = createServiceClient();
+  const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   if (!profile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const { searchParams } = new URL(request.url);
@@ -21,11 +23,11 @@ export async function GET(request: NextRequest) {
   }
 
   if (type === "leaderboard") {
-    const { data, error } = await supabase.rpc("get_user_points").limit(20);
+    const { data, error } = await service.rpc("get_user_points").limit(20);
 
     // Fallback: query points_ledger directly
     if (error) {
-      const { data: points } = await supabase
+      const { data: points } = await service
         .from("points_ledger")
         .select("user_id, points")
         .order("created_at", { ascending: false });
@@ -48,9 +50,9 @@ export async function GET(request: NextRequest) {
 
   if (userId && type === "summary") {
     const [points, badges, recentActivity] = await Promise.all([
-      supabase.from("points_ledger").select("points").eq("user_id", userId),
-      supabase.from("user_badges").select("*, badge:badges(*)").eq("user_id", userId),
-      supabase
+      service.from("points_ledger").select("points").eq("user_id", userId),
+      service.from("user_badges").select("*, badge:badges(*)").eq("user_id", userId),
+      service
         .from("points_ledger")
         .select("*")
         .eq("user_id", userId)
@@ -69,7 +71,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Get all badges
-  const { data, error } = await supabase.from("badges").select("*").order("category");
+  const { data, error } = await service.from("badges").select("*").order("category");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Badge name is required" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("badges")
     .insert({
       name,
@@ -130,7 +132,7 @@ export async function PATCH(request: NextRequest) {
   if (updates.category) payload.category = updates.category;
   if (updates.criteria) payload.criteria = updates.criteria;
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("badges")
     .update(payload)
     .eq("id", id)

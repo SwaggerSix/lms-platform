@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createAssessmentSchema } from "@/lib/validations";
@@ -12,9 +13,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const courseId = searchParams.get("course_id");
   const id = searchParams.get("id");
+  const service = createServiceClient();
 
   if (id) {
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("assessments")
       .select("*, questions(*)")
       .eq("id", id)
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   }
 
-  let query = supabase
+  let query = service
     .from("assessments")
     .select("*, questions(count)")
     .order("created_at", { ascending: false });
@@ -65,8 +67,9 @@ export async function POST(request: NextRequest) {
 
   const assessmentData = validation.data;
   const { questions } = body;
+  const service = createServiceClient();
 
-  const { data: assessment, error } = await supabase
+  const { data: assessment, error } = await service
     .from("assessments")
     .insert(assessmentData)
     .select()
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
       sequence_order: i + 1,
     }));
 
-    const { error: qError } = await supabase.from("questions").insert(questionsWithId);
+    const { error: qError } = await service.from("questions").insert(questionsWithId);
     if (qError) {
       console.error("Assessments API error:", qError.message);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -111,8 +114,9 @@ export async function PATCH(request: NextRequest) {
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("assessments")
     .update(updates)
     .eq("id", id)
@@ -125,13 +129,13 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (questions?.length) {
-    await supabase.from("questions").delete().eq("assessment_id", id);
+    await service.from("questions").delete().eq("assessment_id", id);
     const questionsWithId = questions.map((q: Record<string, unknown>, i: number) => ({
       ...q,
       assessment_id: id,
       sequence_order: i + 1,
     }));
-    await supabase.from("questions").insert(questionsWithId);
+    await service.from("questions").insert(questionsWithId);
   }
 
   return NextResponse.json(data);
@@ -148,8 +152,9 @@ export async function DELETE(request: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "Assessment id is required" }, { status: 400 });
   }
+  const service = createServiceClient();
 
-  const { error } = await supabase
+  const { error } = await service
     .from("assessments")
     .delete()
     .eq("id", id);

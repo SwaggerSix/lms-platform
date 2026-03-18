@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import PlayerClient, {
   type PlayerCourse,
   type PlayerModule,
@@ -39,7 +40,8 @@ export default async function CoursePlayerPage({
   }
 
   // Look up internal user by auth_id
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -50,7 +52,7 @@ export default async function CoursePlayerPage({
   }
 
   // Fetch the course with modules and lessons
-  const { data: course } = await supabase
+  const { data: course } = await service
     .from("courses")
     .select(
       "id, title, slug, description, course_type, estimated_duration, modules(id, title, description, sequence_order, lessons(id, title, content_type, content_url, content_data, duration, sequence_order, is_required))"
@@ -63,7 +65,7 @@ export default async function CoursePlayerPage({
   }
 
   // Fetch the user's enrollment for this course
-  const { data: enrollment } = await supabase
+  const { data: enrollment } = await service
     .from("enrollments")
     .select("id, status, time_spent")
     .eq("user_id", dbUser.id)
@@ -79,7 +81,7 @@ export default async function CoursePlayerPage({
   // Fetch lesson progress for all lessons in this course
   let progressMap: Record<string, string> = {};
   if (enrollment && allLessonIds.length > 0) {
-    const { data: progressRows } = await supabase
+    const { data: progressRows } = await service
       .from("lesson_progress")
       .select("lesson_id, status")
       .eq("user_id", dbUser.id)

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createNotificationSchema } from "@/lib/validations";
@@ -11,7 +12,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.user.id)
@@ -21,7 +23,7 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("notifications")
     .select("*")
     .eq("user_id", profile.id)
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   if (status === "draft") {
     // Save as draft — insert a single notification row flagged as draft
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("notifications")
       .insert({
         user_id: auth.user.id,
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
 
   if (scheduled_for) {
     // Scheduled announcement — store with scheduled metadata
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("notifications")
       .insert({
         user_id: auth.user.id,
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid audience type" }, { status: 400 });
   }
 
-  let userQuery = supabase.from("users").select("id");
+  let userQuery = service.from("users").select("id");
   if (audienceType !== "all") {
     // audience can be a role or department value
     userQuery = userQuery.or(`role.eq.${audienceType},department.eq.${audienceType}`);
@@ -129,7 +131,7 @@ export async function POST(request: NextRequest) {
     metadata: { audience: audienceType, priority: priority || "Normal", status: "sent" },
   }));
 
-  const { data, error } = await supabase.from("notifications").insert(rows).select();
+  const { data, error } = await service.from("notifications").insert(rows).select();
 
   if (error) {
     console.error("Failed to send notifications:", error.message);
@@ -149,14 +151,15 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
+    const service = createServiceClient();
+    const { data: profile } = await service
       .from("users")
       .select("id")
       .eq("auth_id", authUser.user.id)
       .single();
 
     if (profile) {
-      await supabase
+      await service
         .from("notifications")
         .update({ is_read: true })
         .eq("user_id", profile.id)
@@ -173,7 +176,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: notifProfile } = await supabase
+    const service2 = createServiceClient();
+    const { data: notifProfile } = await service2
       .from("users")
       .select("id")
       .eq("auth_id", authUser.user.id)
@@ -183,7 +187,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { error } = await supabase
+    const { error } = await service
       .from("notifications")
       .update({ is_read: true })
       .eq("id", body.id)
@@ -206,7 +210,7 @@ export async function PATCH(request: NextRequest) {
     if (body.body) updates.body = body.body;
     if (body.metadata) updates.metadata = body.metadata;
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("notifications")
       .update(updates)
       .eq("id", body.id)
@@ -235,7 +239,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Notification id is required" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("notifications")
     .delete()
     .eq("id", id);

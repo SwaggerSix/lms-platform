@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,13 +10,14 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: profile } = await supabase.from("users").select("id").eq("auth_id", user.id).single();
+  const service = createServiceClient();
+  const { data: profile } = await service.from("users").select("id").eq("auth_id", user.id).single();
 
   if (!profile) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { error } = await supabase.from("analytics_events").insert({
+  const { error } = await service.from("analytics_events").insert({
     user_id: profile.id,
     event_type: body.event_type,
     entity_type: body.entity_type || null,
@@ -39,10 +41,10 @@ export async function GET(request: NextRequest) {
 
   if (metric === "overview") {
     const [users, courses, enrollments, completions] = await Promise.all([
-      supabase.from("users").select("*", { count: "exact", head: true }).eq("status", "active"),
-      supabase.from("courses").select("*", { count: "exact", head: true }).eq("status", "published"),
-      supabase.from("enrollments").select("*", { count: "exact", head: true }),
-      supabase.from("enrollments").select("*", { count: "exact", head: true }).eq("status", "completed"),
+      service.from("users").select("*", { count: "exact", head: true }).eq("status", "active"),
+      service.from("courses").select("*", { count: "exact", head: true }).eq("status", "published"),
+      service.from("enrollments").select("*", { count: "exact", head: true }),
+      service.from("enrollments").select("*", { count: "exact", head: true }).eq("status", "completed"),
     ]);
 
     return NextResponse.json({

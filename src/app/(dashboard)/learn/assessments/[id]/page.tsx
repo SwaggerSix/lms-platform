@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import AssessmentTakingClient from "./assessment-taking-client";
 import type { AssessmentData } from "./assessment-taking-client";
 
@@ -20,7 +21,8 @@ export default async function AssessmentTakingPage({
   }
 
   // Get the user record from the users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -32,7 +34,7 @@ export default async function AssessmentTakingPage({
 
   // Fetch assessment with course title, questions, and previous attempts in parallel
   const [assessmentResult, questionsResult, attemptsResult] = await Promise.all([
-    supabase
+    service
       .from("assessments")
       .select(`
         id,
@@ -47,13 +49,13 @@ export default async function AssessmentTakingPage({
       .eq("id", id)
       .single(),
 
-    supabase
+    service
       .from("questions")
       .select("id, question_text, question_type, points, options, sequence_order")
       .eq("assessment_id", id)
       .order("sequence_order", { ascending: true }),
 
-    supabase
+    service
       .from("assessment_attempts")
       .select("id", { count: "exact", head: true })
       .eq("user_id", dbUser.id)

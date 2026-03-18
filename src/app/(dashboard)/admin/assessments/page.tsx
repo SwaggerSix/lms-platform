@@ -26,19 +26,19 @@ export default async function AssessmentsPage() {
   if (!user) redirect('/login');
 
   // Fetch assessments with course name join
-  const { data: assessmentRows } = await supabase
+  const { data: assessmentRows } = await service
     .from('assessments')
     .select('*, course:courses(title)')
     .order('created_at', { ascending: false });
 
   // Fetch all questions ordered by sequence
-  const { data: questionRows } = await supabase
+  const { data: questionRows } = await service
     .from('questions')
     .select('*')
     .order('sequence_order', { ascending: true });
 
   // Fetch attempt statistics per assessment (count + avg score)
-  const { data: attemptRows } = await supabase
+  const { data: attemptRows } = await service
     .from('assessment_attempts')
     .select('assessment_id, score')
     .limit(200);
@@ -89,7 +89,7 @@ export default async function AssessmentsPage() {
   });
 
   // Fetch courses for the dropdown
-  const { data: courseRows } = await supabase
+  const { data: courseRows } = await service
     .from('courses')
     .select('id, title')
     .order('title', { ascending: true });

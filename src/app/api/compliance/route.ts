@@ -7,7 +7,7 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("compliance_requirements")
     .select("*")
     .order("created_at", { ascending: false });
@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("compliance_requirements")
     .update(updates)
     .eq("id", id)

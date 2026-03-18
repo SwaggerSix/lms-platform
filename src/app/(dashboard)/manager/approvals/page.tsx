@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import ApprovalsClient, { type ApprovalRequest } from "./approvals-client";
 
 export const metadata: Metadata = {
@@ -21,7 +22,8 @@ export default async function ManagerApprovalsPage() {
   }
 
   // Look up internal user by auth_id
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -32,7 +34,7 @@ export default async function ManagerApprovalsPage() {
   }
 
   // Fetch approval requests where current user is the approver, with course and learner joins
-  const { data: rawApprovals } = await supabase
+  const { data: rawApprovals } = await service
     .from("enrollment_approvals")
     .select(
       "id, status, requested_at, decided_at, reason, rejection_reason, course:courses(id, title, category:categories(name)), learner:users!enrollment_approvals_learner_id_fkey(id, first_name, last_name, email)"

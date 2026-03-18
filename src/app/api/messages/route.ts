@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { MessageType } from "@/types/database";
 import { validateBody, sendMessageSchema } from "@/lib/validations";
 
@@ -20,7 +21,8 @@ export async function GET(request: NextRequest) {
   const conversationId = searchParams.get("conversation_id");
 
   // Look up the profile ID from the users table
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   // If conversation_id is provided, return messages for that conversation
   if (conversationId) {
-    const { data: conversation, error: convError } = await supabase
+    const { data: conversation, error: convError } = await service
       .from("conversations")
       .select("*")
       .eq("id", conversationId)
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify current user is a participant in this conversation
-    const { data: participant } = await supabase
+    const { data: participant } = await service
       .from("conversation_participants")
       .select("id")
       .eq("conversation_id", conversationId)
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: messages, error: msgError } = await supabase
+    const { data: messages, error: msgError } = await service
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
 
   // Otherwise, return all conversations for the current user
   // First get conversation IDs where user is a participant
-  let participantQuery = supabase
+  let participantQuery = service
     .from("conversation_participants")
     .select("conversation_id");
 
@@ -93,7 +95,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Fetch conversations with participants
-  const { data: conversations, error: convListError } = await supabase
+  const { data: conversations, error: convListError } = await service
     .from("conversations")
     .select("*, conversation_participants(*)")
     .in("id", conversationIds)
@@ -107,7 +109,7 @@ export async function GET(request: NextRequest) {
   // For each conversation, get the last message
   const conversationsWithLastMessage = await Promise.all(
     (conversations ?? []).map(async (c) => {
-      const { data: lastMessages } = await supabase
+      const { data: lastMessages } = await service
         .from("messages")
         .select("*")
         .eq("conversation_id", c.id)
@@ -120,7 +122,7 @@ export async function GET(request: NextRequest) {
       );
       let unreadCount = 0;
       if (participant?.last_read_at) {
-        const { count } = await supabase
+        const { count } = await service
           .from("messages")
           .select("*", { count: "exact", head: true })
           .eq("conversation_id", c.id)
@@ -155,7 +157,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Look up profile ID from the users table
-  const { data: postProfile } = await supabase
+  const service = createServiceClient();
+  const { data: postProfile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -178,7 +181,7 @@ export async function POST(request: NextRequest) {
     }
 
     // IDOR fix: always set created_by to authenticated user
-    const { data: conversation, error: convError } = await supabase
+    const { data: conversation, error: convError } = await service
       .from("conversations")
       .insert({
         type: type || (participant_ids.length > 2 ? "group" : "direct"),
@@ -203,7 +206,7 @@ export async function POST(request: NextRequest) {
       user_id: uid,
     }));
 
-    await supabase.from("conversation_participants").insert(participantInserts);
+    await service.from("conversation_participants").insert(participantInserts);
 
     return NextResponse.json({ conversation }, { status: 201 });
   }
@@ -216,7 +219,7 @@ export async function POST(request: NextRequest) {
   const { conversation_id, content, message_type, attachment_url, attachment_name } = body;
 
   // Verify conversation exists
-  const { data: conv } = await supabase
+  const { data: conv } = await service
     .from("conversations")
     .select("id")
     .eq("id", conversation_id)
@@ -230,7 +233,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify sender is a participant in this conversation
-  const { data: senderParticipant } = await supabase
+  const { data: senderParticipant } = await service
     .from("conversation_participants")
     .select("id")
     .eq("conversation_id", conversation_id)
@@ -244,7 +247,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data: message, error: msgError } = await supabase
+  const { data: message, error: msgError } = await service
     .from("messages")
     .insert({
       conversation_id,
@@ -263,7 +266,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Update conversation updated_at
-  await supabase
+  await service
     .from("conversations")
     .update({ updated_at: new Date().toISOString() })
     .eq("id", conversation_id);
@@ -294,7 +297,8 @@ export async function PATCH(request: NextRequest) {
   }
 
   // Look up profile ID from users table
-  const { data: patchProfile } = await supabase
+  const service = createServiceClient();
+  const { data: patchProfile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -308,13 +312,13 @@ export async function PATCH(request: NextRequest) {
   const now = new Date().toISOString();
 
   // Update last_read_at for the current user's participant record
-  await supabase
+  await service
     .from("conversation_participants")
     .update({ last_read_at: now })
     .eq("conversation_id", conversation_id)
     .eq("user_id", currentUserId);
 
-  const { data: conversation } = await supabase
+  const { data: conversation } = await service
     .from("conversations")
     .select("*")
     .eq("id", conversation_id)

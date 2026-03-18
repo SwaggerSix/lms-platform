@@ -11,7 +11,7 @@ export async function GET() {
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("scheduled_reports")
     .select("*")
     .order("created_at", { ascending: false });
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("scheduled_reports")
     .insert({
       name: body.name,
@@ -92,7 +92,7 @@ export async function PATCH(request: NextRequest) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("scheduled_reports")
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Schedule ID is required" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await service
     .from("scheduled_reports")
     .delete()
     .eq("id", id);

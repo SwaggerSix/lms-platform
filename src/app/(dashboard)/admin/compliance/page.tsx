@@ -43,7 +43,7 @@ export default async function CompliancePage() {
   if (!user) redirect('/login');
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const { data: dbUser } = await service
     .from('users')
     .select('id, role')
     .eq('auth_id', user.id)
@@ -52,7 +52,7 @@ export default async function CompliancePage() {
   if (!dbUser) redirect('/login');
 
   // Fetch compliance requirements with linked course info
-  const { data: reqRows } = await supabase
+  const { data: reqRows } = await service
     .from('compliance_requirements')
     .select('*, course:courses(id, title)')
     .order('created_at', { ascending: false });
@@ -79,7 +79,7 @@ export default async function CompliancePage() {
 
     if (courseId) {
       // Get users who should be enrolled (based on applicable roles) and their enrollment status
-      const { data: enrollmentRows } = await supabase
+      const { data: enrollmentRows } = await service
         .from('enrollments')
         .select('*, user:users(id, first_name, last_name, organization:organizations(name))')
         .eq('course_id', courseId)

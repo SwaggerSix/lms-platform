@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { checkAndAwardBadges, awardPoints } from "@/lib/gamification/awards";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
@@ -11,7 +12,8 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  const service = createServiceClient();
+  const { data: profile } = await service
     .from("users")
     .select("id")
     .eq("auth_id", authUser.user.id)
@@ -34,7 +36,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   // Verify the enrollment belongs to this user
-  const { data: enrollment } = await supabase
+  const { data: enrollment } = await service
     .from("enrollments")
     .select("id, user_id, course_id, status, time_spent")
     .eq("id", enrollment_id)
@@ -47,7 +49,7 @@ export async function PATCH(request: NextRequest) {
   // Update time_spent on enrollment if requested
   if (add_time_spent && add_time_spent > 0) {
     const newTimeSpent = (enrollment.time_spent ?? 0) + add_time_spent;
-    await supabase
+    await service
       .from("enrollments")
       .update({ time_spent: newTimeSpent })
       .eq("id", enrollment_id);
@@ -67,7 +69,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Upsert: insert or update lesson_progress
-    const { error } = await supabase
+    const { error } = await service
       .from("lesson_progress")
       .upsert(progressData, {
         onConflict: "enrollment_id,lesson_id",
@@ -75,7 +77,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       // If upsert with onConflict fails, try a select-then-update approach
-      const { data: existing } = await supabase
+      const { data: existing } = await service
         .from("lesson_progress")
         .select("id, status")
         .eq("enrollment_id", enrollment_id)
@@ -91,7 +93,7 @@ export async function PATCH(request: NextRequest) {
         if (status === "completed") {
           updateData.completed_at = new Date().toISOString();
         }
-        const { error: updateError } = await supabase
+        const { error: updateError } = await service
           .from("lesson_progress")
           .update(updateData)
           .eq("id", existing.id);
@@ -102,7 +104,7 @@ export async function PATCH(request: NextRequest) {
         }
       } else {
         // Insert fresh
-        const { error: insertError } = await supabase
+        const { error: insertError } = await service
           .from("lesson_progress")
           .insert(progressData);
 
@@ -139,7 +141,7 @@ export async function PATCH(request: NextRequest) {
     // ---- Check if all lessons are now completed (course completion flow) ----
     if (enrollment && enrollment.status !== "completed") {
       // Count total lessons vs completed lessons for this course
-      const { data: modules } = await supabase
+      const { data: modules } = await service
         .from("modules")
         .select("id")
         .eq("course_id", enrollment.course_id);
@@ -147,12 +149,12 @@ export async function PATCH(request: NextRequest) {
       const moduleIds = (modules || []).map((m: { id: string }) => m.id);
 
       if (moduleIds.length > 0) {
-        const { count: totalLessons } = await supabase
+        const { count: totalLessons } = await service
           .from("lessons")
           .select("id", { count: "exact", head: true })
           .in("module_id", moduleIds);
 
-        const { count: completedLessons } = await supabase
+        const { count: completedLessons } = await service
           .from("lesson_progress")
           .select("id", { count: "exact", head: true })
           .eq("enrollment_id", enrollment_id)
@@ -162,7 +164,7 @@ export async function PATCH(request: NextRequest) {
         if (totalLessons && completedLessons && completedLessons >= totalLessons) {
           courseCompleted = true;
 
-          await supabase
+          await service
             .from("enrollments")
             .update({
               status: "completed",
@@ -172,7 +174,7 @@ export async function PATCH(request: NextRequest) {
             .eq("id", enrollment_id);
 
           // Check if course has an associated certification and create user_certification
-          const { data: certification } = await supabase
+          const { data: certification } = await service
             .from("certifications")
             .select("id")
             .eq("course_id", enrollment.course_id)
@@ -181,7 +183,7 @@ export async function PATCH(request: NextRequest) {
 
           if (certification) {
             try {
-              await supabase
+              await service
                 .from("user_certifications")
                 .insert({
                   user_id: profile.id,

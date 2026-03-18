@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import OrganizationsClient from "./organizations-client";
 import type { OrgNode } from "./organizations-client";
@@ -19,7 +20,8 @@ export default async function OrganizationsPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role")
     .eq("auth_id", user.id)
@@ -30,13 +32,13 @@ export default async function OrganizationsPage() {
   }
 
   // Fetch all organizations
-  const { data: orgsRaw } = await supabase
+  const { data: orgsRaw } = await service
     .from("organizations")
     .select("id, name, parent_id, type, metadata, created_at, updated_at")
     .order("name", { ascending: true });
 
   // Fetch user counts per organization
-  const { data: userCountsRaw } = await supabase
+  const { data: userCountsRaw } = await service
     .from("users")
     .select("organization_id");
 

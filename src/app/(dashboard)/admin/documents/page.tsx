@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import DocumentsClient from "./documents-client";
 import type {
   DocumentWithUploader,
@@ -19,7 +20,8 @@ export default async function AdminDocumentsPage() {
     redirect("/login");
   }
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, role, organization_id")
     .eq("auth_id", user.id)
@@ -30,7 +32,7 @@ export default async function AdminDocumentsPage() {
   }
 
   // Fetch folders with document counts
-  const { data: folderRows } = await supabase
+  const { data: folderRows } = await service
     .from("document_folders")
     .select("*")
     .order("sort_order", { ascending: true });
@@ -50,7 +52,7 @@ export default async function AdminDocumentsPage() {
   }));
 
   // Fetch documents with uploader join
-  const { data: docRows } = await supabase
+  const { data: docRows } = await service
     .from("documents")
     .select("*, uploader:users!uploaded_by(id, first_name, last_name, email), folder:document_folders!folder_id(id, name)")
     .order("created_at", { ascending: false });
@@ -92,7 +94,7 @@ export default async function AdminDocumentsPage() {
   }
 
   // Fetch acknowledgments with user info
-  const { data: ackRows } = await supabase
+  const { data: ackRows } = await service
     .from("document_acknowledgments")
     .select("*, user:users!user_id(id, first_name, last_name, email)")
     .order("acknowledged_at", { ascending: false });

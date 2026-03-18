@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import AssignmentsClient from "./assignments-client";
 import type { Assignment, Course, TeamMemberOption } from "./assignments-client";
 import { formatDuration } from "@/utils/format";
@@ -76,7 +77,8 @@ export default async function AssignmentsPage() {
   }
 
   // Look up the user in the users table via auth_id
-  const { data: currentUser } = await supabase
+  const service = createServiceClient();
+  const { data: currentUser } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("auth_id", user.id)
@@ -87,7 +89,7 @@ export default async function AssignmentsPage() {
   }
 
   // Fetch team members (users where manager_id = current user)
-  const { data: teamMembersData } = await supabase
+  const { data: teamMembersData } = await service
     .from("users")
     .select("id, first_name, last_name")
     .eq("manager_id", currentUser.id);
@@ -99,7 +101,7 @@ export default async function AssignmentsPage() {
   const userIdsToQuery =
     teamMemberIds.length > 0 ? teamMemberIds : ["__none__"];
 
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("enrollments")
     .select(
       "*, course:courses(id, title, estimated_duration, course_type, category:categories(name)), user:users!user_id(id, first_name, last_name)"
@@ -137,7 +139,7 @@ export default async function AssignmentsPage() {
   });
 
   // Fetch published courses for the assignment modal
-  const { data: coursesData } = await supabase
+  const { data: coursesData } = await service
     .from("courses")
     .select("id, title, estimated_duration, course_type, category:categories(name)")
     .eq("status", "published")

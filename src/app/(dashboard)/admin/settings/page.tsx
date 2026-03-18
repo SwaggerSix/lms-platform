@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import SettingsClient, { type SettingsData, type ApiKey, type NotificationType, type FeatureToggle } from "./settings-client";
 
 export const metadata: Metadata = {
@@ -59,7 +60,8 @@ export default async function SettingsPage() {
   }
 
   // Verify user exists in users table
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -70,7 +72,7 @@ export default async function SettingsPage() {
   }
 
   // Fetch all platform_settings rows
-  const { data: settingsRows } = await supabase
+  const { data: settingsRows } = await service
     .from("platform_settings")
     .select("key, value");
 

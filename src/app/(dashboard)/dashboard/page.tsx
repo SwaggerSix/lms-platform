@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import LearnerDashboardClient from "./dashboard-client";
 import type { LearnerDashboardData } from "./dashboard-client";
 
@@ -63,8 +64,9 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Get the user record from the users table
-  const { data: dbUser } = await supabase
+  // Use service client to bypass RLS (avoids infinite recursion in users policy)
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, first_name")
     .eq("auth_id", user.id)
@@ -83,27 +85,27 @@ export default async function DashboardPage() {
     spotlightResult,
   ] = await Promise.all([
     // Count courses in progress
-    supabase
+    service
       .from("enrollments")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "in_progress"),
 
     // Count completed courses
-    supabase
+    service
       .from("enrollments")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "completed"),
 
     // Count certificates earned
-    supabase
+    service
       .from("user_certifications")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId),
 
     // Fetch in-progress enrollments with course data
-    supabase
+    service
       .from("enrollments")
       .select(`
         id,
@@ -120,7 +122,7 @@ export default async function DashboardPage() {
       .limit(3),
 
     // Fetch upcoming deadlines
-    supabase
+    service
       .from("enrollments")
       .select(`
         id,
@@ -137,7 +139,7 @@ export default async function DashboardPage() {
       .limit(4),
 
     // Fetch spotlight courses (most recent published)
-    supabase
+    service
       .from("courses")
       .select(`
         id,

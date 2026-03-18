@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email mismatch" }, { status: 403 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("users")
       .upsert(
         {

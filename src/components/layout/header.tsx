@@ -16,11 +16,9 @@ import {
 } from "lucide-react";
 import { useRealtimeSubscription } from "@/hooks/use-realtime";
 import { useNotificationStore } from "@/stores/notification-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
-
-// Placeholder user id – replace with real auth context when available
-const CURRENT_USER_ID = "current-user";
 
 function relativeTime(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -62,6 +60,17 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   // --- Supabase client (stable across renders) ---
   const supabase = useMemo(() => createClient(), []);
 
+  // --- Auth store ---
+  const authUser = useAuthStore((s) => s.user);
+  const userId = authUser?.id ?? "";
+  const userInitials = authUser
+    ? `${authUser.first_name[0]}${authUser.last_name[0]}`
+    : "?";
+  const userFullName = authUser
+    ? `${authUser.first_name} ${authUser.last_name}`
+    : "Loading...";
+  const userEmail = authUser?.email ?? "";
+
   // --- Notification store ---
   const {
     notifications,
@@ -69,21 +78,21 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     fetchNotifications,
   } = useNotificationStore();
 
-  // Fetch notifications on mount
+  // Fetch notifications on mount when user is available
   useEffect(() => {
-    fetchNotifications(supabase, CURRENT_USER_ID);
-  }, [supabase, fetchNotifications]);
+    if (userId) {
+      fetchNotifications();
+    }
+  }, [fetchNotifications, userId]);
 
   // Subscribe to new notifications in real-time
   useRealtimeSubscription(supabase, {
     table: "notifications",
     event: "INSERT",
-    filter: `user_id=eq.${CURRENT_USER_ID}`,
+    filter: userId ? `user_id=eq.${userId}` : undefined,
     onData: (payload) => {
       const newNotif = payload.new as unknown as Notification;
-      // Only care about in-app notifications
       if (newNotif.channel !== "in_app") return;
-      // Prepend to store and bump unread count
       useNotificationStore.setState((state) => ({
         notifications: [newNotif, ...state.notifications],
         unreadCount: state.unreadCount + (newNotif.is_read ? 0 : 1),
@@ -237,8 +246,10 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 </h3>
                 <button
                   onClick={() => {
-                    const { markAllAsRead } = useNotificationStore.getState();
-                    markAllAsRead(supabase, CURRENT_USER_ID);
+                    if (userId) {
+                      const { markAllAsRead } = useNotificationStore.getState();
+                      markAllAsRead();
+                    }
                   }}
                   className="text-xs font-medium text-indigo-600 hover:text-indigo-700 focus:outline-none focus:underline"
                   role="menuitem"
@@ -302,7 +313,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
               aria-hidden="true"
             >
-              JD
+              {userInitials}
             </div>
           </button>
 
@@ -313,8 +324,8 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               aria-label="User menu"
             >
               <div className="border-b border-gray-100 px-4 py-3">
-                <p className="text-sm font-medium text-gray-900">John Doe</p>
-                <p className="text-xs text-gray-500">john@company.com</p>
+                <p className="text-sm font-medium text-gray-900">{userFullName}</p>
+                <p className="text-xs text-gray-500">{userEmail}</p>
               </div>
               <Link
                 href="/profile"

@@ -19,7 +19,7 @@ export async function PATCH(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
   );
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("users")
     .update(sanitized)
     .eq("id", id)
@@ -43,7 +43,7 @@ export async function DELETE(
   const supabase = await createClient();
   const { id } = await params;
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("users")
     .update({ status: "inactive", deactivated_at: new Date().toISOString() })
     .eq("id", id)

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -52,7 +53,13 @@ export async function middleware(request: NextRequest) {
 
   // Role-based route protection for authenticated users
   if (user && (pathname.startsWith("/admin") || pathname.startsWith("/manager"))) {
-    const { data: profile } = await supabase
+    // Use service client to bypass RLS (avoids infinite recursion in users policy)
+    const serviceClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: profile } = await serviceClient
       .from("users")
       .select("role")
       .eq("auth_id", user.id)

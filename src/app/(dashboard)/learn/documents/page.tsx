@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { Document, DocumentFolder } from "@/types/database";
 import DocumentsClient from "./documents-client";
 import type { DocumentWithAcknowledgment, FolderWithMeta } from "./documents-client";
@@ -16,7 +17,8 @@ export default async function LearnerDocumentsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -24,13 +26,13 @@ export default async function LearnerDocumentsPage() {
   if (!dbUser) redirect("/login");
 
   // Fetch folders ordered by sort_order
-  const { data: foldersData } = await supabase
+  const { data: foldersData } = await service
     .from("document_folders")
     .select("*")
     .order("sort_order", { ascending: true });
 
   // Fetch all documents ordered by most recently updated
-  const { data: documentsData } = await supabase
+  const { data: documentsData } = await service
     .from("documents")
     .select("*")
     .order("updated_at", { ascending: false });

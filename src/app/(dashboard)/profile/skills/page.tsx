@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import SkillsClient from "./skills-client";
 import type { SkillsData, SkillCategory, SkillGap, RadarCategory } from "./skills-client";
@@ -19,7 +20,8 @@ export default async function SkillsPage() {
   }
 
   // Fetch user
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id, job_title")
     .eq("auth_id", user.id)
@@ -32,7 +34,7 @@ export default async function SkillsPage() {
   const userData = dbUser as any;
 
   // Fetch user_skills with skill details (name, category)
-  const { data: userSkillsRaw } = await supabase
+  const { data: userSkillsRaw } = await service
     .from("user_skills")
     .select(`
       proficiency_level,

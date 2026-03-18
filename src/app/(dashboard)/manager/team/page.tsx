@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import TeamClient, { type TeamMember } from "./team-client";
 
 export const metadata: Metadata = {
@@ -17,7 +18,8 @@ export default async function TeamPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: dbUser } = await supabase
+  const service = createServiceClient();
+  const { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
@@ -25,7 +27,7 @@ export default async function TeamPage() {
   if (!dbUser) redirect("/login");
 
   // Fetch users managed by the current user
-  const { data: users } = await supabase
+  const { data: users } = await service
     .from("users")
     .select("*, organization:organizations(name)")
     .eq("manager_id", dbUser.id)
@@ -34,7 +36,7 @@ export default async function TeamPage() {
   const userIds = (users ?? []).map((u: any) => u.id);
 
   // Fetch enrollment counts for all these users
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await service
     .from("enrollments")
     .select("user_id, status")
     .in("user_id", userIds.length > 0 ? userIds : ["__none__"]);
