@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function GET(
   request: NextRequest,
@@ -7,6 +8,7 @@ export async function GET(
 ) {
   const { slug } = await params;
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const { data, error } = await service
     .from("courses")

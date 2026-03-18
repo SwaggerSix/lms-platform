@@ -2,9 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createOrgSchema } from "@/lib/validations";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function GET() {
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -25,6 +27,7 @@ export async function POST(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
   const validation = validateBody(createOrgSchema, body);
   if (!validation.success) {
@@ -55,6 +58,7 @@ export async function PATCH(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
   const { id, ...updates } = body;
 
@@ -87,6 +91,7 @@ export async function DELETE(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 

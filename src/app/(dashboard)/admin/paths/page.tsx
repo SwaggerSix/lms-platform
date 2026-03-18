@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PathsClient, { type LearningPath, type PathCourse } from './paths-client';
+import { createServiceClient } from "@/lib/supabase/service";
 
 const courseTypeMap: Record<string, string> = {
   self_paced: 'Self-Paced',
@@ -10,6 +11,7 @@ const courseTypeMap: Record<string, string> = {
 
 export default async function PathsPage() {
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const {
     data: { user },

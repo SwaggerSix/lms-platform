@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import AssessmentsClient, { type Assessment, type Question, type QuestionType } from './assessments-client';
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const metadata: Metadata = {
   title: "Assessments | LMS Platform",
@@ -21,6 +22,7 @@ const questionTypeMap: Record<string, QuestionType> = {
 
 export default async function AssessmentsPage() {
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');

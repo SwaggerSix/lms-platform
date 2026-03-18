@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import ComplianceClient from './compliance-client';
 import type { ComplianceRequirement, ComplianceUserStatus, ComplianceOverviewStat } from './compliance-client';
+import { createServiceClient } from "@/lib/supabase/service";
 
 function formatFrequency(months: number | null): string {
   if (!months) return 'One-time';
@@ -37,6 +38,7 @@ function deriveUserComplianceStatus(
 
 export default async function CompliancePage() {
   const supabase = await createClient();
+  const service = createServiceClient();
 
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function PATCH(
   request: NextRequest,
@@ -10,6 +11,7 @@ export async function PATCH(
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
   const { id } = await params;
 
@@ -41,6 +43,7 @@ export async function DELETE(
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const { id } = await params;
 
   const { data, error } = await service

@@ -10,6 +10,7 @@ import type { ILTSessionStatus } from "@/types/database";
  */
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
+  const service = createServiceClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
+  const service = createServiceClient();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -122,6 +124,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
   const { session_id, action } = body;
 
@@ -138,7 +141,6 @@ export async function PATCH(request: NextRequest) {
     }
 
     // IDOR fix: always use authenticated user's profile, never from body
-    const service = createServiceClient();
     const { data: profile } = await service
       .from("users")
       .select("id")
@@ -298,6 +300,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
+  const service = createServiceClient();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();

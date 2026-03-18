@@ -1,12 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) {

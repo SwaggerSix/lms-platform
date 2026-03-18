@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
 
     // Validate auth_id matches a real Supabase auth user
     const supabase = createServiceClient();
+    const service = createServiceClient();
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(auth_id);
     if (authError || !authUser?.user) {
       return NextResponse.json({ error: "Invalid auth user" }, { status: 403 });

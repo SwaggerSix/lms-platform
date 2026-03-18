@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/sender";
+import { createServiceClient } from "@/lib/supabase/service";
 
 // Vercel Cron: runs every hour
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
   // Find reports due to run
   const now = new Date().toISOString();
@@ -65,6 +67,7 @@ export async function GET(request: NextRequest) {
 }
 
 async function generateReport(supabase: any, report: any) {
+  const service = createServiceClient();
   const { report_type } = report;
 
   switch (report_type) {

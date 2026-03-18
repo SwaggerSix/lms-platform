@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import CertificationsClient, { type CertificationItem } from './certifications-client';
+import { createServiceClient } from "@/lib/supabase/service";
 
 const GRADIENTS = [
   'from-green-500 to-emerald-600',
@@ -15,6 +16,7 @@ const GRADIENTS = [
 
 export default async function CertificationsPage() {
   const supabase = await createClient();
+  const service = createServiceClient();
 
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();

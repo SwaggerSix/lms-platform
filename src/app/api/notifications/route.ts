@@ -42,6 +42,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
+  const service = createServiceClient();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
 
   // Mark all read (existing behavior)
@@ -151,7 +153,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const service = createServiceClient();
     const { data: profile } = await service
       .from("users")
       .select("id")
@@ -176,8 +177,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const service2 = createServiceClient();
-    const { data: notifProfile } = await service2
+    const { data: notifProfile } = await service
       .from("users")
       .select("id")
       .eq("auth_id", authUser.user.id)
@@ -229,6 +229,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
+  const service = createServiceClient();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();

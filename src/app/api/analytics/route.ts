@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const { searchParams } = new URL(request.url);
 
   const metric = searchParams.get("metric");

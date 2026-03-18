@@ -3,9 +3,11 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createCourseSchema, updateCourseSchema } from "@/lib/validations";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
+  const service = createServiceClient();
   const { searchParams } = new URL(request.url);
 
   const status = searchParams.get("status") || "published";
@@ -52,6 +54,7 @@ export async function POST(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   let body;
   try {
     body = await request.json();
@@ -98,6 +101,7 @@ export async function PATCH(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
   let body;
   try {
@@ -150,6 +154,7 @@ export async function DELETE(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
+import { createServiceClient } from "@/lib/supabase/service";
 
 /**
  * GET /api/scheduled-reports
@@ -10,6 +11,7 @@ export async function GET() {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
 
   const { data, error } = await service
     .from("scheduled_reports")
@@ -39,6 +41,7 @@ export async function POST(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
 
   const { data, error } = await service
@@ -79,6 +82,7 @@ export async function PATCH(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const body = await request.json();
 
   if (!body.id) {
@@ -119,6 +123,7 @@ export async function DELETE(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
+  const service = createServiceClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 

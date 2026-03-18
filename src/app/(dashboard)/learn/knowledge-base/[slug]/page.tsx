@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ArticleDetailClient from "./article-detail-client";
 import type { ArticleData, RelatedArticle } from "./article-detail-client";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export default async function KBArticlePage({
   params,
@@ -10,6 +11,7 @@ export default async function KBArticlePage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const service = createServiceClient();
 
   // Fetch the article by slug with category and author joins
   const { data: rawArticle } = await service
