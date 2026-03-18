@@ -63,21 +63,32 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    if (!body.course_id || !body.learner_id) {
+    if (!body.course_id) {
       return NextResponse.json(
-        { error: "course_id and learner_id are required" },
+        { error: "course_id is required" },
         { status: 400 }
       );
     }
     const service = createServiceClient();
+
+    // Derive learner_id from authenticated user — don't trust client input
+    const { data: profile } = await service
+      .from("users")
+      .select("id")
+      .eq("auth_id", user.id)
+      .single();
+
+    if (!profile) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     const { data, error } = await service
       .from("enrollment_approvals")
       .insert({
         enrollment_id: body.enrollment_id || null,
         course_id: body.course_id,
-        learner_id: body.learner_id,
-        approver_id: body.approver_id || null,
+        learner_id: profile.id,
+        approver_id: null,
         status: "pending",
         reason: body.reason || null,
         notes: body.notes || null,
@@ -86,7 +97,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("Approvals API error:", error.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     return NextResponse.json({ data }, { status: 201 });
@@ -167,7 +179,8 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("Approvals API error:", error.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     // When approved, create the actual enrollment and notify the user

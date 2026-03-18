@@ -39,7 +39,11 @@ export async function dispatchWebhook(event: WebhookEvent, payload: Record<strin
     // Check if this event type is enabled
     if (config.selectedWebhookEvents && !config.selectedWebhookEvents.includes(event)) return;
 
-    const secret = config.webhookSecret || process.env.WEBHOOK_SECRET || "default-webhook-secret";
+    const secret = config.webhookSecret || process.env.WEBHOOK_SECRET;
+    if (!secret) {
+      console.error("Webhook secret not configured — skipping dispatch");
+      return;
+    }
 
     // Fire the webhook (non-blocking)
     const webhookPayload = {

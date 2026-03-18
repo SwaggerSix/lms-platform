@@ -68,6 +68,13 @@ export async function POST(request: NextRequest) {
     }
     const service = createServiceClient();
 
+    // Derive uploaded_by from authenticated user's profile, not request body
+    const { data: profile } = await service
+      .from("users")
+      .select("id, organization_id")
+      .eq("auth_id", user!.id)
+      .single();
+
     const { data, error } = await service
       .from("documents")
       .insert({
@@ -81,13 +88,13 @@ export async function POST(request: NextRequest) {
         mime_type: body.mime_type ?? null,
         version: 1,
         tags: body.tags ?? [],
-        organization_id: body.organization_id ?? null,
+        organization_id: profile?.organization_id ?? null,
         visibility: body.visibility ?? "all",
         is_policy: body.is_policy ?? false,
         effective_date: body.effective_date ?? null,
         expiry_date: body.expiry_date ?? null,
         acknowledgment_required: body.acknowledgment_required ?? false,
-        uploaded_by: user?.id ?? null,
+        uploaded_by: profile?.id ?? null,
       })
       .select()
       .single();

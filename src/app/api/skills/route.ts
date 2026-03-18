@@ -80,9 +80,15 @@ export async function PATCH(request: NextRequest) {
 
   const supabase = await createClient();
   const body = await request.json();
-  const { id, ...updates } = body;
+  const { id } = body;
 
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  const allowedFields = ["name", "category", "description"] as const;
+  const updates: Record<string, unknown> = {};
+  for (const field of allowedFields) {
+    if (body[field] !== undefined) updates[field] = body[field];
+  }
 
   const { data, error } = await service
     .from("skills")

@@ -69,18 +69,13 @@ export interface PlayerProps {
 }
 
 function sanitizeHTML(html: string): string {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  // Remove script tags and event handlers
-  div.querySelectorAll("script, iframe, object, embed, form").forEach(el => el.remove());
-  div.querySelectorAll("*").forEach(el => {
-    for (const attr of Array.from(el.attributes)) {
-      if (attr.name.startsWith("on") || attr.value.startsWith("javascript:")) {
-        el.removeAttribute(attr.name);
-      }
-    }
+  // Use DOMPurify for robust XSS protection
+  const DOMPurify = require("dompurify");
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["h1","h2","h3","h4","h5","h6","p","br","hr","ul","ol","li","a","strong","em","b","i","u","s","blockquote","pre","code","img","table","thead","tbody","tr","th","td","div","span","figure","figcaption","video","source","audio"],
+    ALLOWED_ATTR: ["href","src","alt","title","class","id","target","rel","width","height","controls","type"],
+    ALLOW_DATA_ATTR: false,
   });
-  return div.innerHTML;
 }
 
 const lessonIcons = {
