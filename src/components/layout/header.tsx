@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useRealtimeSubscription } from "@/hooks/use-realtime";
 import { useNotificationStore } from "@/stores/notification-store";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
 
@@ -61,7 +61,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   const supabase = useMemo(() => createClient(), []);
 
   // --- Auth store ---
-  const authUser = useAuthStore((s) => s.user);
+  const { user: authUser } = useAuth();
   const userId = authUser?.id ?? "";
   const userInitials = authUser
     ? `${authUser.first_name[0]}${authUser.last_name[0]}`

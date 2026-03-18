@@ -1,40 +1,73 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useAuthStore } from "@/stores/auth-store";
+import type { User } from "@/types/database";
+
+interface AuthContextValue {
+  user: User | null;
+  isLoading: boolean;
+  fetchProfile: () => Promise<void>;
+  clearUser: () => void;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return ctx;
+}
 
 /**
- * AuthProvider listens for Supabase auth state changes and hydrates
- * the auth store with the current user's profile from the `users` table.
- * Place inside the dashboard layout so the user is available everywhere.
+ * AuthProvider hydrates auth state via /api/auth/me (server-side cookies)
+ * and exposes it through React Context — avoiding Zustand module
+ * duplication issues with Turbopack.
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => createClient(), []);
-  const fetchProfile = useAuthStore((s) => s.fetchProfile);
-  const clearUser = useAuthStore((s) => s.clearUser);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
+        console.error("Failed to fetch user profile:", res.status);
+        setUser(null);
+        return;
+      }
+      const data = await res.json();
+      setUser(data as User);
+    } catch (err) {
+      console.error("Unexpected error fetching profile:", err);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearUser = useCallback(() => setUser(null), []);
 
   useEffect(() => {
-    const hydrate = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        await fetchProfile();
-      } else {
-        clearUser();
-      }
-    };
-
-    hydrate();
+    fetchProfile();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
         await fetchProfile();
-      } else {
+      } else if (event === "SIGNED_OUT") {
         clearUser();
       }
     });
@@ -44,5 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [supabase, fetchProfile, clearUser]);
 
-  return <>{children}</>;
+  const value = useMemo(
+    () => ({ user, isLoading, fetchProfile, clearUser }),
+    [user, isLoading, fetchProfile, clearUser]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

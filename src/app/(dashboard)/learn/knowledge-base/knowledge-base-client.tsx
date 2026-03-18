@@ -114,7 +114,7 @@ function CategoryCard({ category, onClick }: { category: KBCategoryView; onClick
       </h3>
       <p className="mt-1 text-sm text-gray-500 line-clamp-2">{category.description}</p>
       <div className="mt-4 flex items-center gap-1 text-sm text-indigo-600">
-        <span>{category.articleCount} articles</span>
+        <span>{category.articleCount} {category.articleCount === 1 ? 'article' : 'articles'}</span>
         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </div>
     </button>

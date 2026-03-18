@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { Fragment, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
@@ -310,8 +310,8 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.map((assessment) => (
-              <>
-                <tr key={assessment.id} className="hover:bg-gray-50 transition-colors">
+              <Fragment key={assessment.id}>
+                <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4">
                     <button onClick={() => setExpandedId(expandedId === assessment.id ? null : assessment.id)} className="text-gray-400 hover:text-gray-600">
                       {expandedId === assessment.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -397,7 +397,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
             {filtered.length === 0 && (
               <tr>

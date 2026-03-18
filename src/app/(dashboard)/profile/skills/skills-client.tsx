@@ -10,7 +10,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { createClient } from "@/lib/supabase/client";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -83,27 +82,19 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
     setSubmitting(true);
     setSubmitError("");
     try {
-      const supabase = createClient();
-      // Look up the skill id by name
-      const { data: skillRow, error: skillErr } = await supabase
-        .from("skills")
-        .select("id")
-        .eq("name", assessSkill)
-        .single();
-      if (skillErr || !skillRow) throw new Error("Skill not found");
-
-      const { error } = await supabase.from("user_skills").upsert(
-        {
-          user_id: data.userId,
-          skill_id: skillRow.id,
+      const res = await fetch("/api/profile/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skill_name: assessSkill,
           proficiency_level: assessRating,
-          source: "Self Reported",
           notes: assessNotes || null,
-          assessed_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,skill_id" }
-      );
-      if (error) throw error;
+        }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to submit assessment.");
+      }
       setShowAssessModal(false);
       setAssessSkill("");
       setAssessRating(0);

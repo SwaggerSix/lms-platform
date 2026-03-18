@@ -43,7 +43,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     await fetch(`/api/notifications`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "mark_read", notification_id: notificationId }),
+      body: JSON.stringify({ id: notificationId }),
     }).catch(() => {});
   },
 
@@ -55,7 +55,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     await fetch(`/api/notifications`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "mark_all_read" }),
+      body: JSON.stringify({ mark_all_read: true }),
     }).catch(() => {});
   },
 }));

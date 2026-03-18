@@ -24,29 +24,39 @@ export default async function TranscriptPage() {
 
   // Fetch user profile from users table
   const service = createServiceClient();
-  const { data: profile } = await service
+  const { data: profile, error: profileError } = await service
     .from("users")
-    .select("id, first_name, last_name, email, job_title, hire_date, organization:organizations(name), manager:users!users_manager_id_fkey(first_name, last_name)")
+    .select("id, first_name, last_name, email, job_title, hire_date, manager_id, organization:organizations(name)")
     .eq("auth_id", authUser.id)
     .single();
 
-  if (!profile) {
+  if (!profile || profileError) {
+    console.error("Transcript profile fetch failed:", profileError?.message);
     redirect("/login");
   }
 
-  // Build transcript user info
+  // Fetch manager name separately to avoid self-join issues
+  let managerName = "N/A";
+  if (profile.manager_id) {
+    const { data: mgr } = await service
+      .from("users")
+      .select("first_name, last_name")
+      .eq("id", profile.manager_id)
+      .single();
+    if (mgr) {
+      managerName = `${mgr.first_name} ${mgr.last_name}`;
+    }
+  }
+
   const org = profile.organization as any;
-  const mgr = profile.manager as any;
   const orgName = Array.isArray(org) ? org[0]?.name : org?.name;
-  const mgrFirst = Array.isArray(mgr) ? mgr[0]?.first_name : mgr?.first_name;
-  const mgrLast = Array.isArray(mgr) ? mgr[0]?.last_name : mgr?.last_name;
 
   const transcriptUser: TranscriptUser = {
     name: `${profile.first_name} ${profile.last_name}`,
     employee_id: `EMP-${profile.id.slice(0, 8).toUpperCase()}`,
     department: orgName ?? "N/A",
     job_title: profile.job_title ?? "N/A",
-    manager: mgrFirst ? `${mgrFirst} ${mgrLast}` : "N/A",
+    manager: managerName,
     email: profile.email,
     hire_date: profile.hire_date ?? "",
   };

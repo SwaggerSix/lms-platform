@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import {
   GraduationCap,
@@ -126,7 +126,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const user = useAuthStore((s) => s.user);
+  const { user } = useAuth();
   const currentRole: Role = (user?.role as Role) ?? "learner";
 
 

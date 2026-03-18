@@ -115,16 +115,19 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const savePersonalInfo = async () => {
     setSaving("personal");
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("users")
-        .update({
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
           preferences: { ...getCurrentPreferences(), bio },
-        })
-        .eq("id", data.userId);
-      if (error) throw error;
+        }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to save personal info.");
+      }
       showToast("success", "Personal info saved.");
     } catch (err: any) {
       showToast("error", err.message || "Failed to save personal info.");
@@ -148,12 +151,15 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const saveNotifications = async () => {
     setSaving("notifications");
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("users")
-        .update({ preferences: getCurrentPreferences() })
-        .eq("id", data.userId);
-      if (error) throw error;
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: getCurrentPreferences() }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to save notifications.");
+      }
       showToast("success", "Notification preferences saved.");
     } catch (err: any) {
       showToast("error", err.message || "Failed to save notifications.");
@@ -204,12 +210,15 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const savePreferences = async () => {
     setSaving("preferences");
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("users")
-        .update({ preferences: getCurrentPreferences() })
-        .eq("id", data.userId);
-      if (error) throw error;
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: getCurrentPreferences() }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to save preferences.");
+      }
       showToast("success", "Preferences saved.");
     } catch (err: any) {
       showToast("error", err.message || "Failed to save preferences.");
