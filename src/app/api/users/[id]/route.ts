@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logAudit } from "@/lib/audit";
+import { processRulesForUser } from "@/lib/automation/rules-engine";
 
 export async function PATCH(
   request: NextRequest,
@@ -12,7 +14,12 @@ export async function PATCH(
 
   const supabase = await createClient();
   const service = createServiceClient();
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const { id } = await params;
 
   // Mass assignment fix: whitelist allowed fields
@@ -29,7 +36,28 @@ export async function PATCH(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Users API error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  logAudit({
+    userId: auth.user.id,
+    action: "updated",
+    entityType: "user",
+    entityId: id,
+    newValues: sanitized,
+  });
+
+  // Fire-and-forget: process automation rules for role/org changes
+  if (sanitized.role) {
+    processRulesForUser(id, "role_changed").catch((err) =>
+      console.error("Automation rule processing (role_changed) failed:", err)
+    );
+  }
+  if (sanitized.organization_id) {
+    processRulesForUser(id, "org_changed").catch((err) =>
+      console.error("Automation rule processing (org_changed) failed:", err)
+    );
   }
 
   return NextResponse.json(data);
@@ -57,12 +85,20 @@ export async function DELETE(
     if (error.code === "PGRST116") {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Users API error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   if (!data) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
+  logAudit({
+    userId: auth.user.id,
+    action: "deleted",
+    entityType: "user",
+    entityId: id,
+  });
 
   return NextResponse.json({ message: "User deactivated successfully" });
 }

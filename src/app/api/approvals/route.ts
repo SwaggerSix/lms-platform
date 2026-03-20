@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
   const { data, error, count } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Approvals GET error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -170,6 +171,7 @@ export async function PATCH(request: NextRequest) {
       .update({
         status: body.status,
         decided_at: new Date().toISOString(),
+        approver_id: auth.user.id,
         rejection_reason: body.status === "rejected" ? body.rejection_reason : null,
         notes: body.notes ?? null,
         updated_at: new Date().toISOString(),
@@ -192,11 +194,11 @@ export async function PATCH(request: NextRequest) {
         .single();
 
       if (approval) {
-        // Create the actual enrollment
+        // Create the actual enrollment (status must match check constraint: enrolled, in_progress, completed, failed, expired)
         await service.from("enrollments").insert({
           user_id: approval.learner_id,
           course_id: approval.course_id,
-          status: "not_started",
+          status: "enrolled",
           enrolled_at: new Date().toISOString(),
         });
 

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
+import { locales, localeNames, type Locale } from "@/i18n/config";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -139,6 +140,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const getCurrentPreferences = () => ({
     bio,
     language,
+    locale: language,
     timezone,
     theme,
     date_format: dateFormat,
@@ -210,15 +212,26 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const savePreferences = async () => {
     setSaving("preferences");
     try {
+      const prefs = getCurrentPreferences();
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: getCurrentPreferences() }),
+        body: JSON.stringify({ preferences: prefs }),
       });
       if (!res.ok) {
         const { error } = await res.json();
         throw new Error(error || "Failed to save preferences.");
       }
+
+      // Sync locale cookie when language changes
+      if (language !== data.language) {
+        document.cookie = `lms-locale=${language};path=/;max-age=${365 * 24 * 60 * 60};samesite=lax;secure`;
+        // Reload to apply new locale
+        showToast("success", "Preferences saved. Reloading...");
+        setTimeout(() => window.location.reload(), 500);
+        return;
+      }
+
       showToast("success", "Preferences saved.");
     } catch (err: any) {
       showToast("error", err.message || "Failed to save preferences.");
@@ -549,10 +562,11 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     onChange={(e) => setLanguage(e.target.value)}
                     className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
+                    {locales.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {localeNames[loc]}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

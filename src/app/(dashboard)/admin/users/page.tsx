@@ -36,12 +36,19 @@ export default async function UsersPage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin") redirect("/dashboard");
+  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
 
   const { data: rows, error } = await service
     .from('users')
     .select('*, organization:organizations(name)')
     .order('created_at', { ascending: false });
+
+  const { data: orgRows } = await service
+    .from('organizations')
+    .select('id, name')
+    .order('name');
+
+  const organizations = (orgRows ?? []).map((o: any) => ({ id: o.id, name: o.name }));
 
   const users: UserItem[] = (rows ?? []).map((row: any) => ({
     id: row.id,
@@ -49,11 +56,13 @@ export default async function UsersPage() {
     lastName: row.last_name ?? '',
     email: row.email ?? '',
     role: roleMap[row.role] ?? 'learner',
-    department: row.organization?.name ?? 'General',
+    department: row.organization?.name ?? 'Unassigned',
+    departmentId: row.organization_id ?? '',
+    jobTitle: row.job_title ?? '',
     status: statusMap[row.status] ?? 'inactive',
     lastActive: row.updated_at ?? '',
     avatar: `${(row.first_name ?? '?')[0]}${(row.last_name ?? '?')[0]}`.toUpperCase(),
   }));
 
-  return <UsersClient users={users} />;
+  return <UsersClient users={users} organizations={organizations} />;
 }

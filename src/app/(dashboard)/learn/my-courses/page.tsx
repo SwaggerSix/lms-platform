@@ -68,7 +68,7 @@ export default async function MyCoursesPage() {
   const courses: MyCourse[] = (enrollments ?? []).map((row: any, index: number) => {
     const course = row.course;
     return {
-      id: row.id,
+      id: row.course_id,
       slug: course?.slug ?? "",
       title: course?.title ?? "Untitled Course",
       instructor: "Instructor",

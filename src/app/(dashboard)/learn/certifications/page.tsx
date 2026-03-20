@@ -86,6 +86,7 @@ export default async function CertificationsPage() {
       expiryDate: expiresAt,
       status: deriveStatus(row.status, row.expires_at),
       credentialId,
+      verificationCode: row.verification_code ?? null,
     };
   });
 

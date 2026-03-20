@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createOrgSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 export async function GET() {
   const supabase = await createClient();

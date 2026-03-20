@@ -86,14 +86,19 @@ const exportCSV = (data: Record<string, unknown>[], filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const exportPDF = (data: Record<string, unknown>[], title: string) => {
   if (data.length === 0) return;
   const headers = Object.keys(data[0]);
-  const headerRow = headers.map(h => `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5;text-align:left">${h}</th>`).join("");
+  const headerRow = headers.map(h => `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5;text-align:left">${escapeHtml(String(h))}</th>`).join("");
   const bodyRows = data.map(row =>
-    `<tr>${Object.values(row).map(v => `<td style="border:1px solid #ddd;padding:8px">${String(v)}</td>`).join("")}</tr>`
+    `<tr>${Object.values(row).map(v => `<td style="border:1px solid #ddd;padding:8px">${escapeHtml(String(v))}</td>`).join("")}</tr>`
   ).join("");
-  const html = `<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:Arial,sans-serif;margin:20px}table{border-collapse:collapse;width:100%}h1{color:#333}</style></head><body><h1>${title}</h1><p>Generated on ${new Date().toLocaleDateString()}</p><table><thead><tr>${headerRow}</tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
+  const safeTitle = escapeHtml(String(title));
+  const html = `<!DOCTYPE html><html><head><title>${safeTitle}</title><style>body{font-family:Arial,sans-serif;margin:20px}table{border-collapse:collapse;width:100%}h1{color:#333}</style></head><body><h1>${safeTitle}</h1><p>Generated on ${new Date().toLocaleDateString()}</p><table><thead><tr>${headerRow}</tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
   const win = window.open("", "_blank");
   if (win) {
     win.document.write(html);
@@ -115,7 +120,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
   const [role, setRole] = useState("All");
   const [showPreview, setShowPreview] = useState(false);
   const [reportData, setReportData] = useState<ReportRow[]>(initialReportData);
-  const [loading, setLoading] = useState(false);
+  const [loadingReport, setLoadingReport] = useState<string | null>(null);
   const [activeReportName, setActiveReportName] = useState("");
 
   const getFilteredData = useCallback((): Record<string, unknown>[] => {
@@ -129,40 +134,58 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     });
   }, [reportData, selectedFields]);
 
-  const fetchReport = useCallback(async (templateName?: string) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        metric: "overview",
-      });
-      if (dateFrom) params.set("dateFrom", dateFrom);
-      if (dateTo) params.set("dateTo", dateTo);
-      if (department !== "All") params.set("department", department);
-      if (role !== "All") params.set("role", role);
-      if (templateName) params.set("template", templateName);
+  const templateToReportType: Record<string, string> = {
+    "Completion Report": "completion",
+    "Compliance Report": "compliance",
+    "Skills Gap Report": "skills_gap",
+    "Engagement Report": "engagement",
+    "Course Effectiveness": "course_effectiveness",
+    "Learner Progress": "learner_progress",
+  };
 
-      const response = await fetch(`/api/analytics?${params.toString()}`);
+  const fetchReport = useCallback(async (templateName?: string) => {
+    setLoadingReport(templateName || "__custom__");
+    try {
+      const reportType = templateName ? templateToReportType[templateName] || "completion" : "completion";
+
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report_type: reportType,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          department: department !== "All" ? department : undefined,
+          format: "json",
+        }),
+      });
       const data = await response.json();
 
-      if (response.ok && data) {
-        // If the API returns report rows, use them; otherwise keep the initial data
-        if (Array.isArray(data.rows)) {
-          setReportData(data.rows);
-        }
-        // Use the data we have (initial props or fetched)
+      if (response.ok && data?.rows) {
+        // Map API rows to ReportRow format
+        const mapped: ReportRow[] = data.rows.map((row: Record<string, any>) => ({
+          userName: row.user_name || row.name || row.course_title || "-",
+          department: row.department || "-",
+          course: row.course_title || row.course || row.skill_name || "-",
+          status: row.status || (row.compliance_rate != null ? `${row.compliance_rate}%` : "-"),
+          score: row.score ?? row.avg_score ?? row.proficiency_level ?? 0,
+          completionDate: row.completed_at ? new Date(row.completed_at).toISOString().split("T")[0] : row.assessed_at ? new Date(row.assessed_at).toISOString().split("T")[0] : "-",
+          timeSpent: row.time_spent ? `${Math.round(row.time_spent / 60)}h` : row.total_hours ? `${row.total_hours}h` : row.avg_time_spent ? `${Math.round(row.avg_time_spent / 60)}h` : "-",
+          certificate: row.status === "completed" ? "Yes" : "-",
+        }));
+        setReportData(mapped);
         setActiveReportName(templateName || "Custom Report");
         setShowPreview(true);
       } else {
-        // Fallback: show the initial data passed via props
+        // Fallback: show initial data
         setActiveReportName(templateName || "Custom Report");
         setShowPreview(true);
       }
     } catch {
-      // On network error, still show preview with available data
       setActiveReportName(templateName || "Custom Report");
       setShowPreview(true);
     } finally {
-      setLoading(false);
+      setLoadingReport(null);
     }
   }, [dateFrom, dateTo, department, role]);
 
@@ -216,8 +239,8 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
               </div>
               <h3 className="mt-3 font-semibold text-gray-900">{template.name}</h3>
               <p className="mt-1 text-sm text-gray-500">{template.description}</p>
-              <button onClick={() => fetchReport(template.name)} disabled={loading} className="mt-4 w-full rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50">
-                {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate"}
+              <button onClick={() => fetchReport(template.name)} disabled={loadingReport !== null} className="mt-4 w-full rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50">
+                {loadingReport === template.name ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate"}
               </button>
             </div>
           ))}
@@ -254,11 +277,12 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
               <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
               <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 <option value="All">All Departments</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Sales">Sales</option>
+                <option value="Executive">Executive</option>
                 <option value="HR">HR</option>
+                <option value="Operations">Operations</option>
                 <option value="Finance">Finance</option>
+                <option value="Training Delivery">Training Delivery</option>
+                <option value="Training Development">Training Development</option>
               </select>
             </div>
             <div>
@@ -270,8 +294,8 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
                 <option value="Admin">Admin</option>
               </select>
             </div>
-            <button onClick={() => fetchReport()} disabled={loading} className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50">
-              {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate Custom Report"}
+            <button onClick={() => fetchReport()} disabled={loadingReport !== null} className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              {loadingReport === "__custom__" ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate Custom Report"}
             </button>
           </div>
         </div>
@@ -304,31 +328,22 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">User Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Department</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Course</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Score</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Completion Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Time Spent</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Certificate</th>
+                  {reportFields.filter(f => selectedFields.size === 0 || selectedFields.has(f)).map((field) => (
+                    <th key={field} className={cn("px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-500", field === "Score" || field === "Certificate" ? "text-center" : "text-left")}>{field}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {reportData.map((row, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-3 text-sm font-medium text-gray-900">{row.userName}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600">{row.department}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600">{row.course}</td>
-                    <td className="px-6 py-3">
-                      <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", statusColor(row.status))}>{row.status}</span>
-                    </td>
-                    <td className="px-6 py-3 text-center text-sm font-medium text-gray-900">{row.score > 0 ? `${row.score}%` : "-"}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600">{row.completionDate}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600">{row.timeSpent}</td>
-                    <td className="px-6 py-3 text-center">
-                      {row.certificate === "Yes" ? <CheckCircle className="mx-auto h-4 w-4 text-green-500" /> : <span className="text-sm text-gray-500">-</span>}
-                    </td>
+                    {(selectedFields.size === 0 || selectedFields.has("User Name")) && <td className="px-6 py-3 text-sm font-medium text-gray-900">{row.userName}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Department")) && <td className="px-6 py-3 text-sm text-gray-600">{row.department}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Course")) && <td className="px-6 py-3 text-sm text-gray-600">{row.course}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Status")) && <td className="px-6 py-3"><span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", statusColor(row.status))}>{row.status}</span></td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Score")) && <td className="px-6 py-3 text-center text-sm font-medium text-gray-900">{row.score > 0 ? `${row.score}%` : "-"}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Completion Date")) && <td className="px-6 py-3 text-sm text-gray-600">{row.completionDate}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Time Spent")) && <td className="px-6 py-3 text-sm text-gray-600">{row.timeSpent}</td>}
+                    {(selectedFields.size === 0 || selectedFields.has("Certificate")) && <td className="px-6 py-3 text-center">{row.certificate === "Yes" ? <CheckCircle className="mx-auto h-4 w-4 text-green-500" /> : <span className="text-sm text-gray-500">-</span>}</td>}
                   </tr>
                 ))}
               </tbody>

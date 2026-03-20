@@ -214,7 +214,37 @@ export default function ComplianceClient({
             Track compliance requirements and team completion status
           </p>
         </div>
-        <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+        <button
+          onClick={() => {
+            const rows = requirements.flatMap((req) =>
+              req.members.map((member) => ({
+                Requirement: req.name,
+                Regulation: req.regulation,
+                Deadline: req.deadline,
+                Member: member.name,
+                Status: member.status,
+                Progress: `${member.progress}%`,
+                "Completed Date": member.completedDate || "",
+              }))
+            );
+            if (rows.length === 0) return;
+            const headers = Object.keys(rows[0]).join(",");
+            const csvRows = rows.map((row) =>
+              Object.values(row)
+                .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+                .join(",")
+            );
+            const csv = [headers, ...csvRows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `compliance-report-${new Date().toISOString().split("T")[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+        >
           <Download className="h-4 w-4" />
           Export Compliance Report
         </button>

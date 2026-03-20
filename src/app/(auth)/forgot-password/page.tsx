@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { GraduationCap, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -17,13 +16,15 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        setError(error.message);
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "An unexpected error occurred. Please try again.");
         return;
       }
 

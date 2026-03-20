@@ -22,6 +22,71 @@ function mapContentType(
   return map[contentType ?? ""] ?? "video";
 }
 
+/**
+ * Compute whether a module is available based on its drip settings.
+ */
+function computeModuleDripAvailability(
+  mod: any,
+  index: number,
+  sortedModules: any[],
+  enrolledAt: string | null,
+  completedModuleIds: Set<string>
+): { isAvailable: boolean; availableDate: string | null; dripType: string; dripMessage: string | null } {
+  const dripType = mod.drip_type || "immediate";
+  let isAvailable = true;
+  let availableDate: string | null = null;
+  let dripMessage: string | null = null;
+
+  switch (dripType) {
+    case "immediate":
+      break;
+
+    case "after_days": {
+      if (!enrolledAt) {
+        isAvailable = false;
+        dripMessage = `Available ${mod.drip_days || 0} days after enrollment`;
+        break;
+      }
+      const enrollDate = new Date(enrolledAt);
+      const unlockDate = new Date(enrollDate);
+      unlockDate.setDate(unlockDate.getDate() + (mod.drip_days || 0));
+      availableDate = unlockDate.toISOString();
+      isAvailable = new Date() >= unlockDate;
+      if (!isAvailable) {
+        dripMessage = `Available on ${unlockDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+      }
+      break;
+    }
+
+    case "on_date": {
+      if (mod.drip_date) {
+        const targetDate = new Date(mod.drip_date);
+        availableDate = targetDate.toISOString();
+        isAvailable = new Date() >= targetDate;
+        if (!isAvailable) {
+          dripMessage = `Available on ${targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+        }
+      }
+      break;
+    }
+
+    case "after_previous": {
+      if (index === 0) {
+        isAvailable = true;
+      } else {
+        const prevModule = sortedModules[index - 1];
+        isAvailable = completedModuleIds.has(prevModule.id);
+        if (!isAvailable) {
+          dripMessage = "Complete previous module first";
+        }
+      }
+      break;
+    }
+  }
+
+  return { isAvailable, availableDate, dripType, dripMessage };
+}
+
 export default async function CoursePlayerPage({
   params,
 }: {
@@ -51,11 +116,11 @@ export default async function CoursePlayerPage({
     redirect("/login");
   }
 
-  // Fetch the course with modules and lessons
+  // Fetch the course with modules and lessons (include drip fields)
   const { data: course } = await service
     .from("courses")
     .select(
-      "id, title, slug, description, course_type, estimated_duration, modules(id, title, description, sequence_order, lessons(id, title, content_type, content_url, content_data, duration, sequence_order, is_required))"
+      "id, title, slug, description, course_type, estimated_duration, modules(id, title, description, sequence_order, drip_type, drip_days, drip_date, lessons(id, title, content_type, content_url, content_data, duration, sequence_order, is_required))"
     )
     .eq("id", courseId)
     .single();
@@ -67,7 +132,7 @@ export default async function CoursePlayerPage({
   // Fetch the user's enrollment for this course
   const { data: enrollment } = await service
     .from("enrollments")
-    .select("id, status, time_spent")
+    .select("id, status, time_spent, enrolled_at")
     .eq("user_id", dbUser.id)
     .eq("course_id", courseId)
     .single();
@@ -98,12 +163,35 @@ export default async function CoursePlayerPage({
     (a: any, b: any) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0)
   );
 
+  // Determine completed modules for drip logic
+  const completedModuleIds = new Set<string>();
+  for (const mod of sortedModules) {
+    const moduleLessons = (mod.lessons ?? []) as any[];
+    if (
+      moduleLessons.length > 0 &&
+      moduleLessons.every((l: any) => progressMap[l.id] === "completed")
+    ) {
+      completedModuleIds.add(mod.id);
+    }
+  }
+
+  const enrolledAt = enrollment?.enrolled_at ?? null;
+
   // Determine the "current" lesson: first non-completed lesson, or first lesson
   let currentLessonId: string | null = null;
 
-  const playerModules: PlayerModule[] = sortedModules.map((mod: any) => {
+  const playerModules: PlayerModule[] = sortedModules.map((mod: any, modIndex: number) => {
     const sortedLessons = [...(mod.lessons ?? [])].sort(
       (a: any, b: any) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0)
+    );
+
+    // Compute drip availability for this module
+    const drip = computeModuleDripAvailability(
+      mod,
+      modIndex,
+      sortedModules,
+      enrolledAt,
+      completedModuleIds
     );
 
     const lessons: PlayerLesson[] = sortedLessons.map((lesson: any) => {
@@ -122,6 +210,11 @@ export default async function CoursePlayerPage({
         status = currentLessonId === lesson.id ? "current" : "locked";
       }
 
+      // If the module is drip-locked, force all lessons to locked
+      if (!drip.isAvailable && status !== "completed") {
+        status = "locked";
+      }
+
       // Extract content from content_data if available
       let content: string | undefined;
       if (lesson.content_data) {
@@ -130,7 +223,7 @@ export default async function CoursePlayerPage({
             typeof lesson.content_data === "string"
               ? JSON.parse(lesson.content_data)
               : lesson.content_data;
-          content = parsed.description || parsed.content || parsed.text;
+          content = parsed.html || parsed.content || parsed.text || parsed.description || parsed.transcript || parsed.instructions;
         } catch {
           // ignore parse errors
         }
@@ -153,10 +246,29 @@ export default async function CoursePlayerPage({
       id: mod.id,
       title: mod.title,
       lessons,
+      isAvailable: drip.isAvailable,
+      availableDate: drip.availableDate,
+      dripType: drip.dripType,
+      dripMessage: drip.dripMessage,
     };
   });
 
-  // If no lesson is marked as current yet, find first non-completed
+  // If no lesson is marked as current yet, find first non-completed in an available module
+  if (!currentLessonId) {
+    for (const mod of playerModules) {
+      if (!mod.isAvailable) continue;
+      for (const lesson of mod.lessons) {
+        if (lesson.status !== "completed") {
+          currentLessonId = lesson.id;
+          lesson.status = "current";
+          break;
+        }
+      }
+      if (currentLessonId) break;
+    }
+  }
+
+  // If still no current lesson, try any module (even locked ones may have completed lessons)
   if (!currentLessonId) {
     for (const mod of playerModules) {
       for (const lesson of mod.lessons) {

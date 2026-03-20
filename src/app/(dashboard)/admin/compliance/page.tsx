@@ -178,5 +178,14 @@ export default async function CompliancePage() {
     { label: 'Upcoming Expirations', value: String(totalUpcoming) },
   ];
 
-  return <ComplianceClient requirements={requirements} overviewStats={overviewStats} />;
+  // Fetch courses for the linked course dropdown
+  const { data: courseRows } = await service
+    .from('courses')
+    .select('id, title')
+    .eq('status', 'published')
+    .order('title');
+
+  const courses = (courseRows ?? []).map((c: any) => ({ id: c.id, title: c.title }));
+
+  return <ComplianceClient requirements={requirements} overviewStats={overviewStats} courses={courses} />;
 }

@@ -76,22 +76,80 @@ export default async function CourseCatalogPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const courses: CatalogCourse[] = (dbCourses ?? []).map((c, i) => ({
-    id: c.id,
-    slug: c.slug,
-    title: c.title,
-    description: c.description || c.short_description || "",
-    instructor: "Instructor",
-    difficulty: mapDifficulty(c.difficulty_level),
-    type: mapCourseType(c.course_type),
-    duration: c.estimated_duration || 60,
-    rating: 4.5 + (((i * 7) % 5) / 10),
-    reviewCount: 100 + ((i * 37) % 400),
-    enrolledCount: 500 + ((i * 137) % 5000),
-    category: mapCategory(c.category?.name ?? null),
-    gradient: GRADIENTS[i % GRADIENTS.length],
-    createdAt: c.created_at,
-  }));
+  // Fetch all prerequisites in one query
+  const courseIds = (dbCourses ?? []).map((c) => c.id);
+  const { data: allPrereqs } = courseIds.length > 0
+    ? await service
+        .from("course_prerequisites")
+        .select("course_id, prerequisite_course_id, requirement_type, min_score")
+        .in("course_id", courseIds)
+    : { data: [] };
+
+  // Fetch user's enrollments to check prerequisite status
+  const { data: userEnrollments } = await service
+    .from("enrollments")
+    .select("course_id, status, score")
+    .eq("user_id", dbUser.id);
+
+  const enrollmentMap = new Map(
+    (userEnrollments ?? []).map((e) => [e.course_id, e])
+  );
+
+  // Group prerequisites by course_id
+  const prereqsByCourse = new Map<string, typeof allPrereqs>();
+  for (const prereq of allPrereqs ?? []) {
+    const list = prereqsByCourse.get(prereq.course_id) || [];
+    list.push(prereq);
+    prereqsByCourse.set(prereq.course_id, list);
+  }
+
+  const courses: CatalogCourse[] = (dbCourses ?? []).map((c, i) => {
+    const coursePrereqs = prereqsByCourse.get(c.id) || [];
+    let hasUnmetPrerequisites = false;
+
+    for (const prereq of coursePrereqs) {
+      const enrollment = enrollmentMap.get(prereq.prerequisite_course_id);
+      if (prereq.requirement_type === "enrollment") {
+        if (!enrollment || enrollment.status === "dropped") {
+          hasUnmetPrerequisites = true;
+          break;
+        }
+      } else if (prereq.requirement_type === "completion") {
+        if (!enrollment || enrollment.status !== "completed") {
+          hasUnmetPrerequisites = true;
+          break;
+        }
+      } else if (prereq.requirement_type === "min_score") {
+        if (
+          !enrollment ||
+          enrollment.status !== "completed" ||
+          (enrollment.score ?? 0) < (prereq.min_score ?? 0)
+        ) {
+          hasUnmetPrerequisites = true;
+          break;
+        }
+      }
+    }
+
+    return {
+      id: c.id,
+      slug: c.slug,
+      title: c.title,
+      description: c.description || c.short_description || "",
+      instructor: "Instructor",
+      difficulty: mapDifficulty(c.difficulty_level),
+      type: mapCourseType(c.course_type),
+      duration: c.estimated_duration || 60,
+      rating: 4.5 + (((i * 7) % 5) / 10),
+      reviewCount: 100 + ((i * 37) % 400),
+      enrolledCount: 500 + ((i * 137) % 5000),
+      category: mapCategory(c.category?.name ?? null),
+      gradient: GRADIENTS[i % GRADIENTS.length],
+      createdAt: c.created_at,
+      hasUnmetPrerequisites,
+      requiresApproval: c.enrollment_type === "approval",
+    };
+  });
 
   return <CatalogClient courses={courses} />;
 }

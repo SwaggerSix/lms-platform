@@ -17,10 +17,13 @@ import {
   HelpCircle,
   ArrowLeft,
   Check,
+  Lock,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration, formatDate } from "@/utils/format";
 import { trackEvent } from "@/lib/analytics/track";
+import OfflineDownload from "@/components/pwa/offline-download";
 
 export interface Lesson {
   id: string;
@@ -81,9 +84,22 @@ export interface CourseData {
   relatedCourses: RelatedCourse[];
 }
 
+export interface Prerequisite {
+  id: string;
+  title: string;
+  slug: string;
+  requirement_type: string;
+  min_score: number | null;
+  met: boolean;
+}
+
 export interface CourseDetailClientProps {
   course: CourseData;
   initialEnrolled: boolean;
+  prerequisites: Prerequisite[];
+  allPrerequisitesMet: boolean;
+  requiresApproval?: boolean;
+  hasPendingApproval?: boolean;
 }
 
 const lessonIcons = {
@@ -125,10 +141,18 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
   );
 }
 
-export default function CourseDetailClient({ course, initialEnrolled }: CourseDetailClientProps) {
+export default function CourseDetailClient({
+  course,
+  initialEnrolled,
+  prerequisites,
+  allPrerequisitesMet,
+  requiresApproval = false,
+  hasPendingApproval = false,
+}: CourseDetailClientProps) {
   const [expandedModules, setExpandedModules] = useState<string[]>([course.modules[0]?.id || ""]);
   const [enrolled, setEnrolled] = useState(initialEnrolled);
   const [showEnrollSuccess, setShowEnrollSuccess] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(hasPendingApproval);
   const [enrolling, setEnrolling] = useState(false);
   const [enrollError, setEnrollError] = useState<string | null>(null);
 
@@ -153,8 +177,16 @@ export default function CourseDetailClient({ course, initialEnrolled }: CourseDe
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ course_id: course.id }),
       });
+      const data = await res.json();
+      if (res.status === 202) {
+        // Enrollment request submitted for approval
+        setPendingApproval(true);
+        setShowEnrollSuccess(true);
+        trackEvent("enrollment_requested", { course_id: course.id });
+        setTimeout(() => setShowEnrollSuccess(false), 4000);
+        return;
+      }
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Enrollment failed");
       }
       setEnrolled(true);
@@ -176,7 +208,9 @@ export default function CourseDetailClient({ course, initialEnrolled }: CourseDe
       {showEnrollSuccess && (
         <div className="fixed right-4 top-4 z-50 flex items-center gap-2 rounded-lg bg-green-600 px-5 py-3 text-white shadow-lg">
           <CheckCircle2 className="h-5 w-5" />
-          Successfully enrolled! Start learning now.
+          {pendingApproval && !enrolled
+            ? "Enrollment request submitted! You\u2019ll be notified when approved."
+            : "Successfully enrolled! Start learning now."}
         </div>
       )}
       {/* Error Toast */}
@@ -227,6 +261,58 @@ export default function CourseDetailClient({ course, initialEnrolled }: CourseDe
               <h2 className="text-xl font-semibold text-gray-900">About This Course</h2>
               <p className="mt-3 leading-relaxed text-gray-600">{course.fullDescription}</p>
             </section>
+
+            {/* Prerequisites */}
+            {prerequisites.length > 0 && (
+              <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-900">Prerequisites</h2>
+                {!allPrerequisitesMet && (
+                  <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                    <p className="text-sm text-amber-700">
+                      You must complete the following prerequisites before enrolling in this course.
+                    </p>
+                  </div>
+                )}
+                <ul className="mt-4 space-y-3">
+                  {prerequisites.map((prereq) => (
+                    <li key={prereq.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {prereq.met ? (
+                          <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
+                        ) : (
+                          <Lock className="h-5 w-5 shrink-0 text-gray-400" />
+                        )}
+                        <div>
+                          <a
+                            href={`/learn/catalog/${prereq.slug}`}
+                            className="text-sm font-medium text-gray-900 hover:text-indigo-600"
+                          >
+                            {prereq.title}
+                          </a>
+                          <p className="text-xs text-gray-500">
+                            {prereq.requirement_type === "completion" && "Must complete this course"}
+                            {prereq.requirement_type === "enrollment" && "Must be enrolled in this course"}
+                            {prereq.requirement_type === "min_score" &&
+                              `Must complete with score >= ${prereq.min_score}%`}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                          prereq.met
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        )}
+                      >
+                        {prereq.met ? "Completed" : "Required"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {/* Learning Outcomes */}
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -363,11 +449,45 @@ export default function CourseDetailClient({ course, initialEnrolled }: CourseDe
             <div className="sticky top-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               {enrolled ? (
                 <a
-                  href={`/learn/player/${course.slug}`}
+                  href={`/learn/player/${course.id}`}
                   className="block w-full rounded-lg bg-green-600 py-3 text-center text-sm font-semibold text-white hover:bg-green-700"
                 >
                   Continue Learning
                 </a>
+              ) : pendingApproval ? (
+                <div>
+                  <button
+                    disabled
+                    className="w-full rounded-lg bg-amber-500 py-3 text-sm font-semibold text-white cursor-not-allowed"
+                  >
+                    <Clock className="mr-1.5 inline h-4 w-4" />
+                    Pending Approval
+                  </button>
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    Your enrollment request is being reviewed by a manager.
+                  </p>
+                </div>
+              ) : !allPrerequisitesMet ? (
+                <div>
+                  <button
+                    disabled
+                    className="w-full rounded-lg bg-gray-400 py-3 text-sm font-semibold text-white cursor-not-allowed"
+                  >
+                    <Lock className="mr-1.5 inline h-4 w-4" />
+                    Complete Prerequisites First
+                  </button>
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    {prerequisites.filter((p) => !p.met).length} prerequisite{prerequisites.filter((p) => !p.met).length !== 1 ? "s" : ""} remaining
+                  </p>
+                </div>
+              ) : requiresApproval ? (
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="w-full rounded-lg bg-amber-600 py-3 text-sm font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {enrolling ? "Submitting Request..." : "Request Enrollment"}
+                </button>
               ) : (
                 <button
                   onClick={handleEnroll}
@@ -379,18 +499,27 @@ export default function CourseDetailClient({ course, initialEnrolled }: CourseDe
               )}
 
               {enrolled && (
-                <div className="mt-3">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>Progress</span>
-                    <span>{Math.round((completedLessons / totalLessons) * 100)}%</span>
+                <>
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Progress</span>
+                      <span>{Math.round((completedLessons / totalLessons) * 100)}%</span>
+                    </div>
+                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        className="h-full rounded-full bg-green-500"
+                        style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="h-full rounded-full bg-green-500"
-                      style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
+                  <div className="mt-3">
+                    <OfflineDownload
+                      courseId={course.id || course.slug}
+                      slug={course.slug}
+                      title={course.title}
                     />
                   </div>
-                </div>
+                </>
               )}
 
               <div className="mt-6 space-y-4">

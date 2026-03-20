@@ -13,6 +13,8 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.2",
     "@tailwindcss/postcss": "^4.2.1",
@@ -27,8 +29,11 @@
     "date-fns": "^4.1.0",
     "docx": "^9.6.1",
     "dompurify": "^3.3.3",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.577.0",
     "next": "^16.1.6",
+    "next-intl": "^4.8.3",
+    "openai": "^6.32.0",
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -48,6 +53,7 @@
     "@types/dompurify": "^3.0.5",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.0.0",
+    "pg": "^8.20.0",
     "postgres": "^3.4.8",
     "supabase": "^2.79.0",
     "vitest": "^4.1.0"

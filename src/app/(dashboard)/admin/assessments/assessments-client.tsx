@@ -21,6 +21,7 @@ import {
   X,
   Loader2,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 
 export type QuestionType = 'multiple-choice' | 'true-false' | 'short-answer' | 'multi-select';
@@ -110,6 +111,23 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
 
   // Loading states
   const [loadingAction, setLoadingAction] = useState<{ id?: string; action: string } | null>(null);
+
+  // AI Quiz Generation
+  const [aiQuizOpen, setAiQuizOpen] = useState(false);
+  const [aiQuizTopic, setAiQuizTopic] = useState('');
+  const [aiQuizCount, setAiQuizCount] = useState(5);
+  const [aiQuizDifficulty, setAiQuizDifficulty] = useState('intermediate');
+  const [aiQuizLoading, setAiQuizLoading] = useState(false);
+  const [aiQuizError, setAiQuizError] = useState<string | null>(null);
+  const [aiGeneratedQuestions, setAiGeneratedQuestions] = useState<Array<{
+    question: string;
+    question_type: string;
+    options?: string[];
+    correct_answer: string | number;
+    explanation: string;
+    points: number;
+  }>>([]);
+  const [aiQuizTarget, setAiQuizTarget] = useState<string | null>(null);
 
   const isLoading = (action: string, id?: string) =>
     loadingAction?.action === action && (!id || loadingAction?.id === id);
@@ -263,6 +281,88 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
     router.push(`/learn/assessments/${assessment.id}`);
   }, [router]);
 
+  const openAiQuizModal = useCallback((assessmentId?: string) => {
+    setAiQuizTarget(assessmentId || null);
+    setAiQuizTopic('');
+    setAiQuizCount(5);
+    setAiQuizDifficulty('intermediate');
+    setAiQuizError(null);
+    setAiGeneratedQuestions([]);
+    setAiQuizOpen(true);
+  }, []);
+
+  const handleAiQuizGenerate = useCallback(async () => {
+    if (!aiQuizTopic.trim()) {
+      setAiQuizError('Please enter a topic for the questions.');
+      return;
+    }
+    setAiQuizLoading(true);
+    setAiQuizError(null);
+    setAiGeneratedQuestions([]);
+
+    try {
+      const res = await fetch('/api/ai/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: aiQuizTopic.trim(),
+          count: aiQuizCount,
+          difficulty: aiQuizDifficulty,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || 'Failed to generate questions');
+      }
+
+      const data = await res.json();
+      setAiGeneratedQuestions(data.questions || []);
+    } catch (err) {
+      setAiQuizError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setAiQuizLoading(false);
+    }
+  }, [aiQuizTopic, aiQuizCount, aiQuizDifficulty]);
+
+  const handleAiQuizSave = useCallback(async () => {
+    if (aiGeneratedQuestions.length === 0 || !aiQuizTarget) return;
+    setAiQuizLoading(true);
+
+    try {
+      const res = await fetch('/api/assessments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: aiQuizTarget,
+          add_questions: aiGeneratedQuestions.map((q) => ({
+            text: q.question,
+            type: q.question_type === 'multiple-choice' ? 'multiple-choice' : q.question_type === 'true-false' ? 'true-false' : 'short-answer',
+            points: q.points,
+            options: q.options,
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        toast.success(`${aiGeneratedQuestions.length} AI-generated questions ready! Refresh to see updates.`);
+      } else {
+        toast.success(`${aiGeneratedQuestions.length} questions added successfully!`);
+        router.refresh();
+      }
+
+      setAiQuizOpen(false);
+      setAiGeneratedQuestions([]);
+    } catch (err) {
+      toast.error('Questions generated but could not be saved automatically. Please add them manually.');
+      setAiQuizOpen(false);
+    } finally {
+      setAiQuizLoading(false);
+    }
+  }, [aiGeneratedQuestions, aiQuizTarget, router, toast]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -271,14 +371,23 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
           <h1 className="text-2xl font-bold text-gray-900">Assessments</h1>
           <p className="mt-1 text-sm text-gray-500">{assessments.length} assessments configured</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          disabled={!!loadingAction}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-50"
-        >
-          <Plus className="h-4 w-4" />
-          Create Assessment
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => openAiQuizModal()}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+          >
+            <Sparkles className="h-4 w-4" />
+            Generate with AI
+          </button>
+          <button
+            onClick={openCreateModal}
+            disabled={!!loadingAction}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" />
+            Create Assessment
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -358,6 +467,12 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                           >
                             <Edit className="h-3.5 w-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => { setOpenMenu(null); openAiQuizModal(assessment.id); }}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                          >
+                            <Sparkles className="h-3.5 w-3.5" /> AI Questions
                           </button>
                           <button
                             onClick={() => handleDeleteClick(assessment)}
@@ -558,6 +673,196 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Quiz Generation Modal */}
+      {aiQuizOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setAiQuizOpen(false)}>
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Generate Questions with AI</h2>
+                  <p className="text-xs text-gray-500">AI will create diverse, pedagogically sound quiz questions</p>
+                </div>
+              </div>
+              <button onClick={() => setAiQuizOpen(false)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {aiGeneratedQuestions.length === 0 ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Topic *</label>
+                  <input
+                    type="text"
+                    value={aiQuizTopic}
+                    onChange={(e) => setAiQuizTopic(e.target.value)}
+                    placeholder="e.g. Data Privacy & GDPR compliance requirements"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Number of Questions</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={aiQuizCount}
+                      onChange={(e) => setAiQuizCount(Math.min(20, Math.max(1, Number(e.target.value) || 1)))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                    <select
+                      value={aiQuizDifficulty}
+                      onChange={(e) => setAiQuizDifficulty(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+                </div>
+
+                {aiQuizError && (
+                  <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    {aiQuizError}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => setAiQuizOpen(false)}
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAiQuizGenerate}
+                    disabled={aiQuizLoading}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60"
+                  >
+                    {aiQuizLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate Questions
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {aiQuizLoading && (
+                  <div className="flex items-center justify-center gap-3 py-4">
+                    <div className="flex gap-1">
+                      <div className="h-2 w-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="h-2 w-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="h-2 w-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <p className="text-sm text-gray-500">AI is crafting your questions...</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-3">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                  <p className="text-sm text-green-700">
+                    {aiGeneratedQuestions.length} questions generated successfully!
+                  </p>
+                </div>
+
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                  {aiGeneratedQuestions.map((q, i) => (
+                    <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={cn(
+                              'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium capitalize',
+                              q.question_type === 'multiple-choice' ? 'bg-blue-50 text-blue-700' :
+                              q.question_type === 'true-false' ? 'bg-green-50 text-green-700' :
+                              'bg-purple-50 text-purple-700'
+                            )}>
+                              {q.question_type.replace('-', ' ')}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{q.points} pts</span>
+                          </div>
+                          <p className="text-sm text-gray-900 font-medium">{q.question}</p>
+                          {q.options && (
+                            <div className="mt-2 space-y-1">
+                              {q.options.map((opt, oi) => (
+                                <div key={oi} className={cn(
+                                  'flex items-center gap-2 text-xs rounded px-2 py-1',
+                                  (q.question_type === 'multiple-choice' && oi === q.correct_answer) ||
+                                  (q.question_type === 'true-false' && opt === q.correct_answer)
+                                    ? 'bg-green-50 text-green-700 font-medium'
+                                    : 'text-gray-600'
+                                )}>
+                                  <span className="w-4 h-4 flex items-center justify-center rounded-full border border-gray-300 text-[10px]">
+                                    {String.fromCharCode(65 + oi)}
+                                  </span>
+                                  {opt}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {q.question_type === 'fill-in-blank' && (
+                            <p className="mt-1 text-xs text-green-700">Answer: {String(q.correct_answer)}</p>
+                          )}
+                          <p className="mt-2 text-xs text-gray-500 italic">{q.explanation}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                  <button
+                    onClick={() => setAiGeneratedQuestions([])}
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Regenerate
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setAiQuizOpen(false)}
+                      className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Close
+                    </button>
+                    {aiQuizTarget && (
+                      <button
+                        onClick={handleAiQuizSave}
+                        disabled={aiQuizLoading}
+                        className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        {aiQuizLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                        Add to Assessment
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

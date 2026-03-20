@@ -393,6 +393,8 @@ export interface EnrollmentApproval {
   approver?: User;
 }
 
+export type MeetingProvider = "zoom" | "teams" | "google_meet" | "custom";
+
 export interface ILTSession {
   id: string;
   course_id: string;
@@ -406,6 +408,11 @@ export interface ILTSession {
   location_type: ILTLocationType;
   location_details: string | null;
   meeting_url: string | null;
+  meeting_provider: MeetingProvider | null;
+  meeting_id: string | null;
+  meeting_password: string | null;
+  meeting_settings: Record<string, unknown>;
+  calendar_event_id: string | null;
   max_capacity: number;
   min_capacity: number;
   status: ILTSessionStatus;

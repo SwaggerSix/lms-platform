@@ -13,6 +13,9 @@ import {
   HelpCircle,
   CheckCircle2,
   Circle,
+  Lock,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { cn } from "@/utils/cn";
@@ -54,6 +57,14 @@ export interface PlayerModule {
   id: string;
   title: string;
   lessons: PlayerLesson[];
+  /** Whether this module is available based on drip settings */
+  isAvailable?: boolean;
+  /** ISO date when this module becomes available */
+  availableDate?: string | null;
+  /** The drip type for this module */
+  dripType?: string;
+  /** Human-readable message about when the module unlocks */
+  dripMessage?: string | null;
 }
 
 export interface PlayerCourse {
@@ -224,7 +235,34 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
     );
   };
 
+  // Helper: check if a lesson belongs to a drip-locked module
+  const isLessonDripLocked = (lessonId: string): boolean => {
+    for (const mod of course.modules) {
+      if (mod.isAvailable === false) {
+        if (mod.lessons.some((l) => l.id === lessonId)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Helper: get the drip message for a lesson's module
+  const getLessonDripMessage = (lessonId: string): string | null => {
+    for (const mod of course.modules) {
+      if (mod.lessons.some((l) => l.id === lessonId)) {
+        return mod.dripMessage ?? null;
+      }
+    }
+    return null;
+  };
+
   const navigateToLesson = (lessonId: string) => {
+    // Prevent navigation to drip-locked modules
+    if (isLessonDripLocked(lessonId)) {
+      return;
+    }
+
     // Mark current lesson as completed when navigating forward via "Next"
     if (lessonId !== currentLessonId) {
       const targetIndex = allLessons.findIndex((l) => l.id === lessonId);
@@ -399,7 +437,10 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
                       {currentLesson.title}
                     </h2>
                     {currentLesson.content && (
-                      <p className="mt-4 leading-relaxed text-gray-600">{currentLesson.content}</p>
+                      <div
+                        className="prose prose-indigo mt-4 max-w-none"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(currentLesson.content) }}
+                      />
                     )}
                   </div>
                 )}
@@ -477,7 +518,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4">
             <button
               onClick={() => prevLesson && navigateToLesson(prevLesson.id)}
-              disabled={!prevLesson}
+              disabled={!prevLesson || isLessonDripLocked(prevLesson?.id ?? "")}
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Previous
@@ -485,13 +526,20 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
             <span className="text-sm text-gray-500">
               Lesson {currentIndex + 1} of {allLessons.length}
             </span>
-            <button
-              onClick={() => nextLesson && navigateToLesson(nextLesson.id)}
-              disabled={!nextLesson}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </button>
+            {nextLesson && isLessonDripLocked(nextLesson.id) ? (
+              <div className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700">
+                <Lock className="h-4 w-4" />
+                {getLessonDripMessage(nextLesson.id) || "Locked"}
+              </div>
+            ) : (
+              <button
+                onClick={() => nextLesson && navigateToLesson(nextLesson.id)}
+                disabled={!nextLesson}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -519,10 +567,48 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
             </p>
           </div>
 
+          {/* Drip Timeline */}
+          {course.modules.some((m) => m.dripType && m.dripType !== "immediate") && (
+            <div className="border-b border-gray-700 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Release Schedule</h3>
+              <div className="space-y-2">
+                {course.modules.map((mod, i) => {
+                  const isLocked = mod.isAvailable === false;
+                  return (
+                    <div key={mod.id} className="flex items-center gap-2.5">
+                      <div className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                        isLocked ? "bg-gray-600 text-gray-400" : "bg-indigo-600 text-white"
+                      )}>
+                        {isLocked ? <Lock className="h-3 w-3" /> : i + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-xs truncate", isLocked ? "text-gray-500" : "text-gray-300")}>
+                          {mod.title}
+                        </p>
+                        {isLocked && mod.dripMessage && (
+                          <p className="text-[10px] text-amber-500 flex items-center gap-1">
+                            {mod.dripType === "on_date" || mod.dripType === "after_days" ? (
+                              <Calendar className="h-2.5 w-2.5" />
+                            ) : (
+                              <Clock className="h-2.5 w-2.5" />
+                            )}
+                            {mod.dripMessage}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Module list */}
           <div className="divide-y divide-gray-700">
             {course.modules.map((mod) => {
               const isExpanded = expandedModules.includes(mod.id);
+              const isModuleLocked = mod.isAvailable === false;
               const modCompleted = mod.lessons.filter(
                 (l) => l.status === "completed" || lessonStatuses[l.id] === "completed"
               ).length;
@@ -530,13 +616,23 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
                 <div key={mod.id}>
                   <button
                     onClick={() => toggleModule(mod.id)}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-750"
+                    className={cn(
+                      "flex w-full items-center justify-between px-4 py-3 text-left",
+                      isModuleLocked ? "opacity-60" : "hover:bg-gray-750"
+                    )}
                   >
-                    <div>
-                      <p className="text-sm font-medium text-gray-200">{mod.title}</p>
-                      <p className="mt-0.5 text-xs text-gray-500">
-                        {modCompleted}/{mod.lessons.length} lessons
-                      </p>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {isModuleLocked && <Lock className="h-3.5 w-3.5 shrink-0 text-amber-500" />}
+                      <div className="min-w-0">
+                        <p className={cn("text-sm font-medium", isModuleLocked ? "text-gray-400" : "text-gray-200")}>{mod.title}</p>
+                        {isModuleLocked && mod.dripMessage ? (
+                          <p className="mt-0.5 text-xs text-amber-500">{mod.dripMessage}</p>
+                        ) : (
+                          <p className="mt-0.5 text-xs text-gray-500">
+                            {modCompleted}/{mod.lessons.length} lessons
+                          </p>
+                        )}
+                      </div>
                     </div>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4 text-gray-500" />
@@ -549,18 +645,24 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
                       {mod.lessons.map((lesson) => {
                         const Icon = lessonIcons[lesson.type];
                         const isCurrent = lesson.id === currentLessonId;
+                        const isLessonLocked = isModuleLocked && lesson.status !== "completed";
                         return (
                           <li key={lesson.id}>
                             <button
-                              onClick={() => navigateToLesson(lesson.id)}
+                              onClick={() => !isLessonLocked && navigateToLesson(lesson.id)}
+                              disabled={isLessonLocked}
                               className={cn(
                                 "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
-                                isCurrent
-                                  ? "bg-indigo-600/20 text-white"
-                                  : "text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
+                                isLessonLocked
+                                  ? "text-gray-600 cursor-not-allowed"
+                                  : isCurrent
+                                    ? "bg-indigo-600/20 text-white"
+                                    : "text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
                               )}
                             >
-                              {lesson.status === "completed" || lessonStatuses[lesson.id] === "completed" ? (
+                              {isLessonLocked ? (
+                                <Lock className="h-5 w-5 shrink-0 text-gray-600" />
+                              ) : lesson.status === "completed" || lessonStatuses[lesson.id] === "completed" ? (
                                 <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
                               ) : isCurrent ? (
                                 <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-indigo-500 bg-indigo-500">
@@ -570,7 +672,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
                                 <Circle className="h-5 w-5 shrink-0 text-gray-600" />
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className="truncate text-sm">{lesson.title}</p>
+                                <p className={cn("truncate text-sm", isLessonLocked && "text-gray-600")}>{lesson.title}</p>
                                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                   <Icon className="h-3 w-3" />
                                   {formatDuration(lesson.duration)}

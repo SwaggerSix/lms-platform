@@ -68,6 +68,7 @@ export default function AssignmentsClient({
   courses,
   teamMembers,
 }: AssignmentsClientProps) {
+  const [localAssignments, setLocalAssignments] = useState<Assignment[]>(assignments);
   const [activeTab, setActiveTab] = useState<"active" | "completed" | "overdue">("active");
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,7 +83,7 @@ export default function AssignmentsClient({
   const [priority, setPriority] = useState<string>("medium");
   const [notes, setNotes] = useState("");
 
-  const filteredAssignments = assignments.filter((a) => {
+  const filteredAssignments = localAssignments.filter((a) => {
     const matchesTab = a.status === activeTab;
     const matchesSearch =
       a.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,9 +96,9 @@ export default function AssignmentsClient({
   );
 
   const tabCounts = {
-    active: assignments.filter((a) => a.status === "active").length,
-    completed: assignments.filter((a) => a.status === "completed").length,
-    overdue: assignments.filter((a) => a.status === "overdue").length,
+    active: localAssignments.filter((a) => a.status === "active").length,
+    completed: localAssignments.filter((a) => a.status === "completed").length,
+    overdue: localAssignments.filter((a) => a.status === "overdue").length,
   };
 
   const toggleAssignmentSelect = (id: string) => {
@@ -136,7 +137,7 @@ export default function AssignmentsClient({
   const handleSendReminder = async (assignmentIds: string[]) => {
     setActionLoading("reminder");
     try {
-      const targets = assignments.filter((a) => assignmentIds.includes(a.id));
+      const targets = localAssignments.filter((a) => assignmentIds.includes(a.id));
       await Promise.all(
         targets.map((a) =>
           fetch("/api/notifications", {
@@ -198,6 +199,9 @@ export default function AssignmentsClient({
           })
         )
       );
+      setLocalAssignments((prev) =>
+        prev.map((a) => extendTargetIds.includes(a.id) ? { ...a, dueDate: extendDate } : a)
+      );
       toast.success(`Deadline extended to ${extendDate} for ${extendTargetIds.length} assignment(s).`);
       setShowExtendModal(false);
     } catch (error) {
@@ -235,6 +239,7 @@ export default function AssignmentsClient({
           })
         )
       );
+      setLocalAssignments((prev) => prev.filter((a) => !cancelTargetIds.includes(a.id)));
       setSelectedAssignments((prev) => prev.filter((id) => !cancelTargetIds.includes(id)));
       toast.success(`${cancelTargetIds.length} assignment(s) cancelled.`);
       setShowCancelModal(false);
@@ -279,6 +284,22 @@ export default function AssignmentsClient({
           })
         )
       );
+      const courseName = courses.find((c) => c.id === selectedCourse)?.name || "Unknown Course";
+      const newAssignments: Assignment[] = selectedMembers.map((userId, idx) => {
+        const member = teamMembers.find((m) => m.id === userId);
+        return {
+          id: results[idx]?.id || crypto.randomUUID(),
+          courseName,
+          assignedTo: member?.name || userId,
+          assignedToAvatar: (member?.name || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
+          assignedDate: new Date().toISOString().split("T")[0],
+          dueDate,
+          status: "active" as const,
+          progress: 0,
+          priority: priority as "high" | "medium" | "low",
+        };
+      });
+      setLocalAssignments((prev) => [...prev, ...newAssignments]);
       resetModal();
     } catch (error) {
       console.error('Assignment failed:', error);

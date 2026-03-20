@@ -22,6 +22,10 @@ import {
   UserCheck,
   UserX,
   Check,
+  Copy,
+  ExternalLink,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
@@ -49,6 +53,10 @@ export interface SessionItem {
   location_type: ILTLocationType;
   location_details: string;
   meeting_url: string | null;
+  meeting_provider: string | null;
+  meeting_id: string | null;
+  meeting_password: string | null;
+  recording_url: string | null;
   max_capacity: number;
   registered_count: number;
   status: ILTSessionStatus;
@@ -97,6 +105,21 @@ const LOCATION_ICONS: Record<ILTLocationType, typeof MapPin> = {
   hybrid: Users,
 };
 
+const PROVIDER_OPTIONS = [
+  { value: "", label: "No provider" },
+  { value: "zoom", label: "Zoom" },
+  { value: "teams", label: "Microsoft Teams" },
+  { value: "google_meet", label: "Google Meet" },
+  { value: "custom", label: "Custom URL" },
+] as const;
+
+const PROVIDER_BADGES: Record<string, { label: string; color: string }> = {
+  zoom: { label: "Zoom", color: "bg-blue-100 text-blue-700" },
+  teams: { label: "Teams", color: "bg-purple-100 text-purple-700" },
+  google_meet: { label: "Meet", color: "bg-green-100 text-green-700" },
+  custom: { label: "Custom", color: "bg-gray-100 text-gray-600" },
+};
+
 // ─── Props ──────────────────────────────────────────────────────
 
 interface ILTSessionsClientProps {
@@ -132,9 +155,13 @@ export default function ILTSessionsClient({
     location_type: "virtual" as ILTLocationType,
     location_details: "",
     meeting_url: "",
+    meeting_provider: "",
+    auto_create_meeting: true,
     max_capacity: 30,
     instructor: "",
   });
+  const [sendingInvites, setSendingInvites] = useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const filteredSessions = useMemo(() => {
     let list = [...sessions];
@@ -199,6 +226,8 @@ export default function ILTSessionsClient({
           location_type: formData.location_type,
           location_details: formData.location_details,
           meeting_url: formData.meeting_url || null,
+          meeting_provider: formData.meeting_provider || null,
+          auto_create_meeting: formData.auto_create_meeting,
           max_capacity: formData.max_capacity,
           instructor_id: formData.instructor || null,
         }),
@@ -222,6 +251,10 @@ export default function ILTSessionsClient({
         location_type: created.location_type,
         location_details: created.location_details,
         meeting_url: created.meeting_url,
+        meeting_provider: created.meeting_provider || null,
+        meeting_id: created.meeting_id || null,
+        meeting_password: created.meeting_password || null,
+        recording_url: created.recording_url || null,
         max_capacity: created.max_capacity,
         registered_count: 0,
         status: "scheduled",
@@ -241,6 +274,8 @@ export default function ILTSessionsClient({
         location_type: "virtual",
         location_details: "",
         meeting_url: "",
+        meeting_provider: "",
+        auto_create_meeting: true,
         max_capacity: 30,
         instructor: "",
       });
@@ -442,6 +477,80 @@ export default function ILTSessionsClient({
               <span className={cn("rounded-full px-3 py-1 text-sm font-medium", STATUS_CONFIG[session.status].color)}>
                 {STATUS_CONFIG[session.status].label}
               </span>
+            </div>
+
+            {/* Meeting info */}
+            {session.meeting_url && (
+              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
+                {session.meeting_provider && PROVIDER_BADGES[session.meeting_provider] && (
+                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", PROVIDER_BADGES[session.meeting_provider].color)}>
+                    <Video className="h-3 w-3" />
+                    {PROVIDER_BADGES[session.meeting_provider].label}
+                  </span>
+                )}
+                <div className="flex items-center gap-2">
+                  <a
+                    href={session.meeting_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-indigo-600 hover:text-indigo-700 truncate max-w-xs"
+                  >
+                    {session.meeting_url}
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(session.meeting_url!);
+                      setCopiedUrl(session.id);
+                      setTimeout(() => setCopiedUrl(null), 2000);
+                    }}
+                    className="shrink-0 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    title="Copy meeting URL"
+                  >
+                    {copiedUrl === session.id ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {session.meeting_password && (
+                  <span className="text-xs text-gray-500">
+                    Password: <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono">{session.meeting_password}</code>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Recording URL & Send Invites */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                onClick={async () => {
+                  setSendingInvites(session.id);
+                  // Download ICS for each attendee (in practice this would email them)
+                  // For now, trigger the ICS download as a demonstration
+                  try {
+                    const link = document.createElement("a");
+                    link.href = `/api/ilt-sessions/${session.id}/calendar`;
+                    link.download = `${session.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.ics`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } catch (err) {
+                    console.error("Failed to generate calendar invite:", err);
+                  } finally {
+                    setTimeout(() => setSendingInvites(null), 1500);
+                  }
+                }}
+                disabled={sendingInvites === session.id || session.attendees.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {sendingInvites === session.id ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+                {sendingInvites === session.id ? "Generating..." : "Send Calendar Invites"}
+              </button>
             </div>
           </div>
 
@@ -945,16 +1054,58 @@ export default function ILTSessionsClient({
                   />
                 </div>
                 {(formData.location_type === "virtual" || formData.location_type === "hybrid") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Meeting URL</label>
-                    <input
-                      type="url"
-                      value={formData.meeting_url}
-                      onChange={(e) => setFormData({ ...formData, meeting_url: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      placeholder="https://..."
-                    />
-                  </div>
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Meeting Provider</label>
+                      <select
+                        value={formData.meeting_provider}
+                        onChange={(e) => setFormData({ ...formData, meeting_provider: e.target.value })}
+                        className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      >
+                        {PROVIDER_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {formData.meeting_provider === "custom" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Meeting URL</label>
+                        <input
+                          type="url"
+                          value={formData.meeting_url}
+                          onChange={(e) => setFormData({ ...formData, meeting_url: e.target.value })}
+                          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    )}
+                    {formData.meeting_provider && formData.meeting_provider !== "custom" && (
+                      <label className="flex items-center gap-2 rounded-lg border border-gray-200 p-3">
+                        <input
+                          type="checkbox"
+                          checked={formData.auto_create_meeting}
+                          onChange={(e) => setFormData({ ...formData, auto_create_meeting: e.target.checked })}
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-gray-700">Auto-create meeting</span>
+                          <p className="text-xs text-gray-500">Requires {PROVIDER_OPTIONS.find(o => o.value === formData.meeting_provider)?.label} integration to be configured</p>
+                        </div>
+                      </label>
+                    )}
+                    {!formData.meeting_provider && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Meeting URL (optional)</label>
+                        <input
+                          type="url"
+                          value={formData.meeting_url}
+                          onChange={(e) => setFormData({ ...formData, meeting_url: e.target.value })}
+                          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Max Capacity</label>

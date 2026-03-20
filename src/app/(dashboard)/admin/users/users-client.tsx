@@ -24,14 +24,21 @@ export interface UserItem {
   email: string;
   role: 'admin' | 'manager' | 'instructor' | 'learner';
   department: string;
+  departmentId: string;
+  jobTitle: string;
   status: 'active' | 'inactive' | 'pending';
   lastActive: string;
   avatar: string;
 }
 
+export interface OrgItem {
+  id: string;
+  name: string;
+}
+
 const roles = ['All Roles', 'Admin', 'Manager', 'Instructor', 'Learner'];
 const statuses = ['All Status', 'Active', 'Inactive', 'Pending'];
-const departments = ['All Departments', 'Engineering', 'Sales', 'Marketing', 'HR', 'Finance'];
+const departments = ['All Departments', 'Executive', 'HR', 'Operations', 'Finance', 'Training Delivery', 'Training Development'];
 
 const roleBadge: Record<string, string> = {
   admin: 'bg-red-50 text-red-700 ring-red-600/20',
@@ -46,7 +53,7 @@ const statusBadge: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
 };
 
-export default function UsersClient({ users }: { users: UserItem[] }) {
+export default function UsersClient({ users, organizations = [] }: { users: UserItem[]; organizations?: OrgItem[] }) {
   const toast = useToast();
   const [userList, setUserList] = useState<UserItem[]>(users);
   const [search, setSearch] = useState('');
@@ -63,7 +70,7 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
   const [formLastName, setFormLastName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRole, setFormRole] = useState<'learner' | 'instructor' | 'manager' | 'admin'>('learner');
-  const [formDepartment, setFormDepartment] = useState('Engineering');
+  const [formDepartment, setFormDepartment] = useState(organizations[0]?.id ?? '');
 
   // Edit User modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -72,6 +79,7 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
   const [editLastName, setEditLastName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editJobTitle, setEditJobTitle] = useState('');
+  const [editDepartment, setEditDepartment] = useState('');
   const [editRole, setEditRole] = useState<'learner' | 'instructor' | 'manager' | 'admin'>('learner');
   const [editStatus, setEditStatus] = useState<'active' | 'inactive' | 'pending'>('active');
 
@@ -84,7 +92,7 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
     setFormLastName('');
     setFormEmail('');
     setFormRole('learner');
-    setFormDepartment('Engineering');
+    setFormDepartment(organizations[0]?.id ?? '');
     setError(null);
   };
 
@@ -113,7 +121,9 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
         lastName: created.last_name ?? formLastName,
         email: created.email ?? formEmail,
         role: created.role ?? formRole,
-        department: formDepartment,
+        department: organizations.find(o => o.id === formDepartment)?.name ?? 'Unassigned',
+        departmentId: formDepartment,
+        jobTitle: created.job_title ?? '',
         status: created.status ?? 'active',
         lastActive: created.created_at ?? new Date().toISOString(),
         avatar: `${(created.first_name ?? formFirstName)[0]}${(created.last_name ?? formLastName)[0]}`.toUpperCase(),
@@ -160,7 +170,8 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
     setEditFirstName(user.firstName);
     setEditLastName(user.lastName);
     setEditEmail(user.email);
-    setEditJobTitle('');
+    setEditJobTitle(user.jobTitle || '');
+    setEditDepartment(user.departmentId || '');
     setEditRole(user.role);
     setEditStatus(user.status);
     setError(null);
@@ -180,6 +191,7 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
           last_name: editLastName,
           email: editEmail,
           job_title: editJobTitle,
+          organization_id: editDepartment || null,
           role: editRole,
           status: editStatus,
         }),
@@ -196,6 +208,9 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
                 firstName: editFirstName,
                 lastName: editLastName,
                 email: editEmail,
+                jobTitle: editJobTitle,
+                department: organizations.find(o => o.id === editDepartment)?.name ?? u.department,
+                departmentId: editDepartment,
                 role: editRole,
                 status: editStatus,
                 avatar: `${editFirstName[0]}${editLastName[0]}`.toUpperCase(),
@@ -439,9 +454,20 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
                 <label htmlFor="edit-user-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                 <input id="edit-user-email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
               </div>
-              <div>
-                <label htmlFor="edit-user-job-title" className="block text-sm font-medium text-gray-700 mb-1.5">Job Title</label>
-                <input id="edit-user-job-title" type="text" placeholder="e.g. Software Engineer" value={editJobTitle} onChange={(e) => setEditJobTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="edit-user-job-title" className="block text-sm font-medium text-gray-700 mb-1.5">Job Title</label>
+                  <input id="edit-user-job-title" type="text" placeholder="e.g. Consultant" value={editJobTitle} onChange={(e) => setEditJobTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label htmlFor="edit-user-department" className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
+                  <select id="edit-user-department" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <option value="">Unassigned</option>
+                    {organizations.map((org) => (
+                      <option key={org.id} value={org.id}>{org.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -519,19 +545,17 @@ export default function UsersClient({ users }: { users: UserItem[] }) {
               <div>
                 <label htmlFor="add-user-department" className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
                 <select id="add-user-department" value={formDepartment} onChange={(e) => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option>Engineering</option>
-                  <option>Sales</option>
-                  <option>Marketing</option>
-                  <option>HR</option>
-                  <option>Finance</option>
+                  <option value="">Select Department</option>
+                  {organizations.map((org) => (
+                    <option key={org.id} value={org.id}>{org.name}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label htmlFor="add-user-manager" className="block text-sm font-medium text-gray-700 mb-1.5">Manager</label>
                 <select id="add-user-manager" className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option>James Wilson</option>
-                  <option>Emily Johnson</option>
-                  <option>Jennifer Lee</option>
+                  <option>Chris Cancialosi</option>
+                  <option>Elizabeth Bauernshub</option>
                 </select>
               </div>
             </div>

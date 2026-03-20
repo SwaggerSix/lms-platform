@@ -47,6 +47,10 @@ export default async function AuditLogPage() {
     redirect("/login");
   }
 
+  if (dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+    redirect("/dashboard");
+  }
+
   const { data: auditRows } = await service
     .from("audit_logs")
     .select("*, user:users!user_id(id, first_name, last_name, email)")

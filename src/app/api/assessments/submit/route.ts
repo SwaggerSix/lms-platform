@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
+import { trackLearningEvent } from "@/lib/ai/track-event";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Rate limit: 10 submissions per minute per user
-  const { success } = rateLimit(`assessment-submit:${authUser.user.id}`, 10, 60000);
+  const { success } = await rateLimit(`assessment-submit:${authUser.user.id}`, 10, 60000);
   if (!success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -110,6 +111,17 @@ export async function POST(request: NextRequest) {
       reference_id: assessment_id,
     });
   }
+
+  // Track assessment event (fire-and-forget)
+  trackLearningEvent({
+    userId: profile.id,
+    eventType: passed ? "assessment_pass" : "assessment_fail",
+    metadata: {
+      assessment_id,
+      score,
+      time_spent,
+    },
+  }).catch(() => {});
 
   // Fire webhook (non-blocking)
   dispatchWebhook("assessment.submitted", {

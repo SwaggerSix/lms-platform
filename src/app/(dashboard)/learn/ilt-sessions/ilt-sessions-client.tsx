@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -12,6 +12,9 @@ import {
   XCircle,
   AlertCircle,
   ExternalLink,
+  Copy,
+  ChevronDown,
+  Download,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { trackEvent } from "@/lib/analytics/track";
@@ -29,6 +32,8 @@ export interface LearnerSession {
   location_type: ILTLocationType;
   location_details: string;
   meeting_url: string | null;
+  meeting_provider: string | null;
+  meeting_password: string | null;
   max_capacity: number;
   registered_count: number;
   status: ILTSessionStatus;
@@ -61,6 +66,13 @@ const LOCATION_LABELS: Record<ILTLocationType, string> = {
   hybrid: "Hybrid",
 };
 
+const PROVIDER_LABELS: Record<string, { label: string; color: string }> = {
+  zoom: { label: "Zoom", color: "bg-blue-100 text-blue-700" },
+  teams: { label: "Teams", color: "bg-purple-100 text-purple-700" },
+  google_meet: { label: "Google Meet", color: "bg-green-100 text-green-700" },
+  custom: { label: "Custom", color: "bg-gray-100 text-gray-600" },
+};
+
 function AttendanceBadge({ status }: { status: AttendanceStatus | null }) {
   if (!status) return null;
   const config: Record<AttendanceStatus, { label: string; color: string; icon: typeof CheckCircle2 }> = {
@@ -86,6 +98,144 @@ function isJoinable(sessionDate: string, startTime: string): boolean {
   const fifteenMin = 15 * 60 * 1000;
   return diff <= fifteenMin && diff > -4 * 60 * 60 * 1000; // joinable from 15 min before to 4 hours after
 }
+
+// ─── Calendar URL Generators ─────────────────────────────────────
+
+function buildGoogleCalendarUrl(session: LearnerSession): string {
+  const startDT = `${session.session_date.replace(/-/g, "")}T${session.start_time.replace(/:/g, "")}00`;
+  const endDT = `${session.session_date.replace(/-/g, "")}T${session.end_time.replace(/:/g, "")}00`;
+  const details = [
+    session.meeting_url ? `Join meeting: ${session.meeting_url}` : "",
+    `Instructor: ${session.instructor_name}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${session.course_title} - ${session.session_title}`,
+    dates: `${startDT}/${endDT}`,
+    details,
+    location: session.meeting_url || session.location_details,
+    ctz: session.timezone,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function buildOutlookCalendarUrl(session: LearnerSession): string {
+  const startDT = `${session.session_date}T${session.start_time}:00`;
+  const endDT = `${session.session_date}T${session.end_time}:00`;
+  const body = [
+    session.meeting_url ? `Join meeting: ${session.meeting_url}` : "",
+    `Instructor: ${session.instructor_name}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const params = new URLSearchParams({
+    subject: `${session.course_title} - ${session.session_title}`,
+    startdt: startDT,
+    enddt: endDT,
+    body,
+    location: session.meeting_url || session.location_details,
+    path: "/calendar/action/compose",
+    rru: "addevent",
+  });
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+}
+
+// ─── Calendar Dropdown ───────────────────────────────────────────
+
+function CalendarDropdown({ session }: { session: LearnerSession }) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <Calendar className="h-3.5 w-3.5" />
+        Add to Calendar
+        <ChevronDown className={cn("h-3 w-3 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          <a
+            href={buildGoogleCalendarUrl(session)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[10px] font-bold text-red-600">G</span>
+            Google Calendar
+          </a>
+          <a
+            href={buildOutlookCalendarUrl(session)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-blue-100 text-[10px] font-bold text-blue-600">O</span>
+            Outlook
+          </a>
+          <a
+            href={`/api/ilt-sessions/${session.id}/calendar`}
+            download
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            <Download className="h-4 w-4 text-gray-500" />
+            Apple Calendar (iCal)
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Meeting Password Display ────────────────────────────────────
+
+function MeetingPasswordDisplay({ password }: { password: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+      <span>Password: <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700">{password}</code></span>
+      <button
+        onClick={handleCopy}
+        className="p-0.5 text-gray-400 hover:text-gray-600"
+        title="Copy password"
+      >
+        {copied ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────
 
 export default function ILTSessionsClient({ sessions: initialSessions }: ILTSessionsClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
@@ -217,6 +367,8 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
               const month = dateObj.toLocaleDateString("en-US", { month: "short" });
               const day = dateObj.getDate();
 
+              const providerInfo = session.meeting_provider ? PROVIDER_LABELS[session.meeting_provider] : null;
+
               return (
                 <div
                   key={session.id}
@@ -232,7 +384,15 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{session.course_title}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900 truncate">{session.course_title}</h3>
+                          {providerInfo && (
+                            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0", providerInfo.color)}>
+                              <Video className="h-2.5 w-2.5" />
+                              {providerInfo.label}
+                            </span>
+                          )}
+                        </div>
                         <p className="mt-0.5 text-sm text-gray-600 truncate">{session.session_title}</p>
 
                         <div className="mt-2 space-y-1">
@@ -253,6 +413,13 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                         </div>
                       </div>
                     </div>
+
+                    {/* Meeting password */}
+                    {session.is_registered && session.meeting_password && (
+                      <div className="mt-3">
+                        <MeetingPasswordDisplay password={session.meeting_password} />
+                      </div>
+                    )}
 
                     {/* Capacity Bar */}
                     <div className="mt-4">
@@ -287,7 +454,7 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                     )}
 
                     {/* Action buttons */}
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       {!isPast && session.is_registered && (
                         <>
                           {canJoin ? (
@@ -304,6 +471,7 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                               <CheckCircle2 className="h-4 w-4" /> Registered
                             </div>
                           )}
+                          <CalendarDropdown session={session} />
                         </>
                       )}
                       {!isPast && !session.is_registered && (

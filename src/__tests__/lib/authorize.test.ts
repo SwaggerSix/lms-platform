@@ -1,14 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock createClient from supabase/server
+// Mock createClient (server) for auth.getUser()
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 
+// Mock createServiceClient for DB user lookup (bypasses RLS)
+vi.mock("@/lib/supabase/service", () => ({
+  createServiceClient: vi.fn(),
+}));
+
 import { authorize } from "@/lib/auth/authorize";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 const mockCreateClient = vi.mocked(createClient);
+const mockCreateServiceClient = vi.mocked(createServiceClient);
 
 function setupMockSupabase(options: {
   authUser?: { id: string } | null;
@@ -16,13 +23,19 @@ function setupMockSupabase(options: {
 }) {
   const { authUser = null, dbUser = null } = options;
 
-  const supabaseMock = {
+  // Server client: used only for auth.getUser()
+  const serverMock = {
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { user: authUser },
         error: authUser ? null : { message: "Not authenticated" },
       }),
     },
+  };
+  mockCreateClient.mockResolvedValue(serverMock as any);
+
+  // Service client: used for DB user lookup
+  const serviceMock = {
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
@@ -34,9 +47,9 @@ function setupMockSupabase(options: {
       }),
     }),
   };
+  mockCreateServiceClient.mockReturnValue(serviceMock as any);
 
-  mockCreateClient.mockResolvedValue(supabaseMock as any);
-  return supabaseMock;
+  return { serverMock, serviceMock };
 }
 
 describe("authorize", () => {
@@ -99,24 +112,25 @@ describe("authorize", () => {
   });
 
   it("returns supabase client in authorized result", async () => {
-    const mock = setupMockSupabase({
+    const { serverMock } = setupMockSupabase({
       authUser: { id: "auth-1" },
       dbUser: { id: "user-1", role: "admin" },
     });
     const result = await authorize("admin");
     expect(result.authorized).toBe(true);
     if (result.authorized) {
-      expect(result.supabase).toBe(mock);
+      // supabase in result is the server client used for auth
+      expect(result.supabase).toBe(serverMock);
     }
   });
 
   it("queries users table with correct auth_id", async () => {
-    const mock = setupMockSupabase({
+    const { serviceMock } = setupMockSupabase({
       authUser: { id: "auth-xyz" },
       dbUser: { id: "user-1", role: "instructor" },
     });
     await authorize("instructor");
-    expect(mock.from).toHaveBeenCalledWith("users");
+    expect(serviceMock.from).toHaveBeenCalledWith("users");
   });
 
   it("allows instructor role when instructor is in allowed list", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BookOpen, Clock, Award, ArrowRight, Layers } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/format";
@@ -119,7 +120,7 @@ export default function PathsClient({ paths }: Props) {
                         <span className="text-sm text-gray-400">Not started</span>
                       )}
                     </div>
-                    <a
+                    <Link
                       href={`/learn/paths/${path.slug}`}
                       className={cn(
                         "inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors",
@@ -130,7 +131,7 @@ export default function PathsClient({ paths }: Props) {
                     >
                       {path.enrolled ? "Continue" : "Start Path"}
                       <ArrowRight className="h-4 w-4" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

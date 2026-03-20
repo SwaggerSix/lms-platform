@@ -15,7 +15,9 @@ import {
   Trash2,
   X,
   Loader2,
+  Palette,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export interface CertificationItem {
   id: string;
@@ -172,13 +174,22 @@ export default function CertificationsClient({ certifications: initialCerts }: C
           <h1 className="text-2xl font-bold text-gray-900">Certifications</h1>
           <p className="mt-1 text-sm text-gray-500">{certifications.length} certifications configured</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Create Certification
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/certifications/designer"
+            className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 shadow-sm hover:bg-indigo-100 transition-colors"
+          >
+            <Palette className="h-4 w-4" />
+            Certificate Designer
+          </Link>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create Certification
+          </button>
+        </div>
       </div>
 
       {/* Global error */}

@@ -3,7 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import PathDetailClient from "./path-detail-client";
 import type { PathDetailData, PathCourse } from "./path-detail-client";
-import { pickGradient } from "../paths-client";
+const GRADIENT_PALETTE = [
+  "from-indigo-500 to-purple-600",
+  "from-emerald-500 to-teal-600",
+  "from-orange-500 to-red-600",
+  "from-pink-500 to-rose-600",
+  "from-cyan-500 to-blue-600",
+  "from-amber-500 to-orange-600",
+  "from-violet-500 to-purple-600",
+  "from-sky-500 to-blue-600",
+];
+
+function pickGradient(index: number): string {
+  return GRADIENT_PALETTE[index % GRADIENT_PALETTE.length];
+}
 
 export default async function PathDetailPage({
   params,
@@ -177,6 +190,7 @@ export default async function PathDetailPage({
   estimatedCompletion.setDate(estimatedCompletion.getDate() + daysRemaining);
 
   const pathData: PathDetailData = {
+    id: rawPath.id,
     slug: rawPath.slug,
     title: rawPath.title,
     description: rawPath.description ?? "",

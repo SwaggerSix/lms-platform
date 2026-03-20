@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { MessageType } from "@/types/database";
 import { validateBody, sendMessageSchema } from "@/lib/validations";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * GET /api/messages
@@ -168,6 +169,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
   const currentUserId = postProfile.id;
+
+  const rl = await rateLimit(`messages:${postProfile.id}`, 20, 60000);
+  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   // Create a new conversation
   if (body.action === "create_conversation") {

@@ -6,6 +6,18 @@
     {
       "path": "/api/cron/scheduled-reports",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/compute-recommendations",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/daily-analytics",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/enrollment-rules",
+      "schedule": "30 * * * *"
     }
   ],
   "headers": [

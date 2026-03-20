@@ -21,35 +21,70 @@ export default async function AdminDashboardPage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin") redirect("/dashboard");
+  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+
+  // Date filter for "this month"
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
 
   // Fetch aggregate stats in parallel
-  const [usersResult, coursesResult, enrollmentsResult, topCoursesResult] = await Promise.all([
-    service.from('users').select('id', { count: 'exact', head: true }),
-    service.from('courses').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-    service.from('enrollments').select('id, status, score', { count: 'exact' }),
-    service.from('courses').select('title').eq('status', 'published').order('created_at', { ascending: false }).limit(5),
+  const [usersResult, coursesResult, enrollmentsThisMonthResult, completedResult, totalEnrollmentsResult, topCoursesResult] = await Promise.all([
+    service.from('users').select('*', { count: 'exact', head: true }),
+    service.from('courses').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    service.from('enrollments').select('*', { count: 'exact', head: true }).gte('enrolled_at', startOfMonth.toISOString()),
+    service.from('enrollments').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+    service.from('enrollments').select('*', { count: 'exact', head: true }),
+    service.from('courses').select('id, title').eq('status', 'published').order('created_at', { ascending: false }).limit(5),
   ]);
 
   const totalUsers = usersResult.count ?? 0;
   const activeCourses = coursesResult.count ?? 0;
-  const enrollments = enrollmentsResult.data ?? [];
-  const enrollmentsThisMonth = enrollments.length;
-  const completedEnrollments = enrollments.filter((e) => e.status === 'completed');
-  const completionRate = enrollments.length > 0
-    ? Math.round((completedEnrollments.length / enrollments.length) * 100)
+  const enrollmentsThisMonth = enrollmentsThisMonthResult.count ?? 0;
+  const totalEnrollments = totalEnrollmentsResult.count ?? 0;
+  const completedCount = completedResult.count ?? 0;
+  const completionRate = totalEnrollments > 0
+    ? Math.round((completedCount / totalEnrollments) * 100)
     : 0;
-  const scoresArr = completedEnrollments
-    .map((e) => (e.score ? Number(e.score) : null))
-    .filter((s): s is number => s !== null);
+
+  // Compute average score from completed enrollments
+  const { data: scoredEnrollments } = await service
+    .from('enrollments')
+    .select('score')
+    .eq('status', 'completed')
+    .not('score', 'is', null);
+  const scoresArr = (scoredEnrollments ?? [])
+    .map((e) => Number(e.score))
+    .filter((s) => !isNaN(s));
   const avgScore = scoresArr.length > 0
     ? Math.round((scoresArr.reduce((a, b) => a + b, 0) / scoresArr.length) * 10) / 10
     : 0;
 
-  const topCourses = (topCoursesResult.data ?? []).map((c, i) => ({
-    name: c.title,
-    completionRate: Math.max(50, 95 - i * 8),
-  }));
+  // Compute real completion rates for top courses
+  const topCourseIds = (topCoursesResult.data ?? []).map((c) => c.id);
+  const { data: topCourseEnrollments } = await service
+    .from('enrollments')
+    .select('course_id, status')
+    .in('course_id', topCourseIds.length > 0 ? topCourseIds : ['__none__']);
+
+  const courseEnrollmentMap: Record<string, { total: number; completed: number }> = {};
+  for (const e of topCourseEnrollments ?? []) {
+    if (!courseEnrollmentMap[e.course_id]) {
+      courseEnrollmentMap[e.course_id] = { total: 0, completed: 0 };
+    }
+    courseEnrollmentMap[e.course_id].total += 1;
+    if (e.status === 'completed') {
+      courseEnrollmentMap[e.course_id].completed += 1;
+    }
+  }
+
+  const topCourses = (topCoursesResult.data ?? []).map((c) => {
+    const stats = courseEnrollmentMap[c.id] ?? { total: 0, completed: 0 };
+    return {
+      name: c.title,
+      completionRate: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0,
+    };
+  });
 
   // Build recent activity from recent enrollments
   const { data: recentEnrollments } = await service
@@ -80,7 +115,7 @@ export default async function AdminDashboardPage() {
     enrollmentsThisMonth,
     completionRate,
     avgScore,
-    complianceRate: Math.min(100, completionRate + 15),
+    complianceRate: completionRate,
     topCourses,
     recentActivity,
   };

@@ -21,6 +21,26 @@ function isValidBucket(bucket: string): bucket is StorageBucket {
 }
 
 /**
+ * Validate file magic bytes against the claimed MIME type.
+ * Returns true if the bytes match or if we don't have a signature for the type.
+ */
+function validateMagicBytes(buffer: ArrayBuffer, claimedType: string): boolean {
+  const bytes = new Uint8Array(buffer.slice(0, 8));
+
+  const signatures: Record<string, number[]> = {
+    "image/jpeg": [0xff, 0xd8, 0xff],
+    "image/png": [0x89, 0x50, 0x4e, 0x47],
+    "application/pdf": [0x25, 0x50, 0x44, 0x46],
+    "application/zip": [0x50, 0x4b, 0x03, 0x04],
+  };
+
+  const sig = signatures[claimedType];
+  if (!sig) return true; // No signature to check, allow
+
+  return sig.every((byte, i) => bytes[i] === byte);
+}
+
+/**
  * POST /api/upload
  * Accepts multipart form data and uploads a file to Supabase Storage.
  *
@@ -42,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Rate limit: 20 uploads per minute per user
-  const { success } = rateLimit(`upload:${user.id}`, 20, 60000);
+  const { success } = await rateLimit(`upload:${user.id}`, 20, 60000);
   if (!success) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
@@ -98,6 +118,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate magic bytes match the claimed MIME type
+  const fileBuffer = await file.arrayBuffer();
+  if (!validateMagicBytes(fileBuffer, file.type)) {
+    return NextResponse.json(
+      { error: "File content does not match the declared file type." },
+      { status: 400 }
+    );
+  }
+
   // Sanitize folder to prevent path traversal
   const cleanFolder = folder.replace(/[^a-zA-Z0-9_\-\/]/g, "").replace(/\.\./g, "");
 
@@ -115,10 +144,10 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Upload to Supabase Storage
+  // Upload to Supabase Storage (use buffer since we already read it for validation)
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(fileName, file, {
+    .upload(fileName, fileBuffer, {
       cacheControl: "3600",
       contentType: file.type,
       upsert: false,

@@ -146,6 +146,19 @@ export default async function CourseDetailPage({
 
   const isEnrolled = !!enrollmentRow && enrollmentRow.status !== "dropped";
 
+  // Check if the user has a pending approval request for this course
+  let hasPendingApproval = false;
+  if (!isEnrolled && course.enrollment_type === "approval") {
+    const { data: pendingApproval } = await service
+      .from("enrollment_approvals")
+      .select("id")
+      .eq("learner_id", dbUser.id)
+      .eq("course_id", course.id)
+      .eq("status", "pending")
+      .maybeSingle();
+    hasPendingApproval = !!pendingApproval;
+  }
+
   // If enrolled, check lesson progress
   if (isEnrolled) {
     const allLessonIds = modules.flatMap((m) => m.lessons.map((l) => l.id));
@@ -170,6 +183,66 @@ export default async function CourseDetailPage({
       }
     }
   }
+
+  // Fetch prerequisites for this course
+  const { data: prerequisitesData } = await service
+    .from("course_prerequisites")
+    .select(
+      "id, requirement_type, min_score, prerequisite_course:courses!course_prerequisites_prerequisite_course_id_fkey(id, title, slug, difficulty_level)"
+    )
+    .eq("course_id", course.id)
+    .order("created_at", { ascending: true });
+
+  // Check which prerequisites the user has met
+  const prerequisites: {
+    id: string;
+    title: string;
+    slug: string;
+    requirement_type: string;
+    min_score: number | null;
+    met: boolean;
+  }[] = [];
+
+  if (prerequisitesData && prerequisitesData.length > 0) {
+    for (const prereq of prerequisitesData) {
+      const prereqCourse = prereq.prerequisite_course as any;
+      const prereqCourseId = prereqCourse?.id;
+
+      let met = false;
+
+      if (prereqCourseId) {
+        const { data: prereqEnrollment } = await service
+          .from("enrollments")
+          .select("id, status, score")
+          .eq("user_id", dbUser.id)
+          .eq("course_id", prereqCourseId)
+          .maybeSingle();
+
+        if (prereq.requirement_type === "enrollment") {
+          met = !!prereqEnrollment && prereqEnrollment.status !== "dropped";
+        } else if (prereq.requirement_type === "completion") {
+          met = !!prereqEnrollment && prereqEnrollment.status === "completed";
+        } else if (prereq.requirement_type === "min_score") {
+          met =
+            !!prereqEnrollment &&
+            prereqEnrollment.status === "completed" &&
+            (prereqEnrollment.score ?? 0) >= (prereq.min_score ?? 0);
+        }
+      }
+
+      prerequisites.push({
+        id: prereq.id,
+        title: prereqCourse?.title || "Unknown Course",
+        slug: prereqCourse?.slug || "",
+        requirement_type: prereq.requirement_type,
+        min_score: prereq.min_score,
+        met,
+      });
+    }
+  }
+
+  const allPrerequisitesMet =
+    prerequisites.length === 0 || prerequisites.every((p) => p.met);
 
   // Count enrollments for this course
   const { count: enrolledCount } = await service
@@ -218,6 +291,7 @@ export default async function CourseDetailPage({
   const learningOutcomes: string[] = metadata.learning_outcomes || metadata.learningOutcomes || [];
 
   const courseData: CourseData = {
+    id: course.id,
     slug: course.slug,
     title: course.title,
     shortDescription: course.short_description || course.description || "",
@@ -247,5 +321,14 @@ export default async function CourseDetailPage({
     relatedCourses,
   };
 
-  return <CourseDetailClient course={courseData} initialEnrolled={isEnrolled} />;
+  return (
+    <CourseDetailClient
+      course={courseData}
+      initialEnrolled={isEnrolled}
+      prerequisites={prerequisites}
+      allPrerequisitesMet={allPrerequisitesMet}
+      requiresApproval={course.enrollment_type === "approval"}
+      hasPendingApproval={hasPendingApproval}
+    />
+  );
 }

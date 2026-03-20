@@ -27,6 +27,7 @@ import {
   Loader2,
   X,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 
 export interface CourseItem {
@@ -209,13 +210,22 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
           <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
           <p className="mt-1 text-sm text-gray-500">{courses.length} courses total</p>
         </div>
-        <a
-          href="/admin/courses/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Create Course
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/courses/ai-create"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+          >
+            <Sparkles className="h-4 w-4" />
+            Create with AI
+          </a>
+          <a
+            href="/admin/courses/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create Course
+          </a>
+        </div>
       </div>
 
       {/* Tabs */}

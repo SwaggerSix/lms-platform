@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createCertificationSchema } from "@/lib/validations";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -14,6 +15,8 @@ export async function GET(request: NextRequest) {
   const service = createServiceClient();
   const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   if (!profile) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  const tenantScope = await getTenantScope(profile.id, profile.role, request);
 
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("user_id");

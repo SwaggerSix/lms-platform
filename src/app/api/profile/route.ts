@@ -3,6 +3,34 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
+ * GET /api/profile — return the authenticated user's full profile.
+ */
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const service = createServiceClient();
+
+  const { data: profile, error } = await service
+    .from("users")
+    .select("id, auth_id, first_name, last_name, email, role, job_title, organization_id, manager_id, avatar_url, hire_date, status, preferences, created_at, updated_at")
+    .eq("auth_id", authUser.id)
+    .single();
+
+  if (error || !profile) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(profile);
+}
+
+/**
  * PATCH /api/profile — update the authenticated user's own profile.
  * Uses the service client to bypass RLS, but scoped to the caller's own row.
  */
@@ -49,7 +77,8 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Profile API error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json(data);

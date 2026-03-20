@@ -11,10 +11,22 @@ import {
   AlertTriangle,
   XCircle,
   CheckCircle2,
+  ExternalLink,
+  Eye,
+  Copy,
+  Linkedin,
+  X,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
+import DOMPurify from "dompurify";
+
+/** Escape HTML entities to prevent XSS in certificate templates */
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
 export type CertStatus = "active" | "expiring_soon" | "expired";
 
@@ -27,6 +39,7 @@ export interface Certificate {
   expiryDate: string;
   status: CertStatus;
   credentialId: string;
+  verificationCode?: string | null;
 }
 
 const TABS = [
@@ -62,11 +75,16 @@ function handleDownloadPDF(cert: Certificate, userName: string) {
   const printWindow = window.open("", "_blank");
   if (!printWindow) return;
 
+  const safeName = escapeHtml(cert.name);
+  const safeUser = escapeHtml(userName);
+  const safeCourse = escapeHtml(cert.issuingCourse);
+  const safeCredId = escapeHtml(cert.credentialId);
+
   const html = `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Certificate - ${cert.name}</title>
+      <title>Certificate - ${safeName}</title>
       <style>
         @media print { body { margin: 0; } }
         body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #fff; }
@@ -85,14 +103,14 @@ function handleDownloadPDF(cert: Certificate, userName: string) {
     <body>
       <div class="certificate">
         <div class="header">Certificate of Completion</div>
-        <div class="title">${cert.name}</div>
+        <div class="title">${safeName}</div>
         <div class="subtitle">This certificate is awarded to</div>
-        <div class="recipient">${userName}</div>
-        <div class="course">For successfully completing: ${cert.issuingCourse}</div>
+        <div class="recipient">${safeUser}</div>
+        <div class="course">For successfully completing: ${safeCourse}</div>
         <div class="details">
           <div><div class="label">Issue Date</div>${new Date(cert.issueDate).toLocaleDateString()}</div>
           <div><div class="label">Expiry Date</div>${new Date(cert.expiryDate).toLocaleDateString()}</div>
-          <div><div class="label">Certificate ID</div>${cert.credentialId}</div>
+          <div><div class="label">Certificate ID</div>${safeCredId}</div>
         </div>
       </div>
     </body>
@@ -109,11 +127,92 @@ function handleDownloadPDF(cert: Certificate, userName: string) {
 export default function CertificationsClient({ certificates, userName }: CertificationsClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("active");
   const [renewingId, setRenewingId] = useState<string | null>(null);
+  const [shareMenuId, setShareMenuId] = useState<string | null>(null);
+  const [viewingCert, setViewingCert] = useState<{ svg: string; html: string } | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const router = useRouter();
   const toast = useToast();
 
+  function getVerifyUrl(cert: Certificate): string {
+    const code = cert.verificationCode || cert.credentialId;
+    return `${window.location.origin}/verify/${code}`;
+  }
+
+  async function handleViewCertificate(cert: Certificate) {
+    setGeneratingId(cert.id);
+    try {
+      const res = await fetch("/api/certificates/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_certification_id: cert.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to generate certificate");
+        return;
+      }
+      const data = await res.json();
+      setViewingCert({ svg: data.svg, html: data.html });
+    } catch {
+      toast.error("Failed to generate certificate");
+    } finally {
+      setGeneratingId(null);
+    }
+  }
+
+  function handleDesignedDownloadPDF(cert: Certificate) {
+    // Generate and open in new window for printing
+    handleViewAndDownload(cert);
+  }
+
+  async function handleViewAndDownload(cert: Certificate) {
+    setGeneratingId(cert.id);
+    try {
+      const res = await fetch("/api/certificates/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_certification_id: cert.id }),
+      });
+      if (!res.ok) {
+        // Fall back to old method
+        handleDownloadPDF(cert, userName);
+        return;
+      }
+      const data = await res.json();
+      const sanitizedHtml = DOMPurify.sanitize(data.html, { WHOLE_DOCUMENT: true, ADD_TAGS: ["style", "link"] });
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(sanitizedHtml);
+        printWindow.document.close();
+      }
+    } catch {
+      // Fall back to old method
+      handleDownloadPDF(cert, userName);
+    } finally {
+      setGeneratingId(null);
+    }
+  }
+
+  async function handleCopyLink(cert: Certificate) {
+    const url = getVerifyUrl(cert);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Verification link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy link.");
+    }
+    setShareMenuId(null);
+  }
+
+  function handleShareLinkedIn(cert: Certificate) {
+    const url = getVerifyUrl(cert);
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+    window.open(linkedInUrl, "_blank", "noopener,noreferrer");
+    setShareMenuId(null);
+  }
+
   async function handleShare(cert: Certificate) {
-    const shareUrl = `${window.location.origin}/verify/${cert.credentialId}`;
+    const shareUrl = getVerifyUrl(cert);
     const shareData = {
       title: `Certificate: ${cert.name}`,
       text: `I earned the ${cert.name} certification!`,
@@ -297,22 +396,58 @@ export default function CertificationsClient({ certificates, userName }: Certifi
 
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-gray-100 pt-4">
                   <button
-                    onClick={() => handleDownloadPDF(cert, userName)}
+                    onClick={() => handleViewCertificate(cert)}
+                    disabled={generatingId === cert.id}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {generatingId === cert.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    View Certificate
+                  </button>
+                  <button
+                    onClick={() => handleDesignedDownloadPDF(cert)}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     <Download className="h-4 w-4" /> Download PDF
                   </button>
-                  <button
-                    onClick={() => handleShare(cert)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    <Share2 className="h-4 w-4" /> Share
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShareMenuId(shareMenuId === cert.id ? null : cert.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      <Share2 className="h-4 w-4" /> Share
+                    </button>
+                    {shareMenuId === cert.id && (
+                      <div className="absolute bottom-full mb-1 left-0 z-10 w-56 rounded-lg border border-gray-200 bg-white shadow-lg">
+                        <button
+                          onClick={() => handleCopyLink(cert)}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <Copy className="h-4 w-4 text-gray-400" /> Copy Verification URL
+                        </button>
+                        <button
+                          onClick={() => handleShareLinkedIn(cert)}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <Linkedin className="h-4 w-4 text-blue-600" /> Share to LinkedIn
+                        </button>
+                        <button
+                          onClick={() => { handleShare(cert); setShareMenuId(null); }}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100"
+                        >
+                          <ExternalLink className="h-4 w-4 text-gray-400" /> More Options...
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   {(cert.status === "expiring_soon" || cert.status === "expired") && (
                     <button
                       onClick={() => handleRenew(cert)}
                       disabled={renewingId === cert.id}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
                     >
                       <RefreshCw className={cn("h-4 w-4", renewingId === cert.id && "animate-spin")} /> {renewingId === cert.id ? "Renewing..." : "Renew"}
                     </button>
@@ -333,6 +468,37 @@ export default function CertificationsClient({ certificates, userName }: Certifi
           </div>
         )}
       </div>
+
+      {/* Certificate View Modal */}
+      {viewingCert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="relative max-h-[90vh] max-w-[90vw] overflow-auto rounded-xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
+              <h3 className="text-lg font-semibold text-gray-900">Certificate Preview</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const w = window.open("", "_blank");
+                    if (w) { w.document.write(viewingCert.html); w.document.close(); }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Download className="h-4 w-4" /> Download PDF
+                </button>
+                <button
+                  onClick={() => setViewingCert(null)}
+                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-8 flex justify-center">
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(viewingCert.svg) }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
   Save,
   Send,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 
 type Lesson = {
@@ -31,10 +32,15 @@ type Lesson = {
   required: boolean;
 };
 
+type DripType = 'immediate' | 'after_days' | 'on_date' | 'after_previous';
+
 type Module = {
   id: string;
   title: string;
   lessons: Lesson[];
+  dripType: DripType;
+  dripDays: number;
+  dripDate: string;
 };
 
 const steps = [
@@ -49,13 +55,27 @@ const typeOptions = ['Self-Paced', 'Instructor-Led', 'Blended'];
 const difficultyOptions = ['Beginner', 'Intermediate', 'Advanced'];
 const contentTypeOptions = ['video', 'document', 'audio', 'quiz', 'interactive'];
 const enrollmentTypes = ['Open', 'Approval Required', 'Assigned Only'];
-const prerequisiteOptions = ['Workplace Safety Fundamentals', 'Data Privacy & GDPR', 'Leadership Essentials', 'Advanced Excel', 'Introduction to Python'];
+const requirementTypeLabels: Record<string, string> = {
+  completion: 'Completion',
+  min_score: 'Minimum Score',
+  enrollment: 'Enrollment Only',
+};
 const skillOptions = ['JavaScript', 'Python', 'React', 'SQL', 'Communication', 'Leadership', 'Problem Solving', 'Project Management', 'Data Analysis'];
+
+const dripTypeLabels: Record<DripType, string> = {
+  immediate: 'Immediate',
+  after_days: 'Days After Enrollment',
+  on_date: 'On Specific Date',
+  after_previous: 'After Previous Module',
+};
 
 const initialModules: Module[] = [
   {
     id: 'm1',
     title: 'Getting Started',
+    dripType: 'immediate',
+    dripDays: 0,
+    dripDate: '',
     lessons: [
       { id: 'l1', title: 'Welcome & Course Overview', contentType: 'video', duration: 10, required: true },
       { id: 'l2', title: 'Setting Up Your Environment', contentType: 'document', duration: 15, required: true },
@@ -65,6 +85,9 @@ const initialModules: Module[] = [
   {
     id: 'm2',
     title: 'Core Concepts',
+    dripType: 'immediate',
+    dripDays: 0,
+    dripDate: '',
     lessons: [
       { id: 'l4', title: 'Understanding the Fundamentals', contentType: 'video', duration: 25, required: true },
       { id: 'l5', title: 'Deep Dive: Key Principles', contentType: 'document', duration: 30, required: true },
@@ -117,7 +140,14 @@ export default function CreateCoursePage() {
   const [enrollmentType, setEnrollmentType] = useState('Open');
   const [passingScore, setPassingScore] = useState(70);
   const [maxAttempts, setMaxAttempts] = useState(3);
-  const [prerequisites, setPrerequisites] = useState<string[]>([]);
+  const [prerequisites, setPrerequisites] = useState<
+    { course_id: string; title: string; requirement_type: string; min_score: number | null }[]
+  >([]);
+  const [prereqSearch, setPrereqSearch] = useState('');
+  const [prereqResults, setPrereqResults] = useState<{ id: string; title: string; slug: string }[]>([]);
+  const [prereqSearching, setPrereqSearching] = useState(false);
+  const [prereqReqType, setPrereqReqType] = useState<string>('completion');
+  const [prereqMinScore, setPrereqMinScore] = useState<number>(70);
   const [skills, setSkills] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -143,6 +173,9 @@ export default function CreateCoursePage() {
           modules: modules.map((m, mi) => ({
             title: m.title,
             sequence_order: mi + 1,
+            drip_type: m.dripType || 'immediate',
+            drip_days: m.dripDays || 0,
+            drip_date: m.dripDate || null,
             lessons: m.lessons.map((l, li) => ({
               title: l.title,
               content_type: l.contentType,
@@ -151,7 +184,11 @@ export default function CreateCoursePage() {
               sequence_order: li + 1,
             })),
           })),
-          prerequisites,
+          prerequisites: prerequisites.map((p) => ({
+            course_id: p.course_id,
+            requirement_type: p.requirement_type,
+            min_score: p.min_score,
+          })),
           skills,
         },
         published_at: status === 'published' ? new Date().toISOString() : null,
@@ -191,7 +228,7 @@ export default function CreateCoursePage() {
   };
 
   const addModule = () => {
-    setModules([...modules, { id: `m${Date.now()}`, title: 'New Module', lessons: [] }]);
+    setModules([...modules, { id: `m${Date.now()}`, title: 'New Module', lessons: [], dripType: 'immediate', dripDays: 0, dripDate: '' }]);
   };
 
   const addLesson = (moduleId: string) => {
@@ -212,8 +249,8 @@ export default function CreateCoursePage() {
     ));
   };
 
-  const updateModule = (moduleId: string, title: string) => {
-    setModules(modules.map((m) => m.id === moduleId ? { ...m, title } : m));
+  const updateModule = (moduleId: string, updates: Partial<Module>) => {
+    setModules(modules.map((m) => m.id === moduleId ? { ...m, ...updates } : m));
   };
 
   const updateLesson = (moduleId: string, lessonId: string, updates: Partial<Lesson>) => {
@@ -221,6 +258,65 @@ export default function CreateCoursePage() {
       m.id === moduleId
         ? { ...m, lessons: m.lessons.map((l) => l.id === lessonId ? { ...l, ...updates } : l) }
         : m
+    ));
+  };
+
+  const searchPrerequisites = async (query: string) => {
+    setPrereqSearch(query);
+    if (query.length < 2) {
+      setPrereqResults([]);
+      return;
+    }
+    setPrereqSearching(true);
+    try {
+      const res = await fetch(`/api/courses?search=${encodeURIComponent(query)}&limit=10`);
+      if (res.ok) {
+        const data = await res.json();
+        const courses = Array.isArray(data) ? data : data.courses || [];
+        setPrereqResults(
+          courses
+            .filter((c: any) => !prerequisites.some((p) => p.course_id === c.id))
+            .map((c: any) => ({ id: c.id, title: c.title, slug: c.slug }))
+            .slice(0, 5)
+        );
+      }
+    } catch {
+      // Ignore search errors
+    } finally {
+      setPrereqSearching(false);
+    }
+  };
+
+  const addPrerequisite = (course: { id: string; title: string }) => {
+    if (prerequisites.some((p) => p.course_id === course.id)) return;
+    setPrerequisites([
+      ...prerequisites,
+      {
+        course_id: course.id,
+        title: course.title,
+        requirement_type: prereqReqType,
+        min_score: prereqReqType === 'min_score' ? prereqMinScore : null,
+      },
+    ]);
+    setPrereqSearch('');
+    setPrereqResults([]);
+  };
+
+  const removePrerequisite = (courseId: string) => {
+    setPrerequisites(prerequisites.filter((p) => p.course_id !== courseId));
+  };
+
+  const updatePrerequisiteType = (courseId: string, reqType: string) => {
+    setPrerequisites(prerequisites.map((p) =>
+      p.course_id === courseId
+        ? { ...p, requirement_type: reqType, min_score: reqType === 'min_score' ? (p.min_score ?? 70) : null }
+        : p
+    ));
+  };
+
+  const updatePrerequisiteScore = (courseId: string, score: number) => {
+    setPrerequisites(prerequisites.map((p) =>
+      p.course_id === courseId ? { ...p, min_score: score } : p
     ));
   };
 
@@ -235,6 +331,28 @@ export default function CreateCoursePage() {
           <ChevronLeft className="h-4 w-4" /> Back to Courses
         </a>
         <h1 className="text-2xl font-bold text-gray-900">Create New Course</h1>
+      </div>
+
+      {/* AI Assist Banner */}
+      <div className="rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Want AI to help?</p>
+              <p className="text-xs text-gray-500">Let AI generate a complete course structure from a topic or existing materials.</p>
+            </div>
+          </div>
+          <a
+            href="/admin/courses/ai-create"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+          >
+            <Sparkles className="h-4 w-4" />
+            Create with AI
+          </a>
+        </div>
       </div>
 
       {/* Step Indicator */}
@@ -363,12 +481,52 @@ export default function CreateCoursePage() {
                     <input
                       type="text"
                       value={mod.title}
-                      onChange={(e) => updateModule(mod.id, e.target.value)}
+                      onChange={(e) => updateModule(mod.id, { title: e.target.value })}
                       className="flex-1 bg-transparent text-sm font-semibold text-gray-900 focus:outline-none"
                     />
                     <button onClick={() => removeModule(mod.id)} className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-500">
                       <Trash2 className="h-4 w-4" />
                     </button>
+                  </div>
+                  {/* Drip / Scheduled Release Settings */}
+                  <div className="px-4 py-3 border-b border-gray-200 bg-indigo-50/50">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="text-xs font-medium text-gray-600">Release:</label>
+                      <select
+                        value={mod.dripType}
+                        onChange={(e) => updateModule(mod.id, { dripType: e.target.value as DripType })}
+                        className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      >
+                        {(Object.keys(dripTypeLabels) as DripType[]).map((dt) => (
+                          <option key={dt} value={dt}>{dripTypeLabels[dt]}</option>
+                        ))}
+                      </select>
+                      {mod.dripType === 'after_days' && (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min={0}
+                            value={mod.dripDays}
+                            onChange={(e) => updateModule(mod.id, { dripDays: parseInt(e.target.value) || 0 })}
+                            className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-center text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          />
+                          <span className="text-xs text-gray-500">days after enrollment</span>
+                        </div>
+                      )}
+                      {mod.dripType === 'on_date' && (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="date"
+                            value={mod.dripDate}
+                            onChange={(e) => updateModule(mod.id, { dripDate: e.target.value })}
+                            className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          />
+                        </div>
+                      )}
+                      {mod.dripType === 'after_previous' && mi === 0 && (
+                        <span className="text-xs text-amber-600">First module is always available immediately</span>
+                      )}
+                    </div>
                   </div>
                   <div className="p-3 space-y-2">
                     {mod.lessons.map((lesson, li) => {
@@ -454,20 +612,114 @@ export default function CreateCoursePage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Prerequisites</label>
-              <div className="flex flex-wrap gap-2">
-                {prerequisiteOptions.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPrerequisites(prerequisites.includes(p) ? prerequisites.filter((x) => x !== p) : [...prerequisites, p])}
-                    className={cn(
-                      'rounded-full px-3 py-1.5 text-xs font-medium transition-colors border',
-                      prerequisites.includes(p) ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
+              <p className="text-xs text-gray-500 mb-3">Search for courses to add as prerequisites. Learners must meet these requirements before enrolling.</p>
+
+              {/* Search for courses */}
+              <div className="relative mb-3">
+                <input
+                  type="text"
+                  value={prereqSearch}
+                  onChange={(e) => searchPrerequisites(e.target.value)}
+                  placeholder="Search courses to add as prerequisite..."
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                {prereqResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+                    {prereqResults.map((result) => (
+                      <button
+                        key={result.id}
+                        onClick={() => addPrerequisite(result)}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <BookOpen className="h-4 w-4 text-gray-400" />
+                        {result.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {prereqSearching && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+                    <p className="text-sm text-gray-500 text-center">Searching...</p>
+                  </div>
+                )}
               </div>
+
+              {/* Default requirement type for new additions */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-xs text-gray-500">Default requirement:</span>
+                <select
+                  value={prereqReqType}
+                  onChange={(e) => setPrereqReqType(e.target.value)}
+                  className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="completion">Completion</option>
+                  <option value="min_score">Minimum Score</option>
+                  <option value="enrollment">Enrollment Only</option>
+                </select>
+                {prereqReqType === 'min_score' && (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={prereqMinScore}
+                      onChange={(e) => setPrereqMinScore(parseInt(e.target.value) || 0)}
+                      className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs text-gray-400">%</span>
+                  </div>
+                )}
+              </div>
+
+              {/* List of added prerequisites */}
+              {prerequisites.length > 0 && (
+                <div className="space-y-2">
+                  {prerequisites.map((prereq) => (
+                    <div
+                      key={prereq.course_id}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <BookOpen className="h-4 w-4 text-indigo-500" />
+                        <span className="text-sm font-medium text-gray-900">{prereq.title}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={prereq.requirement_type}
+                          onChange={(e) => updatePrerequisiteType(prereq.course_id, e.target.value)}
+                          className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 focus:outline-none"
+                        >
+                          <option value="completion">Completion</option>
+                          <option value="min_score">Min Score</option>
+                          <option value="enrollment">Enrollment</option>
+                        </select>
+                        {prereq.requirement_type === 'min_score' && (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={prereq.min_score ?? 70}
+                              onChange={(e) => updatePrerequisiteScore(prereq.course_id, parseInt(e.target.value) || 0)}
+                              className="w-14 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none"
+                            />
+                            <span className="text-xs text-gray-400">%</span>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => removePrerequisite(prereq.course_id)}
+                          className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {prerequisites.length === 0 && (
+                <p className="text-xs text-gray-400 italic">No prerequisites added. This course will be open to all learners.</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Skills Mapping</label>
@@ -515,7 +767,16 @@ export default function CreateCoursePage() {
                   {modules.map((m) => (
                     <div key={m.id} className="border-t border-gray-200 pt-2">
                       <p className="text-xs font-medium text-gray-700">{m.title}</p>
-                      <p className="text-xs text-gray-500">{m.lessons.length} lessons</p>
+                      <p className="text-xs text-gray-500">
+                        {m.lessons.length} lessons
+                        {m.dripType !== 'immediate' && (
+                          <span className="ml-2 text-indigo-600">
+                            {m.dripType === 'after_days' && `(unlocks ${m.dripDays} days after enrollment)`}
+                            {m.dripType === 'on_date' && `(unlocks on ${m.dripDate || 'TBD'})`}
+                            {m.dripType === 'after_previous' && '(unlocks after previous module)'}
+                          </span>
+                        )}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -524,7 +785,7 @@ export default function CreateCoursePage() {
                   <div><span className="text-xs text-gray-500">Enrollment</span><p className="text-sm text-gray-700">{enrollmentType}</p></div>
                   <div><span className="text-xs text-gray-500">Passing Score</span><p className="text-sm text-gray-700">{passingScore}%</p></div>
                   <div><span className="text-xs text-gray-500">Max Attempts</span><p className="text-sm text-gray-700">{maxAttempts}</p></div>
-                  {prerequisites.length > 0 && <div><span className="text-xs text-gray-500">Prerequisites</span><div className="flex flex-wrap gap-1 mt-1">{prerequisites.map((p) => <span key={p} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{p}</span>)}</div></div>}
+                  {prerequisites.length > 0 && <div><span className="text-xs text-gray-500">Prerequisites</span><div className="flex flex-wrap gap-1 mt-1">{prerequisites.map((p) => <span key={p.course_id} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{p.title} ({requirementTypeLabels[p.requirement_type] || p.requirement_type}{p.requirement_type === 'min_score' ? `: ${p.min_score}%` : ''})</span>)}</div></div>}
                   {skills.length > 0 && <div><span className="text-xs text-gray-500">Skills</span><div className="flex flex-wrap gap-1 mt-1">{skills.map((s) => <span key={s} className="rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">{s}</span>)}</div></div>}
                 </div>
               </div>

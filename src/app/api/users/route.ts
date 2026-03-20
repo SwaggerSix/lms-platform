@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createUserSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logAudit } from "@/lib/audit";
+import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager");
@@ -12,6 +15,7 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const service = createServiceClient();
   const { searchParams } = new URL(request.url);
+  const tenantScope = await getTenantScope(auth.user.id, auth.user.role, request);
 
   const role = searchParams.get("role");
   const status = searchParams.get("status") || "active";
@@ -28,6 +32,13 @@ export async function GET(request: NextRequest) {
     .eq("status", status)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
+
+  // Apply tenant filtering — only show users in the same tenant
+  if (tenantScope && tenantScope.userIds.length > 0) {
+    query = query.in("id", tenantScope.userIds);
+  } else if (tenantScope && tenantScope.userIds.length === 0) {
+    return NextResponse.json({ users: [], total: 0, page });
+  }
 
   if (role) query = query.eq("role", role);
   if (orgId) query = query.eq("organization_id", orgId);
@@ -53,7 +64,12 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
   const service = createServiceClient();
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const validation = validateBody(createUserSchema, body);
   if (!validation.success) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
@@ -81,6 +97,19 @@ export async function POST(request: NextRequest) {
     user_id: data.id,
     email: data.email,
   }).catch(() => {});
+
+  logAudit({
+    userId: auth.user.id,
+    action: "created",
+    entityType: "user",
+    entityId: data.id,
+    newValues: { email: data.email, role: data.role },
+  });
+
+  // Fire-and-forget: process automation rules for new user
+  processRulesForUser(data.id, "user_created").catch((err) =>
+    console.error("Automation rule processing failed:", err)
+  );
 
   return NextResponse.json(data, { status: 201 });
 }

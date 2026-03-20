@@ -1,0 +1,90 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "8f0b9c26-2b2a-4655-8e36-32ad350ef6e4",
+  "developer": {
+    "name": "Gotham Government",
+    "websiteUrl": "https://learn.gothamgovernment.com",
+    "privacyUrl": "https://learn.gothamgovernment.com/privacy",
+    "termsOfUseUrl": "https://learn.gothamgovernment.com/terms"
+  },
+  "name": {
+    "short": "LearnHub LMS",
+    "full": "LearnHub Learning Management System"
+  },
+  "description": {
+    "short": "Access your learning platform directly in Teams",
+    "full": "LearnHub LMS integration for Microsoft Teams. Access course catalogs, track your learning progress, view certifications, and manage training assignments without leaving Teams."
+  },
+  "icons": {
+    "outline": "icons/outline-32x32.png",
+    "color": "icons/color-192x192.png"
+  },
+  "accentColor": "#4F46E5",
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://learn.gothamgovernment.com/embed/teams-config",
+      "canUpdateConfiguration": true,
+      "scopes": ["team", "groupChat"]
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "dashboard",
+      "name": "Dashboard",
+      "contentUrl": "https://learn.gothamgovernment.com/dashboard?context=teams",
+      "websiteUrl": "https://learn.gothamgovernment.com/dashboard",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "my-courses",
+      "name": "My Courses",
+      "contentUrl": "https://learn.gothamgovernment.com/learn/my-courses?context=teams",
+      "websiteUrl": "https://learn.gothamgovernment.com/learn/my-courses",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "catalog",
+      "name": "Course Catalog",
+      "contentUrl": "https://learn.gothamgovernment.com/learn/catalog?context=teams",
+      "websiteUrl": "https://learn.gothamgovernment.com/learn/catalog",
+      "scopes": ["personal"]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "8f0b9c26-2b2a-4655-8e36-32ad350ef6e4",
+      "scopes": ["personal", "team", "groupChat"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal"],
+          "commands": [
+            {
+              "title": "my courses",
+              "description": "View your enrolled courses and progress"
+            },
+            {
+              "title": "progress",
+              "description": "Check your overall learning progress"
+            },
+            {
+              "title": "help",
+              "description": "Show available commands"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "learn.gothamgovernment.com"
+  ],
+  "webApplicationInfo": {
+    "id": "8f0b9c26-2b2a-4655-8e36-32ad350ef6e4",
+    "resource": "api://learn.gothamgovernment.com/8f0b9c26-2b2a-4655-8e36-32ad350ef6e4"
+  }
+}

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limit: 5 emails per minute per recipient
     const rateLimitKey = `email:${Array.isArray(to) ? to.join(",") : to}`;
-    const { success } = rateLimit(rateLimitKey, 5, 60000);
+    const { success } = await rateLimit(rateLimitKey, 5, 60000);
     if (!success) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -97,8 +97,9 @@ export async function POST(request: NextRequest) {
       subject: emailTemplate.subject,
     });
   } catch (err) {
+    console.error("Email API error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -203,8 +204,9 @@ export async function GET(request: NextRequest) {
       text: template.text,
     });
   } catch (err) {
+    console.error("Email template preview error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Unknown template" },
+      { error: "Internal server error" },
       { status: 400 }
     );
   }

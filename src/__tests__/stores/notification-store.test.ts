@@ -44,24 +44,15 @@ describe("useNotificationStore", () => {
   });
 
   it("fetchNotifications loads and counts unread", async () => {
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockResolvedValue({
-                  data: mockNotifications,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        notifications: mockNotifications,
+        unreadCount: mockNotifications.filter((n) => !n.is_read).length,
       }),
-    };
+    } as Response);
 
-    await useNotificationStore.getState().fetchNotifications(mockSupabase as never, "user-1");
+    await useNotificationStore.getState().fetchNotifications();
 
     const state = useNotificationStore.getState();
     expect(state.notifications).toHaveLength(2);
@@ -76,15 +67,9 @@ describe("useNotificationStore", () => {
       unreadCount: 1,
     });
 
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null }),
-        }),
-      }),
-    };
+    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true } as Response);
 
-    await useNotificationStore.getState().markAsRead(mockSupabase as never, "n1");
+    await useNotificationStore.getState().markAsRead("n1");
 
     const state = useNotificationStore.getState();
     expect(state.notifications.find((n) => n.id === "n1")?.is_read).toBe(true);
@@ -97,17 +82,9 @@ describe("useNotificationStore", () => {
       unreadCount: 1,
     });
 
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ error: null }),
-          }),
-        }),
-      }),
-    };
+    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true } as Response);
 
-    await useNotificationStore.getState().markAllAsRead(mockSupabase as never, "user-1");
+    await useNotificationStore.getState().markAllAsRead();
 
     const state = useNotificationStore.getState();
     expect(state.notifications.every((n) => n.is_read)).toBe(true);

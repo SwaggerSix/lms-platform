@@ -82,7 +82,12 @@ export async function POST(request: NextRequest) {
 
   if (questions?.length) {
     const questionsWithId = questions.map((q: Record<string, unknown>, i: number) => ({
-      ...q,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options,
+      correct_answer: q.correct_answer,
+      points: q.points,
+      explanation: q.explanation,
       assessment_id: assessment.id,
       sequence_order: i + 1,
     }));
@@ -131,7 +136,12 @@ export async function PATCH(request: NextRequest) {
   if (questions?.length) {
     await service.from("questions").delete().eq("assessment_id", id);
     const questionsWithId = questions.map((q: Record<string, unknown>, i: number) => ({
-      ...q,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options,
+      correct_answer: q.correct_answer,
+      points: q.points,
+      explanation: q.explanation,
       assessment_id: id,
       sequence_order: i + 1,
     }));

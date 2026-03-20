@@ -58,6 +58,8 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const [actionFilter, setActionFilter] = useState("All");
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => {
@@ -68,12 +70,24 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
     });
   };
 
-  const filteredEntries = entries.filter((entry) => {
-    const matchesUser = !userSearch || entry.userName.toLowerCase().includes(userSearch.toLowerCase());
-    const matchesAction = actionFilter === "All" || entry.action === actionFilter;
-    const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
-    return matchesUser && matchesAction && matchesEntity;
-  });
+  const filteredEntries = (() => {
+    let result = entries.filter((entry) => {
+      const matchesUser = !userSearch || entry.userName.toLowerCase().includes(userSearch.toLowerCase());
+      const matchesAction = actionFilter === "All" || entry.action === actionFilter;
+      const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
+      return matchesUser && matchesAction && matchesEntity;
+    });
+    if (dateFrom) {
+      result = result.filter(e => e.timestamp >= dateFrom);
+    }
+    if (dateTo) {
+      result = result.filter(e => e.timestamp <= dateTo + " 23:59:59");
+    }
+    return result;
+  })();
+
+  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+  const paginatedEntries = filteredEntries.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleExportLog = () => {
     const dataToExport = filteredEntries.map(entry => ({
@@ -105,15 +119,15 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-400" />
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
             <span className="text-sm text-gray-500">to</span>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search user..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="text" placeholder="Search user..." value={userSearch} onChange={(e) => { setUserSearch(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
-          <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={actionFilter} onChange={(e) => { setActionFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Actions</option>
             <option value="Created">Created</option>
             <option value="Updated">Updated</option>
@@ -121,7 +135,7 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
             <option value="Login">Login</option>
             <option value="Export">Export</option>
           </select>
-          <select value={entityFilter} onChange={(e) => setEntityFilter(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Entities</option>
             <option value="User">User</option>
             <option value="Course">Course</option>
@@ -146,7 +160,7 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {filteredEntries.map((entry) => {
+            {paginatedEntries.map((entry) => {
               const isExpanded = expandedRows.has(entry.id);
               return (
                 <Fragment key={entry.id}>
@@ -196,18 +210,48 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
           </tbody>
         </table>
         <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-3">
-          <p className="text-sm text-gray-500">Showing 1-15 of 342 results</p>
+          <p className="text-sm text-gray-500">
+            Showing {filteredEntries.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredEntries.length)} of {filteredEntries.length} results
+          </p>
           <div className="flex items-center gap-2">
-            <button className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors" disabled>
+            <button
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </button>
-            <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white">1</button>
-            <button className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">2</button>
-            <button className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">3</button>
-            <span className="text-gray-500">...</span>
-            <button className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">23</button>
-            <button className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+              .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                if (idx > 0 && page - (arr[idx - 1] as number) > 1) acc.push("...");
+                acc.push(page);
+                return acc;
+              }, [])
+              .map((item, idx) =>
+                typeof item === "string" ? (
+                  <span key={`ellipsis-${idx}`} className="text-gray-500">...</span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => setCurrentPage(item)}
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium",
+                      currentPage === item
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+                    )}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+            <button
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
               Next
               <ChevronRight className="h-4 w-4" />
             </button>

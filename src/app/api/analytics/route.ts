@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -26,13 +27,18 @@ export async function POST(request: NextRequest) {
     session_id: body.session_id || null,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Analytics API error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
   return NextResponse.json({ success: true }, { status: 201 });
 }
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const tenantScope = await getTenantScope(auth.user.id, auth.user.role, request);
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -41,11 +47,23 @@ export async function GET(request: NextRequest) {
   const metric = searchParams.get("metric");
 
   if (metric === "overview") {
+    let usersQuery = service.from("users").select("*", { count: "exact", head: true }).eq("status", "active");
+    let coursesQuery = service.from("courses").select("*", { count: "exact", head: true }).eq("status", "published");
+    let enrollmentsQuery = service.from("enrollments").select("*", { count: "exact", head: true });
+    let completionsQuery = service.from("enrollments").select("*", { count: "exact", head: true }).eq("status", "completed");
+
+    if (tenantScope) {
+      usersQuery = usersQuery.in("id", tenantScope.userIds);
+      coursesQuery = coursesQuery.in("id", tenantScope.courseIds);
+      enrollmentsQuery = enrollmentsQuery.in("user_id", tenantScope.userIds);
+      completionsQuery = completionsQuery.in("user_id", tenantScope.userIds);
+    }
+
     const [users, courses, enrollments, completions] = await Promise.all([
-      service.from("users").select("*", { count: "exact", head: true }).eq("status", "active"),
-      service.from("courses").select("*", { count: "exact", head: true }).eq("status", "published"),
-      service.from("enrollments").select("*", { count: "exact", head: true }),
-      service.from("enrollments").select("*", { count: "exact", head: true }).eq("status", "completed"),
+      usersQuery,
+      coursesQuery,
+      enrollmentsQuery,
+      completionsQuery,
     ]);
 
     return NextResponse.json({

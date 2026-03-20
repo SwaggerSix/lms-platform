@@ -89,10 +89,12 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
   }, [approvals]);
 
   const filteredApprovals = useMemo(() => {
-    let result = approvals;
+    let result: ApprovalRequest[];
 
     if (activeTab !== "all") {
-      result = result.filter((a) => a.status === activeTab);
+      result = approvals.filter((a) => a.status === activeTab);
+    } else {
+      result = [...approvals];
     }
 
     if (searchQuery) {
@@ -105,7 +107,7 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
       );
     }
 
-    result.sort((a, b) => {
+    result = [...result].sort((a, b) => {
       let cmp = 0;
       if (sortField === "date") {
         cmp = new Date(a.requestDate).getTime() - new Date(b.requestDate).getTime();

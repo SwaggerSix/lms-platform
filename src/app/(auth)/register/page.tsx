@@ -220,6 +220,17 @@ export default function RegisterPage() {
           Sign in
         </Link>
       </p>
+
+      {/* Legal Links */}
+      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+        <Link href="/privacy" className="hover:text-gray-600">
+          Privacy Policy
+        </Link>
+        <span>|</span>
+        <Link href="/terms" className="hover:text-gray-600">
+          Terms of Service
+        </Link>
+      </div>
     </div>
   );
 }

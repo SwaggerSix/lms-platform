@@ -12,7 +12,8 @@ export type AnalyticsEvent =
   | "message_sent"
   | "ilt_registered"
   | "document_viewed"
-  | "search_performed";
+  | "search_performed"
+  | "enrollment_requested";
 
 export async function trackEvent(event: AnalyticsEvent, data?: Record<string, any>) {
   try {

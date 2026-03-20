@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       format: body.format || "pdf",
       is_active: true,
       next_run_at: new Date().toISOString(),
-      created_by: body.created_by || null,
+      created_by: auth.user.id,
     })
     .select()
     .single();

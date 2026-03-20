@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import {
+  getUnifiedRecommendations,
+  getAdaptivePath,
+  getSimilarCourses,
+} from "@/lib/ai/recommendations";
 import RecommendationsClient from "./recommendations-client";
-import type { RecommendedCourse, SkillGapItem } from "./recommendations-client";
+import type { RecommendedCourse, SkillGapItem, AiRecommendation, AdaptivePathData, SimilarCourseBucket } from "./recommendations-client";
 
 export const metadata: Metadata = {
   title: "Recommendations | LMS Platform",
@@ -218,7 +223,150 @@ export default async function RecommendationsPage() {
   for (const c of allCourses) courseById.set(c.id, c);
 
   /* ================================================================ */
-  /*  6. Build recommendation buckets                                  */
+  /*  6. AI-Powered Recommendations                                    */
+  /* ================================================================ */
+
+  // Run AI recommendation engine in parallel with bucket building
+  const [aiScoredPicks, completedEnrollments] = await Promise.all([
+    getUnifiedRecommendations(userId, 10).catch(() => []),
+    service
+      .from("enrollments")
+      .select("course_id, completed_at, course:courses!enrollments_course_id_fkey ( id, title, slug )")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  // Hydrate AI picks
+  let aiGlobalIndex = 0;
+  const aiRecommendations: AiRecommendation[] = [];
+  for (const pick of aiScoredPicks) {
+    const course = courseById.get(pick.courseId);
+    if (!course) continue;
+    const creator = course.creator as any;
+    aiRecommendations.push({
+      id: course.id,
+      slug: course.slug ?? course.id,
+      title: course.title ?? "Untitled Course",
+      instructor:
+        creator?.first_name && creator?.last_name
+          ? `${creator.first_name} ${creator.last_name}`
+          : "Instructor",
+      duration: course.estimated_duration ?? 0,
+      rating: 4.5 + (aiGlobalIndex % 5) * 0.1,
+      enrolledCount: Number(course.enrolled_count?.[0]?.count ?? 0),
+      gradient: pickGradient(aiGlobalIndex),
+      reason: pick.reason,
+      score: pick.score,
+      difficulty_level: course.difficulty_level ?? null,
+      category: course.category?.name ?? null,
+    });
+    aiGlobalIndex++;
+  }
+
+  // Build adaptive path for user's weakest skill
+  let adaptivePath: AdaptivePathData | null = null;
+  const availableSkills: Array<{ id: string; name: string; currentLevel: number }> = [];
+
+  if (userSkillMap.size > 0) {
+    // Get skills below level 5 for skill selector
+    for (const [skillId, info] of userSkillMap) {
+      if (info.level < 5) {
+        availableSkills.push({ id: skillId, name: info.name, currentLevel: info.level });
+      }
+    }
+
+    // Auto-select weakest skill for initial adaptive path
+    const weakestSkill = availableSkills.sort((a, b) => a.currentLevel - b.currentLevel)[0];
+    if (weakestSkill) {
+      try {
+        const path = await getAdaptivePath(userId, weakestSkill.id);
+        if (path) {
+          // Hydrate path courses with full data
+          const pathCourseIds = path.courses.map((c) => c.courseId);
+          let hydratedPathCourses: any[] = [];
+          if (pathCourseIds.length > 0) {
+            const { data: pathData } = await service
+              .from("courses")
+              .select(COURSE_SELECT)
+              .in("id", pathCourseIds)
+              .eq("status", "published");
+            hydratedPathCourses = pathData ?? [];
+          }
+          const pathCourseMap = new Map<string, any>();
+          for (const c of hydratedPathCourses) pathCourseMap.set(c.id, c);
+
+          adaptivePath = {
+            skill: path.skill,
+            skillId: path.skillId,
+            currentLevel: path.currentLevel,
+            targetLevel: path.targetLevel,
+            courses: path.courses
+              .filter((pc) => pathCourseMap.has(pc.courseId))
+              .map((pc, idx) => {
+                const c = pathCourseMap.get(pc.courseId);
+                const creator = c.creator as any;
+                return {
+                  id: c.id,
+                  slug: c.slug ?? c.id,
+                  title: c.title ?? "Untitled Course",
+                  instructor:
+                    creator?.first_name && creator?.last_name
+                      ? `${creator.first_name} ${creator.last_name}`
+                      : "Instructor",
+                  duration: c.estimated_duration ?? 0,
+                  rating: 4.5,
+                  enrolledCount: Number(c.enrolled_count?.[0]?.count ?? 0),
+                  gradient: pickGradient(idx + 10), // offset to vary colors
+                  reason: pc.reason,
+                  difficulty_level: pc.difficulty_level ?? null,
+                  order: pc.order,
+                };
+              }),
+          };
+        }
+      } catch {
+        // Adaptive path is best-effort
+      }
+    }
+  }
+
+  // Build "Because You Completed X" similar courses
+  const similarBuckets: SimilarCourseBucket[] = [];
+  for (const enrollment of completedEnrollments.data ?? []) {
+    const completedCourse = enrollment.course as any;
+    if (!completedCourse) continue;
+
+    try {
+      const simCourses = await getSimilarCourses(enrollment.course_id, 4);
+      if (simCourses.length === 0) continue;
+
+      const hydratedSim: RecommendedCourse[] = [];
+      let simIdx = 0;
+      for (const sim of simCourses) {
+        const c = courseById.get(sim.courseId);
+        if (!c) continue;
+        const rec = toCourse(c, simIdx + 20, sim.reason);
+        hydratedSim.push(rec);
+        simIdx++;
+      }
+
+      if (hydratedSim.length > 0) {
+        similarBuckets.push({
+          completedCourseId: enrollment.course_id,
+          completedCourseTitle: completedCourse.title,
+          completedCourseSlug: completedCourse.slug,
+          courses: hydratedSim,
+        });
+      }
+    } catch {
+      // Similar courses are best-effort
+    }
+  }
+
+  /* ================================================================ */
+  /*  7. Build existing recommendation buckets                         */
   /* ================================================================ */
 
   const usedIds = new Set<string>();
@@ -231,12 +379,9 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ A) "Based on Your Skills" ------ */
-  // Courses that teach skills the user already has (deepen expertise)
-  // or skills related to what they've learned
   const skillBasedCourses: RecommendedCourse[] = [];
 
   if (userSkillMap.size > 0) {
-    // Find courses that teach skills the user has but at a higher proficiency
     const scoredCourses: Array<{ course: any; reason: string; score: number }> = [];
 
     for (const c of allCourses) {
@@ -256,12 +401,11 @@ export default async function RecommendationsPage() {
       }
     }
 
-    // Also match courses by tags overlapping with user's completed course tags
     if (scoredCourses.length < 6) {
       for (const c of allCourses) {
         const courseTags = Array.isArray(c.tags) ? c.tags : [];
         for (const tag of courseTags) {
-          if (userSkillMap.has(tag)) continue; // already handled via course_skills
+          if (userSkillMap.has(tag)) continue;
           const matchingSkill = [...userSkillMap.values()].find(
             (s) => s.name.toLowerCase() === tag.toLowerCase()
           );
@@ -285,7 +429,6 @@ export default async function RecommendationsPage() {
     }
   }
 
-  // Fallback: if user has no skills tracked, use tag matching from completed courses
   if (skillBasedCourses.length === 0 && completedTags.size > 0) {
     for (const c of allCourses) {
       if (skillBasedCourses.length >= 6) break;
@@ -299,18 +442,15 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ B) Skill Gap Items ------ */
-  // Find skills the user has at low proficiency and courses that can close the gap
   const skillGapItems: SkillGapItem[] = [];
 
-  // First: skills required by competency frameworks that user is missing or low on
   const frameworkGaps: Array<{ skillId: string; skillName: string; gap: number; courseId: string }> = [];
 
   for (const reqSkillId of requiredSkillIds) {
     const userSkill = userSkillMap.get(reqSkillId);
     const currentLevel = userSkill?.level ?? 0;
-    if (currentLevel >= 5) continue; // already mastered
+    if (currentLevel >= 5) continue;
 
-    // Find a course that teaches this skill
     for (const c of allCourses) {
       if (usedIds.has(c.id)) continue;
       const courseSkills = courseToSkills.get(c.id);
@@ -328,7 +468,6 @@ export default async function RecommendationsPage() {
     }
   }
 
-  // Then: any user skill below proficiency 3
   for (const [skillId, info] of userSkillMap) {
     if (info.level >= 3) continue;
     if (frameworkGaps.some((g) => g.skillId === skillId)) continue;
@@ -359,13 +498,12 @@ export default async function RecommendationsPage() {
     if (rec) {
       skillGapItems.push({
         skill: g.skillName,
-        gap: Math.min(g.gap, 4), // cap at 4 for UI display
+        gap: Math.min(g.gap, 4),
         course: rec,
       });
     }
   }
 
-  // Fallback: if no course_skills data, use tag-based gaps
   if (skillGapItems.length === 0 && userSkillMap.size > 0) {
     for (const c of allCourses) {
       if (skillGapItems.length >= 3) break;
@@ -390,10 +528,8 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ C) "Popular with Your Peers" ------ */
-  // Most enrolled courses in the user's organization
   const popularCourses: RecommendedCourse[] = [];
 
-  // Sort remaining courses by enrollment count descending
   const remainingByPopularity = allCourses
     .filter((c) => !usedIds.has(c.id))
     .map((c) => ({
@@ -403,8 +539,6 @@ export default async function RecommendationsPage() {
     .sort((a, b) => b._enrolled_count - a._enrolled_count);
 
   if (orgId) {
-    // Prefer courses where peers in the same org are enrolled
-    // We check if any user in the same org is enrolled in these courses
     const { data: orgUserIds } = await service
       .from("users")
       .select("id")
@@ -426,7 +560,6 @@ export default async function RecommendationsPage() {
         peerCourseCount.set(pe.course_id, (peerCourseCount.get(pe.course_id) ?? 0) + 1);
       }
 
-      // Sort by peer enrollment count
       const peerSorted = [...peerCourseCount.entries()]
         .sort((a, b) => b[1] - a[1])
         .map(([courseId, count]) => ({ courseId, count }));
@@ -441,7 +574,6 @@ export default async function RecommendationsPage() {
     }
   }
 
-  // Fill remaining popular slots from global popularity
   for (const c of remainingByPopularity) {
     if (popularCourses.length >= 6) break;
     if (usedIds.has(c.id)) continue;
@@ -452,7 +584,6 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ D) "Continue Learning" ------ */
-  // Courses in the same categories as the user's completed courses
   const continueLearningCourses: RecommendedCourse[] = [];
 
   if (completedCategoryIds.size > 0) {
@@ -468,7 +599,6 @@ export default async function RecommendationsPage() {
     }
   }
 
-  // Fallback: courses with tags matching completed course tags
   if (continueLearningCourses.length < 3 && completedTags.size > 0) {
     for (const c of allCourses) {
       if (continueLearningCourses.length >= 6) break;
@@ -483,7 +613,6 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ E) "New & Trending" ------ */
-  // Recently published courses with decent enrollment
   const trendingCourses: RecommendedCourse[] = [];
 
   const recentCourses = allCourses
@@ -506,12 +635,9 @@ export default async function RecommendationsPage() {
   }
 
   /* ------ F) "Required for Your Role" ------ */
-  // Courses from compliance_requirements matching user's role or org
-  // Plus courses teaching skills from competency frameworks for user's job title
   const requiredForRoleCourses: RecommendedCourse[] = [];
 
   if (jobTitle || orgId) {
-    // Check compliance requirements
     let complianceQuery = service
       .from("compliance_requirements")
       .select("course_id, name")
@@ -524,14 +650,12 @@ export default async function RecommendationsPage() {
       if (!req.course_id) continue;
       if (enrolledCourseIds.has(req.course_id)) continue;
 
-      // Check if this requirement applies to the user's role or org
       const course = courseById.get(req.course_id);
       if (!course || usedIds.has(req.course_id)) continue;
       const rec = take(course, `Required: ${req.name}`);
       if (rec) requiredForRoleCourses.push(rec);
     }
 
-    // Also add courses that teach skills required by competency frameworks
     if (requiredForRoleCourses.length < 6 && requiredSkillIds.size > 0) {
       for (const c of allCourses) {
         if (requiredForRoleCourses.length >= 6) break;
@@ -546,7 +670,6 @@ export default async function RecommendationsPage() {
       }
     }
 
-    // Fallback: courses tagged with user's job title keywords
     if (requiredForRoleCourses.length === 0 && jobTitle) {
       const titleWords = jobTitle
         .toLowerCase()
@@ -576,7 +699,7 @@ export default async function RecommendationsPage() {
   }
 
   /* ================================================================ */
-  /*  7. Render                                                        */
+  /*  8. Render                                                        */
   /* ================================================================ */
 
   return (
@@ -587,6 +710,10 @@ export default async function RecommendationsPage() {
       trending={trendingCourses}
       requiredForRole={requiredForRoleCourses}
       skillGaps={skillGapItems}
+      aiRecommendations={aiRecommendations}
+      adaptivePath={adaptivePath}
+      similarBuckets={similarBuckets}
+      availableSkills={availableSkills}
     />
   );
 }

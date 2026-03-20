@@ -27,7 +27,6 @@ export async function GET() {
     .from("notifications")
     .select("*")
     .eq("user_id", profile.id)
-    .eq("channel", "in_app")
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -46,7 +45,12 @@ export async function POST(request: NextRequest) {
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
   const validation = validateBody(createNotificationSchema, body);
   if (!validation.success) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
@@ -113,7 +117,7 @@ export async function POST(request: NextRequest) {
   let userQuery = service.from("users").select("id");
   if (audienceType !== "all") {
     // audience can be a role or department value
-    userQuery = userQuery.or(`role.eq.${audienceType},department.eq.${audienceType}`);
+    userQuery = userQuery.eq("role", audienceType);
   }
 
   const { data: targetUsers } = await userQuery;
@@ -144,14 +148,21 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   const service = createServiceClient();
-  const body = await request.json();
+
+  const { data: authUser } = await supabase.auth.getUser();
+  if (!authUser.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
   // Mark all read (existing behavior)
   if (body.mark_all_read) {
-    const { data: authUser } = await supabase.auth.getUser();
-    if (!authUser.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const { data: profile } = await service
       .from("users")
@@ -172,11 +183,6 @@ export async function PATCH(request: NextRequest) {
 
   // Mark single notification as read (existing behavior)
   if (body.id && !body.title) {
-    const { data: authUser } = await supabase.auth.getUser();
-    if (!authUser.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { data: notifProfile } = await service
       .from("users")
       .select("id")

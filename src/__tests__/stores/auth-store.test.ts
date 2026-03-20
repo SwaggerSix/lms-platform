@@ -43,41 +43,25 @@ describe("useAuthStore", () => {
     expect(useAuthStore.getState().user).toBeNull();
   });
 
-  it("fetchProfile sets loading state and fetches user", async () => {
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: mockUser,
-              error: null,
-            }),
-          }),
-        }),
-      }),
-    };
+  it("fetchProfile sets loading state and fetches user from API", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUser,
+    } as Response);
 
-    await useAuthStore.getState().fetchProfile(mockSupabase as never, "auth-1");
+    await useAuthStore.getState().fetchProfile();
 
     expect(useAuthStore.getState().user).toEqual(mockUser);
     expect(useAuthStore.getState().isLoading).toBe(false);
   });
 
   it("fetchProfile handles errors gracefully", async () => {
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: "Not found" },
-            }),
-          }),
-        }),
-      }),
-    };
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+    } as Response);
 
-    await useAuthStore.getState().fetchProfile(mockSupabase as never, "bad-id");
+    await useAuthStore.getState().fetchProfile();
 
     expect(useAuthStore.getState().user).toBeNull();
     expect(useAuthStore.getState().isLoading).toBe(false);

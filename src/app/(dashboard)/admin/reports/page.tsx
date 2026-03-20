@@ -49,6 +49,10 @@ export default async function ReportsPage() {
     redirect("/login");
   }
 
+  if (!["admin", "manager"].includes(dbUser.role)) {
+    redirect("/dashboard");
+  }
+
   // Run all aggregate queries in parallel
   const [
     totalEnrollmentsResult,

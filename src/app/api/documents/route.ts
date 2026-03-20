@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import type { DocumentVisibility } from "@/types/database";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 /**
  * GET /api/documents

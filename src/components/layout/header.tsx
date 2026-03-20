@@ -18,6 +18,7 @@ import { useRealtimeSubscription } from "@/hooks/use-realtime";
 import { useNotificationStore } from "@/stores/notification-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
+import GlobalSearch from "@/components/layout/global-search";
 import type { Notification } from "@/types/database";
 
 function relativeTime(dateStr: string): string {
@@ -178,38 +179,14 @@ export default function Header({ onMenuToggle }: HeaderProps) {
       {/* Right side */}
       <div className="flex items-center gap-2">
         {/* Search */}
-        <div className="relative" role="search">
-          {searchOpen && (
-            <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center">
-              <label htmlFor="header-search" className="sr-only">
-                Search
-              </label>
-              <input
-                id="header-search"
-                type="search"
-                placeholder="Search..."
-                autoFocus
-                className="w-64 rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              />
-              <button
-                onClick={() => setSearchOpen(false)}
-                className="absolute right-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md"
-                aria-label="Close search"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-          )}
-          {!searchOpen && (
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              aria-label="Open search"
-            >
-              <Search className="h-5 w-5" aria-hidden="true" />
-            </button>
-          )}
-        </div>
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          aria-label="Open search"
+        >
+          <Search className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>

@@ -74,8 +74,37 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
   const [badgePoints, setBadgePoints] = useState(0);
   const [savingBadge, setSavingBadge] = useState(false);
 
+  const [showRuleModal, setShowRuleModal] = useState(false);
+  const [ruleAction, setRuleAction] = useState("");
+  const [rulePoints, setRulePoints] = useState(10);
+  const [ruleDescription, setRuleDescription] = useState("");
+
   const toggleRule = (id: string) => {
     setPointRules((prev) => prev.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)));
+  };
+
+  const updateRulePoints = (id: string, points: number) => {
+    setPointRules((prev) => prev.map((r) => (r.id === id ? { ...r, points } : r)));
+  };
+
+  const addRule = () => {
+    if (!ruleAction.trim()) return;
+    const newRule: PointRule = {
+      id: crypto.randomUUID(),
+      action: ruleAction,
+      points: rulePoints,
+      description: ruleDescription,
+      enabled: true,
+    };
+    setPointRules((prev) => [...prev, newRule]);
+    setShowRuleModal(false);
+    setRuleAction("");
+    setRulePoints(10);
+    setRuleDescription("");
+  };
+
+  const deleteRule = (id: string) => {
+    setPointRules((prev) => prev.filter((r) => r.id !== id));
   };
 
   const handleSaveRules = async () => {
@@ -214,6 +243,16 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       </div>
 
       {activeTab === "Point Rules" && (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowRuleModal(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Point Rule
+            </button>
+          </div>
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full">
             <thead>
@@ -222,6 +261,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Points</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
                 <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -243,7 +283,13 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">+{rule.points} pts</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={rule.points}
+                      onChange={(e) => updateRulePoints(rule.id, parseInt(e.target.value) || 0)}
+                      className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm font-semibold text-indigo-700 text-center focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{rule.description}</td>
                   <td className="px-6 py-4 text-center">
@@ -252,6 +298,11 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                       className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", rule.enabled ? "bg-indigo-600" : "bg-gray-300")}
                     >
                       <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", rule.enabled ? "translate-x-6" : "translate-x-1")} />
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button onClick={() => deleteRule(rule.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Delete rule">
+                      <X className="h-4 w-4" />
                     </button>
                   </td>
                 </tr>
@@ -267,6 +318,82 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
               {savingRules ? "Saving..." : "Save Changes"}
             </button>
           </div>
+        </div>
+
+        {/* Add Rule Modal */}
+        {showRuleModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Add Point Rule</h3>
+                <button onClick={() => setShowRuleModal(false)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"><X className="h-5 w-5" /></button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Action Name</label>
+                  <select
+                    value={ruleAction}
+                    onChange={(e) => {
+                      setRuleAction(e.target.value);
+                      const descs: Record<string, string> = {
+                        "Course Completion": "Points awarded when a learner completes a course",
+                        "Quiz Pass": "Points awarded for passing a quiz",
+                        "Perfect Score": "Bonus points for achieving 100% on assessments",
+                        "Discussion Post": "Points for contributing to discussions",
+                        "Daily Login": "Points for logging in each day",
+                        "Learning Streak (7-day)": "Bonus for maintaining a 7-day learning streak",
+                        "Enrollment": "Points for enrolling in a new course",
+                        "Path Completion": "Points for completing a full learning path",
+                        "Peer Review": "Points for reviewing another learner's work",
+                        "Certificate Earned": "Points when a certificate is issued",
+                        "Help Others": "Points for answering questions in discussions",
+                      };
+                      setRuleDescription(descs[e.target.value] || "");
+                    }}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="">— Select an action —</option>
+                    <option value="Course Completion">Course Completion</option>
+                    <option value="Quiz Pass">Quiz Pass</option>
+                    <option value="Perfect Score">Perfect Score</option>
+                    <option value="Discussion Post">Discussion Post</option>
+                    <option value="Daily Login">Daily Login</option>
+                    <option value="Learning Streak (7-day)">Learning Streak (7-day)</option>
+                    <option value="Enrollment">Enrollment</option>
+                    <option value="Path Completion">Path Completion</option>
+                    <option value="Peer Review">Peer Review</option>
+                    <option value="Certificate Earned">Certificate Earned</option>
+                    <option value="Help Others">Help Others</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Points Awarded</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={rulePoints}
+                    onChange={(e) => setRulePoints(parseInt(e.target.value) || 0)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <input
+                    type="text"
+                    value={ruleDescription}
+                    onChange={(e) => setRuleDescription(e.target.value)}
+                    placeholder="Describe when these points are awarded"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button onClick={() => setShowRuleModal(false)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                  <button onClick={addRule} disabled={!ruleAction.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">Add Rule</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
       )}
 

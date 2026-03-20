@@ -3,6 +3,44 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
+ * GET /api/profile/skills — return the authenticated user's skills list.
+ */
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const service = createServiceClient();
+
+  const { data: profile } = await service
+    .from("users")
+    .select("id")
+    .eq("auth_id", authUser.id)
+    .single();
+
+  if (!profile) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const { data: skills, error } = await service
+    .from("user_skills")
+    .select("proficiency_level, source, assessed_at, skill:skills(id, name, category)")
+    .eq("user_id", profile.id);
+
+  if (error) {
+    console.error("Profile skills GET error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  return NextResponse.json(skills ?? []);
+}
+
+/**
  * POST /api/profile/skills — upsert a self-assessed skill for the current user.
  * Uses the service client to bypass RLS.
  */

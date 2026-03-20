@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Upload, Plus, Send, Globe, Loader2, Copy } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
@@ -51,7 +51,7 @@ export interface SettingsData {
 
 const webhookEvents = ["user.created", "user.updated", "course.completed", "enrollment.created", "certificate.issued", "quiz.submitted"];
 
-const tabs = ["General", "Branding", "Email", "Features", "API"] as const;
+const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations"] as const;
 
 export default function SettingsClient({ data }: { data: SettingsData }) {
   const toast = useToast();
@@ -62,9 +62,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const [dateFormat, setDateFormat] = useState(data.general.dateFormat);
   const [primaryColor, setPrimaryColor] = useState(data.branding.primaryColor);
   const [accentColor, setAccentColor] = useState(data.branding.accentColor);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   const [notifications, setNotifications] = useState(data.notifications.types);
   const [emailFooter, setEmailFooter] = useState(data.notifications.emailFooter);
-  const [features, setFeatures] = useState(data.features);
+  const [features, setFeatures] = useState(Array.isArray(data.features) ? data.features : []);
   const [webhookUrl, setWebhookUrl] = useState(data.notifications.webhookUrl);
   const [selectedWebhookEvents, setSelectedWebhookEvents] = useState<Set<string>>(new Set(data.notifications.selectedWebhookEvents));
 
@@ -83,6 +87,22 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       else next.add(event);
       return next;
     });
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setFaviconUrl(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(data.apiKeys);
@@ -269,12 +289,17 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
-            <div className="flex items-center justify-center w-full max-w-md h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
-              <div className="text-center">
-                <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">Click to upload or drag and drop</p>
-                <p className="text-xs text-gray-400">SVG, PNG, JPG (max. 2MB)</p>
-              </div>
+            <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            <div onClick={() => logoInputRef.current?.click()} className="flex items-center justify-center w-full max-w-md h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo preview" className="max-h-28 max-w-full object-contain" />
+              ) : (
+                <div className="text-center">
+                  <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-500">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-400">SVG, PNG, JPG (max. 2MB)</p>
+                </div>
+              )}
             </div>
           </div>
           <div>
@@ -293,11 +318,16 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Favicon</label>
-            <div className="flex items-center justify-center w-32 h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
-              <div className="text-center">
-                <Upload className="mx-auto h-6 w-6 text-gray-400" />
-                <p className="mt-1 text-xs text-gray-500">Upload favicon</p>
-              </div>
+            <input ref={faviconInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
+            <div onClick={() => faviconInputRef.current?.click()} className="flex items-center justify-center w-32 h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+              {faviconUrl ? (
+                <img src={faviconUrl} alt="Favicon preview" className="max-h-28 max-w-full object-contain" />
+              ) : (
+                <div className="text-center">
+                  <Upload className="mx-auto h-6 w-6 text-gray-400" />
+                  <p className="mt-1 text-xs text-gray-500">Upload favicon</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="pt-4 border-t border-gray-200">
@@ -493,6 +523,23 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 Save Changes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Integrations" && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Video Conferencing Integrations</h3>
+              <p className="mt-1 text-xs text-gray-500">Connect Zoom, Microsoft Teams, or Google Meet to auto-create meetings for ILT sessions.</p>
+            </div>
+            <a
+              href="/admin/settings/integrations"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              Manage Integrations
+            </a>
           </div>
         </div>
       )}

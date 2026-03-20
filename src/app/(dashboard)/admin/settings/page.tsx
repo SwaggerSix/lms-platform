@@ -29,6 +29,7 @@ const defaultFeatures: FeatureToggle[] = [
   { id: "4", name: "Self-Registration", description: "Allow users to create their own accounts", enabled: false },
   { id: "5", name: "Course Ratings", description: "Allow learners to rate and review courses", enabled: true },
   { id: "6", name: "Learning Paths", description: "Enable learning path feature", enabled: true },
+  { id: "evaluations", name: "Evaluations", description: "Enable post-training evaluation surveys (Kirkpatrick L1–L4)", enabled: true },
 ];
 
 const defaultNotifications = {
@@ -63,12 +64,16 @@ export default async function SettingsPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id")
+    .select("id, role")
     .eq("auth_id", user.id)
     .single();
 
   if (!dbUser) {
     redirect("/login");
+  }
+
+  if (dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+    redirect("/dashboard");
   }
 
   // Fetch all platform_settings rows
@@ -92,7 +97,7 @@ export default async function SettingsPage() {
       ...defaultBranding,
       ...(settingsMap["branding"] ?? {}),
     },
-    features: (settingsMap["features"] as FeatureToggle[] | undefined) ?? defaultFeatures,
+    features: Array.isArray(settingsMap["features"]) ? settingsMap["features"] as FeatureToggle[] : defaultFeatures,
     notifications: {
       ...defaultNotifications,
       ...(settingsMap["notifications"] ?? {}),

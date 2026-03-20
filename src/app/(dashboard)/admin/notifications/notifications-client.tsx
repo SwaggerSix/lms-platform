@@ -335,11 +335,12 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     </div>
                     {formAudienceType === "department" && (
                       <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        <option value="engineering">Engineering</option>
-                        <option value="sales">Sales</option>
-                        <option value="marketing">Marketing</option>
+                        <option value="executive">Executive</option>
                         <option value="hr">HR</option>
+                        <option value="operations">Operations</option>
                         <option value="finance">Finance</option>
+                        <option value="training-delivery">Training Delivery</option>
+                        <option value="training-development">Training Development</option>
                       </select>
                     )}
                     {formAudienceType === "role" && (

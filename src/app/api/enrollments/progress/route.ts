@@ -3,6 +3,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { checkAndAwardBadges, awardPoints } from "@/lib/gamification/awards";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
+import { trackLearningEvent } from "@/lib/ai/track-event";
+import { createEvaluationAssignments } from "@/lib/evaluations/create-assignments";
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -116,6 +118,16 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  // ---- Track learning events (fire-and-forget) ----
+  if (lesson_id && status === "completed") {
+    trackLearningEvent({
+      userId: profile.id,
+      eventType: "complete_lesson",
+      courseId: enrollment.course_id,
+      metadata: { lesson_id, enrollment_id },
+    }).catch(() => {});
+  }
+
   // ---- Gamification: award points and check badges ----
   let newBadges: unknown[] = [];
   let courseCompleted = false;
@@ -211,11 +223,26 @@ export async function PATCH(request: NextRequest) {
             // Gamification errors should not block completion
           }
 
+          // Track course completion event (fire-and-forget)
+          trackLearningEvent({
+            userId: profile.id,
+            eventType: "complete_course",
+            courseId: enrollment.course_id,
+            metadata: { enrollment_id },
+          }).catch(() => {});
+
           // Fire enrollment.completed webhook (non-blocking)
           dispatchWebhook("enrollment.completed", {
             enrollment_id,
             user_id: profile.id,
             course_id: enrollment.course_id,
+          }).catch(() => {});
+
+          // Create evaluation survey assignments for this course (non-blocking)
+          createEvaluationAssignments({
+            userId: profile.id,
+            courseId: enrollment.course_id,
+            enrollmentId: enrollment_id,
           }).catch(() => {});
         }
       }

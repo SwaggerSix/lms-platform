@@ -21,10 +21,14 @@ export default async function TeamPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id")
+    .select("id, role")
     .eq("auth_id", user.id)
     .single();
   if (!dbUser) redirect("/login");
+
+  if (!["admin", "manager"].includes(dbUser.role)) {
+    redirect("/dashboard");
+  }
 
   // Fetch users managed by the current user
   const { data: users } = await service
@@ -86,7 +90,7 @@ export default async function TeamPage() {
       avatar,
       coursesInProgress: counts.inProgress,
       coursesCompleted: counts.completed,
-      isCompliant: true,
+      isCompliant: total > 0 ? overallProgress >= 80 : false,
       overallProgress,
       lastActive: u.updated_at ?? u.created_at ?? "",
       status,

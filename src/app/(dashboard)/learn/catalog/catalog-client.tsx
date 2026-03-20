@@ -11,6 +11,7 @@ import {
   ChevronRight,
   X,
   BookOpen,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration, formatNumber } from "@/utils/format";
@@ -33,6 +34,8 @@ export interface CatalogCourse {
   category: string;
   gradient: string;
   createdAt: string;
+  hasUnmetPrerequisites?: boolean;
+  requiresApproval?: boolean;
 }
 
 const CATEGORIES = ["Technology", "Leadership", "Business", "Compliance", "Soft Skills"];
@@ -298,14 +301,13 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                   {DIFFICULTIES.map((diff) => (
                     <label key={diff} className="flex cursor-pointer items-center gap-2">
                       <input
-                        type="radio"
-                        name="difficulty"
+                        type="checkbox"
                         checked={selectedDifficulty === diff}
                         onChange={() => {
                           setSelectedDifficulty(selectedDifficulty === diff ? "" : diff);
                           setCurrentPage(1);
                         }}
-                        className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                       <span className="text-sm text-gray-600">{diff}</span>
                     </label>
@@ -368,11 +370,23 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     {/* Thumbnail */}
                     <div
                       className={cn(
-                        "flex h-40 items-center justify-center bg-gradient-to-br",
+                        "relative flex h-40 items-center justify-center bg-gradient-to-br",
                         course.gradient
                       )}
                     >
                       <BookOpen className="h-12 w-12 text-white/60" />
+                      {course.hasUnmetPrerequisites && (
+                        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                          <Lock className="h-3 w-3" />
+                          Prerequisites required
+                        </div>
+                      )}
+                      {course.requiresApproval && !course.hasUnmetPrerequisites && (
+                        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                          <Lock className="h-3 w-3" />
+                          Approval required
+                        </div>
+                      )}
                     </div>
                     {/* Content */}
                     <div className="p-5">

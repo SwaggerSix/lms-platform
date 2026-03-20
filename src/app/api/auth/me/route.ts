@@ -17,7 +17,7 @@ export async function GET() {
   const service = createServiceClient();
   const { data, error } = await service
     .from("users")
-    .select("*, organization:organizations(*)")
+    .select("id, first_name, last_name, email, role, status, job_title, avatar_url, organization_id, manager_id, hire_date, preferences, created_at, organization:organizations(id, name, type)")
     .eq("auth_id", user.id)
     .single();
 

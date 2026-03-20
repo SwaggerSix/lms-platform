@@ -72,8 +72,10 @@ export default async function DashboardPage() {
     .eq("auth_id", user.id)
     .single();
 
-  const userName = dbUser?.first_name ?? "Learner";
-  const userId = dbUser?.id;
+  if (!dbUser) redirect("/login");
+
+  const userName = dbUser.first_name ?? "Learner";
+  const userId = dbUser.id;
 
   // Run all counts and queries in parallel
   const [

@@ -3,9 +3,15 @@
   "configurations": [
     {
       "name": "lms-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "-p", "3003"],
+      "port": 3003
+    },
+    {
+      "name": "lms-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3004"],
+      "port": 3004
     }
   ]
 }

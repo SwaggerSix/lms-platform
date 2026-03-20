@@ -44,7 +44,7 @@ export default async function CoursesPage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin") redirect("/dashboard");
+  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
 
   const { data: rows, error } = await service
     .from('courses')

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -27,6 +29,7 @@ export interface PathCourse {
 }
 
 export interface PathDetailData {
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -60,18 +63,39 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 
 export default function PathDetailClient({ path, initialEnrolled }: PathDetailClientProps) {
   const [enrolled, setEnrolled] = useState(initialEnrolled);
+  const [enrolling, setEnrolling] = useState(false);
+  const router = useRouter();
+
+  const handleEnroll = useCallback(async () => {
+    setEnrolling(true);
+    try {
+      const res = await fetch("/api/paths/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path_id: path.id }),
+      });
+      if (res.ok || res.status === 409) {
+        setEnrolled(true);
+        router.refresh();
+      }
+    } catch {
+      // Silently fail — user can retry
+    } finally {
+      setEnrolling(false);
+    }
+  }, [path.id, router]);
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
       <div className={cn("bg-gradient-to-r px-6 py-12 text-white", path.gradient)}>
         <div className="mx-auto max-w-7xl">
-          <a
+          <Link
             href="/learn/paths"
             className="mb-4 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Learning Paths
-          </a>
+          </Link>
           <h1 className="text-3xl font-bold md:text-4xl">{path.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">{path.description}</p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
@@ -181,12 +205,12 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                       )}
 
                       {course.status === "in_progress" && (
-                        <a
+                        <Link
                           href={`/learn/player/${course.id}`}
                           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                         >
                           Continue Learning
-                        </a>
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -253,10 +277,11 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                 ) : (
                   <>
                     <button
-                      onClick={() => setEnrolled(true)}
-                      className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+                      onClick={handleEnroll}
+                      disabled={enrolling}
+                      className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                     >
-                      Enroll in Path
+                      {enrolling ? "Enrolling…" : "Enroll in Path"}
                     </button>
                     <p className="mt-3 text-center text-xs text-gray-500">
                       {path.enrolledCount.toLocaleString()} learners enrolled
