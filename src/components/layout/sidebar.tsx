@@ -231,12 +231,11 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-gray-800 px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600" aria-hidden="true">
-          <GraduationCap className="h-5 w-5 text-white" />
-        </div>
-        {!collapsed && (
-          <span className="text-lg font-bold tracking-tight">LearnHub</span>
+      <div className="flex h-16 items-center border-b border-gray-800 px-3">
+        {collapsed ? (
+          <img src="/learnhub-icon.svg" alt="LearnHub" className="h-9 w-9 shrink-0" />
+        ) : (
+          <img src="/learnhub-logo.svg" alt="LearnHub" className="h-9 w-auto" />
         )}
       </div>
 

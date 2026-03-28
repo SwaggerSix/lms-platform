@@ -30,7 +30,8 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={direction}>
       <head>
-        <meta name="theme-color" content="#4f46e5" />
+        <meta name="theme-color" content="#005089" />
+        <link rel="icon" href="/learnhub-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="antialiased">

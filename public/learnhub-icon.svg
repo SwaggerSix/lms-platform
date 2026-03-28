@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <rect x="0" y="0" width="120" height="120" rx="26" fill="#005089"/>
+  <!-- Green knowledge arc (mirrors CoachHub's coaching arc) -->
+  <path d="M 24 64 C 7 33 11 14 60 10 C 109 14 113 33 96 64"
+        fill="none" stroke="#91C53D" stroke-width="9" stroke-linecap="round"/>
+  <!-- Open book: left page -->
+  <path d="M 60 64 L 16 73 L 16 101 L 60 93 Z" fill="white"/>
+  <!-- Open book: right page -->
+  <path d="M 60 64 L 104 73 L 104 101 L 60 93 Z" fill="white"/>
+  <!-- Book spine -->
+  <line x1="60" y1="63" x2="60" y2="94" stroke="#91C53D" stroke-width="4" stroke-linecap="round"/>
+</svg>

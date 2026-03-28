@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <style>
+      @import url('https://cdn.jsdelivr.net/npm/@fontsource/roboto-slab@5/300.css');
+      @import url('https://cdn.jsdelivr.net/npm/@fontsource/roboto-slab@5/600.css');
+    </style>
+  </defs>
+
+  <!-- Icon mark -->
+  <g transform="translate(0,0)">
+    <rect x="0" y="0" width="120" height="120" rx="26" fill="#005089"/>
+    <path d="M 24 64 C 7 33 11 14 60 10 C 109 14 113 33 96 64"
+          fill="none" stroke="#91C53D" stroke-width="9" stroke-linecap="round"/>
+    <path d="M 60 64 L 16 73 L 16 101 L 60 93 Z" fill="white"/>
+    <path d="M 60 64 L 104 73 L 104 101 L 60 93 Z" fill="white"/>
+    <line x1="60" y1="63" x2="60" y2="94" stroke="#91C53D" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="140" y="78"
+        font-family="'Roboto Slab', Georgia, serif"
+        font-size="54"
+        font-weight="300"
+        fill="#4B4F53"
+        letter-spacing="-1.2">Learn</text>
+  <text x="299" y="78"
+        font-family="'Roboto Slab', Georgia, serif"
+        font-size="54"
+        font-weight="600"
+        fill="#91C53D"
+        letter-spacing="-1.2">Hub</text>
+</svg>
