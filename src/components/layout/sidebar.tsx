@@ -231,7 +231,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-800 px-3">
+      <div className="flex h-16 items-center border-b border-gray-800 bg-white px-3">
         {collapsed ? (
           <img src="/learnhub-icon.svg" alt="LearnHub" className="h-9 w-9 shrink-0" />
         ) : (
