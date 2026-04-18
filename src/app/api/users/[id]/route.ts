@@ -83,12 +83,16 @@ export async function DELETE(
     .eq("id", id)
     .single();
 
-  if (fetchError || !existing) {
-    if (fetchError?.code === "PGRST116" || !existing) {
+  if (fetchError) {
+    if (fetchError.code === "PGRST116") {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     console.error("Users API error:", fetchError.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  if (!existing) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const { error: deleteError } = await service.from("users").delete().eq("id", id);
