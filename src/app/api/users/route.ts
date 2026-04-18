@@ -108,7 +108,11 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await service
     .from("users")
-    .insert({ ...sanitized, auth_id: authCreated.user.id })
+    .insert({
+      ...sanitized,
+      auth_id: authCreated.user.id,
+      preferences: { must_change_password: true },
+    })
     .select()
     .single();
 

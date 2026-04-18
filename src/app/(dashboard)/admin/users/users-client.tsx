@@ -526,6 +526,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Share these credentials with the user. This password will not be shown again — copy it now.
+              On first login they will be prompted to set their own password.
             </p>
             <div className="space-y-3">
               <div>
