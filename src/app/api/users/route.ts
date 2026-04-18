@@ -7,6 +7,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import crypto from "crypto";
+
+// 16 bytes base64url ≈ 22 chars; Supabase requires ≥6.
+function generateTemporaryPassword(): string {
+  return crypto.randomBytes(16).toString("base64url");
+}
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager");
@@ -81,13 +87,38 @@ export async function POST(request: NextRequest) {
     Object.entries(validation.data).filter(([key]) => allowedFields.includes(key))
   );
 
+  // Create a Supabase auth account so the invited user can actually log in.
+  // Without this, the users row exists but has no auth_id, so signInWithPassword
+  // fails and authorize() can't find the profile.
+  const temporaryPassword = generateTemporaryPassword();
+  const { data: authCreated, error: authErr } = await service.auth.admin.createUser({
+    email: validation.data.email,
+    password: temporaryPassword,
+    email_confirm: true,
+  });
+
+  if (authErr || !authCreated?.user) {
+    const msg = authErr?.message || "";
+    if (/registered|exists/i.test(msg)) {
+      return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 });
+    }
+    console.error("Users API auth create error:", msg);
+    return NextResponse.json({ error: "Failed to create auth account" }, { status: 500 });
+  }
+
   const { data, error } = await service
     .from("users")
-    .insert(sanitized)
+    .insert({
+      ...sanitized,
+      auth_id: authCreated.user.id,
+      preferences: { must_change_password: true },
+    })
     .select()
     .single();
 
   if (error) {
+    // Roll back the orphaned auth user so the admin can retry with the same email.
+    await service.auth.admin.deleteUser(authCreated.user.id).catch(() => {});
     console.error("Users API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -111,5 +142,5 @@ export async function POST(request: NextRequest) {
     console.error("Automation rule processing failed:", err)
   );
 
-  return NextResponse.json(data, { status: 201 });
+  return NextResponse.json({ ...data, temporary_password: temporaryPassword }, { status: 201 });
 }

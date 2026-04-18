@@ -87,6 +87,9 @@ export default function UsersClient({ users, organizations = [] }: { users: User
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Credentials modal shown after a new user is created
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
+
   const resetForm = () => {
     setFormFirstName('');
     setFormLastName('');
@@ -129,6 +132,9 @@ export default function UsersClient({ users, organizations = [] }: { users: User
         avatar: `${(created.first_name ?? formFirstName)[0]}${(created.last_name ?? formLastName)[0]}`.toUpperCase(),
       };
       setUserList((prev) => [newUser, ...prev]);
+      if (created.temporary_password) {
+        setCredentials({ email: newUser.email, password: created.temporary_password });
+      }
       resetForm();
       setShowModal(false);
     } catch (err: any) {
@@ -502,6 +508,58 @@ export default function UsersClient({ users, organizations = [] }: { users: User
                 className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generated Credentials Modal */}
+      {credentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Login credentials</h2>
+              <button onClick={() => setCredentials(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Share these credentials with the user. This password will not be shown again — copy it now.
+              On first login they will be prompted to set their own password.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                <div className="flex items-center gap-2">
+                  <input readOnly value={credentials.email} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(credentials.email)}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Temporary password</label>
+                <div className="flex items-center gap-2">
+                  <input readOnly value={credentials.password} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(credentials.password)}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setCredentials(null)}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                Done
               </button>
             </div>
           </div>
