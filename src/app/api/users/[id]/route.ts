@@ -70,27 +70,42 @@ export async function DELETE(
   const auth = await authorize("admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const supabase = await createClient();
   const service = createServiceClient();
   const { id } = await params;
 
-  const { data, error } = await service
+  if (id === auth.user.id) {
+    return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
+  }
+
+  const { data: existing, error: fetchError } = await service
     .from("users")
-    .update({ status: "inactive", deactivated_at: new Date().toISOString() })
+    .select("id, email, auth_id")
     .eq("id", id)
-    .select()
     .single();
 
-  if (error) {
-    if (error.code === "PGRST116") {
+  if (fetchError) {
+    if (fetchError.code === "PGRST116") {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    console.error("Users API error:", error.message);
+    console.error("Users API error:", fetchError.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  if (!data) {
+  if (!existing) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const { error: deleteError } = await service.from("users").delete().eq("id", id);
+
+  if (deleteError) {
+    console.error("Users API error:", deleteError.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  if (existing.auth_id) {
+    await service.auth.admin.deleteUser(existing.auth_id).catch((err) => {
+      console.error("Failed to delete auth user:", err);
+    });
   }
 
   logAudit({
@@ -98,7 +113,8 @@ export async function DELETE(
     action: "deleted",
     entityType: "user",
     entityId: id,
+    oldValues: { email: existing.email },
   });
 
-  return NextResponse.json({ message: "User deactivated successfully" });
+  return NextResponse.json({ message: "User deleted successfully" });
 }

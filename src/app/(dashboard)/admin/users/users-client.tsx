@@ -15,6 +15,8 @@ import {
   KeyRound,
   X,
   Filter,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 export interface UserItem {
@@ -89,6 +91,10 @@ export default function UsersClient({ users, organizations = [] }: { users: User
 
   // Credentials modal shown after a new user is created
   const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
+
+  // Delete confirmation modal
+  const [deleteConfirm, setDeleteConfirm] = useState<UserItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const resetForm = () => {
     setFormFirstName('');
@@ -165,6 +171,36 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       setError(err.message ?? 'Something went wrong');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteClick = (userId: string) => {
+    setOpenMenu(null);
+    const user = userList.find((u) => u.id === userId);
+    if (!user) return;
+    setError(null);
+    setDeleteConfirm(user);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/users/${deleteConfirm.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || 'Failed to delete user');
+      }
+      setUserList((prev) => prev.filter((u) => u.id !== deleteConfirm.id));
+      toast.success('User deleted');
+      setDeleteConfirm(null);
+    } catch (err: any) {
+      setError(err.message ?? 'Something went wrong');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -388,6 +424,9 @@ export default function UsersClient({ users, organizations = [] }: { users: User
                         <button onClick={() => handleResetPassword(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                           <KeyRound className="h-3.5 w-3.5" /> Reset Password
                         </button>
+                        <button onClick={() => handleDeleteClick(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                          <Trash2 className="h-3.5 w-3.5" /> Delete User
+                        </button>
                       </div>
                     )}
                   </div>
@@ -431,6 +470,47 @@ export default function UsersClient({ users, organizations = [] }: { users: User
             >
               Next <ChevronRight className="h-4 w-4" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => !isDeleting && setDeleteConfirm(null)}>
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Delete User</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone.</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to permanently delete{' '}
+              <span className="font-medium text-gray-900">{deleteConfirm.firstName} {deleteConfirm.lastName}</span>?
+              Their account and access to the platform will be removed.
+            </p>
+            {error && (
+              <p className="mb-4 text-sm text-red-600">{error}</p>
+            )}
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}
