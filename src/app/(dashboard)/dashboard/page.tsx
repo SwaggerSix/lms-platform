@@ -66,11 +66,38 @@ export default async function DashboardPage() {
 
   // Use service client to bypass RLS (avoids infinite recursion in users policy)
   const service = createServiceClient();
-  const { data: dbUser } = await service
+  let { data: dbUser } = await service
     .from("users")
     .select("id, first_name")
     .eq("auth_id", user.id)
     .single();
+
+  // Auto-provision a profile if it's missing (e.g. registration API failed mid-signup).
+  // Without this, redirecting to /login here causes a loop with middleware, which
+  // sends authenticated users on /login back to /dashboard — the dashboard then
+  // flashes the loading skeleton repeatedly.
+  if (!dbUser) {
+    const meta = (user.user_metadata ?? {}) as {
+      first_name?: string;
+      last_name?: string;
+    };
+    const { data: created } = await service
+      .from("users")
+      .upsert(
+        {
+          auth_id: user.id,
+          email: user.email ?? "",
+          first_name: meta.first_name?.trim() || "New",
+          last_name: meta.last_name?.trim() || "User",
+          role: "learner",
+          status: "active",
+        },
+        { onConflict: "auth_id" }
+      )
+      .select("id, first_name")
+      .single();
+    dbUser = created;
+  }
 
   if (!dbUser) redirect("/login");
 
