@@ -54,13 +54,17 @@ function hashCode(str: string): number {
 }
 
 export default async function DashboardPage() {
+  console.log("[dashboard] page render start");
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log("[dashboard] auth user:", user?.id, user?.email);
+
   if (!user) {
+    console.log("[dashboard] no auth user, redirecting to /login");
     redirect("/login");
   }
 
@@ -99,7 +103,12 @@ export default async function DashboardPage() {
     dbUser = created;
   }
 
-  if (!dbUser) redirect("/login");
+  if (!dbUser) {
+    console.log("[dashboard] dbUser still null after auto-provision, redirecting");
+    redirect("/login");
+  }
+
+  console.log("[dashboard] dbUser found, id:", dbUser.id);
 
   const userName = dbUser.first_name ?? "Learner";
   const userId = dbUser.id;
@@ -306,6 +315,16 @@ export default async function DashboardPage() {
     upcomingDeadlines,
     spotlightCourses,
   };
+
+  console.log("[dashboard] rendering client with data:", {
+    userName,
+    coursesInProgress,
+    coursesCompleted,
+    certificatesEarned,
+    inProgressCount: inProgressCourses.length,
+    deadlinesCount: upcomingDeadlines.length,
+    spotlightCount: spotlightCourses.length,
+  });
 
   return <LearnerDashboardClient data={dashboardData} />;
 }
