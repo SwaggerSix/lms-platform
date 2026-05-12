@@ -62,43 +62,129 @@ export default async function CourseCatalogPage() {
   if (!user) redirect("/login");
 
   const service = createServiceClient();
-  const { data: dbUser } = await service
+  let { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser) redirect("/login");
 
-  const { data: dbCourses } = await service
-    .from("courses")
-    .select("*, category:categories(name)")
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  // Auto-provision a profile if missing — try by auth_id first, then by email
+  // (for invited/imported users), then insert. Mirrors /dashboard.
+  if (!dbUser && user.email) {
+    const { data: byEmail } = await service
+      .from("users")
+      .select("id, auth_id")
+      .eq("email", user.email)
+      .maybeSingle();
 
-  // Fetch all prerequisites in one query
+    if (byEmail) {
+      const { data: linked } = await service
+        .from("users")
+        .update({ auth_id: user.id })
+        .eq("id", byEmail.id)
+        .select("id")
+        .single();
+      dbUser = linked ?? { id: byEmail.id };
+    } else {
+      const meta = (user.user_metadata ?? {}) as {
+        first_name?: string;
+        last_name?: string;
+      };
+      const { data: created, error: insertErr } = await service
+        .from("users")
+        .insert({
+          auth_id: user.id,
+          email: user.email,
+          first_name: meta.first_name?.trim() || "New",
+          last_name: meta.last_name?.trim() || "User",
+          role: "learner",
+          status: "active",
+        })
+        .select("id")
+        .single();
+      if (insertErr) console.error("[catalog] insert error", insertErr);
+      dbUser = created;
+    }
+  }
+
+  if (!dbUser) {
+    console.error("[catalog] dbUser null; refusing to redirect-loop. Auth user:", user.id, user.email);
+    return (
+      <div className="mx-auto max-w-2xl p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900">We couldn&apos;t load your profile</h1>
+        <p className="mt-2 text-gray-600">
+          Please contact support and mention this email: {user.email}.
+        </p>
+      </div>
+    );
+  }
+
+  // Don't let one failing query blank the catalog. Log and return empty.
+  const safe = async (
+    label: string,
+    p: PromiseLike<{ data: unknown }>
+  ): Promise<unknown[] | null> => {
+    try {
+      const { data } = await p;
+      return Array.isArray(data) ? (data as unknown[]) : null;
+    } catch (err) {
+      console.error(`[catalog] query failed: ${label}`, err);
+      return null;
+    }
+  };
+
+  type DbCourse = {
+    id: string;
+    slug: string;
+    title: string;
+    description: string | null;
+    short_description: string | null;
+    difficulty_level: string;
+    course_type: string;
+    estimated_duration: number | null;
+    enrollment_type: string;
+    created_at: string;
+    category: { name: string } | null;
+  };
+  type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
+  type Enrollment = { course_id: string; status: string; score: number | null };
+
+  const dbCourses = (await safe(
+    "courses",
+    service
+      .from("courses")
+      .select("*, category:categories(name)")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(50)
+  )) as DbCourse[] | null;
+
   const courseIds = (dbCourses ?? []).map((c) => c.id);
-  const { data: allPrereqs } = courseIds.length > 0
-    ? await service
-        .from("course_prerequisites")
-        .select("course_id, prerequisite_course_id, requirement_type, min_score")
-        .in("course_id", courseIds)
-    : { data: [] };
+  const allPrereqs = courseIds.length > 0
+    ? ((await safe(
+        "prereqs",
+        service
+          .from("course_prerequisites")
+          .select("course_id, prerequisite_course_id, requirement_type, min_score")
+          .in("course_id", courseIds)
+      )) as Prereq[] | null)
+    : [];
 
-  // Fetch user's enrollments to check prerequisite status
-  const { data: userEnrollments } = await service
-    .from("enrollments")
-    .select("course_id, status, score")
-    .eq("user_id", dbUser.id);
+  const userEnrollments = (await safe(
+    "userEnrollments",
+    service
+      .from("enrollments")
+      .select("course_id, status, score")
+      .eq("user_id", dbUser.id)
+  )) as Enrollment[] | null;
 
   const enrollmentMap = new Map(
     (userEnrollments ?? []).map((e) => [e.course_id, e])
   );
 
-  // Group prerequisites by course_id
-  const prereqsByCourse = new Map<string, typeof allPrereqs>();
+  const prereqsByCourse = new Map<string, Prereq[]>();
   for (const prereq of allPrereqs ?? []) {
-    const list = prereqsByCourse.get(prereq.course_id) || [];
+    const list = prereqsByCourse.get(prereq.course_id) ?? [];
     list.push(prereq);
     prereqsByCourse.set(prereq.course_id, list);
   }

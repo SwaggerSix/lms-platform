@@ -54,13 +54,17 @@ function hashCode(str: string): number {
 }
 
 export default async function DashboardPage() {
+  console.log("[dashboard] page render start");
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log("[dashboard] auth user:", user?.id, user?.email);
+
   if (!user) {
+    console.log("[dashboard] no auth user, redirecting to /login");
     redirect("/login");
   }
 
@@ -72,39 +76,96 @@ export default async function DashboardPage() {
     .eq("auth_id", user.id)
     .single();
 
-  // Auto-provision a profile if it's missing (e.g. registration API failed mid-signup).
-  // Without this, redirecting to /login here causes a loop with middleware, which
-  // sends authenticated users on /login back to /dashboard — the dashboard then
-  // flashes the loading skeleton repeatedly.
-  if (!dbUser) {
-    const meta = (user.user_metadata ?? {}) as {
-      first_name?: string;
-      last_name?: string;
-    };
-    const { data: created } = await service
+  // Auto-provision a profile if it's missing (e.g. registration API failed
+  // mid-signup, or the row exists under a different auth_id because the email
+  // was previously invited/imported). Without this, redirecting to /login
+  // loops with middleware which sends authenticated users on /login back
+  // to /dashboard.
+  if (!dbUser && user.email) {
+    console.log("[dashboard] no profile by auth_id, trying by email");
+
+    // Look for an existing row with the same email — invited/imported users
+    // often have an email row created before they ever signed up with Supabase
+    // Auth, so their auth_id will be NULL or a stale value.
+    const { data: byEmail } = await service
       .from("users")
-      .upsert(
-        {
+      .select("id, first_name, auth_id")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (byEmail) {
+      console.log("[dashboard] linking existing email row to auth_id");
+      const { data: linked, error: linkErr } = await service
+        .from("users")
+        .update({ auth_id: user.id })
+        .eq("id", byEmail.id)
+        .select("id, first_name")
+        .single();
+      if (linkErr) console.error("[dashboard] link error", linkErr);
+      dbUser = linked ?? { id: byEmail.id, first_name: byEmail.first_name };
+    } else {
+      console.log("[dashboard] inserting new profile");
+      const meta = (user.user_metadata ?? {}) as {
+        first_name?: string;
+        last_name?: string;
+      };
+      const { data: created, error: insertErr } = await service
+        .from("users")
+        .insert({
           auth_id: user.id,
-          email: user.email ?? "",
+          email: user.email,
           first_name: meta.first_name?.trim() || "New",
           last_name: meta.last_name?.trim() || "User",
           role: "learner",
           status: "active",
-        },
-        { onConflict: "auth_id" }
-      )
-      .select("id, first_name")
-      .single();
-    dbUser = created;
+        })
+        .select("id, first_name")
+        .single();
+      if (insertErr) console.error("[dashboard] insert error", insertErr);
+      dbUser = created;
+    }
   }
 
-  if (!dbUser) redirect("/login");
+  if (!dbUser) {
+    console.error("[dashboard] dbUser still null after auto-provision; refusing to redirect-loop. Auth user:", user.id, user.email);
+    // Don't redirect to /login — middleware will bounce back and loop.
+    // Render a minimal fallback so the user sees something instead of a blank.
+    return (
+      <div className="mx-auto max-w-2xl p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900">We couldn&apos;t load your profile</h1>
+        <p className="mt-2 text-gray-600">
+          Your account is signed in but we couldn&apos;t find or create a learner
+          profile. Please contact support and mention this email: {user.email}.
+        </p>
+      </div>
+    );
+  }
+
+  console.log("[dashboard] dbUser found, id:", dbUser.id);
 
   const userName = dbUser.first_name ?? "Learner";
   const userId = dbUser.id;
 
-  // Run all counts and queries in parallel
+  // Run all counts and queries in parallel. Each is wrapped so one failing
+  // query can't blank the whole dashboard for a user — the page must always
+  // render something (even if just the welcome banner and zeroed stats).
+  type QueryResult = { data: unknown[] | null; count: number | null };
+  const safe = async (
+    label: string,
+    p: PromiseLike<{ data: unknown; count?: number | null }>
+  ): Promise<QueryResult> => {
+    try {
+      const { data, count } = await p;
+      return {
+        data: Array.isArray(data) ? (data as unknown[]) : null,
+        count: count ?? null,
+      };
+    } catch (err) {
+      console.error(`[dashboard] query failed: ${label}`, err);
+      return { data: null, count: null };
+    }
+  };
+
   const [
     inProgressCountResult,
     completedCountResult,
@@ -113,75 +174,87 @@ export default async function DashboardPage() {
     deadlinesResult,
     spotlightResult,
   ] = await Promise.all([
-    // Count courses in progress
-    service
-      .from("enrollments")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("status", "in_progress"),
+    safe(
+      "inProgressCount",
+      service
+        .from("enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "in_progress")
+    ),
 
-    // Count completed courses
-    service
-      .from("enrollments")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("status", "completed"),
+    safe(
+      "completedCount",
+      service
+        .from("enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "completed")
+    ),
 
-    // Count certificates earned
-    service
-      .from("user_certifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId),
+    safe(
+      "certsCount",
+      service
+        .from("user_certifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+    ),
 
-    // Fetch in-progress enrollments with course data
-    service
-      .from("enrollments")
-      .select(`
-        id,
-        time_spent,
-        course:courses (
+    safe(
+      "inProgressCourses",
+      service
+        .from("enrollments")
+        .select(`
+          id,
+          time_spent,
+          course:courses (
+            id,
+            title,
+            estimated_duration,
+            category:categories ( name )
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("status", "in_progress")
+        .limit(3)
+    ),
+
+    safe(
+      "deadlines",
+      service
+        .from("enrollments")
+        .select(`
+          id,
+          due_date,
+          course:courses (
+            title,
+            course_type
+          )
+        `)
+        .eq("user_id", userId)
+        .not("due_date", "is", null)
+        .gte("due_date", new Date().toISOString())
+        .order("due_date", { ascending: true })
+        .limit(4)
+    ),
+
+    safe(
+      "spotlight",
+      service
+        .from("courses")
+        .select(`
           id,
           title,
+          description,
           estimated_duration,
-          category:categories ( name )
-        )
-      `)
-      .eq("user_id", userId)
-      .eq("status", "in_progress")
-      .limit(3),
-
-    // Fetch upcoming deadlines
-    service
-      .from("enrollments")
-      .select(`
-        id,
-        due_date,
-        course:courses (
-          title,
-          course_type
-        )
-      `)
-      .eq("user_id", userId)
-      .not("due_date", "is", null)
-      .gte("due_date", new Date().toISOString())
-      .order("due_date", { ascending: true })
-      .limit(4),
-
-    // Fetch spotlight courses (most recent published)
-    service
-      .from("courses")
-      .select(`
-        id,
-        title,
-        description,
-        estimated_duration,
-        course_type,
-        created_by,
-        instructor:users!courses_created_by_fkey ( first_name, last_name )
-      `)
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(3),
+          course_type,
+          created_by,
+          instructor:users!courses_created_by_fkey ( first_name, last_name )
+        `)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(3)
+    ),
   ]);
 
   const coursesInProgress = inProgressCountResult.count ?? 0;
@@ -278,6 +351,16 @@ export default async function DashboardPage() {
     upcomingDeadlines,
     spotlightCourses,
   };
+
+  console.log("[dashboard] rendering client with data:", {
+    userName,
+    coursesInProgress,
+    coursesCompleted,
+    certificatesEarned,
+    inProgressCount: inProgressCourses.length,
+    deadlinesCount: upcomingDeadlines.length,
+    spotlightCount: spotlightCourses.length,
+  });
 
   return <LearnerDashboardClient data={dashboardData} />;
 }
