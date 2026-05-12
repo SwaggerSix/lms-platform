@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
       // Create a corresponding profile in the users table via registration API
       if (signUpData.user) {
-        await fetch("/api/auth/register", {
+        const profileRes = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -63,6 +63,14 @@ export default function RegisterPage() {
             last_name: lastName,
           }),
         });
+
+        if (!profileRes.ok) {
+          const { error: msg } = await profileRes
+            .json()
+            .catch(() => ({ error: "Failed to create profile" }));
+          setError(msg ?? "Failed to create profile. Please try again.");
+          return;
+        }
       }
 
       router.push("/dashboard");
