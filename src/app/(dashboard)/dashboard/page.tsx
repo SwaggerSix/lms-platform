@@ -104,7 +104,23 @@ export default async function DashboardPage() {
   const userName = dbUser.first_name ?? "Learner";
   const userId = dbUser.id;
 
-  // Run all counts and queries in parallel
+  // Run all counts and queries in parallel. Each is wrapped so one failing
+  // query can't blank the whole dashboard for a user — the page must always
+  // render something (even if just the welcome banner and zeroed stats).
+  type QueryResult = { data: any[] | null; count: number | null };
+  const safe = async (
+    label: string,
+    p: PromiseLike<{ data: any; count?: number | null }>
+  ): Promise<QueryResult> => {
+    try {
+      const { data, count } = await p;
+      return { data: data ?? null, count: count ?? null };
+    } catch (err) {
+      console.error(`[dashboard] query failed: ${label}`, err);
+      return { data: null, count: null };
+    }
+  };
+
   const [
     inProgressCountResult,
     completedCountResult,
@@ -113,75 +129,87 @@ export default async function DashboardPage() {
     deadlinesResult,
     spotlightResult,
   ] = await Promise.all([
-    // Count courses in progress
-    service
-      .from("enrollments")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("status", "in_progress"),
+    safe(
+      "inProgressCount",
+      service
+        .from("enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "in_progress")
+    ),
 
-    // Count completed courses
-    service
-      .from("enrollments")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("status", "completed"),
+    safe(
+      "completedCount",
+      service
+        .from("enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "completed")
+    ),
 
-    // Count certificates earned
-    service
-      .from("user_certifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId),
+    safe(
+      "certsCount",
+      service
+        .from("user_certifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+    ),
 
-    // Fetch in-progress enrollments with course data
-    service
-      .from("enrollments")
-      .select(`
-        id,
-        time_spent,
-        course:courses (
+    safe(
+      "inProgressCourses",
+      service
+        .from("enrollments")
+        .select(`
+          id,
+          time_spent,
+          course:courses (
+            id,
+            title,
+            estimated_duration,
+            category:categories ( name )
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("status", "in_progress")
+        .limit(3)
+    ),
+
+    safe(
+      "deadlines",
+      service
+        .from("enrollments")
+        .select(`
+          id,
+          due_date,
+          course:courses (
+            title,
+            course_type
+          )
+        `)
+        .eq("user_id", userId)
+        .not("due_date", "is", null)
+        .gte("due_date", new Date().toISOString())
+        .order("due_date", { ascending: true })
+        .limit(4)
+    ),
+
+    safe(
+      "spotlight",
+      service
+        .from("courses")
+        .select(`
           id,
           title,
+          description,
           estimated_duration,
-          category:categories ( name )
-        )
-      `)
-      .eq("user_id", userId)
-      .eq("status", "in_progress")
-      .limit(3),
-
-    // Fetch upcoming deadlines
-    service
-      .from("enrollments")
-      .select(`
-        id,
-        due_date,
-        course:courses (
-          title,
-          course_type
-        )
-      `)
-      .eq("user_id", userId)
-      .not("due_date", "is", null)
-      .gte("due_date", new Date().toISOString())
-      .order("due_date", { ascending: true })
-      .limit(4),
-
-    // Fetch spotlight courses (most recent published)
-    service
-      .from("courses")
-      .select(`
-        id,
-        title,
-        description,
-        estimated_duration,
-        course_type,
-        created_by,
-        instructor:users!courses_created_by_fkey ( first_name, last_name )
-      `)
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(3),
+          course_type,
+          created_by,
+          instructor:users!courses_created_by_fkey ( first_name, last_name )
+        `)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(3)
+    ),
   ]);
 
   const coursesInProgress = inProgressCountResult.count ?? 0;

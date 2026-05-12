@@ -62,43 +62,93 @@ export default async function CourseCatalogPage() {
   if (!user) redirect("/login");
 
   const service = createServiceClient();
-  const { data: dbUser } = await service
+  let { data: dbUser } = await service
     .from("users")
     .select("id")
     .eq("auth_id", user.id)
     .single();
+
+  // Auto-provision a profile if missing (same as /dashboard) so a half-finished
+  // signup doesn't bounce the user between /login and /learn/catalog.
+  if (!dbUser) {
+    const meta = (user.user_metadata ?? {}) as {
+      first_name?: string;
+      last_name?: string;
+    };
+    const { data: created } = await service
+      .from("users")
+      .upsert(
+        {
+          auth_id: user.id,
+          email: user.email ?? "",
+          first_name: meta.first_name?.trim() || "New",
+          last_name: meta.last_name?.trim() || "User",
+          role: "learner",
+          status: "active",
+        },
+        { onConflict: "auth_id" }
+      )
+      .select("id")
+      .single();
+    dbUser = created;
+  }
+
   if (!dbUser) redirect("/login");
 
-  const { data: dbCourses } = await service
-    .from("courses")
-    .select("*, category:categories(name)")
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  // Don't let one failing query blank the catalog. Log and return empty.
+  const safe = async (
+    label: string,
+    p: PromiseLike<{ data: any }>
+  ): Promise<any[] | null> => {
+    try {
+      const { data } = await p;
+      return data ?? null;
+    } catch (err) {
+      console.error(`[catalog] query failed: ${label}`, err);
+      return null;
+    }
+  };
+
+  const dbCourses = await safe(
+    "courses",
+    service
+      .from("courses")
+      .select("*, category:categories(name)")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(50)
+  );
 
   // Fetch all prerequisites in one query
   const courseIds = (dbCourses ?? []).map((c) => c.id);
-  const { data: allPrereqs } = courseIds.length > 0
-    ? await service
-        .from("course_prerequisites")
-        .select("course_id, prerequisite_course_id, requirement_type, min_score")
-        .in("course_id", courseIds)
-    : { data: [] };
+  const allPrereqs = courseIds.length > 0
+    ? await safe(
+        "prereqs",
+        service
+          .from("course_prerequisites")
+          .select("course_id, prerequisite_course_id, requirement_type, min_score")
+          .in("course_id", courseIds)
+      )
+    : [];
 
   // Fetch user's enrollments to check prerequisite status
-  const { data: userEnrollments } = await service
-    .from("enrollments")
-    .select("course_id, status, score")
-    .eq("user_id", dbUser.id);
+  const userEnrollments = await safe(
+    "userEnrollments",
+    service
+      .from("enrollments")
+      .select("course_id, status, score")
+      .eq("user_id", dbUser.id)
+  );
 
   const enrollmentMap = new Map(
     (userEnrollments ?? []).map((e) => [e.course_id, e])
   );
 
   // Group prerequisites by course_id
-  const prereqsByCourse = new Map<string, typeof allPrereqs>();
-  for (const prereq of allPrereqs ?? []) {
-    const list = prereqsByCourse.get(prereq.course_id) || [];
+  type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
+  const prereqsByCourse = new Map<string, Prereq[]>();
+  for (const prereq of (allPrereqs ?? []) as Prereq[]) {
+    const list = prereqsByCourse.get(prereq.course_id) ?? [];
     list.push(prereq);
     prereqsByCourse.set(prereq.course_id, list);
   }
