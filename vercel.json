@@ -30,6 +30,10 @@
     {
       "path": "/api/cron/refresh-audit-view",
       "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/cron/self-check",
+      "schedule": "0 */6 * * *"
     }
   ],
   "headers": [

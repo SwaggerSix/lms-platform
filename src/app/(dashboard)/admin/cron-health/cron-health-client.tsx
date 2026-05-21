@@ -157,40 +157,85 @@ export default function CronHealthClient() {
 
         {data && (
           <>
-            <div
-              className={cn(
-                "rounded-xl border p-5",
-                data.status === "healthy"
-                  ? "border-emerald-200 bg-emerald-50"
-                  : "border-amber-200 bg-amber-50"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                {data.status === "healthy" ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-700" />
-                ) : (
-                  <AlertTriangle className="h-5 w-5 text-amber-700" />
-                )}
-                <h2
+            {(() => {
+              // Bucket alert strings by their [critical]/[warn] tag.
+              // Alerts without an explicit tag (legacy / unrecognized) bucket
+              // into "other" and render in the same warn-toned section.
+              const critical = data.alerts.filter((a) => /\[critical\]/.test(a));
+              const warn = data.alerts.filter((a) => /\[warn\]/.test(a));
+              const other = data.alerts.filter(
+                (a) => !/\[critical\]/.test(a) && !/\[warn\]/.test(a)
+              );
+              const hasCritical = critical.length > 0;
+              return (
+                <div
                   className={cn(
-                    "text-base font-semibold capitalize",
-                    data.status === "healthy" ? "text-emerald-900" : "text-amber-900"
+                    "rounded-xl border p-5",
+                    data.status === "healthy"
+                      ? "border-emerald-200 bg-emerald-50"
+                      : hasCritical
+                        ? "border-red-200 bg-red-50"
+                        : "border-amber-200 bg-amber-50"
                   )}
                 >
-                  {data.status}
-                </h2>
-                <span className="ml-auto text-xs text-gray-500">
-                  checked {formatRelative(data.checked_at)}
-                </span>
-              </div>
-              {data.alerts.length > 0 && (
-                <ul className="mt-3 space-y-1 text-sm text-amber-900">
-                  {data.alerts.map((alert, i) => (
-                    <li key={i}>• {alert}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                  <div className="flex items-center gap-2">
+                    {data.status === "healthy" ? (
+                      <CheckCircle2 className="h-5 w-5 text-emerald-700" />
+                    ) : (
+                      <AlertTriangle
+                        className={cn("h-5 w-5", hasCritical ? "text-red-700" : "text-amber-700")}
+                      />
+                    )}
+                    <h2
+                      className={cn(
+                        "text-base font-semibold capitalize",
+                        data.status === "healthy"
+                          ? "text-emerald-900"
+                          : hasCritical
+                            ? "text-red-900"
+                            : "text-amber-900"
+                      )}
+                    >
+                      {data.status}
+                    </h2>
+                    {(critical.length > 0 || warn.length > 0 || other.length > 0) && (
+                      <div className="flex items-center gap-1.5">
+                        {critical.length > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase text-red-700 ring-1 ring-inset ring-red-200">
+                            {critical.length} critical
+                          </span>
+                        )}
+                        {warn.length > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800 ring-1 ring-inset ring-amber-200">
+                            {warn.length} warn
+                          </span>
+                        )}
+                        {other.length > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-700 ring-1 ring-inset ring-gray-200">
+                            {other.length} other
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <span className="ml-auto text-xs text-gray-500">
+                      checked {formatRelative(data.checked_at)}
+                    </span>
+                  </div>
+                  {data.alerts.length > 0 && (
+                    <ul
+                      className={cn(
+                        "mt-3 space-y-1 text-sm",
+                        hasCritical ? "text-red-900" : "text-amber-900"
+                      )}
+                    >
+                      {[...critical, ...warn, ...other].map((alert, i) => (
+                        <li key={i}>• {alert}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Sparkline tile grid — at-a-glance view of every job */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">

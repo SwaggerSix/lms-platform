@@ -35,6 +35,7 @@ const FALLBACK_INTERVALS: Record<string, number> = {
   "curriculum-review-alerts": 24 * 60,
   "compliance-recurrence": 24 * 60,
   "refresh-audit-view": 24 * 60,
+  "self-check": 6 * 60,
 };
 
 /**
@@ -89,7 +90,10 @@ interface JobThresholds {
 }
 
 interface CronAlertConfig {
-  alert_webhook?: { min_severity?: "warn" | "critical" };
+  alert_webhook?: {
+    adapter?: "generic" | "slack" | "pagerduty";
+    min_severity?: "warn" | "critical";
+  };
   consecutive_failures?: { window?: number; threshold?: number };
   thresholds?: Record<string, JobThresholds>;
 }
@@ -118,8 +122,15 @@ const ALERT_CONFIG = loadAlertConfig();
 const JOB_THRESHOLDS: Record<string, JobThresholds> = ALERT_CONFIG.thresholds ?? {};
 
 /** POST the alert payload to CRON_ALERT_WEBHOOK_URL when alerts fire and
- * severity meets the configured min_severity. Fire-and-forget, never throws. */
-async function dispatchAlertWebhook(payload: {
+ * severity meets the configured min_severity. Fire-and-forget, never throws.
+ * Payload shape depends on the configured adapter:
+ *   - "generic" (default): { status, checked_at, alerts, all_alerts, jobs }
+ *   - "slack": Incoming-Webhook compatible { text, blocks } with mrkdwn
+ *   - "pagerduty": Events API v2 routing-key payload (requires
+ *     PAGERDUTY_ROUTING_KEY env var; CRON_ALERT_WEBHOOK_URL should be
+ *     https://events.pagerduty.com/v2/enqueue)
+ */
+export async function dispatchAlertWebhook(payload: {
   status: "healthy" | "degraded";
   checked_at: string;
   jobs: CronJobHealth[];
@@ -136,21 +147,79 @@ async function dispatchAlertWebhook(payload: {
   );
   if (matching.length === 0) return;
 
+  const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
+  const body = buildAlertBody(adapter, payload, matching);
+  if (!body) return;
+
   try {
     await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: payload.status,
-        checked_at: payload.checked_at,
-        alerts: matching,
-        all_alerts: payload.alerts,
-        jobs: payload.jobs,
-      }),
+      body: JSON.stringify(body),
     });
   } catch (err) {
     console.error("Cron alert webhook failed:", err);
   }
+}
+
+function buildAlertBody(
+  adapter: "generic" | "slack" | "pagerduty",
+  payload: { status: string; checked_at: string; jobs: CronJobHealth[]; alerts: string[] },
+  matching: string[]
+): Record<string, unknown> | null {
+  if (adapter === "slack") {
+    // Slack Incoming Webhook payload. Bullets render with the trailing
+    // newline; markdown is preserved in `text` and the first block.
+    const summary = `LMS cron health *${payload.status}* — ${matching.length} alert${matching.length === 1 ? "" : "s"}`;
+    const detail = matching.map((a) => `• ${a}`).join("\n");
+    return {
+      text: `${summary}\n${detail}`,
+      blocks: [
+        { type: "section", text: { type: "mrkdwn", text: `*${summary}*` } },
+        { type: "section", text: { type: "mrkdwn", text: detail } },
+        { type: "context", elements: [{ type: "mrkdwn", text: `_checked ${payload.checked_at}_` }] },
+      ],
+    };
+  }
+
+  if (adapter === "pagerduty") {
+    const routingKey = process.env.PAGERDUTY_ROUTING_KEY;
+    if (!routingKey) {
+      console.error("PAGERDUTY_ROUTING_KEY not set — skipping PagerDuty alert");
+      return null;
+    }
+    // Highest severity wins for the PD event severity. critical → "critical",
+    // warn-only → "warning".
+    const sev = matching.some((a) => /\[critical\]/.test(a)) ? "critical" : "warning";
+    return {
+      routing_key: routingKey,
+      event_action: "trigger",
+      // Use a job-stable dedup key so a recurring overdue alert collapses
+      // into one PD incident until resolved.
+      dedup_key: `lms-cron-${payload.status}-${matching.length > 0 ? matching[0].split(":")[0] : "global"}`,
+      payload: {
+        summary: `LMS cron health ${payload.status}: ${matching[0]}`,
+        severity: sev,
+        source: "lms-platform",
+        component: "cron",
+        custom_details: {
+          checked_at: payload.checked_at,
+          alerts: matching,
+          all_alerts: payload.alerts,
+          jobs: payload.jobs,
+        },
+      },
+    };
+  }
+
+  // generic
+  return {
+    status: payload.status,
+    checked_at: payload.checked_at,
+    alerts: matching,
+    all_alerts: payload.alerts,
+    jobs: payload.jobs,
+  };
 }
 
 // Allow a grace period multiplier before alerting (e.g. 2x the expected interval)

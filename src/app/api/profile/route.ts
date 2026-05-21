@@ -71,35 +71,17 @@ export async function PATCH(request: NextRequest) {
 
   // preferences is a JSON blob with many top-level keys (notifications,
   // ui_prefs, dashboard_widgets, etc.). A naive UPDATE replaces it
-  // wholesale, which lets a small toggle (e.g. ui_prefs.hide_platform_audit)
-  // wipe everything else. Deep-merge two levels: top keys merge by spread,
-  // and each top-key's object value also merges so nested updates like
-  // { ui_prefs: { hide_platform_audit: true } } compose with existing
-  // ui_prefs.* siblings.
+  // wholesale, so we deep-merge. Recursive on object values, treating
+  // arrays and primitives as full overwrites (so a user can clear an
+  // array by passing []).
   if (sanitized.preferences && typeof sanitized.preferences === "object") {
     const { data: existing } = await service
       .from("users")
       .select("preferences")
       .eq("id", profile.id)
       .single();
-    const current = ((existing?.preferences ?? {}) as Record<string, unknown>) || {};
-    const incoming = sanitized.preferences as Record<string, unknown>;
-    const merged: Record<string, unknown> = { ...current };
-    for (const [k, v] of Object.entries(incoming)) {
-      if (
-        v &&
-        typeof v === "object" &&
-        !Array.isArray(v) &&
-        current[k] &&
-        typeof current[k] === "object" &&
-        !Array.isArray(current[k])
-      ) {
-        merged[k] = { ...(current[k] as Record<string, unknown>), ...(v as Record<string, unknown>) };
-      } else {
-        merged[k] = v;
-      }
-    }
-    sanitized.preferences = merged;
+    const current = (existing?.preferences ?? {}) as Record<string, unknown>;
+    sanitized.preferences = deepMergePreferences(current, sanitized.preferences as Record<string, unknown>);
   }
 
   const { data, error } = await service
@@ -115,4 +97,36 @@ export async function PATCH(request: NextRequest) {
   }
 
   return NextResponse.json(data);
+}
+
+/**
+ * Recursive deep-merge for the preferences JSON blob. Object values
+ * merge key-by-key at every depth; arrays and primitives are full
+ * overwrites so callers can clear lists by passing []. Null in the
+ * incoming side also overwrites (lets a caller delete a preference).
+ */
+function deepMergePreferences(
+  current: Record<string, unknown>,
+  incoming: Record<string, unknown>
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...current };
+  for (const [k, v] of Object.entries(incoming)) {
+    const cur = current[k];
+    if (
+      v &&
+      typeof v === "object" &&
+      !Array.isArray(v) &&
+      cur &&
+      typeof cur === "object" &&
+      !Array.isArray(cur)
+    ) {
+      out[k] = deepMergePreferences(
+        cur as Record<string, unknown>,
+        v as Record<string, unknown>
+      );
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
 }
