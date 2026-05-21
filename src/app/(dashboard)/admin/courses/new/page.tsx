@@ -136,6 +136,10 @@ export default function CreateCoursePage() {
   const [duration, setDuration] = useState(120);
   const [tags, setTags] = useState<string[]>(['compliance', 'required']);
   const [tagInput, setTagInput] = useState('');
+  const [courseVersion, setCourseVersion] = useState('1.0');
+  const [lastReview, setLastReview] = useState(() => new Date().toISOString().slice(0, 10));
+  const [offersCpe, setOffersCpe] = useState(false);
+  const [cpeCredits, setCpeCredits] = useState<number>(0);
   const [modules, setModules] = useState<Module[]>(initialModules);
   const [enrollmentType, setEnrollmentType] = useState('Open');
   const [passingScore, setPassingScore] = useState(70);
@@ -170,6 +174,10 @@ export default function CreateCoursePage() {
         tags,
         metadata: {
           category_name: category,
+          course_version: courseVersion.trim() || '1.0',
+          last_curriculum_review: lastReview,
+          nasba_cpe: offersCpe,
+          cpe_credits: offersCpe ? cpeCredits : 0,
           modules: modules.map((m, mi) => ({
             title: m.title,
             sequence_order: mi + 1,
@@ -441,6 +449,58 @@ export default function CreateCoursePage() {
                 </div>
               </div>
             </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">Versioning & Curriculum Review</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Version</label>
+                  <input
+                    type="text"
+                    value={courseVersion}
+                    onChange={(e) => setCourseVersion(e.target.value)}
+                    placeholder="e.g. 1.0, 2.3"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Last Curriculum Review</label>
+                  <input
+                    type="date"
+                    value={lastReview}
+                    onChange={(e) => setLastReview(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Admins are alerted 1 month and 2 weeks before this hits 1 year old.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">NASBA CPE Credits</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={offersCpe}
+                  onChange={(e) => setOffersCpe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">This course offers NASBA CPE credits</span>
+              </label>
+              {offersCpe && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">CPE Credits Awarded</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    value={cpeCredits}
+                    onChange={(e) => setCpeCredits(parseFloat(e.target.value) || 0)}
+                    className="w-32 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags</label>
               <div className="flex flex-wrap gap-2 mb-2">

@@ -145,6 +145,7 @@ export default async function CourseCatalogPage() {
     enrollment_type: string;
     created_at: string;
     category: { name: string } | null;
+    metadata: Record<string, unknown> | null;
   };
   type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
   type Enrollment = { course_id: string; status: string; score: number | null };
@@ -234,6 +235,8 @@ export default async function CourseCatalogPage() {
       createdAt: c.created_at,
       hasUnmetPrerequisites,
       requiresApproval: c.enrollment_type === "approval",
+      nasbaCpe: !!(c.metadata as Record<string, unknown> | null)?.nasba_cpe,
+      cpeCredits: Number((c.metadata as Record<string, unknown> | null)?.cpe_credits) || 0,
     };
   });
 

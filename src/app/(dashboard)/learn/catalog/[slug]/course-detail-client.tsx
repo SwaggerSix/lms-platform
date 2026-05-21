@@ -76,6 +76,9 @@ export interface CourseData {
   enrolledCount: number;
   language: string;
   hasCertificate: boolean;
+  nasbaCpe: boolean;
+  cpeCredits: number;
+  courseVersion?: string;
   gradient: string;
   skills: string[];
   learningOutcomes: string[];
@@ -232,6 +235,14 @@ export default function CourseDetailClient({
           <div className="flex flex-wrap items-start gap-3">
             <DifficultyBadge difficulty={course.difficulty} />
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">{course.type}</span>
+            {course.nasbaCpe && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow"
+                title="This course offers NASBA CPE credits"
+              >
+                NASBA CPE · {course.cpeCredits} {course.cpeCredits === 1 ? "credit" : "credits"}
+              </span>
+            )}
           </div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">{course.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">{course.shortDescription}</p>
@@ -260,6 +271,19 @@ export default function CourseDetailClient({
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900">About This Course</h2>
               <p className="mt-3 leading-relaxed text-gray-600">{course.fullDescription}</p>
+              {course.nasbaCpe && (
+                <div className="mt-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <Award className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-900">
+                      Earn {course.cpeCredits} NASBA CPE {course.cpeCredits === 1 ? "credit" : "credits"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-emerald-700">
+                      Completing this course awards CPE credit recognized by NASBA.
+                    </p>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Prerequisites */}

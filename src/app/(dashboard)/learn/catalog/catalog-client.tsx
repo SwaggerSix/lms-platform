@@ -36,6 +36,8 @@ export interface CatalogCourse {
   createdAt: string;
   hasUnmetPrerequisites?: boolean;
   requiresApproval?: boolean;
+  nasbaCpe?: boolean;
+  cpeCredits?: number;
 }
 
 const CATEGORIES = ["Technology", "Leadership", "Business", "Compliance", "Soft Skills"];
@@ -385,6 +387,14 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                         <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                           <Lock className="h-3 w-3" />
                           Approval required
+                        </div>
+                      )}
+                      {course.nasbaCpe && (
+                        <div
+                          className="absolute right-3 top-3 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow"
+                          title={`Offers ${course.cpeCredits} NASBA CPE credits`}
+                        >
+                          {course.cpeCredits} CPE
                         </div>
                       )}
                     </div>
