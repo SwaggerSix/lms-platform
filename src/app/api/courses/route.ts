@@ -188,6 +188,19 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  // Merge metadata with the existing row so partial updates (e.g. just
+  // course_version / cpe fields from the edit modal) don't wipe other keys
+  // like skills, prerequisites, modules, or learning_outcomes.
+  if (updates.metadata && typeof updates.metadata === "object") {
+    const { data: existing } = await service
+      .from("courses")
+      .select("metadata")
+      .eq("id", id)
+      .single();
+    const existingMeta = (existing?.metadata ?? {}) as Record<string, unknown>;
+    updates.metadata = { ...existingMeta, ...(updates.metadata as Record<string, unknown>) };
+  }
+
   const { data, error } = await service
     .from("courses")
     .update(updates)

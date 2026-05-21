@@ -58,6 +58,7 @@ export default async function CoursesPage() {
       ? row.id.split('').reduce((acc: number, ch: string) => acc + ch.charCodeAt(0), 0)
       : index;
 
+    const meta = (row.metadata ?? {}) as Record<string, unknown>;
     return {
       id: row.id,
       title: row.title ?? 'Untitled Course',
@@ -69,6 +70,10 @@ export default async function CoursesPage() {
       completionRate: isPublished ? 60 + (seed * 13) % 35 : 0,
       duration: row.estimated_duration ?? 0,
       thumbnail: GRADIENTS[index % GRADIENTS.length],
+      courseVersion: (meta.course_version as string) ?? '',
+      lastReview: (meta.last_curriculum_review as string) ?? '',
+      nasbaCpe: !!meta.nasba_cpe,
+      cpeCredits: Number(meta.cpe_credits) || 0,
     };
   });
 

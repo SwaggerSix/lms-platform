@@ -41,6 +41,10 @@ export interface CourseItem {
   completionRate: number;
   duration: number;
   thumbnail: string;
+  courseVersion: string;
+  lastReview: string;
+  nasbaCpe: boolean;
+  cpeCredits: number;
 }
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
@@ -95,17 +99,39 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
   const handleEdit = useCallback((course: CourseItem) => {
     setOpenMenu(null);
     setEditModal(course);
-    setEditForm({ title: course.title, status: course.status, type: course.type, category: course.category, difficulty: course.difficulty });
+    setEditForm({
+      title: course.title,
+      status: course.status,
+      type: course.type,
+      category: course.category,
+      difficulty: course.difficulty,
+      courseVersion: course.courseVersion,
+      lastReview: course.lastReview,
+      nasbaCpe: course.nasbaCpe,
+      cpeCredits: course.cpeCredits,
+    });
   }, []);
 
   const handleEditSubmit = useCallback(async () => {
     if (!editModal) return;
     setLoadingAction({ id: editModal.id, action: 'edit' });
     try {
+      const { courseVersion, lastReview, nasbaCpe, cpeCredits, ...rest } = editForm;
+      const metadata: Record<string, unknown> = {
+        course_version: (courseVersion ?? '').toString().trim() || '1.0',
+        last_curriculum_review: lastReview ?? '',
+        nasba_cpe: !!nasbaCpe,
+        cpe_credits: nasbaCpe ? Number(cpeCredits) || 0 : 0,
+      };
+      // If the review date changed, clear sent-alert flags so new alerts
+      // can fire against the updated date.
+      if (lastReview && lastReview !== editModal.lastReview) {
+        metadata.review_alerts_sent = {};
+      }
       const res = await fetch('/api/courses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editModal.id, ...editForm }),
+        body: JSON.stringify({ id: editModal.id, ...rest, metadata }),
       });
       if (!res.ok) throw new Error('Failed to update course');
       setCourses((prev) => prev.map((c) => (c.id === editModal.id ? { ...c, ...editForm } as CourseItem : c)));
@@ -142,6 +168,10 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
         completionRate: 0,
         duration: course.duration,
         thumbnail: course.thumbnail,
+        courseVersion: course.courseVersion,
+        lastReview: course.lastReview,
+        nasbaCpe: course.nasbaCpe,
+        cpeCredits: course.cpeCredits,
       };
       setCourses((prev) => [mappedCourse, ...prev]);
     } catch (err) {
@@ -506,6 +536,61 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                     <option value="advanced">Advanced</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900">Versioning & Curriculum Review</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-course-version" className="block text-sm font-medium text-gray-700 mb-1">Course Version</label>
+                    <input
+                      id="edit-course-version"
+                      type="text"
+                      value={editForm.courseVersion ?? ''}
+                      onChange={(e) => setEditForm((f) => ({ ...f, courseVersion: e.target.value }))}
+                      placeholder="e.g. 1.0, 2.3"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-course-last-review" className="block text-sm font-medium text-gray-700 mb-1">Last Curriculum Review</label>
+                    <input
+                      id="edit-course-last-review"
+                      type="date"
+                      value={editForm.lastReview ?? ''}
+                      onChange={(e) => setEditForm((f) => ({ ...f, lastReview: e.target.value }))}
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">Changing this date resets the alert tracker so admins are re-notified 1 month and 2 weeks before the next 1-year mark.</p>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900">NASBA CPE Credits</h3>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!editForm.nasbaCpe}
+                    onChange={(e) => setEditForm((f) => ({ ...f, nasbaCpe: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">This course offers NASBA CPE credits</span>
+                </label>
+                {editForm.nasbaCpe && (
+                  <div>
+                    <label htmlFor="edit-course-cpe-credits" className="block text-sm font-medium text-gray-700 mb-1">CPE Credits Awarded</label>
+                    <input
+                      id="edit-course-cpe-credits"
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      value={editForm.cpeCredits ?? 0}
+                      onChange={(e) => setEditForm((f) => ({ ...f, cpeCredits: parseFloat(e.target.value) || 0 }))}
+                      className="w-32 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-6 flex items-center justify-end gap-3">
