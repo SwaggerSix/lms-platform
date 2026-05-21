@@ -93,6 +93,13 @@ interface CronAlertConfig {
   alert_webhook?: {
     adapter?: "generic" | "slack" | "pagerduty";
     min_severity?: "warn" | "critical";
+    /**
+     * "global" (default): one PagerDuty incident covering all jobs.
+     * "per-job": separate incident per affected job, identified by
+     *   "lms-cron-health-<job_name>". More routing flexibility,
+     *   more incident volume.
+     */
+    pagerduty_dedup?: "global" | "per-job";
   };
   consecutive_failures?: { window?: number; threshold?: number };
   thresholds?: Record<string, JobThresholds>;
@@ -140,23 +147,35 @@ export async function dispatchAlertWebhook(payload: {
   if (!url) return;
 
   const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
+  const pdDedup = ALERT_CONFIG.alert_webhook?.pagerduty_dedup ?? "global";
 
-  // Healthy path: only PagerDuty cares — emit a resolve event so any
-  // open incident clears. Slack/generic stay quiet on healthy checks
-  // because we don't want to spam channels with "still fine" messages.
-  if (payload.status === "healthy" || payload.alerts.length === 0) {
-    if (adapter !== "pagerduty") return;
-    const resolveBody = buildAlertBody("pagerduty", payload, []);
-    if (!resolveBody) return;
+  const postBody = async (body: Record<string, unknown>) => {
     try {
       await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resolveBody),
+        body: JSON.stringify(body),
       });
     } catch (err) {
-      console.error("Cron alert webhook (resolve) failed:", err);
+      console.error("Cron alert webhook failed:", err);
     }
+  };
+
+  // Healthy path: only PagerDuty cares — emit resolve event(s) so open
+  // incidents clear. Slack/generic stay quiet on healthy checks.
+  if (payload.status === "healthy" || payload.alerts.length === 0) {
+    if (adapter !== "pagerduty") return;
+    if (pdDedup === "per-job") {
+      // Resolve every known job's dedup key. PD no-ops resolves on
+      // non-existent incidents so this is idempotent.
+      for (const job of payload.jobs) {
+        const body = buildAlertBody("pagerduty", payload, [], { dedupKey: pdDedupKeyForJob(job.name) });
+        if (body) await postBody(body);
+      }
+      return;
+    }
+    const body = buildAlertBody("pagerduty", payload, []);
+    if (body) await postBody(body);
     return;
   }
 
@@ -167,33 +186,62 @@ export async function dispatchAlertWebhook(payload: {
   );
   if (matching.length === 0) return;
 
-  const body = buildAlertBody(adapter, payload, matching);
-  if (!body) return;
-
-  try {
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  } catch (err) {
-    console.error("Cron alert webhook failed:", err);
+  // Per-job PagerDuty: bucket matching alerts by job name (the prefix
+  // before the first space) and emit one trigger per bucket.
+  if (adapter === "pagerduty" && pdDedup === "per-job") {
+    const byJob: Record<string, string[]> = {};
+    for (const a of matching) {
+      const jobName = extractJobNameFromAlert(a);
+      const list = byJob[jobName] ?? [];
+      list.push(a);
+      byJob[jobName] = list;
+    }
+    for (const [jobName, jobMatching] of Object.entries(byJob)) {
+      const body = buildAlertBody("pagerduty", payload, jobMatching, { dedupKey: pdDedupKeyForJob(jobName) });
+      if (body) await postBody(body);
+    }
+    return;
   }
+
+  const body = buildAlertBody(adapter, payload, matching);
+  if (body) await postBody(body);
+}
+
+function pdDedupKeyForJob(jobName: string): string {
+  // Sanitize: PD allows up to 255 chars, but stable + readable matters.
+  const safe = jobName.replace(/[^a-zA-Z0-9-]/g, "-");
+  return `lms-cron-health-${safe}`;
+}
+
+function extractJobNameFromAlert(alert: string): string {
+  // Alerts are formatted as "<job-name> [critical]: ..." or "<job-name>:
+  // has never run — ...". Take everything before the first space.
+  const idx = alert.indexOf(" ");
+  return idx > 0 ? alert.slice(0, idx) : alert;
 }
 
 export function buildAlertBody(
   adapter: "generic" | "slack" | "pagerduty",
   payload: { status: string; checked_at: string; jobs: CronJobHealth[]; alerts: string[] },
-  matching: string[]
+  matching: string[],
+  opts: { dedupKey?: string } = {}
 ): Record<string, unknown> | null {
   if (adapter === "slack") {
     // Slack Incoming Webhook payload. Bullets render with the trailing
     // newline; markdown is preserved in `text` and the first block.
-    // Per https://api.slack.com/reference/surfaces/formatting#escaping
-    // the three required escapes are &, <, >. Job names and alert
-    // strings are user-controlled (config + DB) so escape defensively.
+    // Defense-in-depth Slack escape. The mandatory escapes per Slack's
+    // formatting docs are &, <, >. We also neuter the mrkdwn-formatting
+    // metacharacters (*, _, `, ~) by wrapping in zero-width joiners so
+    // they no longer trigger bold/italic/code/strike. This protects
+    // against alert strings that happen to contain those characters
+    // (job names with asterisks, error messages with backticks, etc.).
+    const ZWJ = "‍";
     const escapeMrkdwn = (s: string) =>
-      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/([*_`~])/g, `${ZWJ}$1${ZWJ}`);
     const safeStatus = escapeMrkdwn(payload.status);
     const safeMatching = matching.map(escapeMrkdwn);
     const summary = `LMS cron health *${safeStatus}* — ${safeMatching.length} alert${safeMatching.length === 1 ? "" : "s"}`;
@@ -214,10 +262,10 @@ export function buildAlertBody(
       console.error("PAGERDUTY_ROUTING_KEY not set — skipping PagerDuty alert");
       return null;
     }
-    // Global dedup_key so trigger + resolve refer to the same incident.
-    // Per-job dedup keys would create one incident per job; a single
-    // umbrella incident is friendlier for on-call rotation.
-    const dedupKey = "lms-cron-health";
+    // Default to the global dedup_key so trigger + resolve refer to the
+    // same umbrella incident. dispatchAlertWebhook passes a per-job key
+    // when the operator opts into per-job mode via cron-thresholds.json.
+    const dedupKey = opts.dedupKey ?? "lms-cron-health";
 
     // Empty matching[] means we're being asked to resolve (called from
     // dispatchAlertWebhook's healthy branch). PagerDuty no-ops resolve

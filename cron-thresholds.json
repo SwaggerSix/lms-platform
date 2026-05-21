@@ -1,9 +1,10 @@
 {
   "$schema": "Local convention: maps cron job names (the path's basename in vercel.json) to per-job alert thresholds in minutes. warn_minutes / critical_minutes override the default 2× / 4× expected-interval calculation. Omit a job to use defaults.",
   "alert_webhook": {
-    "$comment": "Optional webhook hit by checkCronHealth when alerts fire. URL comes from env (CRON_ALERT_WEBHOOK_URL) so secrets don't end up in the repo. adapter: 'generic' (default — POSTs { status, alerts, jobs }), 'slack' (Slack Incoming Webhook payload with markdown), 'pagerduty' (Events API v2 — also requires PAGERDUTY_ROUTING_KEY env var). min_severity: 'critical' or 'warn'.",
+    "$comment": "Optional webhook hit by checkCronHealth when alerts fire. URL comes from env (CRON_ALERT_WEBHOOK_URL) so secrets don't end up in the repo. adapter: 'generic' (default — POSTs { status, alerts, jobs }), 'slack' (Slack Incoming Webhook payload with markdown), 'pagerduty' (Events API v2 — also requires PAGERDUTY_ROUTING_KEY env var). min_severity: 'critical' or 'warn'. pagerduty_dedup: 'global' (one umbrella incident) or 'per-job' (one incident per job).",
     "adapter": "generic",
-    "min_severity": "critical"
+    "min_severity": "critical",
+    "pagerduty_dedup": "global"
   },
   "consecutive_failures": {
     "$comment": "How many recent runs to inspect for consecutive failures (window) and how many in a row trigger an alert (threshold).",

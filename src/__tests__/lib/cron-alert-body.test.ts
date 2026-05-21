@@ -58,6 +58,24 @@ describe("buildAlertBody — slack adapter", () => {
     expect(text).toContain("&amp;friends");
     expect(text).toContain("5 &gt; 3");
   });
+
+  it("neuters Slack mrkdwn formatting metacharacters (*, _, `, ~)", () => {
+    // A rogue alert containing each formatting char shouldn't render as
+    // bold / italic / code / strikethrough — the escape wraps each in a
+    // zero-width joiner so Slack's parser doesn't treat them as syntax.
+    const ZWJ = "‍";
+    const dangerous = "job*bold*_italic_`code`~strike~ [critical]: pwn";
+    const body = buildAlertBody(
+      "slack",
+      { ...samplePayload, alerts: [dangerous] },
+      [dangerous]
+    );
+    const text = body!.text as string;
+    // Each metacharacter should be surrounded by ZWJs in the rendered text.
+    for (const ch of ["*", "_", "`", "~"]) {
+      expect(text).toContain(`${ZWJ}${ch}${ZWJ}`);
+    }
+  });
 });
 
 describe("buildAlertBody — pagerduty adapter", () => {

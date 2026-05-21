@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deepMergePreferences } from "@/lib/preferences/merge";
+import { deepMergePreferences, diffPreferences } from "@/lib/preferences/merge";
 
 describe("deepMergePreferences", () => {
   it("returns a copy of current when incoming is empty", () => {
@@ -67,5 +67,47 @@ describe("deepMergePreferences", () => {
   it("object in current overwritten by scalar in incoming", () => {
     const out = deepMergePreferences({ x: { y: 1 } }, { x: 5 });
     expect(out).toEqual({ x: 5 });
+  });
+});
+
+describe("diffPreferences", () => {
+  it("returns empty diff for identical blobs", () => {
+    const d = diffPreferences({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } });
+    expect(d.changed).toEqual({});
+    expect(d.removed).toEqual({});
+  });
+
+  it("flattens nested changes with dot-notation paths", () => {
+    const d = diffPreferences(
+      { a: 1, ui: { theme: "light", lang: "en" } },
+      { a: 1, ui: { theme: "dark", lang: "en" } }
+    );
+    expect(d.changed).toEqual({ "ui.theme": "dark" });
+    expect(d.removed).toEqual({ "ui.theme": "light" });
+  });
+
+  it("captures added keys in changed, missing keys in removed", () => {
+    const d = diffPreferences({ a: 1 }, { a: 1, b: 2 });
+    expect(d.changed).toEqual({ b: 2 });
+    expect(d.removed).toEqual({});
+
+    const d2 = diffPreferences({ a: 1, b: 2 }, { a: 1 });
+    expect(d2.changed).toEqual({});
+    expect(d2.removed).toEqual({ b: 2 });
+  });
+
+  it("treats arrays as opaque (overwrite, not deep-diff)", () => {
+    const d = diffPreferences({ tags: ["a", "b"] }, { tags: ["a", "b", "c"] });
+    expect(d.changed).toEqual({ tags: ["a", "b", "c"] });
+    expect(d.removed).toEqual({ tags: ["a", "b"] });
+  });
+
+  it("walks multiple levels deep", () => {
+    const d = diffPreferences(
+      { ui: { theme: { colors: { primary: "blue" } } } },
+      { ui: { theme: { colors: { primary: "red" } } } }
+    );
+    expect(d.changed).toEqual({ "ui.theme.colors.primary": "red" });
+    expect(d.removed).toEqual({ "ui.theme.colors.primary": "blue" });
   });
 });

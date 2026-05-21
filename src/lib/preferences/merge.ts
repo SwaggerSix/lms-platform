@@ -32,3 +32,49 @@ export function deepMergePreferences(
   }
   return out;
 }
+
+/**
+ * Diff two preference blobs to a pair of leaf-keyed objects suitable for
+ * audit_logs.{old_values,new_values}. Walks recursively and flattens
+ * nested keys with dot notation so the audit row records exactly what
+ * changed without dumping the entire preferences JSON.
+ *
+ *   diffPreferences({ a: 1, ui: { theme: "light" } }, { a: 1, ui: { theme: "dark" } })
+ *   → { changed: { "ui.theme": "dark" }, removed: { "ui.theme": "light" } }
+ *
+ * Arrays and primitives compare by JSON-stringified equality so two
+ * arrays with the same contents don't produce a diff entry.
+ */
+export function diffPreferences(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+  prefix = ""
+): { changed: Record<string, unknown>; removed: Record<string, unknown> } {
+  const changed: Record<string, unknown> = {};
+  const removed: Record<string, unknown> = {};
+
+  const keys = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+  for (const k of keys) {
+    const path = prefix ? `${prefix}.${k}` : k;
+    const b = before?.[k];
+    const a = after?.[k];
+    const bothObjects =
+      b && typeof b === "object" && !Array.isArray(b) &&
+      a && typeof a === "object" && !Array.isArray(a);
+
+    if (bothObjects) {
+      const sub = diffPreferences(
+        b as Record<string, unknown>,
+        a as Record<string, unknown>,
+        path
+      );
+      Object.assign(changed, sub.changed);
+      Object.assign(removed, sub.removed);
+    } else if (JSON.stringify(b) !== JSON.stringify(a)) {
+      if (a !== undefined) changed[path] = a;
+      if (b !== undefined) removed[path] = b;
+    }
+  }
+
+  return { changed, removed };
+}
