@@ -62,6 +62,7 @@ export interface SettingsData {
   dateFormat: string;
   dashboardWidgets: Record<string, boolean>;
   dashboardOrder: string[];
+  notificationOverrides?: Record<string, { inApp?: boolean; email?: boolean }>;
 }
 
 export const DASHBOARD_WIDGETS: { key: string; label: string; description: string }[] = [
@@ -111,6 +112,7 @@ type TabKey = "personal" | "dashboard" | "notifications" | "security" | "prefere
 const INITIAL_NOTIFICATIONS: NotificationSetting[] = [
   { key: "enrollment", label: "Enrollment Confirmations", inApp: true, email: true },
   { key: "due_dates", label: "Due Date Reminders", inApp: true, email: true },
+  { key: "recertification", label: "Recertification Reminders (compliance)", inApp: true, email: true },
   { key: "completions", label: "Course Completions", inApp: true, email: true },
   { key: "certificate", label: "Certificate Issued", inApp: true, email: false },
   { key: "discussions", label: "Discussion Replies", inApp: true, email: true },
@@ -132,7 +134,18 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const [firstName, setFirstName] = useState(data.firstName);
   const [lastName, setLastName] = useState(data.lastName);
   const [bio, setBio] = useState(data.bio);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState(() => {
+    const overrides = data.notificationOverrides ?? {};
+    return INITIAL_NOTIFICATIONS.map((n) => {
+      const o = overrides[n.key];
+      if (!o) return n;
+      return {
+        ...n,
+        inApp: typeof o.inApp === "boolean" ? o.inApp : n.inApp,
+        email: typeof o.email === "boolean" ? o.email : n.email,
+      };
+    });
+  });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

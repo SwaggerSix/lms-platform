@@ -99,6 +99,7 @@ export default async function CompliancePage() {
   const { data: legacyRows } = await service
     .from('compliance_requirements')
     .select('*, course:courses(id, title)')
+    .is('retired_at', null)
     .order('created_at', { ascending: false });
 
   const legacySources: NormalizedSource[] = [];

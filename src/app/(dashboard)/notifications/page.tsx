@@ -31,5 +31,5 @@ export default async function NotificationsPage() {
 
   const rows: NotificationRow[] = (data ?? []) as NotificationRow[];
 
-  return <NotificationsClient initialNotifications={rows} />;
+  return <NotificationsClient initialNotifications={rows} userId={profile.id} />;
 }

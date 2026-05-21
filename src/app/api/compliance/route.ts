@@ -13,9 +13,12 @@ export async function GET(request: NextRequest) {
   const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   const tenantScope = profile ? await getTenantScope(profile.id, profile.role, request) : null;
 
+  // Filter out retired rows: their data lives on the linked course's
+  // metadata.required_for blob and is read from there instead.
   let query = service
     .from("compliance_requirements")
     .select("*")
+    .is("retired_at", null)
     .order("created_at", { ascending: false });
 
   if (tenantScope) {
@@ -66,7 +69,19 @@ export async function POST(request: NextRequest) {
     console.error("Compliance API POST error:", error.message);
     return NextResponse.json({ error: "Failed to create requirement: " + error.message }, { status: 500 });
   }
-  return NextResponse.json(data, { status: 201 });
+  // Deprecation: this endpoint writes to the legacy compliance_requirements
+  // table. New requirements should be configured via courses.metadata.required_for
+  // (Admin → Courses → Required Training). Headers per draft-ietf-httpapi-deprecation-header-02.
+  console.warn(
+    "[compliance] Deprecated POST /api/compliance hit. Migrate to courses.metadata.required_for."
+  );
+  return NextResponse.json(data, {
+    status: 201,
+    headers: {
+      Deprecation: "true",
+      Link: '</admin/courses>; rel="successor-version"',
+    },
+  });
 }
 
 export async function PATCH(request: NextRequest) {

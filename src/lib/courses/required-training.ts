@@ -61,6 +61,34 @@ export function userMatchesRequiredFor(
   return true;
 }
 
+/**
+ * Bucket a completed enrollment into a recertification reminder tier given
+ * the course's recurrence window. Returns null when the completion isn't yet
+ * within reminder distance. The boundaries are inclusive:
+ *   daysLeft <= 0  → "expired"
+ *   daysLeft <= 7  → "7"
+ *   daysLeft <= 30 → "30"
+ *   otherwise      → null
+ * Splitting this out of the cron lets us unit-test the boundary logic without
+ * mocking Supabase.
+ */
+export function recertificationTier(
+  completedAt: Date | string,
+  frequencyMonths: number,
+  now: Date = new Date()
+): "30" | "7" | "expired" | null {
+  if (!frequencyMonths || frequencyMonths <= 0) return null;
+  const completion = completedAt instanceof Date ? completedAt : new Date(completedAt);
+  if (Number.isNaN(completion.getTime())) return null;
+  const expires = new Date(completion);
+  expires.setMonth(expires.getMonth() + frequencyMonths);
+  const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+  if (daysLeft <= 0) return "expired";
+  if (daysLeft <= 7) return "7";
+  if (daysLeft <= 30) return "30";
+  return null;
+}
+
 interface SyncResult {
   enrolled: number;
   skipped: number;

@@ -92,10 +92,12 @@ export default async function ReportsPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "published"),
 
-    // Compliance requirements with enrollments for compliance rate
+    // Compliance requirements with enrollments for compliance rate.
+    // Excludes retired rows (their data lives on courses.metadata.required_for).
     service
       .from("compliance_requirements")
       .select("id, course_id")
+      .is("retired_at", null)
       .limit(100),
 
     // Recent enrollments with user and course details for report table

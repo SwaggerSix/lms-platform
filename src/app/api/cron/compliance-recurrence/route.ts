@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor } from "@/lib/courses/required-training";
+import { readRequiredFor, recertificationTier } from "@/lib/courses/required-training";
 import { sendEmail } from "@/lib/email/sender";
 import { recertificationReminder } from "@/lib/email/templates";
 
@@ -108,12 +108,10 @@ async function handler(request: NextRequest) {
     const tier7: string[] = [];
     const expired: string[] = [];
     for (const [userId, completedAt] of latestByUser.entries()) {
-      const expiresAt = new Date(completedAt);
-      expiresAt.setMonth(expiresAt.getMonth() + required.frequency_months);
-      const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-      if (daysLeft <= 0) expired.push(userId);
-      else if (daysLeft <= 7) tier7.push(userId);
-      else if (daysLeft <= 30) tier30.push(userId);
+      const tier = recertificationTier(completedAt, required.frequency_months, now);
+      if (tier === "expired") expired.push(userId);
+      else if (tier === "7") tier7.push(userId);
+      else if (tier === "30") tier30.push(userId);
     }
 
     // For notifications, build the candidate (user, tier) pairs then filter
@@ -151,21 +149,35 @@ async function handler(request: NextRequest) {
     const managerByUser = new Map<string, string | null>();
     const userInfoById = new Map<
       string,
-      { email: string | null; firstName: string | null; lastName: string | null; completedAt: string }
+      {
+        email: string | null;
+        firstName: string | null;
+        lastName: string | null;
+        completedAt: string;
+        emailRecertOptOut: boolean;
+        inAppRecertOptOut: boolean;
+      }
     >();
     if (allCandidateIds.length > 0) {
       const { data: userRows } = await service
         .from("users")
-        .select("id, manager_id, email, first_name, last_name")
+        .select("id, manager_id, email, first_name, last_name, preferences")
         .in("id", allCandidateIds);
       for (const u of userRows ?? []) {
         const completedAt = latestByUser.get((u as any).id) ?? "";
         managerByUser.set((u as any).id, (u as any).manager_id ?? null);
+        // Honor user-set notification preferences. Default to opt-in for both
+        // channels — recertification is compliance-driven and should reach
+        // the user unless they have explicitly toggled it off.
+        const prefs = ((u as any).preferences ?? {}) as Record<string, any>;
+        const recertPrefs = (prefs.notifications && prefs.notifications.recertification) || {};
         userInfoById.set((u as any).id, {
           email: (u as any).email ?? null,
           firstName: (u as any).first_name ?? null,
           lastName: (u as any).last_name ?? null,
           completedAt,
+          emailRecertOptOut: recertPrefs.email === false,
+          inAppRecertOptOut: recertPrefs.inApp === false,
         });
       }
     }
@@ -187,20 +199,27 @@ async function handler(request: NextRequest) {
 
       for (const userId of group.users) {
         if (alreadySent.has(userId)) continue;
-        const body = group.bodyFn(required.regulation ?? null);
-        pendingNotifications.push({
-          user_id: userId,
-          title: group.title,
-          body,
-          link,
-          type: "reminder",
-          channel: "in_app",
-        });
-
-        // Queue an email for this learner — same dedup as the in-app
-        // notification, so re-running the cron never re-sends.
         const info = userInfoById.get(userId);
-        if (info?.email && info.completedAt) {
+
+        if (!info?.inAppRecertOptOut) {
+          const body = group.bodyFn(required.regulation ?? null);
+          pendingNotifications.push({
+            user_id: userId,
+            title: group.title,
+            body,
+            link,
+            type: "reminder",
+            channel: "in_app",
+          });
+        }
+
+        // Queue an email for this learner unless they've opted out. Email
+        // dedup leans on the in-app link, so we record a "would have emailed"
+        // marker via the in-app notification row even when opted out — but
+        // skipping the in-app insert above breaks that dedup. To keep things
+        // simple and correct, only queue an email when in-app is also being
+        // inserted.
+        if (info?.email && info.completedAt && !info.emailRecertOptOut && !info.inAppRecertOptOut) {
           const name = `${info.firstName ?? ""} ${info.lastName ?? ""}`.trim() || "there";
           pendingEmails.push({
             email: info.email,

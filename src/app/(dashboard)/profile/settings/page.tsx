@@ -84,6 +84,10 @@ export default async function SettingsPage() {
     dashboardOrder: Array.isArray(preferences.dashboard_widgets_order)
       ? (preferences.dashboard_widgets_order as string[])
       : [],
+    notificationOverrides:
+      preferences.notifications && typeof preferences.notifications === "object"
+        ? (preferences.notifications as Record<string, { inApp?: boolean; email?: boolean }>)
+        : undefined,
   };
 
   return <SettingsClient data={settingsData} />;

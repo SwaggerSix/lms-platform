@@ -1,9 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { createClient } from "@/lib/supabase/client";
+import { useNotificationStore } from "@/stores/notification-store";
+import { useRealtimeSubscription } from "@/hooks/use-realtime";
+import type { Notification as DbNotification } from "@/types/database";
 
 export interface NotificationRow {
   id: string;
@@ -41,10 +45,54 @@ const TYPE_BADGES: Record<string, { label: string; cls: string }> = {
 
 export default function NotificationsClient({
   initialNotifications,
+  userId,
 }: {
   initialNotifications: NotificationRow[];
+  userId: string;
 }) {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const supabase = useMemo(() => createClient(), []);
+  const {
+    notifications: storeNotifications,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+  } = useNotificationStore();
+
+  // Seed the store with the server-rendered list on mount, then re-fetch to
+  // pick up anything that arrived between SSR and hydration.
+  const [seeded, setSeeded] = useState(false);
+  useEffect(() => {
+    if (!seeded) {
+      useNotificationStore.setState((state) => ({
+        ...state,
+        notifications: initialNotifications as unknown as DbNotification[],
+        unreadCount: initialNotifications.filter((n) => !n.is_read).length,
+      }));
+      setSeeded(true);
+      fetchNotifications();
+    }
+  }, [seeded, initialNotifications, fetchNotifications]);
+
+  // Real-time: prepend new notifications as they arrive.
+  useRealtimeSubscription(supabase, {
+    table: "notifications",
+    event: "INSERT",
+    filter: `user_id=eq.${userId}`,
+    onData: (payload) => {
+      const fresh = payload.new as unknown as DbNotification;
+      if (fresh.channel !== "in_app") return;
+      useNotificationStore.setState((state) => {
+        if (state.notifications.some((n) => n.id === fresh.id)) return state;
+        return {
+          ...state,
+          notifications: [fresh, ...state.notifications],
+          unreadCount: state.unreadCount + (fresh.is_read ? 0 : 1),
+        };
+      });
+    },
+  });
+
+  const notifications = storeNotifications.length > 0 ? storeNotifications : (initialNotifications as unknown as DbNotification[]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const unreadCount = useMemo(
@@ -56,24 +104,6 @@ export default function NotificationsClient({
     () => (filter === "unread" ? notifications.filter((n) => !n.is_read) : notifications),
     [filter, notifications]
   );
-
-  const markAsRead = async (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
-    await fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    }).catch(() => {});
-  };
-
-  const markAllAsRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    await fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mark_all_read: true }),
-    }).catch(() => {});
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,7 +122,7 @@ export default function NotificationsClient({
           </div>
           {unreadCount > 0 && (
             <button
-              onClick={markAllAsRead}
+              onClick={() => markAllAsRead()}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <CheckCheck className="h-4 w-4" />

@@ -91,6 +91,7 @@ export default async function CompliancePage() {
     .from("compliance_requirements")
     .select("*, course:courses(id, title)")
     .eq("is_mandatory", true)
+    .is("retired_at", null)
     .order("created_at", { ascending: true });
 
   for (const r of (legacyRows ?? []) as any[]) {
