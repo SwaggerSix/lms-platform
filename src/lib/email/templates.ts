@@ -326,3 +326,48 @@ export function scheduledReportDelivery(params: {
     text: `Hi ${params.recipientName}, your ${params.reportName} report for ${params.period} is ready. Download: ${params.downloadUrl}`,
   };
 }
+
+/**
+ * Notify a learner that a required-training course they previously completed
+ * is approaching its compliance recurrence window or has expired.
+ */
+export function recertificationReminder(params: {
+  learnerName: string;
+  courseName: string;
+  regulation: string | null;
+  daysUntilExpiry: number;
+  expiryDate: string;
+  courseUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const overdue = params.daysUntilExpiry <= 0;
+  const urgency =
+    overdue ? "#dc2626" : params.daysUntilExpiry <= 7 ? "#dc2626" : params.daysUntilExpiry <= 30 ? "#d97706" : "#4f46e5";
+  const headline = overdue
+    ? "Recertification overdue"
+    : params.daysUntilExpiry <= 7
+      ? "Recertification due within 7 days"
+      : "Recertification due within 30 days";
+
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">${headline}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">
+      Hi ${params.learnerName},
+    </p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      ${overdue
+        ? `Your completion of <strong>${params.courseName}</strong> expired on <strong style="color:${urgency};">${params.expiryDate}</strong>. You have been re-enrolled and need to complete the course again to stay${params.regulation ? ` ${params.regulation}` : ""} compliant.`
+        : `Your completion of <strong>${params.courseName}</strong> expires on <strong style="color:${urgency};">${params.expiryDate}</strong> (${params.daysUntilExpiry} day${params.daysUntilExpiry === 1 ? "" : "s"} remaining). Please retake the course before then to stay${params.regulation ? ` ${params.regulation}` : ""} compliant.`}
+    </p>
+    ${button(overdue ? "Resume Course" : "Retake Course", params.courseUrl)}
+    <p style="margin:24px 0 0;color:#9ca3af;font-size:11px;line-height:1.5;">
+      You're receiving this because this course is mandatory for your role or organization. Manage your account from your profile.
+    </p>
+  `;
+
+  return {
+    subject: `${overdue ? "OVERDUE: " : params.daysUntilExpiry <= 7 ? "Action required: " : ""}${params.courseName} recertification`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, your ${params.courseName} completion ${overdue ? `expired on ${params.expiryDate}` : `expires on ${params.expiryDate} (${params.daysUntilExpiry} days)`}. ${overdue ? "Resume" : "Retake"} at: ${params.courseUrl}`,
+  };
+}

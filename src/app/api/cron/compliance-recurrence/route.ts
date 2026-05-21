@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { readRequiredFor } from "@/lib/courses/required-training";
+import { sendEmail } from "@/lib/email/sender";
+import { recertificationReminder } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +62,18 @@ async function handler(request: NextRequest) {
     channel: "in_app";
   };
   const pendingNotifications: PendingNotif[] = [];
+
+  type PendingEmail = {
+    email: string;
+    learnerName: string;
+    courseSlug: string;
+    courseTitle: string;
+    regulation: string | null;
+    frequencyMonths: number;
+    completedAt: string;
+    tier: "30" | "7" | "expired";
+  };
+  const pendingEmails: PendingEmail[] = [];
 
   for (const course of courses ?? []) {
     const required = readRequiredFor((course as any).metadata);
@@ -130,20 +144,34 @@ async function handler(request: NextRequest) {
       },
     ];
 
-    // Resolve managers for all candidate users in one go.
+    // Resolve managers + email + name for all candidate users in one go.
     const allCandidateIds = Array.from(
       new Set([...tier30, ...tier7, ...expired])
     );
     const managerByUser = new Map<string, string | null>();
+    const userInfoById = new Map<
+      string,
+      { email: string | null; firstName: string | null; lastName: string | null; completedAt: string }
+    >();
     if (allCandidateIds.length > 0) {
       const { data: userRows } = await service
         .from("users")
-        .select("id, manager_id")
+        .select("id, manager_id, email, first_name, last_name")
         .in("id", allCandidateIds);
       for (const u of userRows ?? []) {
+        const completedAt = latestByUser.get((u as any).id) ?? "";
         managerByUser.set((u as any).id, (u as any).manager_id ?? null);
+        userInfoById.set((u as any).id, {
+          email: (u as any).email ?? null,
+          firstName: (u as any).first_name ?? null,
+          lastName: (u as any).last_name ?? null,
+          completedAt,
+        });
       }
     }
+
+    // Email sends are batched after we know which (user, tier) pairs are
+    // genuinely new — see pendingEmails accumulation below.
 
     for (const group of candidatesByTier) {
       if (group.users.length === 0) continue;
@@ -168,6 +196,23 @@ async function handler(request: NextRequest) {
           type: "reminder",
           channel: "in_app",
         });
+
+        // Queue an email for this learner — same dedup as the in-app
+        // notification, so re-running the cron never re-sends.
+        const info = userInfoById.get(userId);
+        if (info?.email && info.completedAt) {
+          const name = `${info.firstName ?? ""} ${info.lastName ?? ""}`.trim() || "there";
+          pendingEmails.push({
+            email: info.email,
+            learnerName: name,
+            courseSlug,
+            courseTitle,
+            regulation: required.regulation ?? null,
+            frequencyMonths: required.frequency_months,
+            completedAt: info.completedAt,
+            tier: group.tier,
+          });
+        }
 
         // Cc the manager so they see it too. Dedup against link, but use a
         // manager-specific link suffix so a manager with multiple reports
@@ -256,11 +301,53 @@ async function handler(request: NextRequest) {
     }
   }
 
+  // Send transactional emails for queued recertification reminders. Email
+  // dedup is implicit via the in-app notification dedup above — pendingEmails
+  // only contains the *new* tier transitions for each learner.
+  let emailsSent = 0;
+  if (pendingEmails.length > 0) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    const sends = pendingEmails.map(async (item) => {
+      const expires = new Date(item.completedAt);
+      expires.setMonth(expires.getMonth() + item.frequencyMonths);
+      const expiryDate = expires.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      const daysUntilExpiry = Math.ceil(
+        (expires.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+      );
+
+      const courseUrl = `${appUrl}/learn/catalog/${item.courseSlug}`;
+      const template = recertificationReminder({
+        learnerName: item.learnerName,
+        courseName: item.courseTitle,
+        regulation: item.regulation,
+        daysUntilExpiry,
+        expiryDate,
+        courseUrl,
+      });
+      const res = await sendEmail({
+        to: item.email,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      });
+      return res.success;
+    });
+    const results = await Promise.allSettled(sends);
+    for (const r of results) {
+      if (r.status === "fulfilled" && r.value === true) emailsSent++;
+    }
+  }
+
   return NextResponse.json({
     message: "Compliance recurrence sweep complete",
     courses_scanned: scanned,
     learners_reenrolled: reEnrolled,
     notifications_sent: notificationsSent,
+    emails_sent: emailsSent,
     errors,
   });
 }

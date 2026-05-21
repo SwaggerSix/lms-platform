@@ -77,6 +77,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     notifications,
     unreadCount,
     fetchNotifications,
+    markAsRead,
   } = useNotificationStore();
 
   // Fetch notifications on mount when user is available
@@ -235,30 +236,67 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto" role="list">
-                {notifications.slice(0, 10).map((notif) => (
-                  <div
-                    key={notif.id}
-                    role="listitem"
-                    className={cn(
-                      "border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50",
-                      !notif.is_read && "bg-indigo-50/50"
-                    )}
-                  >
+                {notifications.slice(0, 10).map((notif) => {
+                  const body = (
                     <div className="flex items-start justify-between gap-2">
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900">
                           {notif.title}
                         </p>
-                        <p className="mt-0.5 text-xs text-gray-500">
-                          {notif.body}
-                        </p>
+                        {notif.body && (
+                          <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">
+                            {notif.body}
+                          </p>
+                        )}
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-500">
-                        {relativeTime(notif.created_at)}
-                      </span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {!notif.is_read && (
+                          <span
+                            aria-label="Unread"
+                            className="h-2 w-2 rounded-full bg-indigo-500"
+                          />
+                        )}
+                        <span className="text-[11px] text-gray-500">
+                          {relativeTime(notif.created_at)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+
+                  const className = cn(
+                    "block w-full text-left border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50",
+                    !notif.is_read && "bg-indigo-50/50"
+                  );
+
+                  if (notif.link) {
+                    return (
+                      <Link
+                        key={notif.id}
+                        href={notif.link}
+                        role="listitem"
+                        className={className}
+                        onClick={() => {
+                          if (!notif.is_read) markAsRead(notif.id);
+                        }}
+                      >
+                        {body}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <button
+                      key={notif.id}
+                      type="button"
+                      role="listitem"
+                      className={className}
+                      onClick={() => {
+                        if (!notif.is_read) markAsRead(notif.id);
+                      }}
+                    >
+                      {body}
+                    </button>
+                  );
+                })}
               </div>
               <div className="border-t border-gray-100 px-4 py-2">
                 <Link
