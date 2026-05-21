@@ -56,36 +56,55 @@ function formatDate(iso: string): string {
 }
 
 export default function ManagerDashboardClient({ data }: { data: ManagerDashboardData }) {
-  const stats = [
+  const recertCount = data.recertificationsDue.length;
+  const stats: {
+    label: string;
+    value: string;
+    icon: typeof Users;
+    tone: string;
+    href?: string;
+  }[] = [
     {
       label: "Direct Reports",
       value: data.teamSize.toLocaleString(),
       icon: Users,
       tone: "text-indigo-600 bg-indigo-50",
+      href: "/manager/team",
     },
     {
       label: "Overdue Training",
       value: data.overdueCount.toLocaleString(),
       icon: AlertTriangle,
       tone: "text-red-600 bg-red-50",
+      href: "/manager/compliance",
     },
     {
       label: "Due This Week",
       value: data.dueThisWeekCount.toLocaleString(),
       icon: Clock,
       tone: "text-amber-600 bg-amber-50",
+      href: "/manager/compliance",
+    },
+    {
+      label: "Recertifications ≤30d",
+      value: recertCount.toLocaleString(),
+      icon: ShieldCheck,
+      tone: recertCount === 0 ? "text-emerald-600 bg-emerald-50" : "text-amber-600 bg-amber-50",
+      href: "/manager/compliance",
     },
     {
       label: "Verified CPE (12 mo)",
       value: data.verifiedCpeLastYear.toLocaleString(undefined, { maximumFractionDigits: 1 }),
       icon: Award,
       tone: "text-emerald-600 bg-emerald-50",
+      href: "/manager/reports",
     },
     {
       label: "Required Compliance",
       value: `${data.requiredComplianceRate}%`,
       icon: ShieldCheck,
       tone: data.requiredComplianceRate >= 90 ? "text-emerald-600 bg-emerald-50" : data.requiredComplianceRate >= 70 ? "text-amber-600 bg-amber-50" : "text-red-600 bg-red-50",
+      href: "/manager/compliance",
     },
   ];
 
@@ -111,16 +130,32 @@ export default function ManagerDashboardClient({ data }: { data: ManagerDashboar
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {stats.map((s) => {
           const Icon = s.icon;
-          return (
-            <div key={s.label} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          const body = (
+            <>
               <div className={cn("inline-flex h-9 w-9 items-center justify-center rounded-lg", s.tone)}>
                 <Icon className="h-4 w-4" />
               </div>
               <p className="mt-3 text-2xl font-bold text-gray-900">{s.value}</p>
               <p className="text-xs text-gray-500">{s.label}</p>
+            </>
+          );
+          const className = cn(
+            "block rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow",
+            s.href && "hover:shadow-md cursor-pointer"
+          );
+          if (s.href) {
+            return (
+              <Link key={s.label} href={s.href} className={className}>
+                {body}
+              </Link>
+            );
+          }
+          return (
+            <div key={s.label} className={className}>
+              {body}
             </div>
           );
         })}

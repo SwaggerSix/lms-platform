@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, FileWarning, Workflow, RefreshCcw } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Download, FileWarning, Workflow, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 interface RuleRow {
@@ -29,6 +29,9 @@ interface AuditResponse {
     total: number | null;
     page_failures: number;
     affected_rules_in_page: { rule_id: string; failures: number; latest: string }[];
+    top_affected_rules_all_time: { rule_id: string; failures: number; latest: string }[];
+    aggregation_capped_at_5000: boolean;
+    aggregation_query_error: string | null;
     rows: RuleRow[];
     query_error: string | null;
   };
@@ -101,14 +104,25 @@ export default function AuditClient() {
               these were silently dropping notifications before the fix in this branch.
             </p>
           </div>
-          <button
-            onClick={() => load(offset)}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href="/api/admin/notification-audit?format=csv"
+              download
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              title="Download up to 5000 rule failures + workflow CHECK failures as CSV"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </a>
+            <button
+              onClick={() => load(offset)}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {data?.notes && (
@@ -148,6 +162,40 @@ export default function AuditClient() {
             <p className="mt-1 text-xs text-amber-700">Workflow steps matching the type CHECK error</p>
           </div>
         </div>
+
+        {/* Top affected rules (all-time) */}
+        {data && data.rules.top_affected_rules_all_time.length > 0 && (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <header className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+              <h2 className="text-sm font-semibold text-gray-900">
+                Top affected rules (all-time, top 20)
+              </h2>
+              {data.rules.aggregation_capped_at_5000 && (
+                <span className="text-xs text-amber-700">
+                  Aggregation capped at 5000 rows — counts may be partial
+                </span>
+              )}
+            </header>
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-5 py-2 text-left">Rule ID</th>
+                  <th className="px-5 py-2 text-left">Failures</th>
+                  <th className="px-5 py-2 text-left">Latest</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {data.rules.top_affected_rules_all_time.map((r) => (
+                  <tr key={r.rule_id}>
+                    <td className="px-5 py-2 font-mono text-xs text-gray-700">{r.rule_id}</td>
+                    <td className="px-5 py-2 text-gray-900">{r.failures}</td>
+                    <td className="px-5 py-2 text-gray-500">{formatDate(r.latest)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Affected rules summary */}
         {data && data.rules.affected_rules_in_page.length > 0 && (
