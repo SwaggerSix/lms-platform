@@ -57,6 +57,17 @@ function formatRelative(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+interface AlertConfigResponse {
+  alert_webhook: {
+    adapter?: string;
+    min_severity?: string;
+    pagerduty_dedup?: string;
+    dry_run?: boolean;
+  } | null;
+  has_webhook_url: boolean;
+  has_pagerduty_routing_key: boolean;
+}
+
 export default function CronHealthClient() {
   const [data, setData] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -64,6 +75,7 @@ export default function CronHealthClient() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [history, setHistory] = useState<Record<string, HistoryResponse>>({});
   const [historyLoading, setHistoryLoading] = useState<string | null>(null);
+  const [alertConfig, setAlertConfig] = useState<AlertConfigResponse | null>(null);
 
   const loadHistory = useCallback(async (jobName: string) => {
     if (history[jobName]) return;
@@ -105,6 +117,17 @@ export default function CronHealthClient() {
     load();
   }, [load]);
 
+  // Fetch the alert config once on mount so the page can show
+  // whether dispatching is wired up (URL present), what adapter is
+  // configured, and whether dry_run is on. Sensitive values are not
+  // returned by the endpoint.
+  useEffect(() => {
+    fetch("/api/admin/alert-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => json && setAlertConfig(json as AlertConfigResponse))
+      .catch(() => {});
+  }, []);
+
   // Eagerly prefetch a small history window for every job so the
   // sparkline tiles have something to render without a click. One
   // batched request via ?jobs=<comma-list> instead of N parallel ones.
@@ -137,17 +160,66 @@ export default function CronHealthClient() {
               <code className="rounded bg-gray-100 px-1 text-xs">cron_runs</code> and is updated
               by each cron via <code className="rounded bg-gray-100 px-1 text-xs">logCronRun</code>.
             </p>
+            {alertConfig && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-gray-600">
+                <span>Alert dispatch:</span>
+                {alertConfig.has_webhook_url ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                    webhook wired
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 ring-1 ring-inset ring-gray-200">
+                    no webhook URL
+                  </span>
+                )}
+                {alertConfig.alert_webhook?.adapter && (
+                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200">
+                    {alertConfig.alert_webhook.adapter}
+                  </span>
+                )}
+                {alertConfig.alert_webhook?.min_severity && (
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-700">
+                    ≥ {alertConfig.alert_webhook.min_severity}
+                  </span>
+                )}
+                {alertConfig.alert_webhook?.dry_run && (
+                  <span
+                    className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-bold uppercase text-amber-800 ring-1 ring-inset ring-amber-300"
+                    title="dry_run: alerts are logged to console only, not POSTed to the webhook"
+                  >
+                    dry-run
+                  </span>
+                )}
+                {alertConfig.alert_webhook?.adapter === "pagerduty" &&
+                  !alertConfig.has_pagerduty_routing_key && (
+                    <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700 ring-1 ring-inset ring-red-200">
+                      PAGERDUTY_ROUTING_KEY missing
+                    </span>
+                  )}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={async () => {
                 if (!confirm("Replay alerts from the last 24h via the configured webhook?")) return;
-                const res = await fetch("/api/admin/cron-alert-replay", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ hours: 24 }),
-                });
-                const json = await res.json().catch(() => ({}));
+                const doReplay = async (force: boolean) => {
+                  const res = await fetch("/api/admin/cron-alert-replay", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ hours: 24, force }),
+                  });
+                  const json = await res.json().catch(() => ({}));
+                  return { res, json };
+                };
+                let { res, json } = await doReplay(false);
+                if (res.status === 429 && json?.reason === "replay_recently_fired") {
+                  if (confirm(`${json.message}\n\nFire anyway?`)) {
+                    ({ res, json } = await doReplay(true));
+                  } else {
+                    return;
+                  }
+                }
                 if (res.ok) {
                   alert(
                     json.replayed_alerts > 0

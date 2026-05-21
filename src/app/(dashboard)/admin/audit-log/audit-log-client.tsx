@@ -72,30 +72,42 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
       .catch(() => {});
   }, []);
 
+  const [entityFilter, setEntityFilter] = useState("All");
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
+
   // Discover namespace prefixes from on-page entries as a fallback. Merge
   // with the server-side list so the dropdown stays useful even if the
   // namespaces endpoint is unavailable.
+  //
+  // When hidePlatform is on, the on-page bucket counts only non-platform
+  // entries. The remote (server-side) counts are global and can't be
+  // safely scoped without a dedicated endpoint, so we suppress the remote
+  // contribution entirely under hidePlatform — keeps the visible counts
+  // honest at the cost of dropping prefixes whose only on-page evidence
+  // was platform rows. Acceptable tradeoff for "I only want to see my
+  // own tenant".
   const dynamicNamespaces = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const e of entries) {
+    const considered = hidePlatform ? entries.filter((e) => !e.isPlatform) : entries;
+    for (const e of considered) {
       const dot = e.action.indexOf(".");
       if (dot <= 0) continue;
       const prefix = e.action.slice(0, dot).toLowerCase();
       counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
     }
-    for (const ns of remoteNamespaces) {
-      // Prefer the higher count between local sample and server-side total.
-      const existing = counts.get(ns.prefix) ?? 0;
-      counts.set(ns.prefix, Math.max(existing, ns.count));
+    if (!hidePlatform) {
+      for (const ns of remoteNamespaces) {
+        // Prefer the higher count between local sample and server-side total.
+        const existing = counts.get(ns.prefix) ?? 0;
+        counts.set(ns.prefix, Math.max(existing, ns.count));
+      }
     }
     return Array.from(counts.entries())
       .filter(([prefix]) => !["created", "updated", "deleted", "login", "export"].includes(prefix))
       .sort((a, b) => b[1] - a[1]);
-  }, [entries, remoteNamespaces]);
-  const [entityFilter, setEntityFilter] = useState("All");
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
+  }, [entries, remoteNamespaces, hidePlatform]);
 
   // Persist the toggle to users.preferences.ui_prefs so it sticks across
   // sessions. Fire-and-forget — UI doesn't block on the save.

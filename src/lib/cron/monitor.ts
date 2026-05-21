@@ -158,7 +158,18 @@ export async function dispatchAlertWebhook(payload: {
   const dryRun = ALERT_CONFIG.alert_webhook?.dry_run === true;
   const postBody = async (body: Record<string, unknown>) => {
     if (dryRun) {
-      console.log("[cron-alert dry-run]", JSON.stringify({ url, body }));
+      // Single-line JSON record per dispatch so log aggregators (Datadog,
+      // Loki, etc.) can ingest cleanly. Tag with type:"cron_alert_dry_run"
+      // so downstream filtering doesn't need substring matching.
+      console.log(
+        JSON.stringify({
+          type: "cron_alert_dry_run",
+          timestamp: new Date().toISOString(),
+          adapter: ALERT_CONFIG.alert_webhook?.adapter ?? "generic",
+          url,
+          body,
+        })
+      );
       return;
     }
     try {

@@ -16,6 +16,15 @@ import { logAudit } from "@/lib/audit";
  * Does NOT modify state. The dispatcher's existing severity / adapter
  * config applies, including dry_run if it's enabled.
  */
+/**
+ * Minutes within which a repeat replay is suppressed. Stops the
+ * "Replay 24h" button from firing twice on a double-click and keeps a
+ * bored operator from spamming the alert channel. Override-able via the
+ * { force: true } body flag for the rare case where you actually need
+ * to re-fire (e.g. testing a new webhook adapter).
+ */
+const REPLAY_DEDUP_MINUTES = 5;
+
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
@@ -23,12 +32,14 @@ export async function POST(request: NextRequest) {
   }
 
   let hours = 24;
+  let force = false;
   try {
     const body = await request.json().catch(() => ({}));
     const requested = Number(body?.hours);
     if (Number.isFinite(requested) && requested > 0) {
       hours = Math.min(168, Math.floor(requested));
     }
+    force = body?.force === true;
   } catch {
     // empty / malformed body → use default
   }
@@ -37,6 +48,31 @@ export async function POST(request: NextRequest) {
   const cutoffIso = new Date(cutoffMs).toISOString();
 
   const service = createServiceClient();
+
+  // Idempotency check: look for a recent successful replay in audit_logs.
+  // Suppress the new one unless ?force is set.
+  if (!force) {
+    const sinceIso = new Date(Date.now() - REPLAY_DEDUP_MINUTES * 60 * 1000).toISOString();
+    const { data: recent } = await service
+      .from("audit_logs")
+      .select("id, created_at")
+      .eq("action", "replay.cron_alerts")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (recent && recent.length > 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          reason: "replay_recently_fired",
+          last_replay_at: (recent[0] as any).created_at,
+          message: `A replay fired ${REPLAY_DEDUP_MINUTES} minutes ago. Pass { "force": true } to override.`,
+        },
+        { status: 429 }
+      );
+    }
+  }
+
   const { data: failureRows, error } = await service
     .from("cron_runs")
     .select("job_name, status, error_message, created_at")
