@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/sender";
 import { createServiceClient } from "@/lib/supabase/service";
 import { generateReport, type ReportType } from "@/lib/reports/generate";
+import { addDays, addMonths } from "date-fns";
 
 // Vercel Cron: runs every hour
 export const dynamic = "force-dynamic";
@@ -143,22 +144,20 @@ function formatReportEmail(
 }
 
 function calculateNextRun(frequency: string): string {
+  // date-fns addMonths clamps to the last day of the target month (Jan 31 +
+  // 1 month → Feb 28/29), avoiding the JS Date.setMonth overflow that would
+  // push a Jan 31 monthly schedule into March 3.
   const now = new Date();
   switch (frequency) {
     case "daily":
-      now.setDate(now.getDate() + 1);
-      break;
+      return addDays(now, 1).toISOString();
     case "weekly":
-      now.setDate(now.getDate() + 7);
-      break;
+      return addDays(now, 7).toISOString();
     case "monthly":
-      now.setMonth(now.getMonth() + 1);
-      break;
+      return addMonths(now, 1).toISOString();
     case "quarterly":
-      now.setMonth(now.getMonth() + 3);
-      break;
+      return addMonths(now, 3).toISOString();
     default:
-      now.setDate(now.getDate() + 1);
+      return addDays(now, 1).toISOString();
   }
-  return now.toISOString();
 }

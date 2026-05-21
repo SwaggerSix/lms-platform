@@ -73,7 +73,16 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const filteredEntries = (() => {
     let result = entries.filter((entry) => {
       const matchesUser = !userSearch || entry.userName.toLowerCase().includes(userSearch.toLowerCase());
-      const matchesAction = actionFilter === "All" || entry.action === actionFilter;
+      // "Export" category covers both the literal "Export" action and any
+      // newer dotted-namespace action that starts with "export." (e.g.
+      // "export.notification_audit_csv"). Same idea would apply to future
+      // namespaces like "refresh." — generalized via lowercase prefix match.
+      const filterLower = actionFilter.toLowerCase();
+      const actionLower = entry.action.toLowerCase();
+      const matchesAction =
+        actionFilter === "All" ||
+        entry.action === actionFilter ||
+        actionLower.startsWith(`${filterLower}.`);
       const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
       return matchesUser && matchesAction && matchesEntity;
     });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
 /**
  * GET /api/admin/notification-audit?limit=100&offset=0
@@ -28,20 +29,35 @@ export async function GET(request: NextRequest) {
 
   const service = createServiceClient();
 
+  // Tenant scoping: super_admin/admin see everything (scope is null). For
+  // narrower roles the x-tenant-id header or the user's primary tenant
+  // membership determines which users' logs they can see. Rule logs are
+  // filtered by user_id; workflow logs are NOT scoped (the run→workflow
+  // chain doesn't carry tenant info today) and are returned in full when
+  // the caller has admin auth.
+  const tenantScope = auth.user
+    ? await getTenantScope(auth.user.id, auth.user.role, request).catch(() => null)
+    : null;
+  const tenantUserIds = tenantScope?.userIds ?? null;
+
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK
   // failures into a single CSV (two sections separated by a blank line).
   if (format === "csv") {
+    let ruleCsvQuery = service
+      .from("enrollment_rule_logs")
+      .select("id, rule_id, user_id, error_message, created_at")
+      .eq("action_type", "send_notification")
+      .eq("status", "error")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    if (tenantUserIds) {
+      ruleCsvQuery = ruleCsvQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
+    }
     const [
       { data: ruleAll, error: ruleAllErr },
       { data: workflowAll, error: workflowAllErr },
     ] = await Promise.all([
-      service
-        .from("enrollment_rule_logs")
-        .select("id, rule_id, user_id, error_message, created_at")
-        .eq("action_type", "send_notification")
-        .eq("status", "error")
-        .order("created_at", { ascending: false })
-        .limit(5000),
+      ruleCsvQuery,
       service
         .from("workflow_step_logs")
         .select("id, run_id, step_id, error_message, created_at")
@@ -114,18 +130,22 @@ export async function GET(request: NextRequest) {
   }
 
   // Rules engine failures (paginated rows + all-time aggregation).
+  let rulePageQuery = service
+    .from("enrollment_rule_logs")
+    .select("id, rule_id, user_id, action_type, status, error_message, created_at", { count: "exact" })
+    .eq("action_type", "send_notification")
+    .eq("status", "error")
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (tenantUserIds) {
+    rulePageQuery = rulePageQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
+  }
   const [
     { data: ruleFailures, error: ruleErr, count: ruleCount },
     { data: workflowFailures, error: workflowErr, count: workflowCount },
     { data: ruleAggRows, error: ruleAggErr },
   ] = await Promise.all([
-    service
-      .from("enrollment_rule_logs")
-      .select("id, rule_id, user_id, action_type, status, error_message, created_at", { count: "exact" })
-      .eq("action_type", "send_notification")
-      .eq("status", "error")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1),
+    rulePageQuery,
     service
       .from("workflow_step_logs")
       .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
@@ -168,30 +188,34 @@ export async function GET(request: NextRequest) {
     ruleSummary[(row as any).rule_id] = slot;
   }
 
-  // All-time rule aggregation. The view-backed query returns
-  // {rule_id, failures, latest} pre-aggregated. If the view is missing
-  // (returns an error mentioning "does not exist"), fall back to a
-  // 5000-row sample of raw rows and aggregate in JS.
+  // All-time rule aggregation. The materialized view returns
+  // {rule_id, failures, latest} pre-aggregated globally, so we can only
+  // use it when there's no tenant scope. With scope, we have to scan raw
+  // rows so we can filter by user_id and re-aggregate in JS.
   let topAffectedRules: { rule_id: string; failures: number; latest: string }[] = [];
   let aggregationCapped = false;
   const viewMissing =
     !!ruleAggErr?.message && /relation .*notification_audit_rule_summary.* does not exist/i.test(ruleAggErr.message);
 
-  if (!viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
+  if (!tenantUserIds && !viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
     topAffectedRules = (ruleAggRows as any[]).map((r) => ({
       rule_id: r.rule_id,
       failures: Number(r.failures) || 0,
       latest: r.latest,
     }));
   } else {
-    // Fallback path: scan up to 5000 raw rows and bucket in JS.
-    const { data: fallback } = await service
+    // Fallback / scoped path: scan up to 5000 raw rows and bucket in JS.
+    let fbQuery = service
       .from("enrollment_rule_logs")
-      .select("rule_id, created_at")
+      .select("rule_id, user_id, created_at")
       .eq("action_type", "send_notification")
       .eq("status", "error")
       .order("created_at", { ascending: false })
       .limit(5000);
+    if (tenantUserIds) {
+      fbQuery = fbQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
+    }
+    const { data: fallback } = await fbQuery;
     const allTimeMap: Record<string, { rule_id: string; failures: number; latest: string }> = {};
     for (const row of fallback ?? []) {
       const slot = allTimeMap[(row as any).rule_id] ?? {
@@ -211,6 +235,9 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     page: { limit, offset },
+    tenant_scope: tenantUserIds
+      ? { user_count: tenantUserIds.length, workflow_logs_unscoped: true }
+      : null,
     rules: {
       total: ruleCount ?? null,
       page_failures: ruleFailures?.length ?? 0,

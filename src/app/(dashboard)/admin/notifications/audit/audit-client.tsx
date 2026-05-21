@@ -63,6 +63,7 @@ export default function AuditClient() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [offset, setOffset] = useState<number>(0);
+  const [refreshingView, setRefreshingView] = useState<boolean>(false);
 
   const load = useCallback(async (off: number) => {
     setLoading(true);
@@ -115,12 +116,29 @@ export default function AuditClient() {
               Export CSV
             </a>
             <button
+              onClick={async () => {
+                setRefreshingView(true);
+                try {
+                  await fetch("/api/admin/notification-audit/refresh-view", { method: "POST" });
+                } finally {
+                  setRefreshingView(false);
+                  load(offset);
+                }
+              }}
+              disabled={refreshingView}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              title="Refresh the materialized aggregation view (the 'all-time' rule summary)"
+            >
+              <RefreshCcw className={cn("h-4 w-4", refreshingView && "animate-spin")} />
+              Refresh view
+            </button>
+            <button
               onClick={() => load(offset)}
               disabled={loading}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} />
-              Refresh
+              Reload page
             </button>
           </div>
         </div>
