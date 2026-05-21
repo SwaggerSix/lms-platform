@@ -70,6 +70,34 @@ const diffBadge: Record<string, string> = {
   advanced: 'text-red-600',
 };
 
+const reviewStatusFilters = ['All Reviews', 'Overdue', 'Due Soon', 'Upcoming', 'Recently Reviewed', 'Not Set'] as const;
+type ReviewStatusFilter = typeof reviewStatusFilters[number];
+
+type ReviewStatus = 'overdue' | 'due_soon' | 'upcoming' | 'ok' | 'unset';
+
+function getReviewStatus(lastReview: string): { status: ReviewStatus; daysUntil: number | null; label: string; classes: string } {
+  if (!lastReview) {
+    return { status: 'unset', daysUntil: null, label: 'No review date', classes: 'bg-gray-100 text-gray-600 ring-gray-500/20' };
+  }
+  const reviewTime = new Date(lastReview).getTime();
+  if (!Number.isFinite(reviewTime)) {
+    return { status: 'unset', daysUntil: null, label: 'Invalid date', classes: 'bg-gray-100 text-gray-600 ring-gray-500/20' };
+  }
+  const dueTime = reviewTime + 365 * 24 * 60 * 60 * 1000;
+  const daysUntil = Math.ceil((dueTime - Date.now()) / (24 * 60 * 60 * 1000));
+
+  if (daysUntil < 0) {
+    return { status: 'overdue', daysUntil, label: `Overdue ${Math.abs(daysUntil)}d`, classes: 'bg-red-50 text-red-700 ring-red-600/20' };
+  }
+  if (daysUntil <= 30) {
+    return { status: 'due_soon', daysUntil, label: `Due in ${daysUntil}d`, classes: 'bg-amber-50 text-amber-700 ring-amber-600/20' };
+  }
+  if (daysUntil <= 90) {
+    return { status: 'upcoming', daysUntil, label: `Due in ${daysUntil}d`, classes: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' };
+  }
+  return { status: 'ok', daysUntil, label: `Due in ${daysUntil}d`, classes: 'bg-green-50 text-green-700 ring-green-600/20' };
+}
+
 export default function CoursesClient({ courses: initialCourses }: { courses: CourseItem[] }) {
   const router = useRouter();
   const toast = useToast();
@@ -80,6 +108,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [difficultyFilter, setDifficultyFilter] = useState('All Levels');
+  const [reviewFilter, setReviewFilter] = useState<ReviewStatusFilter>('All Reviews');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
@@ -215,7 +244,16 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     const matchesCategory = categoryFilter === 'All Categories' || c.category === categoryFilter;
     const matchesType = typeFilter === 'All Types' || c.type === typeFilter.toLowerCase().replace(' ', '-');
     const matchesDiff = difficultyFilter === 'All Levels' || c.difficulty === difficultyFilter.toLowerCase();
-    return matchesTab && matchesSearch && matchesCategory && matchesType && matchesDiff;
+    let matchesReview = true;
+    if (reviewFilter !== 'All Reviews') {
+      const { status } = getReviewStatus(c.lastReview);
+      if (reviewFilter === 'Overdue') matchesReview = status === 'overdue';
+      else if (reviewFilter === 'Due Soon') matchesReview = status === 'due_soon';
+      else if (reviewFilter === 'Upcoming') matchesReview = status === 'upcoming';
+      else if (reviewFilter === 'Recently Reviewed') matchesReview = status === 'ok';
+      else if (reviewFilter === 'Not Set') matchesReview = status === 'unset';
+    }
+    return matchesTab && matchesSearch && matchesCategory && matchesType && matchesDiff && matchesReview;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -238,7 +276,41 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
-          <p className="mt-1 text-sm text-gray-500">{courses.length} courses total</p>
+          <p className="mt-1 text-sm text-gray-500">
+            {courses.length} courses total
+            {(() => {
+              let overdue = 0;
+              let dueSoon = 0;
+              for (const c of courses) {
+                const s = getReviewStatus(c.lastReview).status;
+                if (s === 'overdue') overdue++;
+                else if (s === 'due_soon') dueSoon++;
+              }
+              if (overdue === 0 && dueSoon === 0) return null;
+              return (
+                <>
+                  {overdue > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setReviewFilter('Overdue'); setActiveTab('All'); setCurrentPage(1); }}
+                      className="ml-3 inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20 hover:bg-red-100"
+                    >
+                      {overdue} overdue review{overdue === 1 ? '' : 's'}
+                    </button>
+                  )}
+                  {dueSoon > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setReviewFilter('Due Soon'); setActiveTab('All'); setCurrentPage(1); }}
+                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20 hover:bg-amber-100"
+                    >
+                      {dueSoon} due soon
+                    </button>
+                  )}
+                </>
+              );
+            })()}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <a
@@ -298,6 +370,14 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
         <select value={difficultyFilter} onChange={(e) => { setDifficultyFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           {difficulties.map((d) => <option key={d}>{d}</option>)}
         </select>
+        <select
+          value={reviewFilter}
+          onChange={(e) => { setReviewFilter(e.target.value as ReviewStatusFilter); setCurrentPage(1); }}
+          aria-label="Filter by curriculum review status"
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          {reviewStatusFilters.map((r) => <option key={r}>{r}</option>)}
+        </select>
         <div className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white p-1">
           <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600')}>
             <LayoutGrid className="h-4 w-4" aria-hidden="true" />
@@ -331,15 +411,23 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
       {/* Grid View */}
       {paginatedCourses.length === 0 ? null : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {paginatedCourses.map((course) => (
+          {paginatedCourses.map((course) => {
+            const review = getReviewStatus(course.lastReview);
+            return (
             <div key={course.id} className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
               <div className={cn('relative h-36', course.thumbnail)}>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <BookOpen className="h-10 w-10 text-white/50" />
                 </div>
-                <div className="absolute right-3 top-3 flex gap-1.5">
+                <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
                   <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[course.status])}>
                     {course.status}
+                  </span>
+                  <span
+                    className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset whitespace-nowrap', review.classes)}
+                    title={course.lastReview ? `Last review: ${course.lastReview}` : 'No review date recorded'}
+                  >
+                    Review: {review.label}
                   </span>
                 </div>
               </div>
@@ -389,7 +477,8 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         /* List View */
@@ -400,6 +489,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Course</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Review</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Enrolled</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Completion</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Duration</th>
@@ -407,7 +497,9 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {paginatedCourses.map((course) => (
+              {paginatedCourses.map((course) => {
+                const review = getReviewStatus(course.lastReview);
+                return (
                 <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -425,6 +517,14 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                   </td>
                   <td className="px-6 py-4">
                     <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium capitalize', typeBadge[course.type])}>{course.type.replace('-', ' ')}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={cn('rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset whitespace-nowrap', review.classes)}
+                      title={course.lastReview ? `Last review: ${course.lastReview}` : 'No review date recorded'}
+                    >
+                      {review.label}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{formatNumber(course.enrolled)}</td>
                   <td className="px-6 py-4">
@@ -456,7 +556,8 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
