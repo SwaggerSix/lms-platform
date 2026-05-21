@@ -138,14 +138,40 @@ export default function CronHealthClient() {
               by each cron via <code className="rounded bg-gray-100 px-1 text-xs">logCronRun</code>.
             </p>
           </div>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={async () => {
+                if (!confirm("Replay alerts from the last 24h via the configured webhook?")) return;
+                const res = await fetch("/api/admin/cron-alert-replay", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ hours: 24 }),
+                });
+                const json = await res.json().catch(() => ({}));
+                if (res.ok) {
+                  alert(
+                    json.replayed_alerts > 0
+                      ? `Replayed ${json.replayed_alerts} alerts across ${json.affected_jobs.length} job(s).`
+                      : json.message || "No alerts replayed."
+                  );
+                } else {
+                  alert(`Replay failed: ${json.error || res.statusText}`);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              title="Re-dispatch the last 24h of failures via the configured alert webhook"
+            >
+              Replay 24h
+            </button>
+            <button
+              onClick={load}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <RefreshCcw className={cn("h-4 w-4", loading && "animate-spin")} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {error && (

@@ -195,13 +195,20 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
             <option value="Deleted">Deleted</option>
             <option value="Login">Login</option>
             <option value="Export">Export</option>
+            <optgroup label="Common namespaces">
+              <option value="profile.preferences">Preference Changes</option>
+              <option value="refresh">View Refreshes</option>
+              <option value="replay">Replays</option>
+            </optgroup>
             {dynamicNamespaces.length > 0 && (
-              <optgroup label="Namespaces (from data)">
-                {dynamicNamespaces.map(([prefix, count]) => (
-                  <option key={prefix} value={prefix}>
-                    {prefix} ({count})
-                  </option>
-                ))}
+              <optgroup label="Other namespaces (from data)">
+                {dynamicNamespaces
+                  .filter(([p]) => !["profile", "refresh", "replay"].includes(p))
+                  .map(([prefix, count]) => (
+                    <option key={prefix} value={prefix}>
+                      {prefix} ({count})
+                    </option>
+                  ))}
               </optgroup>
             )}
           </select>

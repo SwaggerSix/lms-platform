@@ -100,6 +100,12 @@ interface CronAlertConfig {
      *   more incident volume.
      */
     pagerduty_dedup?: "global" | "per-job";
+    /**
+     * When true, log the would-have-been-POSTed payload to the server
+     * console instead of actually firing fetch(). For staging /
+     * dry-rehearsing alert wiring without spamming the real channel.
+     */
+    dry_run?: boolean;
   };
   consecutive_failures?: { window?: number; threshold?: number };
   thresholds?: Record<string, JobThresholds>;
@@ -149,7 +155,12 @@ export async function dispatchAlertWebhook(payload: {
   const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
   const pdDedup = ALERT_CONFIG.alert_webhook?.pagerduty_dedup ?? "global";
 
+  const dryRun = ALERT_CONFIG.alert_webhook?.dry_run === true;
   const postBody = async (body: Record<string, unknown>) => {
+    if (dryRun) {
+      console.log("[cron-alert dry-run]", JSON.stringify({ url, body }));
+      return;
+    }
     try {
       await fetch(url, {
         method: "POST",
