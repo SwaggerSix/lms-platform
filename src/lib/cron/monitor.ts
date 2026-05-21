@@ -138,7 +138,27 @@ export async function dispatchAlertWebhook(payload: {
 }): Promise<void> {
   const url = process.env.CRON_ALERT_WEBHOOK_URL;
   if (!url) return;
-  if (payload.status !== "degraded" || payload.alerts.length === 0) return;
+
+  const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
+
+  // Healthy path: only PagerDuty cares — emit a resolve event so any
+  // open incident clears. Slack/generic stay quiet on healthy checks
+  // because we don't want to spam channels with "still fine" messages.
+  if (payload.status === "healthy" || payload.alerts.length === 0) {
+    if (adapter !== "pagerduty") return;
+    const resolveBody = buildAlertBody("pagerduty", payload, []);
+    if (!resolveBody) return;
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resolveBody),
+      });
+    } catch (err) {
+      console.error("Cron alert webhook (resolve) failed:", err);
+    }
+    return;
+  }
 
   const minSev = ALERT_CONFIG.alert_webhook?.min_severity ?? "critical";
   const wantsCritical = minSev === "critical";
@@ -147,7 +167,6 @@ export async function dispatchAlertWebhook(payload: {
   );
   if (matching.length === 0) return;
 
-  const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
   const body = buildAlertBody(adapter, payload, matching);
   if (!body) return;
 
@@ -162,7 +181,7 @@ export async function dispatchAlertWebhook(payload: {
   }
 }
 
-function buildAlertBody(
+export function buildAlertBody(
   adapter: "generic" | "slack" | "pagerduty",
   payload: { status: string; checked_at: string; jobs: CronJobHealth[]; alerts: string[] },
   matching: string[]
@@ -170,14 +189,21 @@ function buildAlertBody(
   if (adapter === "slack") {
     // Slack Incoming Webhook payload. Bullets render with the trailing
     // newline; markdown is preserved in `text` and the first block.
-    const summary = `LMS cron health *${payload.status}* — ${matching.length} alert${matching.length === 1 ? "" : "s"}`;
-    const detail = matching.map((a) => `• ${a}`).join("\n");
+    // Per https://api.slack.com/reference/surfaces/formatting#escaping
+    // the three required escapes are &, <, >. Job names and alert
+    // strings are user-controlled (config + DB) so escape defensively.
+    const escapeMrkdwn = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeStatus = escapeMrkdwn(payload.status);
+    const safeMatching = matching.map(escapeMrkdwn);
+    const summary = `LMS cron health *${safeStatus}* — ${safeMatching.length} alert${safeMatching.length === 1 ? "" : "s"}`;
+    const detail = safeMatching.map((a) => `• ${a}`).join("\n");
     return {
       text: `${summary}\n${detail}`,
       blocks: [
         { type: "section", text: { type: "mrkdwn", text: `*${summary}*` } },
         { type: "section", text: { type: "mrkdwn", text: detail } },
-        { type: "context", elements: [{ type: "mrkdwn", text: `_checked ${payload.checked_at}_` }] },
+        { type: "context", elements: [{ type: "mrkdwn", text: `_checked ${escapeMrkdwn(payload.checked_at)}_` }] },
       ],
     };
   }
@@ -188,15 +214,28 @@ function buildAlertBody(
       console.error("PAGERDUTY_ROUTING_KEY not set — skipping PagerDuty alert");
       return null;
     }
-    // Highest severity wins for the PD event severity. critical → "critical",
-    // warn-only → "warning".
+    // Global dedup_key so trigger + resolve refer to the same incident.
+    // Per-job dedup keys would create one incident per job; a single
+    // umbrella incident is friendlier for on-call rotation.
+    const dedupKey = "lms-cron-health";
+
+    // Empty matching[] means we're being asked to resolve (called from
+    // dispatchAlertWebhook's healthy branch). PagerDuty no-ops resolve
+    // when no open incident exists, so this is safe to fire on every
+    // healthy check.
+    if (matching.length === 0) {
+      return {
+        routing_key: routingKey,
+        event_action: "resolve",
+        dedup_key: dedupKey,
+      };
+    }
+
     const sev = matching.some((a) => /\[critical\]/.test(a)) ? "critical" : "warning";
     return {
       routing_key: routingKey,
       event_action: "trigger",
-      // Use a job-stable dedup key so a recurring overdue alert collapses
-      // into one PD incident until resolved.
-      dedup_key: `lms-cron-${payload.status}-${matching.length > 0 ? matching[0].split(":")[0] : "global"}`,
+      dedup_key: dedupKey,
       payload: {
         summary: `LMS cron health ${payload.status}: ${matching[0]}`,
         severity: sev,
