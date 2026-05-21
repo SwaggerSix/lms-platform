@@ -82,6 +82,19 @@ export default function CronHealthClient() {
   const [history, setHistory] = useState<Record<string, HistoryResponse>>({});
   const [historyLoading, setHistoryLoading] = useState<string | null>(null);
   const [alertConfig, setAlertConfig] = useState<AlertConfigResponse | null>(null);
+  const [alertConfigFetchedAt, setAlertConfigFetchedAt] = useState<string | null>(null);
+
+  const loadAlertConfig = useCallback(() => {
+    fetch("/api/admin/alert-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json) {
+          setAlertConfig(json as AlertConfigResponse);
+          setAlertConfigFetchedAt(new Date().toISOString());
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const loadHistory = useCallback(async (jobName: string) => {
     if (history[jobName]) return;
@@ -128,11 +141,8 @@ export default function CronHealthClient() {
   // configured, and whether dry_run is on. Sensitive values are not
   // returned by the endpoint.
   useEffect(() => {
-    fetch("/api/admin/alert-config")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => json && setAlertConfig(json as AlertConfigResponse))
-      .catch(() => {});
-  }, []);
+    loadAlertConfig();
+  }, [loadAlertConfig]);
 
   // Eagerly prefetch a small history window for every job so the
   // sparkline tiles have something to render without a click. One
@@ -417,14 +427,31 @@ export default function CronHealthClient() {
               }
               return (
                 <div className="overflow-hidden rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm">
-                  <header className="border-b border-amber-100 px-5 py-3">
-                    <h2 className="text-sm font-semibold text-amber-900">
-                      Configured vs running mismatch
-                    </h2>
-                    <p className="mt-0.5 text-xs text-amber-800">
-                      Diff between <code className="rounded bg-white/60 px-1">vercel.json</code> crons and{" "}
-                      <code className="rounded bg-white/60 px-1">cron_runs</code> history.
-                    </p>
+                  <header className="flex items-start justify-between gap-3 border-b border-amber-100 px-5 py-3">
+                    <div>
+                      <h2 className="text-sm font-semibold text-amber-900">
+                        Configured vs running mismatch
+                      </h2>
+                      <p className="mt-0.5 text-xs text-amber-800">
+                        Diff between <code className="rounded bg-white/60 px-1">vercel.json</code> crons and{" "}
+                        <code className="rounded bg-white/60 px-1">cron_runs</code> history.
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 text-xs text-amber-800">
+                      {alertConfigFetchedAt && (
+                        <span title={new Date(alertConfigFetchedAt).toLocaleString()}>
+                          last computed {formatRelative(alertConfigFetchedAt)}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={loadAlertConfig}
+                        className="rounded-md border border-amber-300 bg-white px-2 py-0.5 font-medium text-amber-900 hover:bg-amber-50"
+                        title="Re-fetch the schedule + alert config"
+                      >
+                        Recompute
+                      </button>
+                    </div>
                   </header>
                   <div className="grid grid-cols-1 gap-4 px-5 py-3 md:grid-cols-2">
                     <div>
@@ -557,6 +584,19 @@ export default function CronHealthClient() {
                                     </span>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                      <a
+                                        href={`/api/cron/history?job=${encodeURIComponent(job.name)}&format=csv&limit=200`}
+                                        download
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                      >
+                                        <Download className="h-3.5 w-3.5" />
+                                        Export CSV
+                                      </a>
+                                      {/* Vertical separator — Replay is the only action in this
+                                          row that hits an external system (the alert webhook),
+                                          so set it apart from the read-only export. */}
+                                      <span className="h-5 w-px bg-gray-200" aria-hidden="true" />
                                       <button
                                         type="button"
                                         onClick={async (e) => {
@@ -592,20 +632,11 @@ export default function CronHealthClient() {
                                             alert(`Replay failed: ${json.error || res.statusText}`);
                                           }
                                         }}
-                                        className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                        title={`Re-dispatch the last 24h of failures for ${job.name}`}
+                                        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                                        title={`Re-dispatch the last 24h of failures for ${job.name} via the configured webhook`}
                                       >
                                         Replay
                                       </button>
-                                      <a
-                                        href={`/api/cron/history?job=${encodeURIComponent(job.name)}&format=csv&limit=200`}
-                                        download
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                      >
-                                        <Download className="h-3.5 w-3.5" />
-                                        Export CSV
-                                      </a>
                                     </div>
                                   </div>
                                   {hist.runs.length > 0 && (

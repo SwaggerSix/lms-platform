@@ -87,10 +87,12 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient();
 
-  // Validate the job filter against the set of jobs we actually have run
-  // history for. A typo would otherwise silently return "no failures for
-  // <typo>" — correct but unhelpful. Look at distinct job_names in
-  // cron_runs over the last 30 days as the source of truth.
+  // Validate the job filter against the set of jobs we recognize:
+  // - distinct job_names from cron_runs over the last 30 days
+    //   (jobs that have actually fired recently), plus
+  // - vercel.json cron path basenames (jobs that are scheduled but
+  //   may not have run yet, e.g. a freshly-deployed cron).
+  // The union avoids false-positive rejection for brand-new crons.
   if (jobFilter && jobFilter.length > 0) {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: known } = await service
@@ -98,6 +100,24 @@ export async function POST(request: NextRequest) {
       .select("job_name")
       .gte("created_at", since);
     const knownSet = new Set(((known ?? []) as any[]).map((r) => r.job_name));
+
+    // Augment from vercel.json (best-effort; if the file is missing we
+    // fall back to cron_runs-only).
+    try {
+      const vp = join(process.cwd(), "vercel.json");
+      if (existsSync(vp)) {
+        const vcfg = JSON.parse(readFileSync(vp, "utf8")) as {
+          crons?: Array<{ path: string }>;
+        };
+        for (const c of vcfg.crons ?? []) {
+          const name = (c.path ?? "").split("/").pop() ?? "";
+          if (name) knownSet.add(name);
+        }
+      }
+    } catch {
+      // malformed vercel.json → ignore, use cron_runs-only set
+    }
+
     const unknown = jobFilter.filter((j) => !knownSet.has(j));
     if (unknown.length > 0) {
       return NextResponse.json(
@@ -112,16 +132,23 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Idempotency check: look for a recent successful replay in audit_logs.
-  // Suppress the new one unless ?force is set. Window from
-  // cron-thresholds.json replay.dedup_minutes (default 5).
+  // Audit action: per-job replays get a job-specific suffix so reporting
+  // can split them out from global replays (and from each other).
+  //   - global / multi-job → "replay.cron_alerts"
+  //   - single job        → "replay.cron_alerts.<job_name>"
+  const auditAction =
+    jobFilter && jobFilter.length === 1 ? `replay.cron_alerts.${jobFilter[0]}` : "replay.cron_alerts";
+
+  // Idempotency check: look for a recent successful replay in audit_logs
+  // *with the same action* — so global suppresses only global, and a
+  // per-job suppression doesn't lock out other jobs' replays.
   const dedupMinutes = loadReplayDedupMinutes();
   if (!force && dedupMinutes > 0) {
     const sinceIso = new Date(Date.now() - dedupMinutes * 60 * 1000).toISOString();
     const { data: recent } = await service
       .from("audit_logs")
       .select("id, created_at")
-      .eq("action", "replay.cron_alerts")
+      .eq("action", auditAction)
       .gte("created_at", sinceIso)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -132,7 +159,8 @@ export async function POST(request: NextRequest) {
           reason: "replay_recently_fired",
           last_replay_at: (recent[0] as any).created_at,
           dedup_minutes: dedupMinutes,
-          message: `A replay fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
+          dedup_scope: auditAction,
+          message: `A replay (${auditAction}) fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
         },
         { status: 429 }
       );
@@ -193,7 +221,7 @@ export async function POST(request: NextRequest) {
 
   logAudit({
     userId: auth.user?.id,
-    action: "replay.cron_alerts",
+    action: auditAction,
     entityType: "cron_alert_replay",
     newValues: {
       hours,
