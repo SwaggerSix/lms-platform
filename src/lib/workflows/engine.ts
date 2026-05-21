@@ -5,6 +5,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { evaluateCondition, type Condition } from "./conditions";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,14 +65,36 @@ const actionHandlers: Record<string, ActionHandler> = {
 
   send_notification: async (config, _ctx) => {
     const service = createServiceClient();
+    // Honor the recipient's "announcements" notification preference.
+    const userId = config.user_id as string;
+    const prefsByUser = await fetchNotificationPrefs(service, [userId]);
+    if (!userMaySend(prefsByUser.get(userId), "announcements", "inApp")) {
+      return {
+        success: true,
+        output: { notified_user: userId, skipped: true, reason: "opted_out" },
+      };
+    }
+    // The notifications.type CHECK constraint allows: enrollment, reminder,
+    // completion, certification, announcement, mention. Workflows are
+    // admin-defined broadcasts, so "announcement" is the natural fit.
+    const allowedTypes = new Set([
+      "enrollment",
+      "reminder",
+      "completion",
+      "certification",
+      "announcement",
+      "mention",
+    ]);
+    const configuredType = typeof config.type === "string" ? config.type : "";
+    const type = allowedTypes.has(configuredType) ? configuredType : "announcement";
     const { error } = await service.from("notifications").insert({
-      user_id: config.user_id,
+      user_id: userId,
       title: config.title || "Workflow Notification",
       body: config.body || "",
-      type: "workflow",
+      type,
     });
     if (error) return { success: false, output: {}, error: error.message };
-    return { success: true, output: { notified_user: config.user_id } };
+    return { success: true, output: { notified_user: userId } };
   },
 
   enroll_user: async (config, _ctx) => {

@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -246,13 +247,28 @@ export async function executeRuleActions(
         case "send_notification": {
           const text = action.notification_text || `Automated notification from rule: ${rule.name}`;
 
+          // Honor announcement preferences and use a CHECK-valid type. The
+          // original code used "system" which violates the notifications.type
+          // CHECK constraint (allowed: enrollment, reminder, completion,
+          // certification, announcement, mention).
+          const prefsByUser = await fetchNotificationPrefs(service, [userId]);
+          if (!userMaySend(prefsByUser.get(userId), "announcements", "inApp")) {
+            result = {
+              action_type: action.type,
+              action_target_id: null,
+              status: "skipped",
+              error_message: "User opted out of announcements",
+            };
+            break;
+          }
+
           const { error: notifErr } = await service
             .from("notifications")
             .insert({
               user_id: userId,
               title: `Automation: ${rule.name}`,
               body: text,
-              type: "system",
+              type: "announcement",
               is_read: false,
             });
 

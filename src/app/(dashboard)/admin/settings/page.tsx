@@ -64,7 +64,7 @@ export default async function SettingsPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role")
+    .select("id, role, email")
     .eq("auth_id", user.id)
     .single();
 
@@ -103,6 +103,7 @@ export default async function SettingsPage() {
       ...(settingsMap["notifications"] ?? {}),
     },
     apiKeys: (settingsMap["api_keys"] as ApiKey[] | undefined) ?? defaultApiKeys,
+    adminEmail: (dbUser as any).email ?? user.email ?? "",
   };
 
   return <SettingsClient data={settingsData} />;

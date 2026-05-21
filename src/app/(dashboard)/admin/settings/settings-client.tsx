@@ -47,6 +47,8 @@ export interface SettingsData {
     selectedWebhookEvents: string[];
   };
   apiKeys: ApiKey[];
+  /** The currently logged-in admin's email — used as the default recipient for test emails. */
+  adminEmail: string;
 }
 
 const webhookEvents = [
@@ -125,10 +127,26 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const handleSendTestEmail = useCallback(async () => {
     setTestEmailStatus("sending");
     try {
+      // /api/email expects { template, to, params }. Use the
+      // enrollment_confirmation template with the current admin's email
+      // address as the recipient and a small sample params payload.
       const res = await fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "test", subject: "Test Email from LMS Platform", to: "admin" }),
+        body: JSON.stringify({
+          template: "enrollment_confirmation",
+          to: data.adminEmail,
+          params: {
+            learnerName: "Admin Test",
+            courseName: "Test Email From LMS Platform",
+            courseUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/dashboard`,
+            startDate: new Date().toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            }),
+          },
+        }),
       });
       if (!res.ok) {
         throw new Error("Failed to send");
@@ -139,7 +157,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       setTestEmailStatus("error");
       setTimeout(() => setTestEmailStatus("idle"), 3000);
     }
-  }, []);
+  }, [data.adminEmail]);
 
   const handleGenerateKey = useCallback(async () => {
     const newKey = crypto.randomUUID();

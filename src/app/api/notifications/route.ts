@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createNotificationSchema } from "@/lib/validations";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 export async function GET() {
   const supabase = await createClient();
@@ -126,7 +127,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No target users found" }, { status: 400 });
   }
 
-  const rows = targetUsers.map((u: any) => ({
+  // Honor each target user's "announcements" notification preference.
+  // Admin-initiated broadcasts can be opted out of, same as cron alerts.
+  const targetIds = targetUsers.map((u: any) => u.id);
+  const prefsByUser = await fetchNotificationPrefs(service, targetIds);
+  const channelKey: "inApp" | "email" = channel === "email" ? "email" : "inApp";
+  const filteredTargets = targetUsers.filter((u: any) =>
+    userMaySend(prefsByUser.get(u.id), "announcements", channelKey)
+  );
+
+  if (filteredTargets.length === 0) {
+    return NextResponse.json(
+      { error: "All target users have opted out of announcements" },
+      { status: 400 }
+    );
+  }
+
+  const rows = filteredTargets.map((u: any) => ({
     user_id: u.id,
     type: "announcement",
     title,
