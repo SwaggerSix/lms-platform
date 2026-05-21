@@ -6,6 +6,7 @@ import { validateBody, createCourseSchema, updateCourseSchema } from "@/lib/vali
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { syncRequiredEnrollmentsForCourse } from "@/lib/courses/required-training";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -153,6 +154,12 @@ export async function POST(request: NextRequest) {
     newValues: { title: data.title, slug: data.slug },
   });
 
+  // If this course was created flagged as required training, retroactively
+  // enrol every active matching user. Fire-and-forget so the API stays snappy.
+  syncRequiredEnrollmentsForCourse(data.id, auth.user.id).catch((err) =>
+    console.error("Required-training sync failed for created course", err)
+  );
+
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -211,6 +218,13 @@ export async function PATCH(request: NextRequest) {
   if (error) {
     console.error("Courses API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // If required-training criteria were touched, retroactively enrol matching users.
+  if (updates.metadata && typeof updates.metadata === "object" && "required_for" in (updates.metadata as Record<string, unknown>)) {
+    syncRequiredEnrollmentsForCourse(id, auth.user.id).catch((err) =>
+      console.error("Required-training sync failed for updated course", err)
+    );
   }
 
   // Fire webhook (non-blocking)

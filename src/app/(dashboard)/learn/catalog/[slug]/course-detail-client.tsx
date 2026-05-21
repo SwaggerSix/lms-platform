@@ -79,6 +79,7 @@ export interface CourseData {
   nasbaCpe: boolean;
   cpeCredits: number;
   courseVersion?: string;
+  isRequiredForMe: boolean;
   gradient: string;
   skills: string[];
   learningOutcomes: string[];
@@ -235,6 +236,14 @@ export default function CourseDetailClient({
           <div className="flex flex-wrap items-start gap-3">
             <DifficultyBadge difficulty={course.difficulty} />
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">{course.type}</span>
+            {course.isRequiredForMe && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold text-white shadow"
+                title="Required training for your role or organization"
+              >
+                REQUIRED
+              </span>
+            )}
             {course.nasbaCpe && (
               <span
                 className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow"

@@ -38,6 +38,7 @@ export interface CatalogCourse {
   requiresApproval?: boolean;
   nasbaCpe?: boolean;
   cpeCredits?: number;
+  isRequiredForMe?: boolean;
 }
 
 const CATEGORIES = ["Technology", "Leadership", "Business", "Compliance", "Soft Skills"];
@@ -395,6 +396,17 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                           title={`Offers ${course.cpeCredits} NASBA CPE credits`}
                         >
                           {course.cpeCredits} CPE
+                        </div>
+                      )}
+                      {course.isRequiredForMe && (
+                        <div
+                          className={cn(
+                            "absolute left-3 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-semibold text-white shadow",
+                            course.hasUnmetPrerequisites || course.requiresApproval ? "top-12" : "top-3"
+                          )}
+                          title="This course is required for your role or organization."
+                        >
+                          REQUIRED
                         </div>
                       )}
                     </div>

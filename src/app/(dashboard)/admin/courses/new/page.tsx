@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
@@ -153,7 +153,23 @@ export default function CreateCoursePage() {
   const [prereqReqType, setPrereqReqType] = useState<string>('completion');
   const [prereqMinScore, setPrereqMinScore] = useState<number>(70);
   const [skills, setSkills] = useState<string[]>([]);
+  const [requiredEnabled, setRequiredEnabled] = useState(false);
+  const [requiredRoles, setRequiredRoles] = useState<string[]>([]);
+  const [requiredOrgIds, setRequiredOrgIds] = useState<string[]>([]);
+  const [requiredDueDays, setRequiredDueDays] = useState<number>(30);
+  const [orgOptions, setOrgOptions] = useState<{ id: string; name: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/organizations')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setOrgOptions(data.map((o: { id: string; name: string }) => ({ id: o.id, name: o.name })));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (status: 'draft' | 'published') => {
     setSubmitting(true);
@@ -178,6 +194,13 @@ export default function CreateCoursePage() {
           last_curriculum_review: lastReview,
           nasba_cpe: offersCpe,
           cpe_credits: offersCpe ? cpeCredits : 0,
+          required_for: requiredEnabled && (requiredRoles.length > 0 || requiredOrgIds.length > 0)
+            ? {
+                roles: requiredRoles,
+                organization_ids: requiredOrgIds,
+                due_days: requiredDueDays > 0 ? requiredDueDays : undefined,
+              }
+            : null,
           modules: modules.map((m, mi) => ({
             title: m.title,
             sequence_order: mi + 1,
@@ -797,6 +820,83 @@ export default function CreateCoursePage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900">Required Training</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={requiredEnabled}
+                  onChange={(e) => setRequiredEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Mark this as required training and auto-enrol matching users</span>
+              </label>
+              {requiredEnabled && (
+                <div className="space-y-3 pl-6">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Required for roles</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['learner', 'manager', 'instructor', 'admin'].map((r) => {
+                        const active = requiredRoles.includes(r);
+                        return (
+                          <button
+                            type="button"
+                            key={r}
+                            onClick={() => setRequiredRoles(active ? requiredRoles.filter((x) => x !== r) : [...requiredRoles, r])}
+                            className={cn(
+                              'rounded-full px-3 py-1 text-xs font-medium capitalize border',
+                              active ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                            )}
+                          >
+                            {r}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Required for organizations</label>
+                    {orgOptions.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic">No organizations configured yet.</p>
+                    ) : (
+                      <div className="max-h-32 overflow-y-auto rounded-md border border-gray-200 bg-white p-2 space-y-1">
+                        {orgOptions.map((o) => {
+                          const active = requiredOrgIds.includes(o.id);
+                          return (
+                            <label key={o.id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700 px-1 py-0.5 hover:bg-gray-50 rounded">
+                              <input
+                                type="checkbox"
+                                checked={active}
+                                onChange={() => setRequiredOrgIds(active ? requiredOrgIds.filter((x) => x !== o.id) : [...requiredOrgIds, o.id])}
+                                className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              {o.name}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Due date offset (days from hire / assignment)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={requiredDueDays}
+                      onChange={(e) => setRequiredDueDays(parseInt(e.target.value) || 0)}
+                      className="w-32 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 text-xs text-gray-500">0 = no due date</span>
+                  </div>
+                  <p className="text-xs text-amber-700">
+                    {requiredRoles.length === 0 && requiredOrgIds.length === 0
+                      ? 'Select at least one role or organization for required-training enrolment to take effect.'
+                      : 'On save, every currently active user matching these criteria will be enrolled. New matching users are enrolled automatically as they are added.'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

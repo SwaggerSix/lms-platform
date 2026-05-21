@@ -59,6 +59,7 @@ export default async function CoursesPage() {
       : index;
 
     const meta = (row.metadata ?? {}) as Record<string, unknown>;
+    const requiredFor = (meta.required_for ?? null) as { roles?: string[]; organization_ids?: string[]; due_days?: number } | null;
     return {
       id: row.id,
       title: row.title ?? 'Untitled Course',
@@ -74,6 +75,10 @@ export default async function CoursesPage() {
       lastReview: (meta.last_curriculum_review as string) ?? '',
       nasbaCpe: !!meta.nasba_cpe,
       cpeCredits: Number(meta.cpe_credits) || 0,
+      requiredEnabled: !!requiredFor && ((requiredFor.roles?.length ?? 0) > 0 || (requiredFor.organization_ids?.length ?? 0) > 0),
+      requiredRoles: requiredFor?.roles ?? [],
+      requiredOrgIds: requiredFor?.organization_ids ?? [],
+      requiredDueDays: Number(requiredFor?.due_days) || 0,
     };
   });
 

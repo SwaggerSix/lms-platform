@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatNumber, formatPercent, formatDuration } from '@/utils/format';
@@ -45,6 +45,10 @@ export interface CourseItem {
   lastReview: string;
   nasbaCpe: boolean;
   cpeCredits: number;
+  requiredEnabled: boolean;
+  requiredRoles: string[];
+  requiredOrgIds: string[];
+  requiredDueDays: number;
 }
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
@@ -119,6 +123,20 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
   // Edit modal state
   const [editModal, setEditModal] = useState<CourseItem | null>(null);
   const [editForm, setEditForm] = useState<Partial<CourseItem>>({});
+  const [orgOptions, setOrgOptions] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    if (!editModal) return;
+    if (orgOptions.length > 0) return;
+    fetch('/api/organizations')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setOrgOptions(data.map((o: { id: string; name: string }) => ({ id: o.id, name: o.name })));
+        }
+      })
+      .catch(() => {});
+  }, [editModal, orgOptions.length]);
 
   // Archive confirmation state
   const [archiveConfirm, setArchiveConfirm] = useState<CourseItem | null>(null);
@@ -138,6 +156,10 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
       lastReview: course.lastReview,
       nasbaCpe: course.nasbaCpe,
       cpeCredits: course.cpeCredits,
+      requiredEnabled: course.requiredEnabled,
+      requiredRoles: course.requiredRoles,
+      requiredOrgIds: course.requiredOrgIds,
+      requiredDueDays: course.requiredDueDays,
     });
   }, []);
 
@@ -145,12 +167,21 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     if (!editModal) return;
     setLoadingAction({ id: editModal.id, action: 'edit' });
     try {
-      const { courseVersion, lastReview, nasbaCpe, cpeCredits, ...rest } = editForm;
+      const { courseVersion, lastReview, nasbaCpe, cpeCredits, requiredEnabled, requiredRoles, requiredOrgIds, requiredDueDays, ...rest } = editForm;
+      const roles = requiredRoles ?? [];
+      const orgIds = requiredOrgIds ?? [];
       const metadata: Record<string, unknown> = {
         course_version: (courseVersion ?? '').toString().trim() || '1.0',
         last_curriculum_review: lastReview ?? '',
         nasba_cpe: !!nasbaCpe,
         cpe_credits: nasbaCpe ? Number(cpeCredits) || 0 : 0,
+        required_for: requiredEnabled && (roles.length > 0 || orgIds.length > 0)
+          ? {
+              roles,
+              organization_ids: orgIds,
+              due_days: Number(requiredDueDays) > 0 ? Number(requiredDueDays) : undefined,
+            }
+          : null,
       };
       // If the review date changed, clear sent-alert flags so new alerts
       // can fire against the updated date.
@@ -201,6 +232,10 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
         lastReview: course.lastReview,
         nasbaCpe: course.nasbaCpe,
         cpeCredits: course.cpeCredits,
+        requiredEnabled: course.requiredEnabled,
+        requiredRoles: course.requiredRoles,
+        requiredOrgIds: course.requiredOrgIds,
+        requiredDueDays: course.requiredDueDays,
       };
       setCourses((prev) => [mappedCourse, ...prev]);
     } catch (err) {
@@ -432,13 +467,21 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                 </div>
               </div>
               <div className="p-4">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium capitalize', typeBadge[course.type])}>
                     {course.type.replace('-', ' ')}
                   </span>
                   <span className={cn('text-[10px] font-semibold uppercase', diffBadge[course.difficulty])}>
                     {course.difficulty}
                   </span>
+                  {course.requiredEnabled && (
+                    <span
+                      className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-200"
+                      title={`Required for: ${course.requiredRoles.join(', ') || 'any role'}${course.requiredOrgIds.length > 0 ? ` · ${course.requiredOrgIds.length} org(s)` : ''}`}
+                    >
+                      REQUIRED
+                    </span>
+                  )}
                 </div>
                 <h3 className="mt-2 text-sm font-semibold text-gray-900 line-clamp-2">{course.title}</h3>
                 <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
@@ -690,6 +733,87 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                       onChange={(e) => setEditForm((f) => ({ ...f, cpeCredits: parseFloat(e.target.value) || 0 }))}
                       className="w-32 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     />
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900">Required Training</h3>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!editForm.requiredEnabled}
+                    onChange={(e) => setEditForm((f) => ({ ...f, requiredEnabled: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Mark this as required training and auto-enrol matching users</span>
+                </label>
+                {editForm.requiredEnabled && (
+                  <div className="space-y-3 pl-6">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Required for roles</label>
+                      <div className="flex flex-wrap gap-2">
+                        {['learner', 'manager', 'instructor', 'admin'].map((r) => {
+                          const active = (editForm.requiredRoles ?? []).includes(r);
+                          return (
+                            <button
+                              type="button"
+                              key={r}
+                              onClick={() => setEditForm((f) => {
+                                const current = f.requiredRoles ?? [];
+                                return { ...f, requiredRoles: active ? current.filter((x) => x !== r) : [...current, r] };
+                              })}
+                              className={cn(
+                                'rounded-full px-3 py-1 text-xs font-medium capitalize border',
+                                active ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                              )}
+                            >
+                              {r}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Required for organizations</label>
+                      {orgOptions.length === 0 ? (
+                        <p className="text-xs text-gray-400 italic">No organizations configured yet.</p>
+                      ) : (
+                        <div className="max-h-32 overflow-y-auto rounded-md border border-gray-200 bg-white p-2 space-y-1">
+                          {orgOptions.map((o) => {
+                            const active = (editForm.requiredOrgIds ?? []).includes(o.id);
+                            return (
+                              <label key={o.id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700 px-1 py-0.5 hover:bg-gray-50 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={active}
+                                  onChange={() => setEditForm((f) => {
+                                    const current = f.requiredOrgIds ?? [];
+                                    return { ...f, requiredOrgIds: active ? current.filter((x) => x !== o.id) : [...current, o.id] };
+                                  })}
+                                  className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                {o.name}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Due date offset (days from hire / assignment)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={editForm.requiredDueDays ?? 0}
+                        onChange={(e) => setEditForm((f) => ({ ...f, requiredDueDays: parseInt(e.target.value) || 0 }))}
+                        className="w-32 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <span className="ml-2 text-xs text-gray-500">0 = no due date</span>
+                    </div>
+                    <p className="text-xs text-amber-700">
+                      Saving with new criteria will enrol every currently active matching user. Removing the flag does not unenrol existing learners — existing enrolments stay in place.
+                    </p>
                   </div>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { sendEmail, welcomeWithTemporaryPassword } from "@/lib/email";
+import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
 
 function generateTemporaryPassword(): string {
   return crypto.randomBytes(16).toString("base64url");
@@ -168,6 +169,16 @@ export async function POST(request: NextRequest) {
       const result = await enrollUserInCourses(service, dbUser.id, courseIds, auth.user.id);
       enrolledCount = result.enrolled;
       enrollmentErrors.push(...result.errors);
+    }
+
+    // Also enrol the new user in every course flagged as required for their
+    // role/org. This is in addition to any admin-selected course IDs above.
+    try {
+      const requiredResult = await enrollUserInAllRequiredCourses(dbUser.id, auth.user.id);
+      enrolledCount += requiredResult.enrolled;
+      enrollmentErrors.push(...requiredResult.errors);
+    } catch (err: unknown) {
+      enrollmentErrors.push(`Required-training enrollment: ${err instanceof Error ? err.message : "unknown"}`);
     }
 
     let welcomeEmailSent: boolean | undefined;

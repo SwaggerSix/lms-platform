@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import CatalogClient, { type CatalogCourse } from "./catalog-client";
+import { readRequiredFor, userMatchesRequiredFor } from "@/lib/courses/required-training";
 
 export const metadata: Metadata = {
   title: "Course Catalog | LMS Platform",
@@ -64,7 +65,7 @@ export default async function CourseCatalogPage() {
   const service = createServiceClient();
   let { data: dbUser } = await service
     .from("users")
-    .select("id")
+    .select("id, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -73,7 +74,7 @@ export default async function CourseCatalogPage() {
   if (!dbUser && user.email) {
     const { data: byEmail } = await service
       .from("users")
-      .select("id, auth_id")
+      .select("id, auth_id, role, organization_id")
       .eq("email", user.email)
       .maybeSingle();
 
@@ -82,9 +83,9 @@ export default async function CourseCatalogPage() {
         .from("users")
         .update({ auth_id: user.id })
         .eq("id", byEmail.id)
-        .select("id")
+        .select("id, role, organization_id")
         .single();
-      dbUser = linked ?? { id: byEmail.id };
+      dbUser = linked ?? { id: byEmail.id, role: byEmail.role, organization_id: byEmail.organization_id };
     } else {
       const meta = (user.user_metadata ?? {}) as {
         first_name?: string;
@@ -100,7 +101,7 @@ export default async function CourseCatalogPage() {
           role: "learner",
           status: "active",
         })
-        .select("id")
+        .select("id, role, organization_id")
         .single();
       if (insertErr) console.error("[catalog] insert error", insertErr);
       dbUser = created;
@@ -237,6 +238,14 @@ export default async function CourseCatalogPage() {
       requiresApproval: c.enrollment_type === "approval",
       nasbaCpe: !!(c.metadata as Record<string, unknown> | null)?.nasba_cpe,
       cpeCredits: Number((c.metadata as Record<string, unknown> | null)?.cpe_credits) || 0,
+      isRequiredForMe: (() => {
+        const required = readRequiredFor(c.metadata);
+        if (!required) return false;
+        return userMatchesRequiredFor(required, {
+          role: dbUser.role ?? null,
+          organization_id: dbUser.organization_id ?? null,
+        });
+      })(),
     };
   });
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import CourseDetailClient from "./course-detail-client";
 import type { CourseData, Module, Lesson } from "./course-detail-client";
+import { readRequiredFor, userMatchesRequiredFor } from "@/lib/courses/required-training";
 
 // Gradient mapping by category or fallback
 const GRADIENTS: Record<string, string> = {
@@ -82,7 +83,7 @@ export default async function CourseDetailPage({
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, first_name, last_name")
+    .select("id, first_name, last_name, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -316,6 +317,14 @@ export default async function CourseDetailPage({
     nasbaCpe: !!metadata.nasba_cpe,
     cpeCredits: Number(metadata.cpe_credits) || 0,
     courseVersion: metadata.course_version || undefined,
+    isRequiredForMe: (() => {
+      const required = readRequiredFor(metadata);
+      if (!required) return false;
+      return userMatchesRequiredFor(required, {
+        role: dbUser.role ?? null,
+        organization_id: dbUser.organization_id ?? null,
+      });
+    })(),
     gradient: getGradient(categorySlug),
     skills,
     learningOutcomes,

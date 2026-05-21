@@ -6,6 +6,7 @@ import { validateBody, createUserSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import crypto from "crypto";
 
@@ -140,6 +141,12 @@ export async function POST(request: NextRequest) {
   // Fire-and-forget: process automation rules for new user
   processRulesForUser(data.id, "user_created").catch((err) =>
     console.error("Automation rule processing failed:", err)
+  );
+
+  // Fire-and-forget: enrol the new user in every course flagged as required for
+  // their role/organization.
+  enrollUserInAllRequiredCourses(data.id, auth.user.id).catch((err) =>
+    console.error("Required-training enrollment failed for new user", err)
   );
 
   return NextResponse.json({ ...data, temporary_password: temporaryPassword }, { status: 201 });
