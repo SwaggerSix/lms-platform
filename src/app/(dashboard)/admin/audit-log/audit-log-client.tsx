@@ -22,6 +22,8 @@ export interface AuditEntry {
   ipAddress: string;
   description: string;
   details?: { oldValue?: Record<string, string>; newValue?: Record<string, string> };
+  /** When tenant_id IS NULL on the source row, this is a platform-level event (cron, super_admin action). */
+  isPlatform?: boolean;
 }
 
 export interface AuditLogClientProps {
@@ -229,7 +231,17 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", actionColors[entry.action])}>{entry.action}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", actionColors[entry.action])}>{entry.action}</span>
+                        {entry.isPlatform && (
+                          <span
+                            className="inline-flex items-center rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700 ring-1 ring-inset ring-slate-200"
+                            title="Platform-level event (cron run, super_admin action, or system insert). Visible to all admins."
+                          >
+                            Platform
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{entry.entityType}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.entityName}</td>

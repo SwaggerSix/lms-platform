@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, RefreshCcw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 interface CronJob {
@@ -105,6 +105,23 @@ export default function CronHealthClient() {
     load();
   }, [load]);
 
+  // Eagerly prefetch a small history window for every job so the
+  // sparkline tiles have something to render without a click. Uses the
+  // same /api/cron/history endpoint with limit=20 to keep the up-front
+  // fetch cost bounded.
+  useEffect(() => {
+    if (!data?.jobs) return;
+    for (const job of data.jobs) {
+      if (history[job.name]) continue;
+      fetch(`/api/cron/history?job=${encodeURIComponent(job.name)}&limit=20`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (json) setHistory((prev) => ({ ...prev, [job.name]: json }));
+        })
+        .catch(() => {});
+    }
+  }, [data, history]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-5xl px-6 py-8 space-y-6">
@@ -174,6 +191,66 @@ export default function CronHealthClient() {
               )}
             </div>
 
+            {/* Sparkline tile grid — at-a-glance view of every job */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {data.jobs.map((job) => {
+                const hist = history[job.name];
+                const runs = hist?.runs ?? [];
+                const maxD = Math.max(1, ...runs.map((r) => Number(r.duration_ms) || 0));
+                const lastRunAgo = job.last_run === "never" ? "never" : formatRelative(job.last_run);
+                return (
+                  <button
+                    key={`tile-${job.name}`}
+                    type="button"
+                    onClick={() => toggle(job.name)}
+                    className="rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm transition-shadow hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-mono text-xs text-gray-700">{job.name}</p>
+                        <p className="mt-0.5 text-[10px] text-gray-500">last {lastRunAgo}</p>
+                      </div>
+                      <span
+                        className={cn(
+                          "inline-flex shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                          job.status === "success"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : job.status === "failure"
+                              ? "bg-red-50 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                        )}
+                      >
+                        {job.status}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex h-8 items-end gap-0.5">
+                      {runs.length === 0 ? (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">
+                          no history
+                        </div>
+                      ) : (
+                        runs.map((r) => {
+                          const d = Number(r.duration_ms) || 0;
+                          const pct = (d / maxD) * 100;
+                          return (
+                            <div
+                              key={r.id}
+                              title={`${new Date(r.created_at).toLocaleString()} · ${r.status} · ${formatMs(d)}`}
+                              className={cn(
+                                "flex-1 min-w-[2px] rounded-sm",
+                                r.status === "success" ? "bg-emerald-400" : "bg-red-400"
+                              )}
+                              style={{ height: `${Math.max(2, pct)}%` }}
+                            />
+                          );
+                        })
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <header className="border-b border-gray-100 px-5 py-3">
                 <h2 className="text-sm font-semibold text-gray-900">Jobs</h2>
@@ -235,7 +312,8 @@ export default function CronHealthClient() {
                                 <p className="text-xs text-gray-500">Loading history…</p>
                               ) : hist ? (
                                 <div className="space-y-3">
-                                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                                  <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
                                     <span>
                                       <strong>{hist.count}</strong> runs
                                     </span>
@@ -261,6 +339,16 @@ export default function CronHealthClient() {
                                     <span>
                                       p95: <strong>{formatMs(hist.p95_duration_ms)}</strong>
                                     </span>
+                                    </div>
+                                    <a
+                                      href={`/api/cron/history?job=${encodeURIComponent(job.name)}&format=csv&limit=200`}
+                                      download
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                    >
+                                      <Download className="h-3.5 w-3.5" />
+                                      Export CSV
+                                    </a>
                                   </div>
                                   {hist.runs.length > 0 && (
                                     <div>

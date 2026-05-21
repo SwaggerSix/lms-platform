@@ -107,6 +107,7 @@ export default async function AuditLogPage() {
       entityName: row.entity_id ?? row.entity_type,
       ipAddress: row.ip_address ?? "—",
       description: row.action,
+      isPlatform: row.tenant_id == null,
       ...(hasDetails
         ? {
             details: {

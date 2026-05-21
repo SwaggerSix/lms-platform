@@ -22,16 +22,69 @@ export interface CronHealthReport {
 }
 
 // ─── Expected schedules for known cron jobs (in minutes) ────────
+//
+// Sourced from vercel.json at module load so the list can't drift from
+// the actual scheduler config. Falls back to a small hard-coded map if
+// the file can't be read (test envs, etc.) so monitor stays functional.
 
-const EXPECTED_INTERVALS: Record<string, number> = {
-  "daily-analytics": 24 * 60, // daily
-  "enrollment-rules": 60, // hourly
-  "compute-recommendations": 24 * 60, // daily
-  "scheduled-reports": 60, // hourly
-  "curriculum-review-alerts": 24 * 60, // daily
-  "compliance-recurrence": 24 * 60, // daily
-  "refresh-audit-view": 24 * 60, // daily
+const FALLBACK_INTERVALS: Record<string, number> = {
+  "daily-analytics": 24 * 60,
+  "enrollment-rules": 60,
+  "compute-recommendations": 24 * 60,
+  "scheduled-reports": 60,
+  "curriculum-review-alerts": 24 * 60,
+  "compliance-recurrence": 24 * 60,
+  "refresh-audit-view": 24 * 60,
 };
+
+/**
+ * Approximate the interval (in minutes) between successive runs of a
+ * standard 5-field cron expression. Handles the common cases the LMS
+ * uses (hourly, daily, weekly) and falls back to 24h for anything we
+ * don't recognize. NOT a general-purpose cron parser.
+ */
+function estimateIntervalMinutes(expr: string): number {
+  const [m, h, dom, mon, dow] = expr.trim().split(/\s+/);
+  if (!m || !h) return 24 * 60;
+  // Sub-hour: "*/N * * * *"
+  const sub = /^\*\/(\d+)$/.exec(m);
+  if (sub && h === "*") return Math.max(1, parseInt(sub[1], 10));
+  // Hourly: minute fixed, hour star
+  if (h === "*" && /^\d+$/.test(m)) return 60;
+  // Daily: minute + hour fixed, day star
+  if (/^\d+$/.test(h) && (dom === "*" || !dom) && (dow === "*" || !dow)) return 24 * 60;
+  // Weekly: day-of-week pinned
+  if (dow && /^\d+$/.test(dow)) return 7 * 24 * 60;
+  // Monthly: day-of-month pinned
+  if (dom && /^\d+$/.test(dom) && mon === "*") return 30 * 24 * 60;
+  return 24 * 60;
+}
+
+function loadIntervalsFromVercelJson(): Record<string, number> | null {
+  try {
+    // Lazy require so this never runs in browser/Edge contexts.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("node:fs") as typeof import("node:fs");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require("node:path") as typeof import("node:path");
+    const cfgPath = path.join(process.cwd(), "vercel.json");
+    if (!fs.existsSync(cfgPath)) return null;
+    const raw = fs.readFileSync(cfgPath, "utf8");
+    const cfg = JSON.parse(raw) as { crons?: { path: string; schedule: string }[] };
+    if (!Array.isArray(cfg.crons)) return null;
+    const result: Record<string, number> = {};
+    for (const entry of cfg.crons) {
+      const name = (entry.path ?? "").split("/").pop() ?? "";
+      if (!name) continue;
+      result[name] = estimateIntervalMinutes(entry.schedule);
+    }
+    return Object.keys(result).length > 0 ? result : null;
+  } catch {
+    return null;
+  }
+}
+
+const EXPECTED_INTERVALS: Record<string, number> = loadIntervalsFromVercelJson() ?? FALLBACK_INTERVALS;
 
 // Allow a grace period multiplier before alerting (e.g. 2x the expected interval)
 const GRACE_MULTIPLIER = 2;
