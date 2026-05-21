@@ -10,7 +10,7 @@ interface VercelConfig {
   crons?: VercelCronEntry[];
 }
 
-let cache: { mtimeMs: number; cfg: VercelConfig } | null = null;
+let cache: { mtimeMs: number; cfg: VercelConfig; loadedAt: number } | null = null;
 
 /**
  * Read and parse vercel.json once, then return the cached parse on
@@ -33,11 +33,31 @@ export function readVercelConfig(): VercelConfig {
       return cache.cfg;
     }
     const cfg = JSON.parse(readFileSync(p, "utf8")) as VercelConfig;
-    cache = { mtimeMs: stat.mtimeMs, cfg };
+    cache = { mtimeMs: stat.mtimeMs, cfg, loadedAt: Date.now() };
     return cfg;
   } catch {
     return {};
   }
+}
+
+/**
+ * Diagnostic accessor for callers (e.g. /api/admin/alert-config) that
+ * want to surface cache freshness in the UI. Returns null when the
+ * cache hasn't been primed yet (file missing, never read, or last read
+ * threw).
+ */
+export function vercelConfigCacheInfo(): { loaded_at: string; age_ms: number } | null {
+  if (!cache) return null;
+  return {
+    loaded_at: new Date(cache.loadedAt).toISOString(),
+    age_ms: Date.now() - cache.loadedAt,
+  };
+}
+
+/** Test-only: reset the cache. Not exported from the public surface but
+ * available to import directly from this module file. */
+export function __resetVercelConfigCacheForTests(): void {
+  cache = null;
 }
 
 /** Map of cron path basename → schedule, derived from readVercelConfig(). */

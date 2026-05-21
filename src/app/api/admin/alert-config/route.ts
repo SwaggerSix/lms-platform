@@ -3,7 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { estimateIntervalMinutes } from "@/lib/cron/monitor";
-import { readVercelConfig } from "@/lib/cron/vercel-config";
+import { readVercelConfig, vercelConfigCacheInfo } from "@/lib/cron/vercel-config";
 
 /**
  * GET /api/admin/alert-config
@@ -55,6 +55,7 @@ export async function GET() {
     consecutive_failures: (thresholds.consecutive_failures ?? null) as Record<string, unknown> | null,
     replay: (thresholds.replay ?? null) as Record<string, unknown> | null,
     schedules,
+    schedules_cache: vercelConfigCacheInfo(),
     has_webhook_url: !!process.env.CRON_ALERT_WEBHOOK_URL,
     has_pagerduty_routing_key: !!process.env.PAGERDUTY_ROUTING_KEY,
   });

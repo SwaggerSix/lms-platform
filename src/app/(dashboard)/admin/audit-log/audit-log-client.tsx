@@ -205,41 +205,53 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input type="text" placeholder="Search user..." value={userSearch} onChange={(e) => { setUserSearch(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
-          <select value={actionFilter} onChange={(e) => { setActionFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            <option value="All">All Actions</option>
-            <option value="Created">Created</option>
-            <option value="Updated">Updated</option>
-            <option value="Deleted">Deleted</option>
-            <option value="Login">Login</option>
-            <option value="Export">Export</option>
-            <optgroup label="Common namespaces">
-              <option value="profile.preferences">Preference Changes</option>
-              <option value="refresh">View Refreshes</option>
-              <option value="replay">Replays</option>
-            </optgroup>
-            {dynamicNamespaces.length > 0 && (
-              <optgroup label="Other namespaces (from data)">
-                {dynamicNamespaces
-                  .filter(([p]) => !["profile", "refresh", "replay"].includes(p))
-                  .map(([prefix, count]) => (
-                    <option key={prefix} value={prefix}>
-                      {prefix} ({count})
-                    </option>
-                  ))}
-              </optgroup>
-            )}
-            {remoteNamespaces.some((n) => n.parent) && (
-              <optgroup label="Sub-namespaces">
-                {remoteNamespaces
-                  .filter((n) => n.parent && !["created", "updated", "deleted", "login", "export"].includes(n.parent))
-                  .map((n) => (
-                    <option key={`sub-${n.prefix}`} value={n.prefix}>
-                      &nbsp;&nbsp;↳ {n.prefix} ({n.count})
-                    </option>
-                  ))}
-              </optgroup>
-            )}
-          </select>
+          {/* Action filter is a free-text combobox backed by a datalist.
+              Lets admins either type a partial namespace ("repl") to
+              narrow the suggestions, or paste an exact action like
+              "replay.cron_alerts.compliance-recurrence". The existing
+              filter logic (exact match + dotted-prefix match) handles
+              both. Datalist values are normalized to the prefix string;
+              labels carry the human description / counts. */}
+          <input
+            type="text"
+            list="action-namespace-list"
+            value={actionFilter === "All" ? "" : actionFilter}
+            onChange={(e) => {
+              setActionFilter(e.target.value.trim() || "All");
+              setCurrentPage(1);
+            }}
+            placeholder="All actions — type to filter…"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[14rem]"
+            aria-label="Filter by action"
+          />
+          <datalist id="action-namespace-list">
+            <option value="Created" />
+            <option value="Updated" />
+            <option value="Deleted" />
+            <option value="Login" />
+            <option value="Export" />
+            <option value="profile.preferences" label="Preference Changes" />
+            <option value="refresh" label="View Refreshes" />
+            <option value="replay" label="Replays" />
+            {dynamicNamespaces
+              .filter(([p]) => !["profile", "refresh", "replay"].includes(p))
+              .map(([prefix, count]) => (
+                <option key={prefix} value={prefix} label={`${count} rows`} />
+              ))}
+            {(() => {
+              const commonValues = new Set(["profile.preferences", "refresh", "replay"]);
+              return remoteNamespaces
+                .filter(
+                  (n) =>
+                    n.parent &&
+                    !["created", "updated", "deleted", "login", "export"].includes(n.parent) &&
+                    !commonValues.has(n.prefix)
+                )
+                .map((n) => (
+                  <option key={`sub-${n.prefix}`} value={n.prefix} label={`${n.count} rows`} />
+                ));
+            })()}
+          </datalist>
           <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Entities</option>
             <option value="User">User</option>
