@@ -1,0 +1,21 @@
+{
+  "$schema": "Local convention: maps cron job names (the path's basename in vercel.json) to per-job alert thresholds in minutes. warn_minutes / critical_minutes override the default 2× / 4× expected-interval calculation. Omit a job to use defaults.",
+  "thresholds": {
+    "compliance-recurrence": {
+      "warn_minutes": 1800,
+      "critical_minutes": 4320
+    },
+    "refresh-audit-view": {
+      "warn_minutes": 1800,
+      "critical_minutes": 4320
+    },
+    "scheduled-reports": {
+      "warn_minutes": 180,
+      "critical_minutes": 360
+    },
+    "enrollment-rules": {
+      "warn_minutes": 180,
+      "critical_minutes": 360
+    }
+  }
+}

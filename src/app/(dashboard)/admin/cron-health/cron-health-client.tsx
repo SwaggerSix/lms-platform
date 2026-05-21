@@ -106,20 +106,21 @@ export default function CronHealthClient() {
   }, [load]);
 
   // Eagerly prefetch a small history window for every job so the
-  // sparkline tiles have something to render without a click. Uses the
-  // same /api/cron/history endpoint with limit=20 to keep the up-front
-  // fetch cost bounded.
+  // sparkline tiles have something to render without a click. One
+  // batched request via ?jobs=<comma-list> instead of N parallel ones.
   useEffect(() => {
-    if (!data?.jobs) return;
-    for (const job of data.jobs) {
-      if (history[job.name]) continue;
-      fetch(`/api/cron/history?job=${encodeURIComponent(job.name)}&limit=20`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => {
-          if (json) setHistory((prev) => ({ ...prev, [job.name]: json }));
-        })
-        .catch(() => {});
-    }
+    if (!data?.jobs || data.jobs.length === 0) return;
+    const missing = data.jobs.filter((j) => !history[j.name]).map((j) => j.name);
+    if (missing.length === 0) return;
+    const qs = `jobs=${missing.map(encodeURIComponent).join(",")}&limit=20`;
+    fetch(`/api/cron/history?${qs}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.jobs) {
+          setHistory((prev) => ({ ...prev, ...json.jobs }));
+        }
+      })
+      .catch(() => {});
   }, [data, history]);
 
   return (

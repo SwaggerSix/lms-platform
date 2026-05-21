@@ -94,6 +94,7 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [hidePlatform, setHidePlatform] = useState(false);
   const itemsPerPage = 15;
 
   const toggleRow = (id: string) => {
@@ -126,6 +127,9 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
     }
     if (dateTo) {
       result = result.filter(e => e.timestamp <= dateTo + " 23:59:59");
+    }
+    if (hidePlatform) {
+      result = result.filter(e => !e.isPlatform);
     }
     return result;
   })();
@@ -196,6 +200,15 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
             <option value="Assessment">Assessment</option>
             <option value="Settings">Settings</option>
           </select>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">
+            <input
+              type="checkbox"
+              checked={hidePlatform}
+              onChange={(e) => { setHidePlatform(e.target.checked); setCurrentPage(1); }}
+              className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            Hide platform events
+          </label>
         </div>
       </div>
 

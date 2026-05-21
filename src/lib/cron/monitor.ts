@@ -38,26 +38,23 @@ const FALLBACK_INTERVALS: Record<string, number> = {
 };
 
 /**
- * Approximate the interval (in minutes) between successive runs of a
- * standard 5-field cron expression. Handles the common cases the LMS
- * uses (hourly, daily, weekly) and falls back to 24h for anything we
- * don't recognize. NOT a general-purpose cron parser.
+ * Compute the interval (in minutes) between successive runs of a
+ * standard cron expression. Uses cron-parser to handle the full
+ * vixie-cron grammar (lists, ranges, step values, named months/days),
+ * which the previous bespoke parser couldn't. Falls back to 24h on any
+ * parse error so monitor stays functional with malformed input.
  */
-function estimateIntervalMinutes(expr: string): number {
-  const [m, h, dom, mon, dow] = expr.trim().split(/\s+/);
-  if (!m || !h) return 24 * 60;
-  // Sub-hour: "*/N * * * *"
-  const sub = /^\*\/(\d+)$/.exec(m);
-  if (sub && h === "*") return Math.max(1, parseInt(sub[1], 10));
-  // Hourly: minute fixed, hour star
-  if (h === "*" && /^\d+$/.test(m)) return 60;
-  // Daily: minute + hour fixed, day star
-  if (/^\d+$/.test(h) && (dom === "*" || !dom) && (dow === "*" || !dow)) return 24 * 60;
-  // Weekly: day-of-week pinned
-  if (dow && /^\d+$/.test(dow)) return 7 * 24 * 60;
-  // Monthly: day-of-month pinned
-  if (dom && /^\d+$/.test(dom) && mon === "*") return 30 * 24 * 60;
-  return 24 * 60;
+export function estimateIntervalMinutes(expr: string): number {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { CronExpressionParser } = require("cron-parser") as typeof import("cron-parser");
+    const it = CronExpressionParser.parse(expr);
+    const a = it.next().toDate().getTime();
+    const b = it.next().toDate().getTime();
+    return Math.max(1, Math.round((b - a) / 60000));
+  } catch {
+    return 24 * 60;
+  }
 }
 
 function loadIntervalsFromVercelJson(): Record<string, number> | null {
@@ -85,6 +82,34 @@ function loadIntervalsFromVercelJson(): Record<string, number> | null {
 }
 
 const EXPECTED_INTERVALS: Record<string, number> = loadIntervalsFromVercelJson() ?? FALLBACK_INTERVALS;
+
+interface JobThresholds {
+  warn_minutes?: number;
+  critical_minutes?: number;
+}
+
+/**
+ * Optional per-job alert thresholds from cron-thresholds.json at the repo
+ * root. Falls back to 2× expected (warn) and 4× expected (critical) when a
+ * job isn't listed.
+ */
+function loadThresholds(): Record<string, JobThresholds> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("node:fs") as typeof import("node:fs");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require("node:path") as typeof import("node:path");
+    const p = path.join(process.cwd(), "cron-thresholds.json");
+    if (!fs.existsSync(p)) return {};
+    const raw = fs.readFileSync(p, "utf8");
+    const cfg = JSON.parse(raw) as { thresholds?: Record<string, JobThresholds> };
+    return cfg.thresholds ?? {};
+  } catch {
+    return {};
+  }
+}
+
+const JOB_THRESHOLDS = loadThresholds();
 
 // Allow a grace period multiplier before alerting (e.g. 2x the expected interval)
 const GRACE_MULTIPLIER = 2;
@@ -188,17 +213,25 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
       );
     }
 
-    // Check if the job is overdue
+    // Check if the job is overdue. Per-job thresholds from
+    // cron-thresholds.json override the default 2×/4× heuristic when
+    // present. Critical takes precedence over warn in the emitted alert.
     const expectedMinutes = EXPECTED_INTERVALS[jobName];
     if (expectedMinutes) {
       const lastRunTime = new Date(latestRun.created_at).getTime();
-      const maxAllowedMs = expectedMinutes * GRACE_MULTIPLIER * 60 * 1000;
-      const elapsed = Date.now() - lastRunTime;
+      const elapsedMs = Date.now() - lastRunTime;
+      const elapsedMin = elapsedMs / 60000;
+      const overrides = JOB_THRESHOLDS[jobName] ?? {};
+      const warnAt = overrides.warn_minutes ?? expectedMinutes * GRACE_MULTIPLIER;
+      const criticalAt = overrides.critical_minutes ?? expectedMinutes * GRACE_MULTIPLIER * 2;
 
-      if (elapsed > maxAllowedMs) {
-        const overdueMinutes = Math.round((elapsed - maxAllowedMs) / 60000);
+      if (elapsedMin > criticalAt) {
         alerts.push(
-          `${jobName}: overdue by ~${overdueMinutes} minutes (expected every ${expectedMinutes}min)`
+          `${jobName} [critical]: overdue by ~${Math.round(elapsedMin - criticalAt)} minutes past critical threshold (${Math.round(criticalAt)}min); expected every ${expectedMinutes}min`
+        );
+      } else if (elapsedMin > warnAt) {
+        alerts.push(
+          `${jobName} [warn]: overdue by ~${Math.round(elapsedMin - warnAt)} minutes past warn threshold (${Math.round(warnAt)}min); expected every ${expectedMinutes}min`
         );
       }
     }
