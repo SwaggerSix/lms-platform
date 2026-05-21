@@ -141,6 +141,7 @@ const navSections: NavSection[] = [
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
       { label: "Automation", href: "/admin/automation", icon: Zap },
       { label: "Reports", href: "/admin/reports", icon: PieChart },
+      { label: "NASBA CPE Report", href: "/admin/reports/cpe", icon: Medal },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
       { label: "Settings", href: "/admin/settings", icon: Settings },
       { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
