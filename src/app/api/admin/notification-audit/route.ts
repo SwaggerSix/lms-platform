@@ -39,6 +39,28 @@ export async function GET(request: NextRequest) {
     ? await getTenantScope(auth.user.id, auth.user.role, request).catch(() => null)
     : null;
   const tenantUserIds = tenantScope?.userIds ?? null;
+  const tenantId = tenantScope?.tenantId ?? null;
+
+  // If scoped, fetch the workflow ids owned by this tenant so we can filter
+  // workflow step logs via run → workflow. Workflows with tenant_id IS NULL
+  // are platform-wide and visible to all scoped admins.
+  let scopedWorkflowRunIds: string[] | null = null;
+  if (tenantId) {
+    const { data: scopedWorkflows } = await service
+      .from("workflows")
+      .select("id")
+      .or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+    const workflowIds = (scopedWorkflows ?? []).map((w: any) => w.id);
+    if (workflowIds.length > 0) {
+      const { data: runs } = await service
+        .from("workflow_runs")
+        .select("id")
+        .in("workflow_id", workflowIds);
+      scopedWorkflowRunIds = (runs ?? []).map((r: any) => r.id);
+    } else {
+      scopedWorkflowRunIds = [];
+    }
+  }
 
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK
   // failures into a single CSV (two sections separated by a blank line).
@@ -53,18 +75,22 @@ export async function GET(request: NextRequest) {
     if (tenantUserIds) {
       ruleCsvQuery = ruleCsvQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
     }
+    let workflowCsvQuery = service
+      .from("workflow_step_logs")
+      .select("id, run_id, step_id, error_message, created_at")
+      .eq("status", "failed")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    if (scopedWorkflowRunIds !== null) {
+      workflowCsvQuery = workflowCsvQuery.in(
+        "run_id",
+        scopedWorkflowRunIds.length > 0 ? scopedWorkflowRunIds : ["__none__"]
+      );
+    }
     const [
       { data: ruleAll, error: ruleAllErr },
       { data: workflowAll, error: workflowAllErr },
-    ] = await Promise.all([
-      ruleCsvQuery,
-      service
-        .from("workflow_step_logs")
-        .select("id, run_id, step_id, error_message, created_at")
-        .eq("status", "failed")
-        .order("created_at", { ascending: false })
-        .limit(5000),
-    ]);
+    ] = await Promise.all([ruleCsvQuery, workflowCsvQuery]);
 
     if (ruleAllErr || workflowAllErr) {
       return NextResponse.json(
@@ -140,18 +166,25 @@ export async function GET(request: NextRequest) {
   if (tenantUserIds) {
     rulePageQuery = rulePageQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
   }
+  let workflowPageQuery = service
+    .from("workflow_step_logs")
+    .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
+    .eq("status", "failed")
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (scopedWorkflowRunIds !== null) {
+    workflowPageQuery = workflowPageQuery.in(
+      "run_id",
+      scopedWorkflowRunIds.length > 0 ? scopedWorkflowRunIds : ["__none__"]
+    );
+  }
   const [
     { data: ruleFailures, error: ruleErr, count: ruleCount },
     { data: workflowFailures, error: workflowErr, count: workflowCount },
     { data: ruleAggRows, error: ruleAggErr },
   ] = await Promise.all([
     rulePageQuery,
-    service
-      .from("workflow_step_logs")
-      .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
-      .eq("status", "failed")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1),
+    workflowPageQuery,
     // All-time rule aggregation: prefer the notification_audit_rule_summary
     // view (added in 20260318100034). Falls back to a 5000-row sample of
     // raw rows when the view doesn't exist (older deployments).
@@ -235,8 +268,12 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     page: { limit, offset },
-    tenant_scope: tenantUserIds
-      ? { user_count: tenantUserIds.length, workflow_logs_unscoped: true }
+    tenant_scope: tenantId
+      ? {
+          tenant_id: tenantId,
+          user_count: tenantUserIds?.length ?? 0,
+          workflow_run_count: scopedWorkflowRunIds?.length ?? 0,
+        }
       : null,
     rules: {
       total: ruleCount ?? null,

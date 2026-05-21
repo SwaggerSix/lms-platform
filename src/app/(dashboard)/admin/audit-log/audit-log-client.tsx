@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   Search,
   Download,
@@ -56,6 +56,22 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("All");
+
+  // Discover namespace prefixes (e.g. "export", "refresh") in the data so
+  // newer dotted-namespace actions surface in the dropdown alongside the
+  // hardcoded legacy categories. Counts in the label hint at activity.
+  const dynamicNamespaces = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of entries) {
+      const dot = e.action.indexOf(".");
+      if (dot <= 0) continue;
+      const prefix = e.action.slice(0, dot).toLowerCase();
+      counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .filter(([prefix]) => !["created", "updated", "deleted", "login", "export"].includes(prefix))
+      .sort((a, b) => b[1] - a[1]);
+  }, [entries]);
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,6 +159,15 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
             <option value="Deleted">Deleted</option>
             <option value="Login">Login</option>
             <option value="Export">Export</option>
+            {dynamicNamespaces.length > 0 && (
+              <optgroup label="Namespaces (from data)">
+                {dynamicNamespaces.map(([prefix, count]) => (
+                  <option key={prefix} value={prefix}>
+                    {prefix} ({count})
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Entities</option>

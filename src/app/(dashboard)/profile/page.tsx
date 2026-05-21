@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
+import { addMonths } from "date-fns";
 import ProfileClient from "./profile-client";
 import type { ProfileData, ProfileSkill, ProfileCertification } from "./profile-client";
 
@@ -98,8 +99,10 @@ export default async function ProfilePage() {
     const issuedDate = uc.issued_date ? new Date(uc.issued_date) : null;
     const expiryDate = uc.expiry_date ? new Date(uc.expiry_date) : null;
     const now = new Date();
-    const threeMonths = new Date();
-    threeMonths.setMonth(threeMonths.getMonth() + 3);
+    // date-fns addMonths clamps day-of-month to the target month (e.g. Jan 31
+    // + 3 months → Apr 30) instead of overflowing. Consistent with the rest
+    // of the codebase's month arithmetic.
+    const threeMonths = addMonths(now, 3);
 
     let status: "active" | "expiring" = "active";
     if (expiryDate && expiryDate <= threeMonths) {

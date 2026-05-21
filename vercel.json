@@ -26,6 +26,10 @@
     {
       "path": "/api/cron/compliance-recurrence",
       "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-audit-view",
+      "schedule": "30 4 * * *"
     }
   ],
   "headers": [
