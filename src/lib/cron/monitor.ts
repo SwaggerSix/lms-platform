@@ -88,12 +88,18 @@ interface JobThresholds {
   critical_minutes?: number;
 }
 
+interface CronAlertConfig {
+  alert_webhook?: { min_severity?: "warn" | "critical" };
+  consecutive_failures?: { window?: number; threshold?: number };
+  thresholds?: Record<string, JobThresholds>;
+}
+
 /**
  * Optional per-job alert thresholds from cron-thresholds.json at the repo
  * root. Falls back to 2× expected (warn) and 4× expected (critical) when a
  * job isn't listed.
  */
-function loadThresholds(): Record<string, JobThresholds> {
+function loadAlertConfig(): CronAlertConfig {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require("node:fs") as typeof import("node:fs");
@@ -102,14 +108,50 @@ function loadThresholds(): Record<string, JobThresholds> {
     const p = path.join(process.cwd(), "cron-thresholds.json");
     if (!fs.existsSync(p)) return {};
     const raw = fs.readFileSync(p, "utf8");
-    const cfg = JSON.parse(raw) as { thresholds?: Record<string, JobThresholds> };
-    return cfg.thresholds ?? {};
+    return JSON.parse(raw) as CronAlertConfig;
   } catch {
     return {};
   }
 }
 
-const JOB_THRESHOLDS = loadThresholds();
+const ALERT_CONFIG = loadAlertConfig();
+const JOB_THRESHOLDS: Record<string, JobThresholds> = ALERT_CONFIG.thresholds ?? {};
+
+/** POST the alert payload to CRON_ALERT_WEBHOOK_URL when alerts fire and
+ * severity meets the configured min_severity. Fire-and-forget, never throws. */
+async function dispatchAlertWebhook(payload: {
+  status: "healthy" | "degraded";
+  checked_at: string;
+  jobs: CronJobHealth[];
+  alerts: string[];
+}): Promise<void> {
+  const url = process.env.CRON_ALERT_WEBHOOK_URL;
+  if (!url) return;
+  if (payload.status !== "degraded" || payload.alerts.length === 0) return;
+
+  const minSev = ALERT_CONFIG.alert_webhook?.min_severity ?? "critical";
+  const wantsCritical = minSev === "critical";
+  const matching = payload.alerts.filter((a) =>
+    wantsCritical ? /\[critical\]/.test(a) : /\[(critical|warn)\]/.test(a)
+  );
+  if (matching.length === 0) return;
+
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: payload.status,
+        checked_at: payload.checked_at,
+        alerts: matching,
+        all_alerts: payload.alerts,
+        jobs: payload.jobs,
+      }),
+    });
+  } catch (err) {
+    console.error("Cron alert webhook failed:", err);
+  }
+}
 
 // Allow a grace period multiplier before alerting (e.g. 2x the expected interval)
 const GRACE_MULTIPLIER = 2;
@@ -237,23 +279,43 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
     }
   }
 
-  // Also check for any recent consecutive failures across any job
+  // Also check for any recent consecutive failures across any job. The
+  // window (how many recent runs to inspect) and threshold (how many in a
+  // row trigger the alert) are configurable in cron-thresholds.json.
+  // Default: window=5, threshold=3 — matches the legacy behavior of
+  // looking at the last 3 runs.
+  const cfWindow = Math.max(1, ALERT_CONFIG.consecutive_failures?.window ?? 5);
+  const cfThreshold = Math.max(1, ALERT_CONFIG.consecutive_failures?.threshold ?? 3);
   for (const jobName of knownJobs) {
     const { data: recentRuns } = await service
       .from("cron_runs")
       .select("status")
       .eq("job_name", jobName)
       .order("created_at", { ascending: false })
-      .limit(3);
+      .limit(cfWindow);
 
-    if (
-      recentRuns &&
-      recentRuns.length >= 3 &&
-      recentRuns.every((r) => r.status === "failure")
-    ) {
-      alerts.push(`${jobName}: 3 consecutive failures — requires investigation`);
+    if (!recentRuns || recentRuns.length < cfThreshold) continue;
+    // Walk the run history from newest → oldest and count the leading
+    // streak of failures. If the streak reaches cfThreshold, alert.
+    let streak = 0;
+    for (const r of recentRuns) {
+      if (r.status === "failure") streak++;
+      else break;
+    }
+    if (streak >= cfThreshold) {
+      alerts.push(
+        `${jobName} [critical]: ${streak} consecutive failures (threshold ${cfThreshold}) — requires investigation`
+      );
     }
   }
+
+  // Dispatch the alert webhook (fire-and-forget) before returning.
+  dispatchAlertWebhook({
+    status: alerts.length > 0 ? "degraded" : "healthy",
+    checked_at: new Date().toISOString(),
+    jobs,
+    alerts,
+  }).catch(() => {});
 
   return { jobs, alerts };
 }

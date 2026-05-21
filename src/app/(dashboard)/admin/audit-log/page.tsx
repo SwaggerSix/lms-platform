@@ -41,7 +41,7 @@ export default async function AuditLogPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role, organization_id")
+    .select("id, role, organization_id, preferences")
     .eq("auth_id", user.id)
     .single();
 
@@ -119,5 +119,11 @@ export default async function AuditLogPage() {
     };
   });
 
-  return <AuditLogClient entries={entries} />;
+  // Initial value for the "Hide platform events" toggle. Persisted under
+  // users.preferences.ui_prefs.hide_platform_audit via the existing
+  // PATCH /api/profile path that other settings already use.
+  const prefs = ((dbUser as any).preferences ?? {}) as Record<string, any>;
+  const initialHidePlatform = !!prefs.ui_prefs?.hide_platform_audit;
+
+  return <AuditLogClient entries={entries} initialHidePlatform={initialHidePlatform} />;
 }

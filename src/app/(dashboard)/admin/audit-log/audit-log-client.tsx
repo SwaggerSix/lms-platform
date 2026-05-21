@@ -28,6 +28,7 @@ export interface AuditEntry {
 
 export interface AuditLogClientProps {
   entries: AuditEntry[];
+  initialHidePlatform?: boolean;
 }
 
 const actionColors: Record<string, string> = {
@@ -53,7 +54,7 @@ const exportCSV = (data: Record<string, unknown>[], filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export default function AuditLogClient({ entries }: AuditLogClientProps) {
+export default function AuditLogClient({ entries, initialHidePlatform = false }: AuditLogClientProps) {
   const [dateFrom, setDateFrom] = useState("2026-03-10");
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
@@ -94,7 +95,19 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const [hidePlatform, setHidePlatform] = useState(false);
+  const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
+
+  // Persist the toggle to users.preferences.ui_prefs so it sticks across
+  // sessions. Fire-and-forget — UI doesn't block on the save.
+  const persistHidePlatform = (next: boolean) => {
+    fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        preferences: { ui_prefs: { hide_platform_audit: next } },
+      }),
+    }).catch(() => {});
+  };
   const itemsPerPage = 15;
 
   const toggleRow = (id: string) => {
@@ -204,7 +217,11 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
             <input
               type="checkbox"
               checked={hidePlatform}
-              onChange={(e) => { setHidePlatform(e.target.checked); setCurrentPage(1); }}
+              onChange={(e) => {
+                setHidePlatform(e.target.checked);
+                setCurrentPage(1);
+                persistHidePlatform(e.target.checked);
+              }}
               className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             Hide platform events

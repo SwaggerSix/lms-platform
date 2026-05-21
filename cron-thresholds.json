@@ -1,5 +1,14 @@
 {
   "$schema": "Local convention: maps cron job names (the path's basename in vercel.json) to per-job alert thresholds in minutes. warn_minutes / critical_minutes override the default 2× / 4× expected-interval calculation. Omit a job to use defaults.",
+  "alert_webhook": {
+    "$comment": "Optional generic webhook hit by checkCronHealth when alerts fire. URL comes from env (CRON_ALERT_WEBHOOK_URL) so secrets don't end up in the repo. Set min_severity to 'critical' to only page on critical events, or 'warn' to include both. Payload: { status, checked_at, jobs, alerts }.",
+    "min_severity": "critical"
+  },
+  "consecutive_failures": {
+    "$comment": "How many recent runs to inspect for consecutive failures (window) and how many in a row trigger an alert (threshold).",
+    "window": 5,
+    "threshold": 3
+  },
   "thresholds": {
     "compliance-recurrence": {
       "warn_minutes": 1800,

@@ -69,6 +69,39 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
+  // preferences is a JSON blob with many top-level keys (notifications,
+  // ui_prefs, dashboard_widgets, etc.). A naive UPDATE replaces it
+  // wholesale, which lets a small toggle (e.g. ui_prefs.hide_platform_audit)
+  // wipe everything else. Deep-merge two levels: top keys merge by spread,
+  // and each top-key's object value also merges so nested updates like
+  // { ui_prefs: { hide_platform_audit: true } } compose with existing
+  // ui_prefs.* siblings.
+  if (sanitized.preferences && typeof sanitized.preferences === "object") {
+    const { data: existing } = await service
+      .from("users")
+      .select("preferences")
+      .eq("id", profile.id)
+      .single();
+    const current = ((existing?.preferences ?? {}) as Record<string, unknown>) || {};
+    const incoming = sanitized.preferences as Record<string, unknown>;
+    const merged: Record<string, unknown> = { ...current };
+    for (const [k, v] of Object.entries(incoming)) {
+      if (
+        v &&
+        typeof v === "object" &&
+        !Array.isArray(v) &&
+        current[k] &&
+        typeof current[k] === "object" &&
+        !Array.isArray(current[k])
+      ) {
+        merged[k] = { ...(current[k] as Record<string, unknown>), ...(v as Record<string, unknown>) };
+      } else {
+        merged[k] = v;
+      }
+    }
+    sanitized.preferences = merged;
+  }
+
   const { data, error } = await service
     .from("users")
     .update(sanitized)
