@@ -53,6 +53,14 @@ export interface LearnerDashboardData {
     type: string;
     badge: string;
   }[];
+  visibleWidgets: {
+    welcome_banner: boolean;
+    stats: boolean;
+    spotlight: boolean;
+    continue_learning: boolean;
+    deadlines: boolean;
+    achievements: boolean;
+  };
 }
 
 const recentAchievements = [
@@ -125,9 +133,32 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
     },
   ];
 
+  const w = data.visibleWidgets;
+  const allHidden =
+    !w.welcome_banner &&
+    !w.stats &&
+    !w.spotlight &&
+    !w.continue_learning &&
+    !w.deadlines &&
+    !w.achievements;
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
+      {allHidden && (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
+          <h2 className="text-lg font-semibold text-gray-900">Your dashboard is empty</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            You&apos;ve hidden every section. Enable some in{" "}
+            <a href="/profile/settings" className="font-medium text-indigo-600 hover:text-indigo-700">
+              Settings → Dashboard
+            </a>
+            .
+          </p>
+        </div>
+      )}
+
       {/* Welcome Banner */}
+      {w.welcome_banner && (
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-white shadow-lg">
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Welcome back, {data.userName}!</h1>
@@ -142,8 +173,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
         <div className="absolute -right-4 -top-4 h-40 w-40 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 right-20 h-32 w-32 rounded-full bg-white/5" />
       </div>
+      )}
 
       {/* Stat Cards */}
+      {w.stats && (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
@@ -164,9 +197,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
           );
         })}
       </div>
+      )}
 
       {/* Course Spotlight */}
-      {data.spotlightCourses.length > 0 && (
+      {w.spotlight && data.spotlightCourses.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -236,7 +270,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
       )}
 
       {/* Continue Learning */}
-      {data.inProgressCourses.length > 0 && (
+      {w.continue_learning && data.inProgressCourses.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Continue Learning</h2>
@@ -284,9 +318,14 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
       )}
 
       {/* Two-column layout: Deadlines + Achievements */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Upcoming Deadlines */}
-        <section className="lg:col-span-2">
+      {(w.deadlines || w.achievements) && (
+      <div className={cn(
+        "grid grid-cols-1 gap-6",
+        w.deadlines && w.achievements ? "lg:grid-cols-3" : "lg:grid-cols-1"
+      )}>
+        {w.deadlines && (
+        /* Upcoming Deadlines */
+        <section className={w.achievements ? "lg:col-span-2" : ""}>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Upcoming Deadlines</h2>
           </div>
@@ -352,8 +391,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
             </table>
           </div>
         </section>
+        )}
 
-        {/* Recent Achievements */}
+        {w.achievements && (
+        /* Recent Achievements */
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Recent Achievements</h2>
@@ -383,7 +424,9 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
             })}
           </div>
         </section>
+        )}
       </div>
+      )}
     </div>
   );
 }

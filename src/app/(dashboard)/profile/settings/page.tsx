@@ -80,6 +80,7 @@ export default async function SettingsPage() {
     timezone: preferences.timezone || platformDefaults.default_timezone || "America/Los_Angeles",
     theme: preferences.theme || platformDefaults.default_theme || "system",
     dateFormat: preferences.date_format || platformDefaults.default_date_format || "MM/DD/YYYY",
+    dashboardWidgets: preferences.dashboard_widgets || {},
   };
 
   return <SettingsClient data={settingsData} />;

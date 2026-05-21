@@ -19,6 +19,7 @@ import {
   LogOut,
   Loader2,
   CheckCircle2,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
@@ -57,7 +58,20 @@ export interface SettingsData {
   timezone: string;
   theme: "light" | "dark" | "system";
   dateFormat: string;
+  dashboardWidgets: Record<string, boolean>;
 }
+
+export const DASHBOARD_WIDGETS: { key: string; label: string; description: string }[] = [
+  { key: "welcome_banner", label: "Welcome Banner", description: "Personal greeting and streak summary at the top of your dashboard." },
+  { key: "stats", label: "Learning Stats", description: "Quick counts of in-progress, completed, certificates, and streak." },
+  { key: "spotlight", label: "Course Spotlight", description: "Featured and newly published courses to explore." },
+  { key: "continue_learning", label: "Continue Learning", description: "Courses you've started, with progress and a quick resume." },
+  { key: "deadlines", label: "Upcoming Deadlines", description: "Due dates for assigned or required learning." },
+  { key: "achievements", label: "Recent Achievements", description: "Badges and milestones you've earned recently." },
+];
+
+const widgetEnabled = (widgets: Record<string, boolean>, key: string) =>
+  widgets[key] !== false;
 
 /* ------------------------------------------------------------------ */
 /*  Static Data                                                        */
@@ -65,12 +79,13 @@ export interface SettingsData {
 
 const TABS = [
   { key: "personal" as const, label: "Personal Info", icon: User },
+  { key: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { key: "notifications" as const, label: "Notifications", icon: Bell },
   { key: "security" as const, label: "Security", icon: Shield },
   { key: "preferences" as const, label: "Preferences", icon: Settings },
 ];
 
-type TabKey = "personal" | "notifications" | "security" | "preferences";
+type TabKey = "personal" | "dashboard" | "notifications" | "security" | "preferences";
 
 const INITIAL_NOTIFICATIONS: NotificationSetting[] = [
   { key: "enrollment", label: "Enrollment Confirmations", inApp: true, email: true },
@@ -105,6 +120,12 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const [timezone, setTimezone] = useState(data.timezone);
   const [theme, setTheme] = useState<"light" | "dark" | "system">(data.theme);
   const [dateFormat, setDateFormat] = useState(data.dateFormat);
+  const [dashboardWidgets, setDashboardWidgets] = useState<Record<string, boolean>>(
+    DASHBOARD_WIDGETS.reduce((acc, w) => {
+      acc[w.key] = widgetEnabled(data.dashboardWidgets, w.key);
+      return acc;
+    }, {} as Record<string, boolean>)
+  );
   const [saving, setSaving] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -144,11 +165,45 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
     timezone,
     theme,
     date_format: dateFormat,
+    dashboard_widgets: dashboardWidgets,
     notifications: notifications.reduce((acc, n) => {
       acc[n.key] = { inApp: n.inApp, email: n.email };
       return acc;
     }, {} as Record<string, { inApp: boolean; email: boolean }>),
   });
+
+  const toggleDashboardWidget = (key: string) => {
+    setDashboardWidgets((prev) => ({ ...prev, [key]: !widgetEnabled(prev, key) }));
+  };
+
+  const saveDashboard = async () => {
+    setSaving("dashboard");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: getCurrentPreferences() }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "Failed to save dashboard layout.");
+      }
+      showToast("success", "Dashboard layout saved.");
+    } catch (err: any) {
+      showToast("error", err.message || "Failed to save dashboard layout.");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const resetDashboard = () => {
+    setDashboardWidgets(
+      DASHBOARD_WIDGETS.reduce((acc, w) => {
+        acc[w.key] = true;
+        return acc;
+      }, {} as Record<string, boolean>)
+    );
+  };
 
   const saveNotifications = async () => {
     setSaving("notifications");
@@ -375,6 +430,69 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 >
                   {saving === "personal" && <Loader2 className="h-4 w-4 animate-spin" />}
                   Save Changes
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======== DASHBOARD ======== */}
+          {activeTab === "dashboard" && (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Dashboard Layout</h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Choose which sections appear on your dashboard. Hide what you don&apos;t use to focus on what matters most to you.
+                  </p>
+                </div>
+                <button
+                  onClick={resetDashboard}
+                  className="shrink-0 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  Reset to default
+                </button>
+              </div>
+
+              <div className="mt-6 divide-y divide-gray-100">
+                {DASHBOARD_WIDGETS.map((widget) => {
+                  const enabled = widgetEnabled(dashboardWidgets, widget.key);
+                  return (
+                    <div key={widget.key} className="flex items-start justify-between gap-4 py-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{widget.label}</p>
+                        <p className="mt-0.5 text-xs text-gray-500">{widget.description}</p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={enabled}
+                        aria-label={`Toggle ${widget.label}`}
+                        onClick={() => toggleDashboardWidget(widget.key)}
+                        className={cn(
+                          "relative h-6 w-11 shrink-0 rounded-full transition-colors",
+                          enabled ? "bg-indigo-600" : "bg-gray-200"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
+                            enabled && "translate-x-5"
+                          )}
+                        />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={saveDashboard}
+                  disabled={saving === "dashboard"}
+                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {saving === "dashboard" && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Layout
                 </button>
               </div>
             </div>

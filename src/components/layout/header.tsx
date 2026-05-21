@@ -314,7 +314,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 Profile
               </Link>
               <Link
-                href="/admin/settings"
+                href="/profile/settings"
                 onClick={() => setUserOpen(false)}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
                 role="menuitem"

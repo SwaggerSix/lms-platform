@@ -72,7 +72,7 @@ export default async function DashboardPage() {
   const service = createServiceClient();
   let { data: dbUser } = await service
     .from("users")
-    .select("id, first_name")
+    .select("id, first_name, preferences")
     .eq("auth_id", user.id)
     .single();
 
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
     // Auth, so their auth_id will be NULL or a stale value.
     const { data: byEmail } = await service
       .from("users")
-      .select("id, first_name, auth_id")
+      .select("id, first_name, auth_id, preferences")
       .eq("email", user.email)
       .maybeSingle();
 
@@ -99,10 +99,10 @@ export default async function DashboardPage() {
         .from("users")
         .update({ auth_id: user.id })
         .eq("id", byEmail.id)
-        .select("id, first_name")
+        .select("id, first_name, preferences")
         .single();
       if (linkErr) console.error("[dashboard] link error", linkErr);
-      dbUser = linked ?? { id: byEmail.id, first_name: byEmail.first_name };
+      dbUser = linked ?? { id: byEmail.id, first_name: byEmail.first_name, preferences: byEmail.preferences };
     } else {
       console.log("[dashboard] inserting new profile");
       const meta = (user.user_metadata ?? {}) as {
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
           role: "learner",
           status: "active",
         })
-        .select("id, first_name")
+        .select("id, first_name, preferences")
         .single();
       if (insertErr) console.error("[dashboard] insert error", insertErr);
       dbUser = created;
@@ -342,6 +342,17 @@ export default async function DashboardPage() {
     };
   });
 
+  const prefs = (dbUser.preferences ?? {}) as { dashboard_widgets?: Record<string, boolean> };
+  const widgetPrefs = prefs.dashboard_widgets ?? {};
+  const visibleWidgets = {
+    welcome_banner: widgetPrefs.welcome_banner !== false,
+    stats: widgetPrefs.stats !== false,
+    spotlight: widgetPrefs.spotlight !== false,
+    continue_learning: widgetPrefs.continue_learning !== false,
+    deadlines: widgetPrefs.deadlines !== false,
+    achievements: widgetPrefs.achievements !== false,
+  };
+
   const dashboardData: LearnerDashboardData = {
     userName,
     coursesInProgress,
@@ -350,6 +361,7 @@ export default async function DashboardPage() {
     inProgressCourses,
     upcomingDeadlines,
     spotlightCourses,
+    visibleWidgets,
   };
 
   console.log("[dashboard] rendering client with data:", {
