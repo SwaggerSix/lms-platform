@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
@@ -17,7 +18,9 @@ import {
   Filter,
   Trash2,
   AlertTriangle,
+  Upload,
 } from 'lucide-react';
+import BulkImportModal from './bulk-import-modal';
 
 export interface UserItem {
   id: string;
@@ -56,6 +59,7 @@ const statusBadge: Record<string, string> = {
 };
 
 export default function UsersClient({ users, organizations = [] }: { users: UserItem[]; organizations?: OrgItem[] }) {
+  const router = useRouter();
   const toast = useToast();
   const [userList, setUserList] = useState<UserItem[]>(users);
   const [search, setSearch] = useState('');
@@ -64,6 +68,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
   const [deptFilter, setDeptFilter] = useState('All Departments');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -324,14 +329,30 @@ export default function UsersClient({ users, organizations = [] }: { users: User
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
           <p className="mt-1 text-sm text-gray-500">{userList.length} total users</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add User
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBulkImport(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add User
+          </button>
+        </div>
       </div>
+
+      <BulkImportModal
+        open={showBulkImport}
+        onClose={() => { setShowBulkImport(false); router.refresh(); }}
+        onCompleted={() => router.refresh()}
+        organizations={organizations.map((o) => ({ id: o.id, name: o.name }))}
+      />
 
       {/* Error banner */}
       {error && (
