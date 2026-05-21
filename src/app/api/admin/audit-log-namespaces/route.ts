@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 
 /**
- * GET /api/admin/audit-log-namespaces
+ * GET /api/admin/audit-log-namespaces?hide_platform=true
  *
  * Returns every dotted-namespace action prefix found in audit_logs along
  * with its row count. The audit-log filter dropdown uses this so admins
@@ -11,21 +11,33 @@ import { createServiceClient } from "@/lib/supabase/service";
  * "refresh.notification_audit_view") even when they aren't on the current
  * page of entries.
  *
+ * hide_platform=true filters out platform-level rows (tenant_id IS NULL)
+ * so the returned counts reflect only tenant-scoped activity. Combine
+ * with the audit-log page's "Hide platform events" toggle for accurate
+ * scoped namespace counts without losing tenant-only prefixes.
+ *
  * Aggregation is done in JS over up to 20000 rows. For larger deployments
  * this should move to a SQL view similar to notification_audit_rule_summary.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const url = new URL(request.url);
+  const hidePlatform = url.searchParams.get("hide_platform") === "true";
+
   const service = createServiceClient();
-  const { data, error } = await service
+  let query = service
     .from("audit_logs")
-    .select("action")
+    .select("action, tenant_id")
     .order("created_at", { ascending: false })
     .limit(20000);
+  if (hidePlatform) {
+    query = query.not("tenant_id", "is", null);
+  }
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -51,6 +63,7 @@ export async function GET() {
 
   return NextResponse.json({
     namespaces,
+    hide_platform: hidePlatform,
     /** True when we hit the 20k row cap; some older namespaces may be missing. */
     sample_capped: (data?.length ?? 0) >= 20000,
   });

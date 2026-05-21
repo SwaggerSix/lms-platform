@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchAlertWebhook } from "@/lib/cron/monitor";
@@ -6,25 +8,43 @@ import { logAudit } from "@/lib/audit";
 
 /**
  * POST /api/admin/cron-alert-replay
- * Body: { hours?: number (default 24, max 168) }
+ * Body: {
+ *   hours?: number (default 24, max 168),
+ *   job?: string | string[] (default all jobs),
+ *   force?: boolean
+ * }
  *
  * Reconstructs an alert payload from the last N hours of cron_runs
  * failures and re-dispatches it via the configured alert webhook. For
  * use when the on-call missed alerts (webhook outage, channel
  * misconfigured, etc.) and needs to see what would have fired.
  *
- * Does NOT modify state. The dispatcher's existing severity / adapter
- * config applies, including dry_run if it's enabled.
+ * Scope: when `job` is omitted, every failed cron_runs row in the
+ * window contributes. When `job` is a string or array, only rows for
+ * those job_names are replayed — lets the operator re-dispatch a
+ * single noisy job's alerts without re-firing everything else.
+ *
+ * Idempotency: suppresses repeat replays within
+ * cron-thresholds.json's replay.dedup_minutes window (default 5).
+ * Pass { force: true } to override.
+ *
+ * Does NOT modify state beyond writing an audit_logs entry. The
+ * dispatcher's existing severity / adapter config applies, including
+ * dry_run if it's enabled.
  */
-/**
- * Minutes within which a repeat replay is suppressed. Stops the
- * "Replay 24h" button from firing twice on a double-click and keeps a
- * bored operator from spamming the alert channel. Override-able via the
- * { force: true } body flag for the rare case where you actually need
- * to re-fire (e.g. testing a new webhook adapter).
- */
-const REPLAY_DEDUP_MINUTES = 5;
 
+function loadReplayDedupMinutes(): number {
+  try {
+    const p = join(process.cwd(), "cron-thresholds.json");
+    if (!existsSync(p)) return 5;
+    const cfg = JSON.parse(readFileSync(p, "utf8")) as { replay?: { dedup_minutes?: number } };
+    const v = Number(cfg.replay?.dedup_minutes);
+    if (!Number.isFinite(v) || v < 0) return 5;
+    return Math.floor(v);
+  } catch {
+    return 5;
+  }
+}
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
@@ -33,6 +53,7 @@ export async function POST(request: NextRequest) {
 
   let hours = 24;
   let force = false;
+  let jobFilter: string[] | null = null;
   try {
     const body = await request.json().catch(() => ({}));
     const requested = Number(body?.hours);
@@ -40,8 +61,14 @@ export async function POST(request: NextRequest) {
       hours = Math.min(168, Math.floor(requested));
     }
     force = body?.force === true;
+    if (typeof body?.job === "string") {
+      jobFilter = [body.job];
+    } else if (Array.isArray(body?.job)) {
+      jobFilter = (body.job as unknown[]).map(String).filter(Boolean);
+      if (jobFilter.length === 0) jobFilter = null;
+    }
   } catch {
-    // empty / malformed body → use default
+    // empty / malformed body → use defaults
   }
 
   const cutoffMs = Date.now() - hours * 60 * 60 * 1000;
@@ -50,9 +77,11 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
 
   // Idempotency check: look for a recent successful replay in audit_logs.
-  // Suppress the new one unless ?force is set.
-  if (!force) {
-    const sinceIso = new Date(Date.now() - REPLAY_DEDUP_MINUTES * 60 * 1000).toISOString();
+  // Suppress the new one unless ?force is set. Window from
+  // cron-thresholds.json replay.dedup_minutes (default 5).
+  const dedupMinutes = loadReplayDedupMinutes();
+  if (!force && dedupMinutes > 0) {
+    const sinceIso = new Date(Date.now() - dedupMinutes * 60 * 1000).toISOString();
     const { data: recent } = await service
       .from("audit_logs")
       .select("id, created_at")
@@ -66,20 +95,25 @@ export async function POST(request: NextRequest) {
           ok: false,
           reason: "replay_recently_fired",
           last_replay_at: (recent[0] as any).created_at,
-          message: `A replay fired ${REPLAY_DEDUP_MINUTES} minutes ago. Pass { "force": true } to override.`,
+          dedup_minutes: dedupMinutes,
+          message: `A replay fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
         },
         { status: 429 }
       );
     }
   }
 
-  const { data: failureRows, error } = await service
+  let failureQuery = service
     .from("cron_runs")
     .select("job_name, status, error_message, created_at")
     .eq("status", "failure")
     .gte("created_at", cutoffIso)
     .order("created_at", { ascending: false })
     .limit(500);
+  if (jobFilter && jobFilter.length > 0) {
+    failureQuery = failureQuery.in("job_name", jobFilter);
+  }
+  const { data: failureRows, error } = await failureQuery;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -91,7 +125,10 @@ export async function POST(request: NextRequest) {
       ok: true,
       replayed_alerts: 0,
       hours,
-      message: "No failures in the requested window — nothing to replay.",
+      job_filter: jobFilter,
+      message: jobFilter
+        ? `No failures for ${jobFilter.join(", ")} in the requested window — nothing to replay.`
+        : "No failures in the requested window — nothing to replay.",
     });
   }
 
@@ -124,6 +161,7 @@ export async function POST(request: NextRequest) {
     entityType: "cron_alert_replay",
     newValues: {
       hours,
+      job_filter: jobFilter,
       replayed_alerts: alerts.length,
       affected_jobs: jobs.map((j) => j.name),
     },
@@ -133,6 +171,7 @@ export async function POST(request: NextRequest) {
     ok: true,
     replayed_alerts: alerts.length,
     hours,
+    job_filter: jobFilter,
     affected_jobs: jobs.map((j) => j.name),
   });
 }

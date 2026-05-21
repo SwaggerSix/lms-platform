@@ -12,6 +12,10 @@
     "window": 5,
     "threshold": 3
   },
+  "replay": {
+    "$comment": "Suppress repeat replays for this many minutes after a successful one. Operator can override with { force: true } in the POST body.",
+    "dedup_minutes": 5
+  },
   "thresholds": {
     "compliance-recurrence": {
       "warn_minutes": 1800,

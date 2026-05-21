@@ -60,22 +60,25 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
   const [userSearch, setUserSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("All");
   const [remoteNamespaces, setRemoteNamespaces] = useState<{ prefix: string; count: number }[]>([]);
+  const [entityFilter, setEntityFilter] = useState("All");
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
 
-  // Fetch the global namespace list once on mount so the dropdown reflects
-  // every action prefix in audit_logs, not just the ones on the current page.
+  // Fetch the global namespace list whenever the hide-platform toggle
+  // flips. The endpoint now accepts ?hide_platform=true so the returned
+  // counts reflect only tenant-scoped activity — accurate either way.
   useEffect(() => {
-    fetch("/api/admin/audit-log-namespaces")
+    const qs = initialHidePlatform || hidePlatform ? "?hide_platform=true" : "";
+    fetch(`/api/admin/audit-log-namespaces${qs}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (json?.namespaces) setRemoteNamespaces(json.namespaces);
       })
       .catch(() => {});
-  }, []);
-
-  const [entityFilter, setEntityFilter] = useState("All");
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
+    // hidePlatform is read inside but we want to re-fetch on every toggle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hidePlatform]);
 
   // Discover namespace prefixes from on-page entries as a fallback. Merge
   // with the server-side list so the dropdown stays useful even if the
