@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import MyCoursesClient from "./my-courses-client";
 import type { MyCourse } from "./my-courses-client";
+import { readRequiredFor } from "@/lib/courses/required-training";
 
 export const metadata: Metadata = {
   title: "My Courses | LMS Platform",
@@ -59,7 +60,7 @@ export default async function MyCoursesPage() {
   const { data: enrollments, error } = await service
     .from("enrollments")
     .select(
-      "*, course:courses(title, slug, estimated_duration, course_type)"
+      "*, course:courses(title, slug, estimated_duration, course_type, metadata)"
     )
     .eq("user_id", dbUser.id)
     .order("enrolled_at", { ascending: false })
@@ -67,6 +68,15 @@ export default async function MyCoursesPage() {
 
   const courses: MyCourse[] = (enrollments ?? []).map((row: any, index: number) => {
     const course = row.course;
+    const required = readRequiredFor(course?.metadata);
+
+    let recurrenceDueAt: string | null = null;
+    if (required?.frequency_months && row.completed_at) {
+      const d = new Date(row.completed_at);
+      d.setMonth(d.getMonth() + required.frequency_months);
+      recurrenceDueAt = d.toISOString();
+    }
+
     return {
       id: row.course_id,
       slug: course?.slug ?? "",
@@ -83,6 +93,10 @@ export default async function MyCoursesPage() {
       duration: course?.estimated_duration ?? 0,
       gradient: GRADIENTS[index % GRADIENTS.length],
       completedAt: row.completed_at ?? null,
+      isRequired: !!required,
+      regulation: required?.regulation ?? null,
+      frequencyMonths: required?.frequency_months ?? null,
+      recurrenceDueAt,
     };
   });
 

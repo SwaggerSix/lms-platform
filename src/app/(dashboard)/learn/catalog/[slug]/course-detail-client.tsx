@@ -80,6 +80,9 @@ export interface CourseData {
   cpeCredits: number;
   courseVersion?: string;
   isRequiredForMe: boolean;
+  requiredRegulation: string | null;
+  requiredFrequencyMonths: number | null;
+  requiredIsMandatory: boolean;
   gradient: string;
   skills: string[];
   learningOutcomes: string[];
@@ -241,7 +244,23 @@ export default function CourseDetailClient({
                 className="inline-flex items-center gap-1 rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold text-white shadow"
                 title="Required training for your role or organization"
               >
-                REQUIRED
+                {course.requiredIsMandatory ? "REQUIRED" : "RECOMMENDED"}
+              </span>
+            )}
+            {course.isRequiredForMe && course.requiredRegulation && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white ring-1 ring-inset ring-white/30"
+                title="Regulation or standard this course satisfies"
+              >
+                {course.requiredRegulation}
+              </span>
+            )}
+            {course.isRequiredForMe && course.requiredFrequencyMonths && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-semibold text-amber-950 shadow"
+                title="Compliance recurrence — must be re-taken on this cadence"
+              >
+                Recurs every {course.requiredFrequencyMonths} mo
               </span>
             )}
             {course.nasbaCpe && (

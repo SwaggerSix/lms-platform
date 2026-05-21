@@ -18,6 +18,12 @@ export interface MyCourse {
   duration: number;
   gradient: string;
   completedAt: string | null;
+  /** Required-training / compliance metadata, surfaced from the course. */
+  isRequired: boolean;
+  regulation: string | null;
+  frequencyMonths: number | null;
+  /** ISO date when the current completion expires (if recurring). */
+  recurrenceDueAt: string | null;
 }
 
 function getDueDateStatus(dueDate: string | null): "none" | "ok" | "warning" | "danger" {
@@ -34,8 +40,21 @@ function getDueDateStatus(dueDate: string | null): "none" | "ok" | "warning" | "
 const TABS = [
   { key: "in_progress", label: "In Progress" },
   { key: "completed", label: "Completed" },
+  { key: "required", label: "Required" },
   { key: "all", label: "All" },
 ] as const;
+
+function needsAttention(c: MyCourse): boolean {
+  // Open required-training enrollment with any due date set, OR completed
+  // recurring compliance course within 60 days of the next renewal.
+  if (c.status === "in_progress" && c.isRequired) return true;
+  if (c.status === "completed" && c.recurrenceDueAt) {
+    const expires = new Date(c.recurrenceDueAt);
+    const daysLeft = Math.ceil((expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return daysLeft <= 60;
+  }
+  return false;
+}
 
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -45,7 +64,9 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
   const filteredCourses =
     activeTab === "all"
       ? courses
-      : courses.filter((c) => c.status === activeTab);
+      : activeTab === "required"
+        ? courses.filter(needsAttention)
+        : courses.filter((c) => c.status === activeTab);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,7 +81,9 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
               const count =
                 tab.key === "all"
                   ? courses.length
-                  : courses.filter((c) => c.status === tab.key).length;
+                  : tab.key === "required"
+                    ? courses.filter(needsAttention).length
+                    : courses.filter((c) => c.status === tab.key).length;
               return (
                 <button
                   key={tab.key}
@@ -115,6 +138,23 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                   <div className="p-5">
                     <h3 className="font-semibold text-gray-900">{course.title}</h3>
                     <p className="mt-0.5 text-sm text-gray-500">By {course.instructor}</p>
+                    {course.isRequired && (
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 ring-1 ring-inset ring-indigo-200">
+                          Required
+                        </span>
+                        {course.regulation && (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700">
+                            {course.regulation}
+                          </span>
+                        )}
+                        {course.frequencyMonths && (
+                          <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
+                            Recurs every {course.frequencyMonths} mo
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Progress Bar */}
                     <div className="mt-4">
@@ -167,6 +207,28 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                         Due {formatDate(course.dueDate)}
                       </div>
                     )}
+
+                    {/* Recurrence warning for completed compliance courses */}
+                    {course.status === "completed" && course.recurrenceDueAt && (() => {
+                      const expires = new Date(course.recurrenceDueAt);
+                      const now = new Date();
+                      const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                      if (daysLeft > 60) return null;
+                      const overdue = daysLeft < 0;
+                      return (
+                        <div
+                          className={cn(
+                            "mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium",
+                            overdue ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"
+                          )}
+                        >
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          {overdue
+                            ? `Recertification overdue (expired ${formatDate(course.recurrenceDueAt)})`
+                            : `Recertify by ${formatDate(course.recurrenceDueAt)} (${daysLeft} day${daysLeft === 1 ? "" : "s"})`}
+                        </div>
+                      );
+                    })()}
 
                     {/* Action Button */}
                     <a

@@ -157,6 +157,9 @@ export default function CreateCoursePage() {
   const [requiredRoles, setRequiredRoles] = useState<string[]>([]);
   const [requiredOrgIds, setRequiredOrgIds] = useState<string[]>([]);
   const [requiredDueDays, setRequiredDueDays] = useState<number>(30);
+  const [requiredRegulation, setRequiredRegulation] = useState<string>('');
+  const [requiredFrequencyMonths, setRequiredFrequencyMonths] = useState<number>(0);
+  const [requiredIsMandatory, setRequiredIsMandatory] = useState<boolean>(true);
   const [orgOptions, setOrgOptions] = useState<{ id: string; name: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -199,6 +202,9 @@ export default function CreateCoursePage() {
                 roles: requiredRoles,
                 organization_ids: requiredOrgIds,
                 due_days: requiredDueDays > 0 ? requiredDueDays : undefined,
+                regulation: requiredRegulation.trim() || undefined,
+                frequency_months: requiredFrequencyMonths > 0 ? requiredFrequencyMonths : undefined,
+                is_mandatory: requiredIsMandatory,
               }
             : null,
           modules: modules.map((m, mi) => ({
@@ -890,6 +896,51 @@ export default function CreateCoursePage() {
                     />
                     <span className="ml-2 text-xs text-gray-500">0 = no due date</span>
                   </div>
+
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Compliance metadata <span className="font-normal normal-case text-gray-400">(optional)</span>
+                    </p>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Regulation / standard</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. HIPAA, OSHA 1910.147, SOC 2"
+                        value={requiredRegulation}
+                        onChange={(e) => setRequiredRegulation(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Recurrence</label>
+                        <select
+                          value={requiredFrequencyMonths}
+                          onChange={(e) => setRequiredFrequencyMonths(parseInt(e.target.value) || 0)}
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        >
+                          <option value={0}>One-time (no recurrence)</option>
+                          <option value={3}>Every 3 months (Quarterly)</option>
+                          <option value={6}>Every 6 months (Semi-Annual)</option>
+                          <option value={12}>Every 12 months (Annual)</option>
+                          <option value={24}>Every 24 months (Bi-Annual)</option>
+                          <option value={36}>Every 36 months (Tri-Annual)</option>
+                        </select>
+                      </div>
+                      <div className="flex items-end">
+                        <label className="flex items-center gap-2 cursor-pointer pb-2">
+                          <input
+                            type="checkbox"
+                            checked={requiredIsMandatory}
+                            onChange={(e) => setRequiredIsMandatory(e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-xs text-gray-700">Mandatory (vs recommended)</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                   <p className="text-xs text-amber-700">
                     {requiredRoles.length === 0 && requiredOrgIds.length === 0
                       ? 'Select at least one role or organization for required-training enrolment to take effect.'

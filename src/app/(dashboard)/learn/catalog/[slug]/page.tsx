@@ -325,6 +325,9 @@ export default async function CourseDetailPage({
         organization_id: dbUser.organization_id ?? null,
       });
     })(),
+    requiredRegulation: readRequiredFor(metadata)?.regulation ?? null,
+    requiredFrequencyMonths: readRequiredFor(metadata)?.frequency_months ?? null,
+    requiredIsMandatory: readRequiredFor(metadata)?.is_mandatory !== false,
     gradient: getGradient(categorySlug),
     skills,
     learningOutcomes,
