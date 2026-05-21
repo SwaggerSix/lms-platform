@@ -3,9 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
+import { sendEmail, welcomeWithTemporaryPassword } from "@/lib/email";
 
 function generateTemporaryPassword(): string {
   return crypto.randomBytes(16).toString("base64url");
+}
+
+function getLoginUrl(request: NextRequest): string {
+  // Prefer configured public URL; fall back to the request origin.
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl) return `${envUrl.replace(/\/$/, "")}/login`;
+  const origin = request.headers.get("origin") || request.nextUrl.origin;
+  return `${origin.replace(/\/$/, "")}/login`;
 }
 
 const VALID_ROLES = ["admin", "manager", "instructor", "learner"] as const;
@@ -26,6 +35,8 @@ interface ResultRow {
   status: "created" | "skipped" | "failed" | "enrollment_partial";
   userId?: string;
   temporaryPassword?: string;
+  welcomeEmailSent?: boolean;
+  welcomeEmailError?: string;
   message?: string;
   enrolledCourseCount?: number;
   enrollmentErrors?: string[];
@@ -37,7 +48,12 @@ export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  let body: { users?: InputRow[]; enroll_in_course_ids?: string[] };
+  let body: {
+    users?: InputRow[];
+    enroll_in_course_ids?: string[];
+    send_welcome_email?: boolean;
+    include_passwords_in_response?: boolean;
+  };
   try {
     body = await request.json();
   } catch {
@@ -46,6 +62,12 @@ export async function POST(request: NextRequest) {
 
   const rows = Array.isArray(body.users) ? body.users : [];
   const courseIds = Array.isArray(body.enroll_in_course_ids) ? body.enroll_in_course_ids.filter((id): id is string => typeof id === "string") : [];
+  // Default ON: deliver temporary credentials via email rather than dumping into the API response.
+  const sendWelcomeEmail = body.send_welcome_email !== false;
+  // Default OFF: omit temporary passwords from the API response/CSV unless the admin explicitly opts in
+  // (e.g. when no email is configured and they need an out-of-band distribution).
+  const includePasswordsInResponse = body.include_passwords_in_response === true;
+  const loginUrl = getLoginUrl(request);
 
   if (rows.length === 0) {
     return NextResponse.json({ error: "No user rows supplied" }, { status: 400 });
@@ -148,6 +170,32 @@ export async function POST(request: NextRequest) {
       enrollmentErrors.push(...result.errors);
     }
 
+    let welcomeEmailSent: boolean | undefined;
+    let welcomeEmailError: string | undefined;
+    if (sendWelcomeEmail) {
+      try {
+        const template = welcomeWithTemporaryPassword({
+          learnerName: firstName,
+          email,
+          temporaryPassword,
+          loginUrl,
+        });
+        const sendResult = await sendEmail({
+          to: email,
+          subject: template.subject,
+          html: template.html,
+          text: template.text,
+        });
+        welcomeEmailSent = sendResult.success;
+        if (!sendResult.success) {
+          welcomeEmailError = sendResult.error;
+        }
+      } catch (err: unknown) {
+        welcomeEmailSent = false;
+        welcomeEmailError = err instanceof Error ? err.message : "Failed to send welcome email";
+      }
+    }
+
     logAudit({
       userId: auth.user.id,
       action: "created",
@@ -161,7 +209,9 @@ export async function POST(request: NextRequest) {
       email,
       userId: dbUser.id,
       status: enrollmentErrors.length > 0 ? "enrollment_partial" : "created",
-      temporaryPassword,
+      temporaryPassword: includePasswordsInResponse ? temporaryPassword : undefined,
+      welcomeEmailSent,
+      welcomeEmailError,
       enrolledCourseCount: enrolledCount,
       enrollmentErrors: enrollmentErrors.length > 0 ? enrollmentErrors : undefined,
     });

@@ -21,6 +21,8 @@ interface ResultRow {
   status: "created" | "skipped" | "failed" | "enrollment_partial";
   userId?: string;
   temporaryPassword?: string;
+  welcomeEmailSent?: boolean;
+  welcomeEmailError?: string;
   message?: string;
   enrolledCourseCount?: number;
   enrollmentErrors?: string[];
@@ -174,6 +176,8 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
   const [parseError, setParseError] = useState<string | null>(null);
   const [courses, setCourses] = useState<CourseOption[]>([]);
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
+  const [includePasswordsInCsv, setIncludePasswordsInCsv] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<ResultRow[] | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -184,6 +188,8 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
     setParsedRows([]);
     setParseError(null);
     setSelectedCourseIds([]);
+    setSendWelcomeEmail(true);
+    setIncludePasswordsInCsv(false);
     setResults(null);
     setServerError(null);
     // Lazy load published courses for enrollment selection
@@ -254,6 +260,8 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
             job_title: r.job_title || undefined,
           })),
           enroll_in_course_ids: selectedCourseIds,
+          send_welcome_email: sendWelcomeEmail,
+          include_passwords_in_response: includePasswordsInCsv,
         }),
       });
       const body = await res.json();
@@ -271,19 +279,28 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
 
   const exportResults = () => {
     if (!results) return;
-    downloadCsv(
-      `user-import-results-${new Date().toISOString().slice(0, 10)}.csv`,
-      ["Row", "Email", "Status", "User ID", "Temp Password", "Enrolled Courses", "Message"],
-      results.map((r) => [
+    const headers = ["Row", "Email", "Status", "User ID", "Welcome Email", "Enrolled Courses", "Message"];
+    if (includePasswordsInCsv) headers.splice(4, 0, "Temp Password");
+    const rows = results.map((r) => {
+      const base: (string | number)[] = [
         r.rowIndex,
         r.email,
         r.status,
         r.userId ?? "",
-        r.temporaryPassword ?? "",
+      ];
+      if (includePasswordsInCsv) base.push(r.temporaryPassword ?? "");
+      base.push(
+        r.welcomeEmailSent === undefined
+          ? "not sent"
+          : r.welcomeEmailSent
+            ? "sent"
+            : `failed: ${r.welcomeEmailError ?? "unknown"}`,
         r.enrolledCourseCount ?? 0,
-        r.message ?? (r.enrollmentErrors?.join("; ") ?? ""),
-      ])
-    );
+        r.message ?? (r.enrollmentErrors?.join("; ") ?? "")
+      );
+      return base;
+    });
+    downloadCsv(`user-import-results-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
   if (!open) return null;
@@ -431,6 +448,38 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
                 </div>
               )}
 
+              {parsedRows.length > 0 && (
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+                  <p className="text-sm font-medium text-gray-900">Credential delivery</p>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sendWelcomeEmail}
+                      onChange={(e) => setSendWelcomeEmail(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      Email each new user a welcome message with their temporary password
+                      <span className="block text-xs text-gray-500">Default. Each learner gets their own credentials via email and is required to change the password on first login.</span>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includePasswordsInCsv}
+                      onChange={(e) => setIncludePasswordsInCsv(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      Also include temporary passwords in the downloadable results CSV
+                      <span className="block text-xs text-amber-700">
+                        Only enable if you need to distribute credentials yourself (e.g. email is not configured). The CSV will contain plaintext passwords — handle and store accordingly.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {organizations.length > 0 && (
                 <details className="rounded-lg border border-gray-200 bg-white p-3 text-sm">
                   <summary className="cursor-pointer font-medium text-gray-700">
@@ -478,6 +527,7 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
                       <tr className="text-left text-gray-500">
                         <th className="px-3 py-2 font-medium">Email</th>
                         <th className="px-3 py-2 font-medium">Status</th>
+                        <th className="px-3 py-2 font-medium">Welcome email</th>
                         <th className="px-3 py-2 font-medium">Enrolled</th>
                         <th className="px-3 py-2 font-medium">Details</th>
                       </tr>
@@ -499,6 +549,15 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
                               </span>
                             )}
                           </td>
+                          <td className="px-3 py-2">
+                            {r.welcomeEmailSent === undefined ? (
+                              <span className="text-gray-400">—</span>
+                            ) : r.welcomeEmailSent ? (
+                              <span className="text-green-700">sent</span>
+                            ) : (
+                              <span className="text-red-700" title={r.welcomeEmailError}>failed</span>
+                            )}
+                          </td>
                           <td className="px-3 py-2 text-gray-700">{r.enrolledCourseCount ?? 0}</td>
                           <td className="px-3 py-2 text-gray-600">
                             {r.message || r.enrollmentErrors?.join("; ") || "—"}
@@ -511,7 +570,11 @@ export default function BulkImportModal({ open, onClose, onCompleted, organizati
               </div>
 
               <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-900">
-                The CSV export below includes one-time temporary passwords for each newly created account. Distribute them securely; users will be required to change their password on first login.
+                {includePasswordsInCsv ? (
+                  <>The CSV export below includes one-time temporary passwords for each newly created account. Handle securely — store and share only as needed.</>
+                ) : (
+                  <>Temporary passwords were delivered directly to each new user via the welcome email. The CSV export below summarizes import status only.</>
+                )}
               </div>
             </div>
           )}

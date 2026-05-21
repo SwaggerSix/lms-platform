@@ -16,12 +16,14 @@ export interface CpeRow {
   cpeCredits: number;
   completedAt: string;
   score: number | null;
+  passingScore: number;
 }
 
 interface Props {
   rows: CpeRow[];
   from: string;
   to: string;
+  passingOnly: boolean;
   totalCredits: number;
   uniqueLearners: number;
   eligibleCourseCount: number;
@@ -47,12 +49,13 @@ function downloadCsv(filename: string, headers: string[], rows: (string | number
   URL.revokeObjectURL(url);
 }
 
-export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLearners, eligibleCourseCount }: Props) {
+export default function CpeReportClient({ rows, from, to, passingOnly, totalCredits, uniqueLearners, eligibleCourseCount }: Props) {
   const router = useRouter();
   const [fromDate, setFromDate] = useState(from);
   const [toDate, setToDate] = useState(to);
   const [search, setSearch] = useState("");
   const [groupMode, setGroupMode] = useState<GroupMode>("detail");
+  const [passingOnlyState, setPassingOnlyState] = useState(passingOnly);
 
   const filteredRows = useMemo(() => {
     if (!search.trim()) return rows;
@@ -88,17 +91,18 @@ export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLe
       .sort((a, b) => b.credits - a.credits);
   }, [filteredRows]);
 
-  const applyDateRange = () => {
+  const applyFilters = () => {
     const params = new URLSearchParams();
     if (fromDate) params.set("from", fromDate);
     if (toDate) params.set("to", toDate);
+    if (!passingOnlyState) params.set("passing_only", "false");
     router.push(`/admin/reports/cpe?${params.toString()}`);
   };
 
   const exportDetailCsv = () => {
     downloadCsv(
       `cpe-report-${from}-to-${to}.csv`,
-      ["Learner", "Email", "Organization", "Course", "Course Version", "CPE Credits", "Score", "Completed"],
+      ["Learner", "Email", "Organization", "Course", "Course Version", "CPE Credits", "Score", "Passing Score", "Completed"],
       filteredRows.map((r) => [
         r.learnerName,
         r.learnerEmail,
@@ -107,6 +111,7 @@ export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLe
         r.courseVersion,
         r.cpeCredits,
         r.score ?? "",
+        r.passingScore || "",
         r.completedAt ? new Date(r.completedAt).toISOString().slice(0, 10) : "",
       ])
     );
@@ -135,6 +140,9 @@ export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLe
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               CPE credits earned by learners through completed CPE-eligible courses.
+              {passingOnly
+                ? " Only completions meeting each course's passing score are counted."
+                : " All completions are counted, including those that did not meet the course's passing score."}
             </p>
           </div>
         </div>
@@ -180,8 +188,17 @@ export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLe
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
+          <label className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={passingOnlyState}
+              onChange={(e) => setPassingOnlyState(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            Passing score only
+          </label>
           <button
-            onClick={applyDateRange}
+            onClick={applyFilters}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             Apply
@@ -265,8 +282,14 @@ export default function CpeReportClient({ rows, from, to, totalCredits, uniqueLe
                     <td className="px-4 py-3 text-right text-sm font-semibold text-emerald-700">
                       {r.cpeCredits}
                     </td>
-                    <td className="px-4 py-3 text-right text-sm text-gray-600">
-                      {r.score == null ? "—" : `${r.score}%`}
+                    <td className="px-4 py-3 text-right text-sm">
+                      {r.score == null ? (
+                        <span className="text-gray-500">—</span>
+                      ) : r.passingScore > 0 && r.score < r.passingScore ? (
+                        <span className="text-red-600" title={`Below passing score of ${r.passingScore}%`}>{r.score}%</span>
+                      ) : (
+                        <span className="text-gray-600">{r.score}%</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{formatDate(r.completedAt)}</td>
                   </tr>

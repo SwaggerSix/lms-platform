@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; passing_only?: string }>;
 }
 
 export default async function CpeReportPage({ searchParams }: PageProps) {
@@ -33,23 +33,28 @@ export default async function CpeReportPage({ searchParams }: PageProps) {
   const defaultTo = new Date().toISOString().slice(0, 10);
   const from = params.from || defaultFrom;
   const to = params.to || defaultTo;
+  // Default ON: only count enrollments that actually met the course's passing score.
+  // NASBA requires a passing assessment to award CPE, so this matches the strict
+  // interpretation by default and admins can flip it off to see every completion.
+  const passingOnly = params.passing_only !== "false";
 
   const { data: cpeCourses } = await service
     .from("courses")
-    .select("id, title, metadata");
+    .select("id, title, passing_score, metadata");
 
   const eligibleCourses = (cpeCourses ?? []).filter((c) => {
     const meta = (c.metadata ?? {}) as Record<string, unknown>;
     return !!meta.nasba_cpe;
   });
 
-  const creditsByCourse = new Map<string, { title: string; credits: number; version: string }>();
+  const creditsByCourse = new Map<string, { title: string; credits: number; version: string; passingScore: number }>();
   for (const c of eligibleCourses) {
     const meta = (c.metadata ?? {}) as Record<string, unknown>;
     creditsByCourse.set(c.id, {
       title: c.title,
       credits: Number(meta.cpe_credits) || 0,
       version: (meta.course_version as string) || "",
+      passingScore: Number(c.passing_score) || 0,
     });
   }
 
@@ -83,26 +88,36 @@ export default async function CpeReportPage({ searchParams }: PageProps) {
         organization: { name: string | null } | { name: string | null }[] | null;
       } | { id: string; first_name: string | null; last_name: string | null; email: string | null; organization: unknown }[] | null;
     };
-    rows = ((enrollments as unknown as EnrollmentRow[]) ?? []).map((e) => {
-      const course = creditsByCourse.get(e.course_id);
-      const userObj = Array.isArray(e.user) ? e.user[0] ?? null : e.user;
-      const orgRaw = userObj?.organization;
-      const orgName = Array.isArray(orgRaw)
-        ? (orgRaw[0] as { name: string | null } | undefined)?.name ?? ""
-        : ((orgRaw as { name: string | null } | null)?.name ?? "");
-      return {
-        enrollmentId: e.id,
-        userId: userObj?.id ?? e.user_id,
-        learnerName: `${userObj?.first_name ?? ""} ${userObj?.last_name ?? ""}`.trim() || "Unknown",
-        learnerEmail: userObj?.email ?? "",
-        organization: orgName,
-        courseTitle: course?.title ?? "Unknown course",
-        courseVersion: course?.version ?? "",
-        cpeCredits: course?.credits ?? 0,
-        completedAt: e.completed_at ?? "",
-        score: e.score,
-      };
-    });
+    rows = ((enrollments as unknown as EnrollmentRow[]) ?? [])
+      .filter((e) => {
+        if (!passingOnly) return true;
+        const course = creditsByCourse.get(e.course_id);
+        if (!course) return false;
+        // If the course has no passing score set (0), accept any completed enrollment.
+        if (course.passingScore <= 0) return true;
+        return (e.score ?? 0) >= course.passingScore;
+      })
+      .map((e) => {
+        const course = creditsByCourse.get(e.course_id);
+        const userObj = Array.isArray(e.user) ? e.user[0] ?? null : e.user;
+        const orgRaw = userObj?.organization;
+        const orgName = Array.isArray(orgRaw)
+          ? (orgRaw[0] as { name: string | null } | undefined)?.name ?? ""
+          : ((orgRaw as { name: string | null } | null)?.name ?? "");
+        return {
+          enrollmentId: e.id,
+          userId: userObj?.id ?? e.user_id,
+          learnerName: `${userObj?.first_name ?? ""} ${userObj?.last_name ?? ""}`.trim() || "Unknown",
+          learnerEmail: userObj?.email ?? "",
+          organization: orgName,
+          courseTitle: course?.title ?? "Unknown course",
+          courseVersion: course?.version ?? "",
+          cpeCredits: course?.credits ?? 0,
+          completedAt: e.completed_at ?? "",
+          score: e.score,
+          passingScore: course?.passingScore ?? 0,
+        };
+      });
   }
 
   const totalCredits = rows.reduce((sum, r) => sum + r.cpeCredits, 0);
@@ -113,6 +128,7 @@ export default async function CpeReportPage({ searchParams }: PageProps) {
       rows={rows}
       from={from}
       to={to}
+      passingOnly={passingOnly}
       totalCredits={totalCredits}
       uniqueLearners={uniqueLearners}
       eligibleCourseCount={eligibleCourses.length}

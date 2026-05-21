@@ -64,6 +64,36 @@ function button(text: string, url: string): string {
 // Template definitions
 // ============================================================================
 
+export function welcomeWithTemporaryPassword(params: {
+  learnerName: string;
+  email: string;
+  temporaryPassword: string;
+  loginUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Welcome to ${params.portalName || "LearnHub"}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">Hi ${params.learnerName},</p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      An account has been created for you. Sign in with the temporary credentials below — you&apos;ll be asked to set a new password on first login.
+    </p>
+    <div style="margin:0 0 20px;padding:16px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;">
+      <p style="margin:0 0 6px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Email</p>
+      <p style="margin:0 0 12px;color:#111827;font-size:14px;font-family:monospace;">${params.email}</p>
+      <p style="margin:0 0 6px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Temporary password</p>
+      <p style="margin:0;color:#111827;font-size:14px;font-family:monospace;">${params.temporaryPassword}</p>
+    </div>
+    ${button("Sign in", params.loginUrl)}
+    <p style="margin:0;color:#6b7280;font-size:12px;">For your security, do not share this email. The temporary password will only work until you set a new one.</p>
+  `;
+
+  return {
+    subject: `Your ${params.portalName || "LearnHub"} account is ready`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, an account has been created for you at ${params.loginUrl}. Email: ${params.email} — Temporary password: ${params.temporaryPassword}. You'll be asked to set a new password on first login.`,
+  };
+}
+
 export function enrollmentConfirmation(params: {
   learnerName: string;
   courseName: string;
