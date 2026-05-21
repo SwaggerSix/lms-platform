@@ -5,6 +5,9 @@ import { checkAndAwardBadges, awardPoints } from "@/lib/gamification/awards";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { createEvaluationAssignments } from "@/lib/evaluations/create-assignments";
+import { sendEmail } from "@/lib/email/sender";
+import { courseCompletion } from "@/lib/email/templates";
+import { userMaySend } from "@/lib/notifications/preferences";
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -17,7 +20,7 @@ export async function PATCH(request: NextRequest) {
   const service = createServiceClient();
   const { data: profile } = await service
     .from("users")
-    .select("id")
+    .select("id, email, first_name, last_name, preferences")
     .eq("auth_id", authUser.user.id)
     .single();
 
@@ -237,6 +240,47 @@ export async function PATCH(request: NextRequest) {
             user_id: profile.id,
             course_id: enrollment.course_id,
           }).catch(() => {});
+
+          // Send course-completion email if the learner has email-on-completion
+          // enabled. Default is opt-in, so users with no prefs configured get
+          // the email. Skip when no email is on file.
+          if (
+            (profile as any).email &&
+            userMaySend(
+              ((profile as any).preferences?.notifications ?? {}) as Record<string, { inApp?: boolean; email?: boolean }>,
+              "completions",
+              "email"
+            )
+          ) {
+            (async () => {
+              const { data: completedCourseRow } = await service
+                .from("courses")
+                .select("title")
+                .eq("id", enrollment.course_id)
+                .maybeSingle();
+              const { data: enrollmentRow } = await service
+                .from("enrollments")
+                .select("score")
+                .eq("id", enrollment_id)
+                .maybeSingle();
+              const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+              const learnerName =
+                `${(profile as any).first_name ?? ""} ${(profile as any).last_name ?? ""}`.trim() || "there";
+              const template = courseCompletion({
+                learnerName,
+                courseName: completedCourseRow?.title ?? "Course",
+                score: Number(enrollmentRow?.score) || 0,
+                certificateUrl: `${appUrl}/learn/transcript`,
+                dashboardUrl: `${appUrl}/dashboard`,
+              });
+              await sendEmail({
+                to: (profile as any).email,
+                subject: template.subject,
+                html: template.html,
+                text: template.text,
+              }).catch(() => {});
+            })().catch(() => {});
+          }
 
           // If this is a CPE-eligible course and the learner met the passing
           // score, fire cpe.credits_awarded for external compliance systems.

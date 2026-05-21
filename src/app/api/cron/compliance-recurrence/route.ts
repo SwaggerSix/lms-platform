@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { readRequiredFor, recertificationTier } from "@/lib/courses/required-training";
 import { sendEmail } from "@/lib/email/sender";
 import { recertificationReminder } from "@/lib/email/templates";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -161,23 +162,20 @@ async function handler(request: NextRequest) {
     if (allCandidateIds.length > 0) {
       const { data: userRows } = await service
         .from("users")
-        .select("id, manager_id, email, first_name, last_name, preferences")
+        .select("id, manager_id, email, first_name, last_name")
         .in("id", allCandidateIds);
+      const prefsByUser = await fetchNotificationPrefs(service, allCandidateIds);
       for (const u of userRows ?? []) {
         const completedAt = latestByUser.get((u as any).id) ?? "";
         managerByUser.set((u as any).id, (u as any).manager_id ?? null);
-        // Honor user-set notification preferences. Default to opt-in for both
-        // channels — recertification is compliance-driven and should reach
-        // the user unless they have explicitly toggled it off.
-        const prefs = ((u as any).preferences ?? {}) as Record<string, any>;
-        const recertPrefs = (prefs.notifications && prefs.notifications.recertification) || {};
+        const prefs = prefsByUser.get((u as any).id);
         userInfoById.set((u as any).id, {
           email: (u as any).email ?? null,
           firstName: (u as any).first_name ?? null,
           lastName: (u as any).last_name ?? null,
           completedAt,
-          emailRecertOptOut: recertPrefs.email === false,
-          inAppRecertOptOut: recertPrefs.inApp === false,
+          emailRecertOptOut: !userMaySend(prefs, "recertification", "email"),
+          inAppRecertOptOut: !userMaySend(prefs, "recertification", "inApp"),
         });
       }
     }
