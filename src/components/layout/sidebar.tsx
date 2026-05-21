@@ -113,6 +113,7 @@ const navSections: NavSection[] = [
   {
     header: "MANAGEMENT",
     items: [
+      { label: "Team Dashboard", href: "/manager/dashboard", icon: LayoutDashboard },
       { label: "My Team", href: "/manager/team", icon: Users },
       { label: "Approvals", href: "/manager/approvals", icon: CheckSquare },
       { label: "Assignments", href: "/manager/assignments", icon: ClipboardList },
