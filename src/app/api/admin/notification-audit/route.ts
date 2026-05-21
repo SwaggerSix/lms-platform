@@ -1,51 +1,50 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 
 /**
- * GET /api/admin/notification-audit
+ * GET /api/admin/notification-audit?limit=100&offset=0
  *
  * Surfaces historical send_notification action failures that look like they
  * were caused by the notifications.type CHECK-constraint violations that
  * the workflows engine and rules engine were silently emitting before the
- * fix in this branch. Specifically:
+ * fix in this branch.
  *
- *   - enrollment_rule_logs rows where action_type = "send_notification" and
- *     status = "error" — the rules engine was inserting type:"system" which
- *     the CHECK rejected, so the notification never landed.
- *   - workflow_step_logs rows where status = "failed" and the error_message
- *     mentions the type CHECK violation — workflows were inserting
- *     type:"workflow" which the CHECK rejected.
- *
- * Use this to identify rules/workflows that were running quietly broken so
- * you can decide whether to re-trigger them, audit the affected users, or
- * just confirm the new code path no longer produces these errors.
+ * Pagination is per-source: limit/offset apply independently to both the
+ * rule failures and the workflow failures. Defaults: limit=100, offset=0.
+ * Maximum limit is 500.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  const url = new URL(request.url);
+  const limit = Math.min(500, Math.max(1, parseInt(url.searchParams.get("limit") ?? "100", 10) || 100));
+  const offset = Math.max(0, parseInt(url.searchParams.get("offset") ?? "0", 10) || 0);
+
   const service = createServiceClient();
 
   // Rules engine failures.
-  const { data: ruleFailures, error: ruleErr } = await service
-    .from("enrollment_rule_logs")
-    .select("id, rule_id, user_id, action_type, status, error_message, created_at")
-    .eq("action_type", "send_notification")
-    .eq("status", "error")
-    .order("created_at", { ascending: false })
-    .limit(500);
-
-  // Workflow failures — broader filter since the table doesn't separate
-  // action types; we filter by error message after fetching.
-  const { data: workflowFailures, error: workflowErr } = await service
-    .from("workflow_step_logs")
-    .select("id, run_id, step_id, status, error_message, created_at")
-    .eq("status", "failed")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const [
+    { data: ruleFailures, error: ruleErr, count: ruleCount },
+    { data: workflowFailures, error: workflowErr, count: workflowCount },
+  ] = await Promise.all([
+    service
+      .from("enrollment_rule_logs")
+      .select("id, rule_id, user_id, action_type, status, error_message, created_at", { count: "exact" })
+      .eq("action_type", "send_notification")
+      .eq("status", "error")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1),
+    service
+      .from("workflow_step_logs")
+      .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
+      .eq("status", "failed")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1),
+  ]);
 
   const checkLike = (msg: string | null) => {
     if (!msg) return false;
@@ -59,7 +58,8 @@ export async function GET() {
 
   const workflowCheckFailures = (workflowFailures ?? []).filter((r: any) => checkLike(r.error_message));
 
-  // Group rule failures by rule_id to identify which rules were affected.
+  // Group rule failures by rule_id within this page so the UI can show a
+  // quick rule-level breakdown.
   const ruleSummary: Record<string, { rule_id: string; failures: number; latest: string }> = {};
   for (const row of ruleFailures ?? []) {
     const slot = ruleSummary[(row as any).rule_id] ?? {
@@ -73,16 +73,19 @@ export async function GET() {
   }
 
   return NextResponse.json({
+    page: { limit, offset },
     rules: {
-      total_failures: ruleFailures?.length ?? 0,
-      affected_rules: Object.values(ruleSummary),
-      sample_rows: (ruleFailures ?? []).slice(0, 20),
+      total: ruleCount ?? null,
+      page_failures: ruleFailures?.length ?? 0,
+      affected_rules_in_page: Object.values(ruleSummary),
+      rows: ruleFailures ?? [],
       query_error: ruleErr?.message ?? null,
     },
     workflows: {
-      total_failures: workflowFailures?.length ?? 0,
-      check_constraint_failures: workflowCheckFailures.length,
-      sample_rows: workflowCheckFailures.slice(0, 20),
+      total_failed_steps: workflowCount ?? null,
+      page_failed_steps: workflowFailures?.length ?? 0,
+      check_constraint_in_page: workflowCheckFailures.length,
+      rows: workflowCheckFailures,
       query_error: workflowErr?.message ?? null,
     },
     notes: [

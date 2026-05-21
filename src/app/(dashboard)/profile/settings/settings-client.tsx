@@ -36,6 +36,10 @@ export interface NotificationSetting {
   label: string;
   inApp: boolean;
   email: boolean;
+  /** Optional role allowlist. If omitted, the row is shown to everyone. */
+  appliesTo?: string[];
+  /** Optional per-role description override. Falls back to a generic blurb. */
+  describe?: Partial<Record<"learner" | "manager" | "instructor" | "admin" | "super_admin", string>>;
 }
 
 export interface Session {
@@ -63,6 +67,7 @@ export interface SettingsData {
   dashboardWidgets: Record<string, boolean>;
   dashboardOrder: string[];
   notificationOverrides?: Record<string, { inApp?: boolean; email?: boolean }>;
+  userRole: string;
 }
 
 export const DASHBOARD_WIDGETS: { key: string; label: string; description: string }[] = [
@@ -110,15 +115,105 @@ const TABS = [
 type TabKey = "personal" | "dashboard" | "notifications" | "security" | "preferences";
 
 const INITIAL_NOTIFICATIONS: NotificationSetting[] = [
-  { key: "enrollment", label: "Enrollment Confirmations", inApp: true, email: true },
-  { key: "approvals", label: "Approval Decisions", inApp: true, email: false },
-  { key: "due_dates", label: "Due Date Reminders", inApp: true, email: true },
-  { key: "recertification", label: "Recertification Reminders (compliance)", inApp: true, email: true },
-  { key: "completions", label: "Course Completions", inApp: true, email: true },
-  { key: "certificate", label: "Certificate Issued", inApp: true, email: false },
-  { key: "discussions", label: "Discussion Replies", inApp: true, email: true },
-  { key: "announcements", label: "Announcements", inApp: true, email: false },
-  { key: "digest", label: "Weekly Digest", inApp: true, email: false },
+  {
+    key: "enrollment",
+    label: "Enrollment Confirmations",
+    inApp: true,
+    email: true,
+    describe: {
+      learner: "When you're enrolled in a new course.",
+      manager: "When one of your reports is enrolled in a course.",
+      instructor: "When a learner is enrolled in a course you teach.",
+      admin: "When new enrollments are created.",
+    },
+  },
+  {
+    key: "approvals",
+    label: "Approval Activity",
+    inApp: true,
+    email: false,
+    describe: {
+      learner: "Decisions on your enrollment requests (approved / rejected).",
+      manager: "Approval requests from your direct reports.",
+      admin: "Approval requests across the organization.",
+    },
+  },
+  {
+    key: "due_dates",
+    label: "Due Date Reminders",
+    inApp: true,
+    email: true,
+    describe: {
+      learner: "When a course or assignment is approaching its due date.",
+      manager: "When a report's due course is overdue.",
+      instructor: "When a session you're leading is approaching.",
+    },
+  },
+  {
+    key: "recertification",
+    label: "Recertification Reminders (compliance)",
+    inApp: true,
+    email: true,
+    describe: {
+      learner: "When a required course you've completed is approaching its recertification window.",
+      manager: "When a report's compliance certification is about to lapse.",
+      admin: "Recertification window alerts for users in your tenant.",
+    },
+  },
+  {
+    key: "completions",
+    label: "Course Completions",
+    inApp: true,
+    email: true,
+    describe: {
+      learner: "Confirmation when you finish a course.",
+      manager: "When one of your reports completes a course.",
+      instructor: "When a learner completes a course you teach.",
+    },
+  },
+  {
+    key: "certificate",
+    label: "Certificate Issued",
+    inApp: true,
+    email: false,
+    appliesTo: ["learner", "manager", "instructor"],
+    describe: {
+      learner: "When a certificate is issued to you.",
+      manager: "When a report earns a certificate.",
+    },
+  },
+  {
+    key: "discussions",
+    label: "Discussion Replies",
+    inApp: true,
+    email: true,
+    describe: {
+      learner: "Replies to your forum posts and mentions.",
+      manager: "Replies to discussions you're following.",
+    },
+  },
+  {
+    key: "announcements",
+    label: "Announcements",
+    inApp: true,
+    email: false,
+    describe: {
+      learner: "Platform-wide announcements from admins.",
+      manager: "Platform-wide announcements; admin-initiated broadcasts.",
+      admin: "Platform-wide announcements and broadcasts.",
+    },
+  },
+  {
+    key: "digest",
+    label: "Weekly Digest",
+    inApp: true,
+    email: false,
+    appliesTo: ["learner", "manager"],
+    describe: {
+      learner: "Weekly summary of your learning activity.",
+      manager: "Weekly summary of your team's training activity.",
+    },
+  },
 ];
 
 const SESSIONS: Session[] = [
@@ -590,29 +685,46 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </div>
 
                 <div className="divide-y divide-gray-100">
-                  {notifications.map((notif) => (
-                    <div key={notif.key} className="grid grid-cols-[1fr_60px_60px] items-center gap-4 py-4">
-                      <span className="text-sm font-medium text-gray-900">{notif.label}</span>
-                      {/* In-App toggle */}
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => toggleNotification(notif.key, "inApp")}
-                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-indigo-600" : "bg-gray-200")}
+                  {notifications
+                    .filter((notif) => !notif.appliesTo || notif.appliesTo.includes(data.userRole))
+                    .map((notif) => {
+                      const description =
+                        (notif.describe &&
+                          notif.describe[data.userRole as keyof typeof notif.describe]) ||
+                        notif.describe?.learner ||
+                        null;
+                      return (
+                        <div
+                          key={notif.key}
+                          className="grid grid-cols-[1fr_60px_60px] items-start gap-4 py-4"
                         >
-                          <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.inApp && "translate-x-5")} />
-                        </button>
-                      </div>
-                      {/* Email toggle */}
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => toggleNotification(notif.key, "email")}
-                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-indigo-600" : "bg-gray-200")}
-                        >
-                          <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.email && "translate-x-5")} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900">{notif.label}</p>
+                            {description && (
+                              <p className="mt-0.5 text-xs text-gray-500">{description}</p>
+                            )}
+                          </div>
+                          {/* In-App toggle */}
+                          <div className="flex justify-center pt-1">
+                            <button
+                              onClick={() => toggleNotification(notif.key, "inApp")}
+                              className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-indigo-600" : "bg-gray-200")}
+                            >
+                              <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.inApp && "translate-x-5")} />
+                            </button>
+                          </div>
+                          {/* Email toggle */}
+                          <div className="flex justify-center pt-1">
+                            <button
+                              onClick={() => toggleNotification(notif.key, "email")}
+                              className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-indigo-600" : "bg-gray-200")}
+                            >
+                              <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.email && "translate-x-5")} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
 

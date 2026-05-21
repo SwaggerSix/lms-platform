@@ -275,6 +275,13 @@ export default function NotificationsClient({ announcements, templates }: Notifi
         </div>
         <div className="flex items-center gap-2">
           <a
+            href="/admin/notifications/audit"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            title="Historical send_notification failures from rules and workflows"
+          >
+            Audit
+          </a>
+          <a
             href="/admin/notifications/preview"
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             title="Preview every transactional email template with sample data"

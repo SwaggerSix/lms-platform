@@ -88,6 +88,7 @@ export default async function SettingsPage() {
       preferences.notifications && typeof preferences.notifications === "object"
         ? (preferences.notifications as Record<string, { inApp?: boolean; email?: boolean }>)
         : undefined,
+    userRole: (userData.role as string) ?? "learner",
   };
 
   return <SettingsClient data={settingsData} />;
