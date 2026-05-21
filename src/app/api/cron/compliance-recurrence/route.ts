@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor, recertificationTier } from "@/lib/courses/required-training";
+import { readRequiredFor, recertificationTier, computeRecertExpiry } from "@/lib/courses/required-training";
 import { sendEmail } from "@/lib/email/sender";
 import { recertificationReminder } from "@/lib/email/templates";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
@@ -325,8 +325,7 @@ async function handler(request: NextRequest) {
   if (pendingEmails.length > 0) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
     const sends = pendingEmails.map(async (item) => {
-      const expires = new Date(item.completedAt);
-      expires.setMonth(expires.getMonth() + item.frequencyMonths);
+      const expires = computeRecertExpiry(item.completedAt, item.frequencyMonths);
       const expiryDate = expires.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",

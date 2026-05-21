@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import ManagerDashboardClient, { type ManagerDashboardData } from "./manager-dashboard-client";
-import { readRequiredFor, userMatchesRequiredFor } from "@/lib/courses/required-training";
+import { readRequiredFor, userMatchesRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
 
 export const metadata: Metadata = {
   title: "Team Dashboard | LMS Platform",
@@ -47,6 +47,7 @@ export default async function ManagerDashboardPage() {
       dueThisWeek: [],
       requiredCompliance: [],
       recertificationsDue: [],
+      recertificationsDueCount: 0,
       recentCompletions: [],
     };
     return <ManagerDashboardClient data={empty} />;
@@ -116,9 +117,7 @@ export default async function ManagerDashboardPage() {
     if (!bucket) continue;
     const freq = courseFrequency.get(e.course_id);
     if (freq && e.completed_at) {
-      const expiresAt = new Date(e.completed_at);
-      expiresAt.setMonth(expiresAt.getMonth() + freq);
-      if (expiresAt.getTime() < Date.now()) continue;
+      if (computeRecertExpiry(e.completed_at, freq).getTime() < Date.now()) continue;
     }
     bucket.complete += 1;
   }
@@ -203,8 +202,7 @@ export default async function ManagerDashboardPage() {
     if (e.status !== "completed" || !e.completed_at) continue;
     const freq = courseFrequency.get(e.course_id);
     if (!freq) continue;
-    const expiresAt = new Date(e.completed_at);
-    expiresAt.setMonth(expiresAt.getMonth() + freq);
+    const expiresAt = computeRecertExpiry(e.completed_at, freq);
     const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now) / dayMs);
     if (daysUntilExpiry > 30) continue;
     const learner = reportById.get(e.user_id);
@@ -259,6 +257,7 @@ export default async function ManagerDashboardPage() {
     dueThisWeek: dueThisWeek.slice(0, 8),
     requiredCompliance,
     recertificationsDue: recertificationsDueFinal.slice(0, 12),
+    recertificationsDueCount: recertificationsDueFinal.length,
     recentCompletions,
   };
 

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import ComplianceClient from './compliance-client';
 import type { ComplianceRequirement, ComplianceUserStatus, ComplianceOverviewStat } from './compliance-client';
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor } from "@/lib/courses/required-training";
+import { readRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
 
 function formatFrequency(months: number | null | undefined): string {
   if (!months) return 'One-time';
@@ -24,8 +24,7 @@ function deriveUserComplianceStatus(
 
   if (enrollmentStatus === 'completed' && completedAt) {
     if (frequencyMonths) {
-      const expiresAt = new Date(completedAt);
-      expiresAt.setMonth(expiresAt.getMonth() + frequencyMonths);
+      const expiresAt = computeRecertExpiry(completedAt, frequencyMonths);
       if (expiresAt < now) return 'expired';
     }
     return 'compliant';
@@ -183,9 +182,9 @@ export default async function CompliancePage() {
         if (enrollment.due_date) {
           dueDate = new Date(enrollment.due_date).toISOString().split('T')[0];
         } else if (enrollment.completed_at && source.frequencyMonths) {
-          const d = new Date(enrollment.completed_at);
-          d.setMonth(d.getMonth() + source.frequencyMonths);
-          dueDate = d.toISOString().split('T')[0];
+          dueDate = computeRecertExpiry(enrollment.completed_at, source.frequencyMonths)
+            .toISOString()
+            .split('T')[0];
         }
         userStatusList.push({
           name: userName,
@@ -197,8 +196,7 @@ export default async function CompliancePage() {
       }
 
       if (enrollment.status === 'completed' && enrollment.completed_at && source.frequencyMonths) {
-        const expiresAt = new Date(enrollment.completed_at);
-        expiresAt.setMonth(expiresAt.getMonth() + source.frequencyMonths);
+        const expiresAt = computeRecertExpiry(enrollment.completed_at, source.frequencyMonths);
         if (expiresAt > now && expiresAt <= thirtyDaysFromNow) {
           totalUpcoming++;
         }

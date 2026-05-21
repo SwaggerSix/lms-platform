@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import MyCoursesClient from "./my-courses-client";
 import type { MyCourse } from "./my-courses-client";
-import { readRequiredFor } from "@/lib/courses/required-training";
+import { readRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
 
 export const metadata: Metadata = {
   title: "My Courses | LMS Platform",
@@ -72,9 +72,7 @@ export default async function MyCoursesPage() {
 
     let recurrenceDueAt: string | null = null;
     if (required?.frequency_months && row.completed_at) {
-      const d = new Date(row.completed_at);
-      d.setMonth(d.getMonth() + required.frequency_months);
-      recurrenceDueAt = d.toISOString();
+      recurrenceDueAt = computeRecertExpiry(row.completed_at, required.frequency_months).toISOString();
     }
 
     return {

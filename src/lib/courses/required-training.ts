@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { addMonths, differenceInCalendarDays } from "date-fns";
 
 export interface RequiredForConfig {
   roles: string[];
@@ -72,6 +73,21 @@ export function userMatchesRequiredFor(
  * Splitting this out of the cron lets us unit-test the boundary logic without
  * mocking Supabase.
  */
+/**
+ * Compute the recurrence-expiry date for a recurring required-training
+ * completion. Uses date-fns addMonths so day-of-month is clamped to the
+ * last day of the target month (Jan 31 + 1 month → Feb 28/29) rather than
+ * rolling over. All compliance-window calculations in the app should
+ * route through this helper so boundaries stay consistent.
+ */
+export function computeRecertExpiry(
+  completedAt: Date | string,
+  frequencyMonths: number
+): Date {
+  const base = completedAt instanceof Date ? completedAt : new Date(completedAt);
+  return addMonths(base, Math.floor(frequencyMonths));
+}
+
 export function recertificationTier(
   completedAt: Date | string,
   frequencyMonths: number,
@@ -80,9 +96,11 @@ export function recertificationTier(
   if (!frequencyMonths || frequencyMonths <= 0) return null;
   const completion = completedAt instanceof Date ? completedAt : new Date(completedAt);
   if (Number.isNaN(completion.getTime())) return null;
-  const expires = new Date(completion);
-  expires.setMonth(expires.getMonth() + frequencyMonths);
-  const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+  // date-fns addMonths clamps to the last day of the target month rather
+  // than rolling over (Jan 31 + 1 month → Feb 28/29). This is the
+  // calendar-aware behavior most users expect.
+  const expires = addMonths(completion, Math.floor(frequencyMonths));
+  const daysLeft = differenceInCalendarDays(expires, now);
   if (daysLeft <= 0) return "expired";
   if (daysLeft <= 7) return "7";
   if (daysLeft <= 30) return "30";

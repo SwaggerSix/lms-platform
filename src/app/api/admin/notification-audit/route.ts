@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logAudit } from "@/lib/audit";
 
 /**
  * GET /api/admin/notification-audit?limit=100&offset=0
@@ -86,6 +87,21 @@ export async function GET(request: NextRequest) {
     }
 
     const csv = lines.join("\n");
+
+    // Log the export so we have an audit trail of who pulled the data.
+    const workflowCheckCount = (workflowAll ?? []).filter((w: any) => checkLike(w.error_message)).length;
+    logAudit({
+      userId: auth.user?.id,
+      action: "export.notification_audit_csv",
+      entityType: "notification_audit",
+      ipAddress:
+        request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
+      newValues: {
+        rule_rows: (ruleAll ?? []).length,
+        workflow_rows_check_filtered: workflowCheckCount,
+      },
+    }).catch(() => {});
+
     return new NextResponse(csv, {
       status: 200,
       headers: {
@@ -116,16 +132,14 @@ export async function GET(request: NextRequest) {
       .eq("status", "failed")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1),
-    // All-time rule aggregation: pull just (rule_id, created_at) for every
-    // failed send_notification action and bucket in JS. Capped at 5000 rows
-    // to bound memory; if you have more, increase or move to a SQL view.
+    // All-time rule aggregation: prefer the notification_audit_rule_summary
+    // view (added in 20260318100034). Falls back to a 5000-row sample of
+    // raw rows when the view doesn't exist (older deployments).
     service
-      .from("enrollment_rule_logs")
-      .select("rule_id, created_at")
-      .eq("action_type", "send_notification")
-      .eq("status", "error")
-      .order("created_at", { ascending: false })
-      .limit(5000),
+      .from("notification_audit_rule_summary")
+      .select("rule_id, failures, latest")
+      .order("failures", { ascending: false })
+      .limit(20),
   ]);
 
   const checkLike = (msg: string | null) => {
@@ -154,22 +168,46 @@ export async function GET(request: NextRequest) {
     ruleSummary[(row as any).rule_id] = slot;
   }
 
-  // All-time rule aggregation (sample-capped at 5000). Top 20 by failure count.
-  const allTimeMap: Record<string, { rule_id: string; failures: number; latest: string }> = {};
-  for (const row of ruleAggRows ?? []) {
-    const slot = allTimeMap[(row as any).rule_id] ?? {
-      rule_id: (row as any).rule_id,
-      failures: 0,
-      latest: (row as any).created_at,
-    };
-    slot.failures += 1;
-    if ((row as any).created_at > slot.latest) slot.latest = (row as any).created_at;
-    allTimeMap[(row as any).rule_id] = slot;
+  // All-time rule aggregation. The view-backed query returns
+  // {rule_id, failures, latest} pre-aggregated. If the view is missing
+  // (returns an error mentioning "does not exist"), fall back to a
+  // 5000-row sample of raw rows and aggregate in JS.
+  let topAffectedRules: { rule_id: string; failures: number; latest: string }[] = [];
+  let aggregationCapped = false;
+  const viewMissing =
+    !!ruleAggErr?.message && /relation .*notification_audit_rule_summary.* does not exist/i.test(ruleAggErr.message);
+
+  if (!viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
+    topAffectedRules = (ruleAggRows as any[]).map((r) => ({
+      rule_id: r.rule_id,
+      failures: Number(r.failures) || 0,
+      latest: r.latest,
+    }));
+  } else {
+    // Fallback path: scan up to 5000 raw rows and bucket in JS.
+    const { data: fallback } = await service
+      .from("enrollment_rule_logs")
+      .select("rule_id, created_at")
+      .eq("action_type", "send_notification")
+      .eq("status", "error")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    const allTimeMap: Record<string, { rule_id: string; failures: number; latest: string }> = {};
+    for (const row of fallback ?? []) {
+      const slot = allTimeMap[(row as any).rule_id] ?? {
+        rule_id: (row as any).rule_id,
+        failures: 0,
+        latest: (row as any).created_at,
+      };
+      slot.failures += 1;
+      if ((row as any).created_at > slot.latest) slot.latest = (row as any).created_at;
+      allTimeMap[(row as any).rule_id] = slot;
+    }
+    topAffectedRules = Object.values(allTimeMap)
+      .sort((a, b) => b.failures - a.failures)
+      .slice(0, 20);
+    aggregationCapped = (fallback?.length ?? 0) >= 5000;
   }
-  const topAffectedRules = Object.values(allTimeMap)
-    .sort((a, b) => b.failures - a.failures)
-    .slice(0, 20);
-  const aggregationCapped = (ruleAggRows?.length ?? 0) >= 5000;
 
   return NextResponse.json({
     page: { limit, offset },

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor } from "@/lib/courses/required-training";
+import { readRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
 import ComplianceClient, {
   type ComplianceRequirement,
   type MemberCompliance,
@@ -164,8 +164,7 @@ export default async function CompliancePage() {
     //   - If frequencyMonths is set, deadline = createdAt + frequencyMonths
     //     (or completedAt + frequencyMonths per-member, computed below).
     //   - If no frequency, fall back to createdAt + 12 months as a default.
-    const sharedDeadline = new Date(source.createdAt);
-    sharedDeadline.setMonth(sharedDeadline.getMonth() + (source.frequencyMonths ?? 12));
+    const sharedDeadline = computeRecertExpiry(source.createdAt, source.frequencyMonths ?? 12);
 
     const memberCompliance: MemberCompliance[] = members.map((member: any) => {
       const firstName = member.first_name ?? "";
@@ -191,8 +190,7 @@ export default async function CompliancePage() {
           // the recurrence window — if so, treat as overdue (cron will catch
           // up but the manager should see the gap immediately).
           if (source.frequencyMonths && enrollment.completed_at) {
-            const expiresAt = new Date(enrollment.completed_at);
-            expiresAt.setMonth(expiresAt.getMonth() + source.frequencyMonths);
+            const expiresAt = computeRecertExpiry(enrollment.completed_at, source.frequencyMonths);
             status = expiresAt < now ? "overdue" : "completed";
           } else {
             status = "completed";
@@ -238,8 +236,7 @@ export default async function CompliancePage() {
   // within 30 days and not yet completed-and-current.
   const expiringAlertMap: Record<string, ExpiringAlert> = {};
   for (const source of sources) {
-    const sharedDeadline = new Date(source.createdAt);
-    sharedDeadline.setMonth(sharedDeadline.getMonth() + (source.frequencyMonths ?? 12));
+    const sharedDeadline = computeRecertExpiry(source.createdAt, source.frequencyMonths ?? 12);
 
     let membersRemaining = 0;
     let nearestDays = Number.POSITIVE_INFINITY;
@@ -253,8 +250,7 @@ export default async function CompliancePage() {
 
       if (enrollment?.status === "completed" && enrollment.completed_at) {
         if (source.frequencyMonths) {
-          const expiresAt = new Date(enrollment.completed_at);
-          expiresAt.setMonth(expiresAt.getMonth() + source.frequencyMonths);
+          const expiresAt = computeRecertExpiry(enrollment.completed_at, source.frequencyMonths);
           effectiveDeadline = expiresAt;
           alreadyCovered = expiresAt >= now;
         } else {

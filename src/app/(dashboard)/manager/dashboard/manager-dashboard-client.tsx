@@ -33,7 +33,7 @@ export interface ManagerDashboardData {
     percent: number;
     verifiedCpe: number;
   }[];
-  /** Recurring-compliance completions that have expired or will expire ≤30 days. */
+  /** Recurring-compliance completions that have expired or will expire ≤30 days. Display list — truncated. */
   recertificationsDue: {
     learnerId: string;
     learnerName: string;
@@ -42,6 +42,8 @@ export interface ManagerDashboardData {
     /** Negative = overdue. */
     daysUntilExpiry: number;
   }[];
+  /** Total count across all reports (un-truncated). Use this for dashboard tiles. */
+  recertificationsDueCount: number;
   recentCompletions: {
     enrollmentId: string;
     learnerName: string;
@@ -56,7 +58,7 @@ function formatDate(iso: string): string {
 }
 
 export default function ManagerDashboardClient({ data }: { data: ManagerDashboardData }) {
-  const recertCount = data.recertificationsDue.length;
+  const recertCount = data.recertificationsDueCount;
   const stats: {
     label: string;
     value: string;
@@ -277,7 +279,7 @@ export default function ManagerDashboardClient({ data }: { data: ManagerDashboar
             <h2 className="text-sm font-semibold text-amber-900">
               Recertifications Expiring Soon
               <span className="ml-2 rounded-full bg-amber-200/60 px-2 py-0.5 text-[10px] font-bold text-amber-900">
-                {data.recertificationsDue.length}
+                {data.recertificationsDueCount}
               </span>
             </h2>
             <Link
@@ -319,6 +321,17 @@ export default function ManagerDashboardClient({ data }: { data: ManagerDashboar
               );
             })}
           </ul>
+          {data.recertificationsDueCount > data.recertificationsDue.length && (
+            <div className="border-t border-amber-100 px-5 py-2 text-center">
+              <Link
+                href="/manager/compliance"
+                className="text-xs font-medium text-amber-800 hover:text-amber-900"
+              >
+                Showing {data.recertificationsDue.length} of {data.recertificationsDueCount} —
+                view all in compliance
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
