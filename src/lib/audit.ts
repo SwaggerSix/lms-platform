@@ -8,6 +8,14 @@ export interface AuditLogParams {
   oldValues?: Record<string, unknown>;
   newValues?: Record<string, unknown>;
   ipAddress?: string;
+  /**
+   * Optional explicit tenant id. When provided, overrides the
+   * audit_logs_set_tenant_id trigger's user→org lookup. Use this for
+   * service-role inserts where the acting "user" doesn't carry tenant
+   * info but the entity does (e.g. a cron run that operated on rows
+   * inside one tenant's scope).
+   */
+  tenantId?: string;
 }
 
 /**
@@ -24,6 +32,7 @@ export async function logAudit(params: AuditLogParams): Promise<void> {
       old_values: params.oldValues ?? null,
       new_values: params.newValues ?? null,
       ip_address: params.ipAddress ?? null,
+      tenant_id: params.tenantId ?? null,
     });
     if (error) console.error("Audit log failed:", error.message);
   } catch (err) {

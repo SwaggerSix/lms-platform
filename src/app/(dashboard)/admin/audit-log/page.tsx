@@ -41,7 +41,7 @@ export default async function AuditLogPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role")
+    .select("id, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -53,16 +53,25 @@ export default async function AuditLogPage() {
     redirect("/dashboard");
   }
 
-  // Tenant scoping: super_admin/admin see all by default. An explicit
-  // x-tenant-id header narrows them to a specific tenant. Non-admin roles
-  // are blocked above. Once a proper tenant-admin role exists, this branch
-  // will narrow them automatically via tenant_memberships.
+  // Tenant scoping defaults:
+  //   - super_admin: sees ALL tenants by default. An explicit x-tenant-id
+  //     header narrows to one tenant if they want.
+  //   - admin: scoped to their own organization_id by default. Can pass
+  //     x-tenant-id to override (e.g. for cross-tenant troubleshooting).
+  //   - other roles: blocked at the redirect above; if a future
+  //     tenant-admin role gets through, getTenantScope provides the scope.
+  //   Platform-level rows (tenant_id IS NULL: cron events, super_admin
+  //   actions) remain visible to scoped admins via the .or() filter below.
   const hdrs = await headers();
   const headerTenantId = hdrs.get("x-tenant-id");
   let tenantId: string | null = headerTenantId || null;
-  if (!tenantId && dbUser.role !== "admin" && dbUser.role !== "super_admin") {
-    const scope = await getTenantScope(dbUser.id, dbUser.role).catch(() => null);
-    tenantId = scope?.tenantId ?? null;
+  if (!tenantId) {
+    if (dbUser.role === "admin") {
+      tenantId = (dbUser as any).organization_id ?? null;
+    } else if (dbUser.role !== "super_admin") {
+      const scope = await getTenantScope(dbUser.id, dbUser.role).catch(() => null);
+      tenantId = scope?.tenantId ?? null;
+    }
   }
 
   let auditQuery = service

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Clock, RefreshCcw } from "lucide-react";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 interface CronJob {
@@ -16,6 +16,32 @@ interface HealthResponse {
   jobs: CronJob[];
   alerts: string[];
   alert_count: number;
+}
+
+interface CronRun {
+  id: string;
+  job_name: string;
+  status: "success" | "failure";
+  duration_ms: number | null;
+  records_processed: number | null;
+  error_message: string | null;
+  created_at: string;
+}
+
+interface HistoryResponse {
+  job: string;
+  count: number;
+  success_rate: number | null;
+  p50_duration_ms: number | null;
+  p95_duration_ms: number | null;
+  runs: CronRun[];
+}
+
+function formatMs(ms: number | null): string {
+  if (ms === null || !Number.isFinite(ms)) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${(ms / 60000).toFixed(1)}m`;
 }
 
 function formatRelative(iso: string): string {
@@ -35,6 +61,30 @@ export default function CronHealthClient() {
   const [data, setData] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [history, setHistory] = useState<Record<string, HistoryResponse>>({});
+  const [historyLoading, setHistoryLoading] = useState<string | null>(null);
+
+  const loadHistory = useCallback(async (jobName: string) => {
+    if (history[jobName]) return;
+    setHistoryLoading(jobName);
+    try {
+      const res = await fetch(`/api/cron/history?job=${encodeURIComponent(jobName)}&limit=50`);
+      if (!res.ok) return;
+      const json = (await res.json()) as HistoryResponse;
+      setHistory((prev) => ({ ...prev, [jobName]: json }));
+    } finally {
+      setHistoryLoading(null);
+    }
+  }, [history]);
+
+  const toggle = useCallback((jobName: string) => {
+    setExpanded((prev) => {
+      const next = prev === jobName ? null : jobName;
+      if (next) loadHistory(next);
+      return next;
+    });
+  }, [loadHistory]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,33 +187,115 @@ export default function CronHealthClient() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {data.jobs.map((job) => (
-                    <tr key={job.name}>
-                      <td className="px-5 py-2 font-mono text-xs text-gray-700">{job.name}</td>
-                      <td className="px-5 py-2 text-gray-600">
-                        {formatRelative(job.last_run)}
-                        {job.last_run !== "never" && (
-                          <span className="ml-2 text-xs text-gray-400">
-                            ({new Date(job.last_run).toLocaleString()})
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-2">
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                            job.status === "success"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : job.status === "failure"
-                                ? "bg-red-50 text-red-700"
-                                : "bg-gray-100 text-gray-600"
-                          )}
+                  {data.jobs.map((job) => {
+                    const isOpen = expanded === job.name;
+                    const hist = history[job.name];
+                    const maxDuration = hist
+                      ? Math.max(1, ...hist.runs.map((r) => Number(r.duration_ms) || 0))
+                      : 0;
+                    return (
+                      <Fragment key={job.name}>
+                        <tr
+                          onClick={() => toggle(job.name)}
+                          className="cursor-pointer hover:bg-gray-50"
                         >
-                          {job.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                          <td className="px-5 py-2 font-mono text-xs text-gray-700">
+                            <span className="inline-flex items-center gap-1">
+                              {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                              {job.name}
+                            </span>
+                          </td>
+                          <td className="px-5 py-2 text-gray-600">
+                            {formatRelative(job.last_run)}
+                            {job.last_run !== "never" && (
+                              <span className="ml-2 text-xs text-gray-400">
+                                ({new Date(job.last_run).toLocaleString()})
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-2">
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                                job.status === "success"
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : job.status === "failure"
+                                    ? "bg-red-50 text-red-700"
+                                    : "bg-gray-100 text-gray-600"
+                              )}
+                            >
+                              {job.status}
+                            </span>
+                          </td>
+                        </tr>
+                        {isOpen && (
+                          <tr>
+                            <td colSpan={3} className="bg-gray-50/40 px-5 py-3">
+                              {historyLoading === job.name ? (
+                                <p className="text-xs text-gray-500">Loading history…</p>
+                              ) : hist ? (
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                                    <span>
+                                      <strong>{hist.count}</strong> runs
+                                    </span>
+                                    <span>
+                                      Success rate:{" "}
+                                      <strong
+                                        className={cn(
+                                          (hist.success_rate ?? 0) >= 0.9
+                                            ? "text-emerald-700"
+                                            : (hist.success_rate ?? 0) >= 0.7
+                                              ? "text-amber-700"
+                                              : "text-red-700"
+                                        )}
+                                      >
+                                        {hist.success_rate === null
+                                          ? "—"
+                                          : `${(hist.success_rate * 100).toFixed(1)}%`}
+                                      </strong>
+                                    </span>
+                                    <span>
+                                      p50: <strong>{formatMs(hist.p50_duration_ms)}</strong>
+                                    </span>
+                                    <span>
+                                      p95: <strong>{formatMs(hist.p95_duration_ms)}</strong>
+                                    </span>
+                                  </div>
+                                  {hist.runs.length > 0 && (
+                                    <div>
+                                      <p className="mb-1 text-[10px] uppercase tracking-wider text-gray-500">
+                                        Duration trend (oldest → newest)
+                                      </p>
+                                      <div className="flex h-16 items-end gap-0.5 rounded border border-gray-200 bg-white p-1">
+                                        {hist.runs.map((r) => {
+                                          const d = Number(r.duration_ms) || 0;
+                                          const pct = maxDuration > 0 ? (d / maxDuration) * 100 : 0;
+                                          return (
+                                            <div
+                                              key={r.id}
+                                              title={`${new Date(r.created_at).toLocaleString()} · ${r.status} · ${formatMs(d)}`}
+                                              className={cn(
+                                                "flex-1 min-w-[2px] rounded-sm transition-opacity hover:opacity-100 opacity-80",
+                                                r.status === "success" ? "bg-emerald-400" : "bg-red-400"
+                                              )}
+                                              style={{ height: `${Math.max(2, pct)}%` }}
+                                            />
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-gray-500">No history yet.</p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

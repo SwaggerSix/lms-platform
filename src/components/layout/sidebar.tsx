@@ -59,6 +59,8 @@ import {
   Link2,
   TrendingUp,
   MessageSquareMore,
+  Activity,
+  FileWarning,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
@@ -147,6 +149,9 @@ const navSections: NavSection[] = [
       { label: "Settings", href: "/admin/settings", icon: Settings },
       { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
       { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
+      { label: "Notification Audit", href: "/admin/notifications/audit", icon: FileWarning },
+      { label: "Email Previews", href: "/admin/notifications/preview", icon: Mail },
+      { label: "Cron Health", href: "/admin/cron-health", icon: Activity },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
       { label: "360 Feedback", href: "/admin/feedback", icon: MessageSquare },
       { label: "Mentorship", href: "/admin/mentorship", icon: Heart },
