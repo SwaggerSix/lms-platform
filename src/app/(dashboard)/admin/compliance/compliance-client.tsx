@@ -43,6 +43,8 @@ export interface ComplianceRequirement {
   compliantUsers: number;
   overdueUsers: number;
   userStatus: ComplianceUserStatus[];
+  /** "course" = lives on courses.metadata.required_for; "legacy" = compliance_requirements row */
+  origin: 'course' | 'legacy';
 }
 
 export interface ComplianceOverviewStat {
@@ -117,6 +119,12 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
   };
 
   const openEditModal = (req: ComplianceRequirement) => {
+    // Course-backed rows are edited from the courses admin page (the Required
+    // Training section), since they live in courses.metadata.required_for.
+    if (req.origin === 'course') {
+      window.location.href = '/admin/courses';
+      return;
+    }
     setSelectedReq(req);
     setModalMode('edit');
     setFormData({
@@ -188,6 +196,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           compliantUsers: 0,
           overdueUsers: 0,
           userStatus: [],
+          origin: 'legacy' as const,
         },
         ...prev,
       ]);
@@ -264,16 +273,16 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       </div>
 
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-        <p className="text-sm font-semibold text-indigo-900">Looking for required training assignments?</p>
+        <p className="text-sm font-semibold text-indigo-900">Unified compliance view</p>
         <p className="mt-1 text-sm text-indigo-800">
-          Courses can now be marked as required for specific roles or organizations. Matching users are
-          enrolled automatically as they join, and existing users are swept in when criteria change.
-          Configure this from{" "}
-          <a href="/admin/courses" className="font-medium underline">Admin → Courses</a> — open any
-          course and use the &quot;Required Training&quot; section. Compliance &amp; CPE status per
-          learner are visible under <a href="/admin/reports/cpe" className="font-medium underline">
-            Admin → Reports → NASBA CPE
-          </a>.
+          This page now merges two sources: <span className="font-semibold">course-backed</span>{" "}
+          requirements (defined on each course&apos;s Required Training settings, including
+          regulation, recurrence, and mandatory flag) and any remaining{" "}
+          <span className="font-semibold">legacy</span> rows from the older{" "}
+          <code className="rounded bg-white px-1 py-0.5 text-xs">compliance_requirements</code> table.
+          Edit course-backed rows from{" "}
+          <a href="/admin/courses" className="font-medium underline">Admin → Courses</a>; legacy rows
+          can still be edited inline below or migrated by running the backfill SQL.
         </p>
       </div>
 
@@ -344,7 +353,24 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     </button>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-gray-900">{req.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900">{req.name}</p>
+                      {req.origin === 'course' ? (
+                        <span
+                          className="inline-flex items-center rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200"
+                          title="Lives on the course's Required Training settings"
+                        >
+                          course-backed
+                        </span>
+                      ) : (
+                        <span
+                          className="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200"
+                          title="Legacy row from compliance_requirements. Run the backfill to merge into the course."
+                        >
+                          legacy
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{req.regulation}</td>
                   <td className="px-6 py-4 text-center">

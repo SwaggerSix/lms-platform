@@ -4,6 +4,13 @@ export interface RequiredForConfig {
   roles: string[];
   organization_ids: string[];
   due_days?: number;
+  /**
+   * Compliance metadata (formerly in compliance_requirements). All optional —
+   * a required-training course that is not compliance-driven omits these.
+   */
+  regulation?: string;
+  frequency_months?: number;
+  is_mandatory?: boolean;
 }
 
 const VALID_ROLES = new Set(["admin", "manager", "instructor", "learner"]);
@@ -25,10 +32,15 @@ export function readRequiredFor(metadata: unknown): RequiredForConfig | null {
     : [];
   if (roles.length === 0 && organization_ids.length === 0) return null;
   const dueDaysRaw = Number(blob.due_days);
+  const freqRaw = Number(blob.frequency_months);
+  const regulation = typeof blob.regulation === "string" ? blob.regulation.trim() : "";
   return {
     roles,
     organization_ids,
     due_days: Number.isFinite(dueDaysRaw) && dueDaysRaw > 0 ? Math.floor(dueDaysRaw) : undefined,
+    regulation: regulation || undefined,
+    frequency_months: Number.isFinite(freqRaw) && freqRaw > 0 ? Math.floor(freqRaw) : undefined,
+    is_mandatory: blob.is_mandatory === false ? false : true,
   };
 }
 

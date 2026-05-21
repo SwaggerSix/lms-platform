@@ -59,7 +59,14 @@ export default async function CoursesPage() {
       : index;
 
     const meta = (row.metadata ?? {}) as Record<string, unknown>;
-    const requiredFor = (meta.required_for ?? null) as { roles?: string[]; organization_ids?: string[]; due_days?: number } | null;
+    const requiredFor = (meta.required_for ?? null) as {
+      roles?: string[];
+      organization_ids?: string[];
+      due_days?: number;
+      regulation?: string;
+      frequency_months?: number;
+      is_mandatory?: boolean;
+    } | null;
     return {
       id: row.id,
       title: row.title ?? 'Untitled Course',
@@ -79,6 +86,9 @@ export default async function CoursesPage() {
       requiredRoles: requiredFor?.roles ?? [],
       requiredOrgIds: requiredFor?.organization_ids ?? [],
       requiredDueDays: Number(requiredFor?.due_days) || 0,
+      requiredRegulation: requiredFor?.regulation ?? '',
+      requiredFrequencyMonths: Number(requiredFor?.frequency_months) || 0,
+      requiredIsMandatory: requiredFor?.is_mandatory !== false,
     };
   });
 

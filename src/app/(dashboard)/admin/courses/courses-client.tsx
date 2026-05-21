@@ -49,6 +49,9 @@ export interface CourseItem {
   requiredRoles: string[];
   requiredOrgIds: string[];
   requiredDueDays: number;
+  requiredRegulation: string;
+  requiredFrequencyMonths: number;
+  requiredIsMandatory: boolean;
 }
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
@@ -160,6 +163,9 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
       requiredRoles: course.requiredRoles,
       requiredOrgIds: course.requiredOrgIds,
       requiredDueDays: course.requiredDueDays,
+      requiredRegulation: course.requiredRegulation,
+      requiredFrequencyMonths: course.requiredFrequencyMonths,
+      requiredIsMandatory: course.requiredIsMandatory,
     });
   }, []);
 
@@ -167,9 +173,16 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     if (!editModal) return;
     setLoadingAction({ id: editModal.id, action: 'edit' });
     try {
-      const { courseVersion, lastReview, nasbaCpe, cpeCredits, requiredEnabled, requiredRoles, requiredOrgIds, requiredDueDays, ...rest } = editForm;
+      const {
+        courseVersion, lastReview, nasbaCpe, cpeCredits,
+        requiredEnabled, requiredRoles, requiredOrgIds, requiredDueDays,
+        requiredRegulation, requiredFrequencyMonths, requiredIsMandatory,
+        ...rest
+      } = editForm;
       const roles = requiredRoles ?? [];
       const orgIds = requiredOrgIds ?? [];
+      const regulation = (requiredRegulation ?? '').trim();
+      const frequencyMonths = Number(requiredFrequencyMonths) > 0 ? Number(requiredFrequencyMonths) : undefined;
       const metadata: Record<string, unknown> = {
         course_version: (courseVersion ?? '').toString().trim() || '1.0',
         last_curriculum_review: lastReview ?? '',
@@ -180,6 +193,9 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
               roles,
               organization_ids: orgIds,
               due_days: Number(requiredDueDays) > 0 ? Number(requiredDueDays) : undefined,
+              regulation: regulation || undefined,
+              frequency_months: frequencyMonths,
+              is_mandatory: requiredIsMandatory !== false,
             }
           : null,
       };
@@ -236,6 +252,9 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
         requiredRoles: course.requiredRoles,
         requiredOrgIds: course.requiredOrgIds,
         requiredDueDays: course.requiredDueDays,
+        requiredRegulation: course.requiredRegulation,
+        requiredFrequencyMonths: course.requiredFrequencyMonths,
+        requiredIsMandatory: course.requiredIsMandatory,
       };
       setCourses((prev) => [mappedCourse, ...prev]);
     } catch (err) {
@@ -811,6 +830,51 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                       />
                       <span className="ml-2 text-xs text-gray-500">0 = no due date</span>
                     </div>
+
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        Compliance metadata <span className="font-normal normal-case text-gray-400">(optional)</span>
+                      </p>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Regulation / standard</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. HIPAA, OSHA 1910.147, SOC 2"
+                          value={editForm.requiredRegulation ?? ''}
+                          onChange={(e) => setEditForm((f) => ({ ...f, requiredRegulation: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Recurrence</label>
+                          <select
+                            value={editForm.requiredFrequencyMonths ?? 0}
+                            onChange={(e) => setEditForm((f) => ({ ...f, requiredFrequencyMonths: parseInt(e.target.value) || 0 }))}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value={0}>One-time (no recurrence)</option>
+                            <option value={3}>Every 3 months (Quarterly)</option>
+                            <option value={6}>Every 6 months (Semi-Annual)</option>
+                            <option value={12}>Every 12 months (Annual)</option>
+                            <option value={24}>Every 24 months (Bi-Annual)</option>
+                            <option value={36}>Every 36 months (Tri-Annual)</option>
+                          </select>
+                        </div>
+                        <div className="flex items-end">
+                          <label className="flex items-center gap-2 cursor-pointer pb-2">
+                            <input
+                              type="checkbox"
+                              checked={editForm.requiredIsMandatory !== false}
+                              onChange={(e) => setEditForm((f) => ({ ...f, requiredIsMandatory: e.target.checked }))}
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="text-xs text-gray-700">Mandatory (vs recommended)</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
                     <p className="text-xs text-amber-700">
                       Saving with new criteria will enrol every currently active matching user. Removing the flag does not unenrol existing learners — existing enrolments stay in place.
                     </p>
