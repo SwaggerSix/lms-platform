@@ -329,7 +329,15 @@ const ADAPTERS: Record<string, () => HRISAdapter> = {
 };
 
 export class HRISSync {
-  private supabase = createServiceClient();
+  // Lazy — instantiating createServiceClient() at class field init time
+  // would throw at module load when NEXT_PUBLIC_SUPABASE_URL isn't set
+  // (e.g. during a Vercel build's page-data collection step). Defer to
+  // first method call so import is always safe.
+  private _supabase: ReturnType<typeof createServiceClient> | null = null;
+  private get supabase() {
+    if (!this._supabase) this._supabase = createServiceClient();
+    return this._supabase;
+  }
 
   getAdapter(provider: string): HRISAdapter {
     const factory = ADAPTERS[provider];
