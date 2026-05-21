@@ -33,6 +33,15 @@ export interface ManagerDashboardData {
     percent: number;
     verifiedCpe: number;
   }[];
+  /** Recurring-compliance completions that have expired or will expire ≤30 days. */
+  recertificationsDue: {
+    learnerId: string;
+    learnerName: string;
+    courseTitle: string;
+    regulation: string | null;
+    /** Negative = overdue. */
+    daysUntilExpiry: number;
+  }[];
   recentCompletions: {
     enrollmentId: string;
     learnerName: string;
@@ -225,6 +234,58 @@ export default function ManagerDashboardClient({ data }: { data: ManagerDashboar
           </tbody>
         </table>
       </div>
+
+      {/* Recertifications due */}
+      {data.recertificationsDue.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm">
+          <div className="flex items-center justify-between border-b border-amber-200/60 px-5 py-3">
+            <h2 className="text-sm font-semibold text-amber-900">
+              Recertifications Expiring Soon
+              <span className="ml-2 rounded-full bg-amber-200/60 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                {data.recertificationsDue.length}
+              </span>
+            </h2>
+            <Link
+              href="/manager/compliance"
+              className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 hover:text-amber-900"
+            >
+              Full compliance view
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <ul className="divide-y divide-amber-100">
+            {data.recertificationsDue.map((row) => {
+              const overdue = row.daysUntilExpiry < 0;
+              return (
+                <li key={`${row.learnerId}-${row.courseTitle}`} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-gray-900">{row.learnerName}</p>
+                    <p className="truncate text-xs text-gray-600">
+                      {row.courseTitle}
+                      {row.regulation && (
+                        <span className="ml-1.5 rounded bg-white px-1.5 py-0.5 text-[10px] font-medium text-gray-700 ring-1 ring-inset ring-gray-200">
+                          {row.regulation}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <span
+                    className={
+                      overdue
+                        ? "rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700"
+                        : "rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800"
+                    }
+                  >
+                    {overdue
+                      ? `${Math.abs(row.daysUntilExpiry)}d overdue`
+                      : `${row.daysUntilExpiry}d left`}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Recent completions */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">

@@ -46,6 +46,7 @@ export default async function ManagerDashboardPage() {
       overdue: [],
       dueThisWeek: [],
       requiredCompliance: [],
+      recertificationsDue: [],
       recentCompletions: [],
     };
     return <ManagerDashboardClient data={empty} />;
@@ -100,12 +101,25 @@ export default async function ManagerDashboardPage() {
     }
   }
 
-  // Count completed enrollments toward required compliance.
+  // Count completed enrollments toward required compliance. For recurring
+  // compliance courses, a stale completion (past frequency_months) does NOT
+  // count — the learner needs to re-take the course.
+  const courseFrequency = new Map<string, number>();
+  for (const c of courses) {
+    const cfg = readRequiredFor(c.metadata);
+    if (cfg?.frequency_months) courseFrequency.set(c.id, cfg.frequency_months);
+  }
   for (const e of enrollments) {
     if (e.status !== "completed") continue;
     if (!requiredCourseIds.has(e.course_id)) continue;
     const bucket = requiredByReport.get(e.user_id);
     if (!bucket) continue;
+    const freq = courseFrequency.get(e.course_id);
+    if (freq && e.completed_at) {
+      const expiresAt = new Date(e.completed_at);
+      expiresAt.setMonth(expiresAt.getMonth() + freq);
+      if (expiresAt.getTime() < Date.now()) continue;
+    }
     bucket.complete += 1;
   }
 
@@ -181,6 +195,43 @@ export default async function ManagerDashboardPage() {
   const teamComplete = requiredCompliance.reduce((sum, r) => sum + r.complete, 0);
   const requiredComplianceRate = teamRequired === 0 ? 100 : Math.round((teamComplete / teamRequired) * 100);
 
+  // Recertifications expiring or overdue: walk every completed enrollment for
+  // a required-training course with a frequency_months window and surface
+  // anything within ±30 days of expiry.
+  const recertificationsDue: ManagerDashboardData["recertificationsDue"] = [];
+  for (const e of enrollments) {
+    if (e.status !== "completed" || !e.completed_at) continue;
+    const freq = courseFrequency.get(e.course_id);
+    if (!freq) continue;
+    const expiresAt = new Date(e.completed_at);
+    expiresAt.setMonth(expiresAt.getMonth() + freq);
+    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now) / dayMs);
+    if (daysUntilExpiry > 30) continue;
+    const learner = reportById.get(e.user_id);
+    const course = courseById.get(e.course_id);
+    if (!learner || !course) continue;
+    const required = readRequiredFor(course.metadata);
+    recertificationsDue.push({
+      learnerId: learner.id,
+      learnerName: `${learner.first_name ?? ""} ${learner.last_name ?? ""}`.trim() || "Unknown",
+      courseTitle: course.title,
+      regulation: required?.regulation ?? null,
+      daysUntilExpiry,
+    });
+  }
+  // Dedup: keep the latest completion per (learner, course). The cron
+  // re-enrolls on expiry so we may see multiple completions for the same
+  // (user, course) pair; we only want the most recent one.
+  const dedup = new Map<string, typeof recertificationsDue[number]>();
+  for (const r of recertificationsDue) {
+    const key = `${r.learnerId}_${r.courseTitle}`;
+    const prev = dedup.get(key);
+    if (!prev || r.daysUntilExpiry > prev.daysUntilExpiry) dedup.set(key, r);
+  }
+  const recertificationsDueFinal = Array.from(dedup.values()).sort(
+    (a, b) => a.daysUntilExpiry - b.daysUntilExpiry
+  );
+
   // Recent completions — last 10 across the team.
   const recentCompletions: ManagerDashboardData["recentCompletions"] = enrollments
     .filter((e) => e.status === "completed" && e.completed_at)
@@ -207,6 +258,7 @@ export default async function ManagerDashboardPage() {
     overdue: overdue.slice(0, 8),
     dueThisWeek: dueThisWeek.slice(0, 8),
     requiredCompliance,
+    recertificationsDue: recertificationsDueFinal.slice(0, 12),
     recentCompletions,
   };
 
