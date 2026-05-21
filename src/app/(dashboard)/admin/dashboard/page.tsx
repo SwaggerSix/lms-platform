@@ -109,6 +109,36 @@ export default async function AdminDashboardPage() {
     };
   });
 
+  // Curriculum review queue — compute overdue and due-soon from each course's
+  // metadata.last_curriculum_review.
+  const { data: allCourses } = await service
+    .from("courses")
+    .select("id, slug, title, status, metadata")
+    .neq("status", "archived");
+
+  const now = Date.now();
+  const oneYearMs = 365 * 24 * 60 * 60 * 1000;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const overdueList: { id: string; slug: string; title: string; daysOverdue: number }[] = [];
+  const dueSoonList: { id: string; slug: string; title: string; daysUntilDue: number }[] = [];
+
+  for (const c of allCourses ?? []) {
+    const meta = (c.metadata ?? {}) as Record<string, unknown>;
+    const lastReview = meta.last_curriculum_review as string | undefined;
+    if (!lastReview) continue;
+    const reviewMs = new Date(lastReview).getTime();
+    if (!Number.isFinite(reviewMs)) continue;
+    const dueMs = reviewMs + oneYearMs;
+    const diffDays = Math.ceil((dueMs - now) / dayMs);
+    if (diffDays < 0) {
+      overdueList.push({ id: c.id, slug: c.slug, title: c.title, daysOverdue: Math.abs(diffDays) });
+    } else if (diffDays <= 30) {
+      dueSoonList.push({ id: c.id, slug: c.slug, title: c.title, daysUntilDue: diffDays });
+    }
+  }
+  overdueList.sort((a, b) => b.daysOverdue - a.daysOverdue);
+  dueSoonList.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
+
   const data: DashboardData = {
     totalUsers,
     activeCourses,
@@ -118,6 +148,12 @@ export default async function AdminDashboardPage() {
     complianceRate: completionRate,
     topCourses,
     recentActivity,
+    curriculumReview: {
+      overdueCount: overdueList.length,
+      dueSoonCount: dueSoonList.length,
+      overdue: overdueList.slice(0, 5),
+      dueSoon: dueSoonList.slice(0, 5),
+    },
   };
 
   return <DashboardClient data={data} />;

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
 
 export async function PATCH(
   request: NextRequest,
@@ -57,6 +58,14 @@ export async function PATCH(
   if (sanitized.organization_id) {
     processRulesForUser(id, "org_changed").catch((err) =>
       console.error("Automation rule processing (org_changed) failed:", err)
+    );
+  }
+
+  // Re-sync required-training enrolments when role or org changes — the user
+  // may now match courses they didn't before.
+  if (sanitized.role || sanitized.organization_id) {
+    enrollUserInAllRequiredCourses(id, auth.user.id).catch((err) =>
+      console.error("Required-training resync (user update) failed:", err)
     );
   }
 

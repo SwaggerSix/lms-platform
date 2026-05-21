@@ -269,7 +269,9 @@ export default function CpeReportClient({ rows, from, to, passingOnly, totalCred
                 filteredRows.map((r) => (
                   <tr key={r.enrollmentId} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-gray-900">{r.learnerName}</p>
+                      <Link href={`/admin/reports/cpe/${r.userId}`} className="text-sm font-medium text-indigo-700 hover:underline">
+                        {r.learnerName}
+                      </Link>
                       <p className="text-xs text-gray-500">{r.learnerEmail}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{r.organization || "—"}</td>
@@ -318,7 +320,9 @@ export default function CpeReportClient({ rows, from, to, passingOnly, totalCred
                 byLearner.map((l) => (
                   <tr key={l.userId} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-gray-900">{l.name}</p>
+                      <Link href={`/admin/reports/cpe/${l.userId}`} className="text-sm font-medium text-indigo-700 hover:underline">
+                        {l.name}
+                      </Link>
                       <p className="text-xs text-gray-500">{l.email}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{l.organization || "—"}</td>

@@ -30,6 +30,12 @@ export interface DashboardData {
   complianceRate: number;
   topCourses: { name: string; completionRate: number }[];
   recentActivity: { id: string; action: string; user: string; target: string; time: string; type: string }[];
+  curriculumReview: {
+    overdue: { id: string; slug: string; title: string; daysOverdue: number }[];
+    dueSoon: { id: string; slug: string; title: string; daysUntilDue: number }[];
+    overdueCount: number;
+    dueSoonCount: number;
+  };
 }
 
 const quickActions = [
@@ -114,6 +120,78 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </div>
         ))}
       </div>
+
+      {/* Curriculum Review Queue */}
+      {(data.curriculumReview.overdueCount > 0 || data.curriculumReview.dueSoonCount > 0) && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Curriculum Review Queue</h3>
+              <p className="mt-0.5 text-xs text-gray-500">
+                Courses approaching or past their 1-year curriculum-review anniversary.
+              </p>
+            </div>
+            <a
+              href="/admin/courses"
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+            >
+              Open course management →
+            </a>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-red-700">Overdue</p>
+                <span className="text-2xl font-bold text-red-700">{data.curriculumReview.overdueCount}</span>
+              </div>
+              {data.curriculumReview.overdue.length === 0 ? (
+                <p className="mt-3 text-xs text-red-700/70">No overdue reviews — nice.</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5">
+                  {data.curriculumReview.overdue.map((c) => (
+                    <li key={c.id} className="flex items-center justify-between text-xs">
+                      <a href={`/admin/courses`} className="truncate text-red-900 hover:underline" title={c.title}>
+                        {c.title}
+                      </a>
+                      <span className="ml-2 shrink-0 font-medium text-red-700">{c.daysOverdue}d overdue</span>
+                    </li>
+                  ))}
+                  {data.curriculumReview.overdueCount > data.curriculumReview.overdue.length && (
+                    <li className="text-xs text-red-700/70">
+                      + {data.curriculumReview.overdueCount - data.curriculumReview.overdue.length} more
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-700">Due in next 30 days</p>
+                <span className="text-2xl font-bold text-amber-700">{data.curriculumReview.dueSoonCount}</span>
+              </div>
+              {data.curriculumReview.dueSoon.length === 0 ? (
+                <p className="mt-3 text-xs text-amber-700/70">Nothing coming up.</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5">
+                  {data.curriculumReview.dueSoon.map((c) => (
+                    <li key={c.id} className="flex items-center justify-between text-xs">
+                      <a href={`/admin/courses`} className="truncate text-amber-900 hover:underline" title={c.title}>
+                        {c.title}
+                      </a>
+                      <span className="ml-2 shrink-0 font-medium text-amber-700">{c.daysUntilDue}d left</span>
+                    </li>
+                  ))}
+                  {data.curriculumReview.dueSoonCount > data.curriculumReview.dueSoon.length && (
+                    <li className="text-xs text-amber-700/70">
+                      + {data.curriculumReview.dueSoonCount - data.curriculumReview.dueSoon.length} more
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

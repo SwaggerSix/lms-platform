@@ -20,6 +20,8 @@ import {
   Loader2,
   CheckCircle2,
   LayoutDashboard,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
@@ -59,6 +61,7 @@ export interface SettingsData {
   theme: "light" | "dark" | "system";
   dateFormat: string;
   dashboardWidgets: Record<string, boolean>;
+  dashboardOrder: string[];
 }
 
 export const DASHBOARD_WIDGETS: { key: string; label: string; description: string }[] = [
@@ -72,6 +75,24 @@ export const DASHBOARD_WIDGETS: { key: string; label: string; description: strin
 
 const widgetEnabled = (widgets: Record<string, boolean>, key: string) =>
   widgets[key] !== false;
+
+function normalizeOrder(saved: string[] | undefined): string[] {
+  const allKeys = DASHBOARD_WIDGETS.map((w) => w.key);
+  if (!saved || saved.length === 0) return allKeys;
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const k of saved) {
+    if (allKeys.includes(k) && !seen.has(k)) {
+      result.push(k);
+      seen.add(k);
+    }
+  }
+  // Append any keys that exist in code but weren't in the saved order
+  for (const k of allKeys) {
+    if (!seen.has(k)) result.push(k);
+  }
+  return result;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Static Data                                                        */
@@ -126,6 +147,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       return acc;
     }, {} as Record<string, boolean>)
   );
+  const [dashboardOrder, setDashboardOrder] = useState<string[]>(normalizeOrder(data.dashboardOrder));
   const [saving, setSaving] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -166,6 +188,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
     theme,
     date_format: dateFormat,
     dashboard_widgets: dashboardWidgets,
+    dashboard_widgets_order: dashboardOrder,
     notifications: notifications.reduce((acc, n) => {
       acc[n.key] = { inApp: n.inApp, email: n.email };
       return acc;
@@ -203,6 +226,19 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         return acc;
       }, {} as Record<string, boolean>)
     );
+    setDashboardOrder(DASHBOARD_WIDGETS.map((w) => w.key));
+  };
+
+  const moveWidget = (key: string, direction: -1 | 1) => {
+    setDashboardOrder((prev) => {
+      const idx = prev.indexOf(key);
+      if (idx === -1) return prev;
+      const target = idx + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
   };
 
   const saveNotifications = async () => {
@@ -453,14 +489,41 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </button>
               </div>
 
-              <div className="mt-6 divide-y divide-gray-100">
-                {DASHBOARD_WIDGETS.map((widget) => {
+              <p className="mt-4 text-xs text-gray-500">
+                Use the arrows to reorder how sections appear, top to bottom, on your dashboard.
+              </p>
+              <div className="mt-2 divide-y divide-gray-100">
+                {dashboardOrder.map((key, idx) => {
+                  const widget = DASHBOARD_WIDGETS.find((w) => w.key === key);
+                  if (!widget) return null;
                   const enabled = widgetEnabled(dashboardWidgets, widget.key);
                   return (
                     <div key={widget.key} className="flex items-start justify-between gap-4 py-4">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{widget.label}</p>
-                        <p className="mt-0.5 text-xs text-gray-500">{widget.description}</p>
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="flex flex-col gap-0.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveWidget(widget.key, -1)}
+                            disabled={idx === 0}
+                            aria-label={`Move ${widget.label} up`}
+                            className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveWidget(widget.key, 1)}
+                            disabled={idx === dashboardOrder.length - 1}
+                            aria-label={`Move ${widget.label} down`}
+                            className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{widget.label}</p>
+                          <p className="mt-0.5 text-xs text-gray-500">{widget.description}</p>
+                        </div>
                       </div>
                       <button
                         type="button"

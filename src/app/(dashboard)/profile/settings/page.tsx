@@ -81,6 +81,9 @@ export default async function SettingsPage() {
     theme: preferences.theme || platformDefaults.default_theme || "system",
     dateFormat: preferences.date_format || platformDefaults.default_date_format || "MM/DD/YYYY",
     dashboardWidgets: preferences.dashboard_widgets || {},
+    dashboardOrder: Array.isArray(preferences.dashboard_widgets_order)
+      ? (preferences.dashboard_widgets_order as string[])
+      : [],
   };
 
   return <SettingsClient data={settingsData} />;

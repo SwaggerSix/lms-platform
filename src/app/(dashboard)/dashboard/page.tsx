@@ -342,7 +342,10 @@ export default async function DashboardPage() {
     };
   });
 
-  const prefs = (dbUser.preferences ?? {}) as { dashboard_widgets?: Record<string, boolean> };
+  const prefs = (dbUser.preferences ?? {}) as {
+    dashboard_widgets?: Record<string, boolean>;
+    dashboard_widgets_order?: string[];
+  };
   const widgetPrefs = prefs.dashboard_widgets ?? {};
   const visibleWidgets = {
     welcome_banner: widgetPrefs.welcome_banner !== false,
@@ -352,6 +355,20 @@ export default async function DashboardPage() {
     deadlines: widgetPrefs.deadlines !== false,
     achievements: widgetPrefs.achievements !== false,
   };
+  const defaultOrder = ["welcome_banner", "stats", "spotlight", "continue_learning", "deadlines", "achievements"];
+  const savedOrder = Array.isArray(prefs.dashboard_widgets_order) ? prefs.dashboard_widgets_order : [];
+  const widgetOrder = (() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const k of savedOrder) {
+      if (defaultOrder.includes(k) && !seen.has(k)) {
+        result.push(k);
+        seen.add(k);
+      }
+    }
+    for (const k of defaultOrder) if (!seen.has(k)) result.push(k);
+    return result;
+  })();
 
   const dashboardData: LearnerDashboardData = {
     userName,
@@ -362,6 +379,7 @@ export default async function DashboardPage() {
     upcomingDeadlines,
     spotlightCourses,
     visibleWidgets,
+    widgetOrder,
   };
 
   console.log("[dashboard] rendering client with data:", {

@@ -128,6 +128,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | "">("");
   const [selectedTypes, setSelectedTypes] = useState<CourseType[]>([]);
+  const [requiredOnly, setRequiredOnly] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -153,6 +154,9 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
     if (selectedTypes.length > 0) {
       result = result.filter((c) => selectedTypes.includes(c.type));
     }
+    if (requiredOnly) {
+      result = result.filter((c) => c.isRequiredForMe);
+    }
 
     switch (sortBy) {
       case "popular":
@@ -170,7 +174,9 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
     }
 
     return result;
-  }, [courses, search, selectedCategories, selectedDifficulty, selectedTypes, sortBy]);
+  }, [courses, search, selectedCategories, selectedDifficulty, selectedTypes, requiredOnly, sortBy]);
+
+  const requiredCount = useMemo(() => courses.filter((c) => c.isRequiredForMe).length, [courses]);
 
   const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
   const paginatedCourses = filteredCourses.slice(
@@ -196,12 +202,13 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
     setSelectedCategories([]);
     setSelectedDifficulty("");
     setSelectedTypes([]);
+    setRequiredOnly(false);
     setSearch("");
     setCurrentPage(1);
   };
 
   const hasActiveFilters =
-    selectedCategories.length > 0 || selectedDifficulty !== "" || selectedTypes.length > 0;
+    selectedCategories.length > 0 || selectedDifficulty !== "" || selectedTypes.length > 0 || requiredOnly;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -231,6 +238,28 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
+        {requiredCount > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setRequiredOnly(!requiredOnly); setCurrentPage(1); }}
+              aria-pressed={requiredOnly}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                requiredOnly
+                  ? "border-rose-600 bg-rose-50 text-rose-700"
+                  : "border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
+              )}
+            >
+              <span className={cn("inline-block h-2 w-2 rounded-full", requiredOnly ? "bg-rose-600" : "bg-rose-400")} />
+              Required for me · {requiredCount}
+            </button>
+            {requiredOnly && (
+              <span className="text-xs text-gray-500">Showing only courses required for your role/organization.</span>
+            )}
+          </div>
+        )}
+
         {/* Mobile filter toggle */}
         <div className="mb-4 flex items-center justify-between lg:hidden">
           <button
