@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { estimateIntervalMinutes } from "@/lib/cron/monitor";
+import { readVercelConfig } from "@/lib/cron/vercel-config";
 
 /**
  * GET /api/admin/alert-config
@@ -38,26 +39,16 @@ export async function GET() {
   // Parse vercel.json's cron entries so the UI can diff configured vs
   // actual run history. Each entry: { name, path, schedule,
   // interval_minutes (heuristic from cron-parser) }.
-  let schedules: Array<{ name: string; path: string; schedule: string; interval_minutes: number }> = [];
-  try {
-    const vp = join(process.cwd(), "vercel.json");
-    if (existsSync(vp)) {
-      const vcfg = JSON.parse(readFileSync(vp, "utf8")) as {
-        crons?: Array<{ path: string; schedule: string }>;
-      };
-      schedules = (vcfg.crons ?? []).map((c) => {
-        const name = (c.path ?? "").split("/").pop() ?? "";
-        return {
-          name,
-          path: c.path,
-          schedule: c.schedule,
-          interval_minutes: estimateIntervalMinutes(c.schedule),
-        };
-      });
-    }
-  } catch {
-    // missing / malformed vercel.json → empty schedules list
-  }
+  const vcfg = readVercelConfig();
+  const schedules = (vcfg.crons ?? []).map((c) => {
+    const name = (c.path ?? "").split("/").pop() ?? "";
+    return {
+      name,
+      path: c.path,
+      schedule: c.schedule,
+      interval_minutes: estimateIntervalMinutes(c.schedule),
+    };
+  });
 
   return NextResponse.json({
     alert_webhook: (thresholds.alert_webhook ?? null) as Record<string, unknown> | null,

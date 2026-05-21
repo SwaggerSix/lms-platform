@@ -60,15 +60,12 @@ export function estimateIntervalMinutes(expr: string): number {
 
 function loadIntervalsFromVercelJson(): Record<string, number> | null {
   try {
-    // Lazy require so this never runs in browser/Edge contexts.
+    // Lazy require so this never runs in browser/Edge contexts. The
+    // vercel-config helper caches by mtime so subsequent callers (e.g.
+    // /api/admin/alert-config) share one read.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("node:fs") as typeof import("node:fs");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const path = require("node:path") as typeof import("node:path");
-    const cfgPath = path.join(process.cwd(), "vercel.json");
-    if (!fs.existsSync(cfgPath)) return null;
-    const raw = fs.readFileSync(cfgPath, "utf8");
-    const cfg = JSON.parse(raw) as { crons?: { path: string; schedule: string }[] };
+    const { readVercelConfig } = require("./vercel-config") as typeof import("./vercel-config");
+    const cfg = readVercelConfig();
     if (!Array.isArray(cfg.crons)) return null;
     const result: Record<string, number> = {};
     for (const entry of cfg.crons) {

@@ -47,19 +47,46 @@ export async function GET(request: NextRequest) {
   // these so we don't emit duplicate options.
   const legacy = new Set(["created", "updated", "deleted", "login", "export"]);
 
+  // Tally the top-level prefix (everything before the first dot) and
+  // also tally every dotted-namespace path one level deeper. That gives
+  // the UI both rollup ("replay") and per-leaf ("replay.cron_alerts")
+  // options to filter by. Three-level actions like
+  // "replay.cron_alerts.compliance-recurrence" still roll up to the
+  // depth-2 "replay.cron_alerts" entry — we cap at depth 2 to keep the
+  // dropdown bounded while still distinguishing the most useful split
+  // (per-job replay variants).
   const counts = new Map<string, number>();
+  const children = new Map<string, Set<string>>();
   for (const row of data ?? []) {
     const action = String((row as any).action ?? "");
-    const dot = action.indexOf(".");
-    if (dot <= 0) continue;
-    const prefix = action.slice(0, dot).toLowerCase();
-    if (legacy.has(prefix)) continue;
-    counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
+    const parts = action.split(".");
+    if (parts.length < 2) continue;
+    const top = parts[0].toLowerCase();
+    if (legacy.has(top)) continue;
+
+    counts.set(top, (counts.get(top) ?? 0) + 1);
+    if (parts.length >= 2) {
+      const depth2 = `${parts[0]}.${parts[1]}`.toLowerCase();
+      counts.set(depth2, (counts.get(depth2) ?? 0) + 1);
+      const set = children.get(top) ?? new Set();
+      set.add(depth2);
+      children.set(top, set);
+    }
   }
 
-  const namespaces = Array.from(counts.entries())
-    .map(([prefix, count]) => ({ prefix, count }))
-    .sort((a, b) => b.count - a.count);
+  // Emit as a flat list with a `parent` field so the client can render a
+  // tree. Depth-2 entries point at their depth-1 parent.
+  const namespaces: Array<{ prefix: string; count: number; parent: string | null }> = [];
+  for (const [prefix, count] of counts.entries()) {
+    const parent = prefix.includes(".") ? prefix.split(".")[0] : null;
+    namespaces.push({ prefix, count, parent });
+  }
+  namespaces.sort((a, b) => {
+    // Roots first (parent === null), then their children below.
+    if (a.parent === null && b.parent !== null) return -1;
+    if (a.parent !== null && b.parent === null) return 1;
+    return b.count - a.count;
+  });
 
   return NextResponse.json({
     namespaces,

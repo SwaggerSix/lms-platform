@@ -164,6 +164,14 @@ export default function CronHealthClient() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Screen-reader-only hint shared by every Replay button on this
+          page. Visual users get the red accent + tooltip; SR users get
+          this longer explanation of what "Replay" actually does. */}
+      <span id="replay-side-effect" className="sr-only">
+        Re-dispatches recent cron failures via the configured alert webhook.
+        This hits an external system (Slack, PagerDuty, or generic) and may
+        page on-call.
+      </span>
       <div className="mx-auto max-w-5xl px-6 py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -246,8 +254,9 @@ export default function CronHealthClient() {
                   alert(`Replay failed: ${json.error || res.statusText}`);
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
               title="Re-dispatch the last 24h of failures via the configured alert webhook"
+              aria-describedby="replay-side-effect"
             >
               Replay 24h
             </button>
@@ -634,6 +643,7 @@ export default function CronHealthClient() {
                                         }}
                                         className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
                                         title={`Re-dispatch the last 24h of failures for ${job.name} via the configured webhook`}
+                                        aria-describedby="replay-side-effect"
                                       >
                                         Replay
                                       </button>

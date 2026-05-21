@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchAlertWebhook } from "@/lib/cron/monitor";
+import { cronJobBasenames } from "@/lib/cron/vercel-config";
 import { logAudit } from "@/lib/audit";
 
 /**
@@ -101,22 +102,8 @@ export async function POST(request: NextRequest) {
       .gte("created_at", since);
     const knownSet = new Set(((known ?? []) as any[]).map((r) => r.job_name));
 
-    // Augment from vercel.json (best-effort; if the file is missing we
-    // fall back to cron_runs-only).
-    try {
-      const vp = join(process.cwd(), "vercel.json");
-      if (existsSync(vp)) {
-        const vcfg = JSON.parse(readFileSync(vp, "utf8")) as {
-          crons?: Array<{ path: string }>;
-        };
-        for (const c of vcfg.crons ?? []) {
-          const name = (c.path ?? "").split("/").pop() ?? "";
-          if (name) knownSet.add(name);
-        }
-      }
-    } catch {
-      // malformed vercel.json → ignore, use cron_runs-only set
-    }
+    // Augment from vercel.json (cached in-process via readVercelConfig).
+    for (const name of cronJobBasenames()) knownSet.add(name);
 
     const unknown = jobFilter.filter((j) => !knownSet.has(j));
     if (unknown.length > 0) {

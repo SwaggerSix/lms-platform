@@ -59,7 +59,9 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("All");
-  const [remoteNamespaces, setRemoteNamespaces] = useState<{ prefix: string; count: number }[]>([]);
+  const [remoteNamespaces, setRemoteNamespaces] = useState<
+    Array<{ prefix: string; count: number; parent?: string | null }>
+  >([]);
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -222,6 +224,17 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
                   .map(([prefix, count]) => (
                     <option key={prefix} value={prefix}>
                       {prefix} ({count})
+                    </option>
+                  ))}
+              </optgroup>
+            )}
+            {remoteNamespaces.some((n) => n.parent) && (
+              <optgroup label="Sub-namespaces">
+                {remoteNamespaces
+                  .filter((n) => n.parent && !["created", "updated", "deleted", "login", "export"].includes(n.parent))
+                  .map((n) => (
+                    <option key={`sub-${n.prefix}`} value={n.prefix}>
+                      &nbsp;&nbsp;↳ {n.prefix} ({n.count})
                     </option>
                   ))}
               </optgroup>
