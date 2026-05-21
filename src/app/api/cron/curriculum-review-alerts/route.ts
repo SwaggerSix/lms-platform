@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
+import { logCronRun } from "@/lib/cron/monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handler(request: NextRequest) {
+  const startedAt = Date.now();
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -151,6 +153,13 @@ async function handler(request: NextRequest) {
       console.error("[curriculum-review-alerts] course metadata update error", updateErr);
     }
   }
+
+  await logCronRun({
+    job_name: "curriculum-review-alerts",
+    status: "success",
+    duration_ms: Date.now() - startedAt,
+    records_processed: notifications.length,
+  }).catch(() => {});
 
   return NextResponse.json({
     message: "Curriculum review alerts processed",

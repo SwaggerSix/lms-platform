@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   Search,
   Download,
@@ -56,10 +56,22 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("All");
+  const [remoteNamespaces, setRemoteNamespaces] = useState<{ prefix: string; count: number }[]>([]);
 
-  // Discover namespace prefixes (e.g. "export", "refresh") in the data so
-  // newer dotted-namespace actions surface in the dropdown alongside the
-  // hardcoded legacy categories. Counts in the label hint at activity.
+  // Fetch the global namespace list once on mount so the dropdown reflects
+  // every action prefix in audit_logs, not just the ones on the current page.
+  useEffect(() => {
+    fetch("/api/admin/audit-log-namespaces")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.namespaces) setRemoteNamespaces(json.namespaces);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Discover namespace prefixes from on-page entries as a fallback. Merge
+  // with the server-side list so the dropdown stays useful even if the
+  // namespaces endpoint is unavailable.
   const dynamicNamespaces = useMemo(() => {
     const counts = new Map<string, number>();
     for (const e of entries) {
@@ -68,10 +80,15 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
       const prefix = e.action.slice(0, dot).toLowerCase();
       counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
     }
+    for (const ns of remoteNamespaces) {
+      // Prefer the higher count between local sample and server-side total.
+      const existing = counts.get(ns.prefix) ?? 0;
+      counts.set(ns.prefix, Math.max(existing, ns.count));
+    }
     return Array.from(counts.entries())
       .filter(([prefix]) => !["created", "updated", "deleted", "login", "export"].includes(prefix))
       .sort((a, b) => b[1] - a[1]);
-  }, [entries]);
+  }, [entries, remoteNamespaces]);
   const [entityFilter, setEntityFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);

@@ -28,6 +28,9 @@ const EXPECTED_INTERVALS: Record<string, number> = {
   "enrollment-rules": 60, // hourly
   "compute-recommendations": 24 * 60, // daily
   "scheduled-reports": 60, // hourly
+  "curriculum-review-alerts": 24 * 60, // daily
+  "compliance-recurrence": 24 * 60, // daily
+  "refresh-audit-view": 24 * 60, // daily
 };
 
 // Allow a grace period multiplier before alerting (e.g. 2x the expected interval)

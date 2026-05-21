@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { withCronMonitoring } from "@/lib/cron/monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -27,21 +28,24 @@ async function handler(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const service = createServiceClient();
-
-  // Try CONCURRENT refresh first (requires the unique index from migration
-  // 20260318100035); fall back to a plain refresh if the index is missing.
-  const { error: concErr } = await service.rpc("notification_audit_refresh_concurrent");
-  if (!concErr) {
-    return NextResponse.json({ ok: true, concurrent: true });
-  }
-
-  const { error: plainErr } = await service.rpc("notification_audit_refresh_plain");
-  if (plainErr) {
+  try {
+    const result = await withCronMonitoring("refresh-audit-view", async () => {
+      const service = createServiceClient();
+      const { error: concErr } = await service.rpc("notification_audit_refresh_concurrent");
+      if (!concErr) {
+        return { concurrent: true, records_processed: 1 };
+      }
+      const { error: plainErr } = await service.rpc("notification_audit_refresh_plain");
+      if (plainErr) {
+        throw new Error(`Refresh failed (concurrent: ${concErr.message}; plain: ${plainErr.message})`);
+      }
+      return { concurrent: false, records_processed: 1 };
+    });
+    return NextResponse.json({ ok: true, ...result });
+  } catch (err) {
     return NextResponse.json(
-      { error: "refresh failed", detail: plainErr.message, concurrent_error: concErr.message },
+      { error: err instanceof Error ? err.message : "refresh failed" },
       { status: 500 }
     );
   }
-  return NextResponse.json({ ok: true, concurrent: false });
 }

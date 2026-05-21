@@ -41,26 +41,16 @@ export async function GET(request: NextRequest) {
   const tenantUserIds = tenantScope?.userIds ?? null;
   const tenantId = tenantScope?.tenantId ?? null;
 
-  // If scoped, fetch the workflow ids owned by this tenant so we can filter
-  // workflow step logs via run → workflow. Workflows with tenant_id IS NULL
-  // are platform-wide and visible to all scoped admins.
-  let scopedWorkflowRunIds: string[] | null = null;
-  if (tenantId) {
-    const { data: scopedWorkflows } = await service
-      .from("workflows")
-      .select("id")
-      .or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
-    const workflowIds = (scopedWorkflows ?? []).map((w: any) => w.id);
-    if (workflowIds.length > 0) {
-      const { data: runs } = await service
-        .from("workflow_runs")
-        .select("id")
-        .in("workflow_id", workflowIds);
-      scopedWorkflowRunIds = (runs ?? []).map((r: any) => r.id);
-    } else {
-      scopedWorkflowRunIds = [];
-    }
-  }
+  // Workflow step logs now carry tenant_id directly (denormalized via the
+  // trigger added in migration 20260318100038). A NULL tenant_id means
+  // platform-wide and is visible to every scoped admin.
+  // Typed loosely because the helper is applied at various chain stages
+  // (.select().eq().range()) — the supabase-js type for filter builders
+  // is too narrow to express that uniformly.
+  const applyWorkflowTenantFilter = <T>(q: T): T => {
+    if (!tenantId) return q;
+    return (q as any).or(`tenant_id.eq.${tenantId},tenant_id.is.null`) as T;
+  };
 
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK
   // failures into a single CSV (two sections separated by a blank line).
@@ -75,18 +65,14 @@ export async function GET(request: NextRequest) {
     if (tenantUserIds) {
       ruleCsvQuery = ruleCsvQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
     }
-    let workflowCsvQuery = service
-      .from("workflow_step_logs")
-      .select("id, run_id, step_id, error_message, created_at")
-      .eq("status", "failed")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-    if (scopedWorkflowRunIds !== null) {
-      workflowCsvQuery = workflowCsvQuery.in(
-        "run_id",
-        scopedWorkflowRunIds.length > 0 ? scopedWorkflowRunIds : ["__none__"]
-      );
-    }
+    const workflowCsvQuery = applyWorkflowTenantFilter(
+      service
+        .from("workflow_step_logs")
+        .select("id, run_id, step_id, error_message, created_at")
+        .eq("status", "failed")
+        .order("created_at", { ascending: false })
+        .limit(5000) as any
+    );
     const [
       { data: ruleAll, error: ruleAllErr },
       { data: workflowAll, error: workflowAllErr },
@@ -166,18 +152,14 @@ export async function GET(request: NextRequest) {
   if (tenantUserIds) {
     rulePageQuery = rulePageQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
   }
-  let workflowPageQuery = service
-    .from("workflow_step_logs")
-    .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
-    .eq("status", "failed")
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-  if (scopedWorkflowRunIds !== null) {
-    workflowPageQuery = workflowPageQuery.in(
-      "run_id",
-      scopedWorkflowRunIds.length > 0 ? scopedWorkflowRunIds : ["__none__"]
-    );
-  }
+  const workflowPageQuery = applyWorkflowTenantFilter(
+    service
+      .from("workflow_step_logs")
+      .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
+      .eq("status", "failed")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1) as any
+  );
   const [
     { data: ruleFailures, error: ruleErr, count: ruleCount },
     { data: workflowFailures, error: workflowErr, count: workflowCount },
@@ -272,7 +254,8 @@ export async function GET(request: NextRequest) {
       ? {
           tenant_id: tenantId,
           user_count: tenantUserIds?.length ?? 0,
-          workflow_run_count: scopedWorkflowRunIds?.length ?? 0,
+          /** Workflow logs filtered directly via workflow_step_logs.tenant_id (own tenant + NULL/platform-wide). */
+          workflow_logs_scoped: true,
         }
       : null,
     rules: {
