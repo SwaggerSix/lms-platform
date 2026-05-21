@@ -137,9 +137,14 @@ export async function POST(request: NextRequest) {
   );
 
   if (filteredTargets.length === 0) {
+    // Not an error — the broadcast was processed, just no one was eligible.
     return NextResponse.json(
-      { error: "All target users have opted out of announcements" },
-      { status: 400 }
+      {
+        sent: 0,
+        skipped: targetIds.length,
+        message: "All target users have opted out of announcements; no notifications sent.",
+      },
+      { status: 200 }
     );
   }
 

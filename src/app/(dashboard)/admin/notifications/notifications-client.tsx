@@ -273,13 +273,22 @@ export default function NotificationsClient({ announcements, templates }: Notifi
           <h1 className="text-2xl font-bold text-gray-900">Announcements &amp; Notifications</h1>
           <p className="mt-1 text-sm text-gray-500">Manage platform announcements, notification templates, and delivery settings</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Create Announcement
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/admin/notifications/preview"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            title="Preview every transactional email template with sample data"
+          >
+            Email Previews
+          </a>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Create Announcement
+          </button>
+        </div>
       </div>
 
       <div className="border-b border-gray-200">
