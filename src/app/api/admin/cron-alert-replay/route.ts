@@ -33,12 +33,22 @@ import { logAudit } from "@/lib/audit";
  * dry_run if it's enabled.
  */
 
+/**
+ * Returns the configured replay-suppression window in minutes.
+ * Semantics:
+ *   - 0 (explicit zero in config): idempotency is fully disabled.
+ *     Operator-acknowledged "I want every click to fire."
+ *   - undefined / missing key / negative / non-numeric: defaults to 5.
+ *   - positive integer: use as-is.
+ */
 function loadReplayDedupMinutes(): number {
   try {
     const p = join(process.cwd(), "cron-thresholds.json");
     if (!existsSync(p)) return 5;
     const cfg = JSON.parse(readFileSync(p, "utf8")) as { replay?: { dedup_minutes?: number } };
-    const v = Number(cfg.replay?.dedup_minutes);
+    const raw = cfg.replay?.dedup_minutes;
+    if (raw === 0) return 0; // explicit opt-out
+    const v = Number(raw);
     if (!Number.isFinite(v) || v < 0) return 5;
     return Math.floor(v);
   } catch {
@@ -71,10 +81,36 @@ export async function POST(request: NextRequest) {
     // empty / malformed body → use defaults
   }
 
+
   const cutoffMs = Date.now() - hours * 60 * 60 * 1000;
   const cutoffIso = new Date(cutoffMs).toISOString();
 
   const service = createServiceClient();
+
+  // Validate the job filter against the set of jobs we actually have run
+  // history for. A typo would otherwise silently return "no failures for
+  // <typo>" — correct but unhelpful. Look at distinct job_names in
+  // cron_runs over the last 30 days as the source of truth.
+  if (jobFilter && jobFilter.length > 0) {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: known } = await service
+      .from("cron_runs")
+      .select("job_name")
+      .gte("created_at", since);
+    const knownSet = new Set(((known ?? []) as any[]).map((r) => r.job_name));
+    const unknown = jobFilter.filter((j) => !knownSet.has(j));
+    if (unknown.length > 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Unknown job(s)",
+          unknown_jobs: unknown,
+          known_jobs: Array.from(knownSet).sort(),
+        },
+        { status: 400 }
+      );
+    }
+  }
 
   // Idempotency check: look for a recent successful replay in audit_logs.
   // Suppress the new one unless ?force is set. Window from

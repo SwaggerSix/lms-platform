@@ -66,6 +66,12 @@ interface AlertConfigResponse {
   } | null;
   has_webhook_url: boolean;
   has_pagerduty_routing_key: boolean;
+  schedules?: Array<{
+    name: string;
+    path: string;
+    schedule: string;
+    interval_minutes: number;
+  }>;
 }
 
 export default function CronHealthClient() {
@@ -395,6 +401,72 @@ export default function CronHealthClient() {
               })}
             </div>
 
+            {alertConfig?.schedules && alertConfig.schedules.length > 0 && (() => {
+              // Diff: every schedule from vercel.json should appear in
+              // /api/cron/health's jobs list. A schedule with no matching
+              // job means the cron is configured but has never logged a
+              // run (or the job_name doesn't match path basename). A job
+              // without a schedule entry is the inverse (legacy runs from
+              // a removed cron).
+              const runningNames = new Set(data.jobs.map((j) => j.name));
+              const configuredNames = new Set(alertConfig.schedules.map((s) => s.name));
+              const configuredButNotRunning = alertConfig.schedules.filter((s) => !runningNames.has(s.name));
+              const runningButNotConfigured = data.jobs.filter((j) => !configuredNames.has(j.name));
+              if (configuredButNotRunning.length === 0 && runningButNotConfigured.length === 0) {
+                return null;
+              }
+              return (
+                <div className="overflow-hidden rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm">
+                  <header className="border-b border-amber-100 px-5 py-3">
+                    <h2 className="text-sm font-semibold text-amber-900">
+                      Configured vs running mismatch
+                    </h2>
+                    <p className="mt-0.5 text-xs text-amber-800">
+                      Diff between <code className="rounded bg-white/60 px-1">vercel.json</code> crons and{" "}
+                      <code className="rounded bg-white/60 px-1">cron_runs</code> history.
+                    </p>
+                  </header>
+                  <div className="grid grid-cols-1 gap-4 px-5 py-3 md:grid-cols-2">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-amber-900">
+                        Configured but never ran ({configuredButNotRunning.length})
+                      </p>
+                      {configuredButNotRunning.length === 0 ? (
+                        <p className="mt-1 text-xs text-amber-700">None.</p>
+                      ) : (
+                        <ul className="mt-1 space-y-1 text-xs text-amber-900">
+                          {configuredButNotRunning.map((s) => (
+                            <li key={s.name} className="font-mono">
+                              {s.name} <span className="text-amber-700">— {s.schedule}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-amber-900">
+                        Running but not configured ({runningButNotConfigured.length})
+                      </p>
+                      {runningButNotConfigured.length === 0 ? (
+                        <p className="mt-1 text-xs text-amber-700">None.</p>
+                      ) : (
+                        <ul className="mt-1 space-y-1 text-xs text-amber-900">
+                          {runningButNotConfigured.map((j) => (
+                            <li key={j.name} className="font-mono">
+                              {j.name}{" "}
+                              <span className="text-amber-700">
+                                — last {j.last_run === "never" ? "never" : formatRelative(j.last_run)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <header className="border-b border-gray-100 px-5 py-3">
                 <h2 className="text-sm font-semibold text-gray-900">Jobs</h2>
@@ -484,15 +556,57 @@ export default function CronHealthClient() {
                                       p95: <strong>{formatMs(hist.p95_duration_ms)}</strong>
                                     </span>
                                     </div>
-                                    <a
-                                      href={`/api/cron/history?job=${encodeURIComponent(job.name)}&format=csv&limit=200`}
-                                      download
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                    >
-                                      <Download className="h-3.5 w-3.5" />
-                                      Export CSV
-                                    </a>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (
+                                            !confirm(
+                                              `Replay alerts from the last 24h for ${job.name} via the configured webhook?`
+                                            )
+                                          )
+                                            return;
+                                          const doReplay = async (force: boolean) => {
+                                            const res = await fetch("/api/admin/cron-alert-replay", {
+                                              method: "POST",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ hours: 24, job: job.name, force }),
+                                            });
+                                            const json = await res.json().catch(() => ({}));
+                                            return { res, json };
+                                          };
+                                          let { res, json } = await doReplay(false);
+                                          if (res.status === 429 && json?.reason === "replay_recently_fired") {
+                                            if (confirm(`${json.message}\n\nFire anyway?`)) {
+                                              ({ res, json } = await doReplay(true));
+                                            } else return;
+                                          }
+                                          if (res.ok) {
+                                            alert(
+                                              json.replayed_alerts > 0
+                                                ? `Replayed ${json.replayed_alerts} alerts for ${job.name}.`
+                                                : json.message || "No alerts replayed."
+                                            );
+                                          } else {
+                                            alert(`Replay failed: ${json.error || res.statusText}`);
+                                          }
+                                        }}
+                                        className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                        title={`Re-dispatch the last 24h of failures for ${job.name}`}
+                                      >
+                                        Replay
+                                      </button>
+                                      <a
+                                        href={`/api/cron/history?job=${encodeURIComponent(job.name)}&format=csv&limit=200`}
+                                        download
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                      >
+                                        <Download className="h-3.5 w-3.5" />
+                                        Export CSV
+                                      </a>
+                                    </div>
                                   </div>
                                   {hist.runs.length > 0 && (
                                     <div>
