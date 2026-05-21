@@ -388,7 +388,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Email Footer Text</label>
             <textarea value={emailFooter} onChange={(e) => setEmailFooter(e.target.value)} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               disabled={testEmailStatus === "sending"}
               onClick={handleSendTestEmail}
@@ -397,6 +397,16 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               {testEmailStatus === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {testEmailStatus === "sending" ? "Sending..." : testEmailStatus === "success" ? "Test Email Sent!" : testEmailStatus === "error" ? "Failed to Send" : "Send Test Email"}
             </button>
+            <a
+              href="/api/email?template=recertification_reminder&preview=html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              title="Open the recertification reminder template in a new tab with sample data"
+            >
+              <Send className="h-4 w-4" />
+              Preview Recertification Email
+            </a>
             {testEmailStatus === "success" && <span className="text-sm text-green-600">Check your inbox</span>}
             {testEmailStatus === "error" && <span className="text-sm text-red-600">Could not send test email</span>}
           </div>

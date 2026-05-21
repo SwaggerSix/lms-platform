@@ -111,6 +111,7 @@ type TabKey = "personal" | "dashboard" | "notifications" | "security" | "prefere
 
 const INITIAL_NOTIFICATIONS: NotificationSetting[] = [
   { key: "enrollment", label: "Enrollment Confirmations", inApp: true, email: true },
+  { key: "approvals", label: "Approval Decisions", inApp: true, email: false },
   { key: "due_dates", label: "Due Date Reminders", inApp: true, email: true },
   { key: "recertification", label: "Recertification Reminders (compliance)", inApp: true, email: true },
   { key: "completions", label: "Course Completions", inApp: true, email: true },

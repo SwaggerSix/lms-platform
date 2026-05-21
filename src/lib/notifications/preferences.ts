@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 export type NotificationCategory =
   | "enrollment"
+  | "approvals"
   | "due_dates"
   | "recertification"
   | "completions"

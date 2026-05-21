@@ -10,6 +10,7 @@ import {
   dueDateReminder,
   iltSessionReminder,
   scheduledReportDelivery,
+  recertificationReminder,
   type EmailTemplate,
 } from "@/lib/email/templates";
 import { sendEmail } from "@/lib/email/sender";
@@ -22,7 +23,8 @@ type TemplateType =
   | "certification_expiry"
   | "due_date_reminder"
   | "ilt_session_reminder"
-  | "scheduled_report";
+  | "scheduled_report"
+  | "recertification_reminder";
 
 function getTemplate(type: TemplateType, params: Record<string, unknown>): EmailTemplate {
   switch (type) {
@@ -42,6 +44,8 @@ function getTemplate(type: TemplateType, params: Record<string, unknown>): Email
       return iltSessionReminder(params as Parameters<typeof iltSessionReminder>[0]);
     case "scheduled_report":
       return scheduledReportDelivery(params as Parameters<typeof scheduledReportDelivery>[0]);
+    case "recertification_reminder":
+      return recertificationReminder(params as Parameters<typeof recertificationReminder>[0]);
     default:
       throw new Error(`Unknown template type: ${type}`);
   }
@@ -124,6 +128,7 @@ export async function GET(request: NextRequest) {
         "due_date_reminder",
         "ilt_session_reminder",
         "scheduled_report",
+        "recertification_reminder",
       ],
     });
   }
@@ -185,6 +190,14 @@ export async function GET(request: NextRequest) {
       reportName: "Weekly Completion Summary",
       period: "March 9-15, 2026",
       downloadUrl: "https://learnhub.gov/admin/reports/download/weekly-2026-11",
+    },
+    recertification_reminder: {
+      learnerName: "Jane Smith",
+      courseName: "HIPAA Privacy & Security",
+      regulation: "HIPAA",
+      daysUntilExpiry: 30,
+      expiryDate: "June 20, 2026",
+      courseUrl: "https://learnhub.gov/learn/catalog/hipaa-privacy",
     },
   };
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,16 @@ async function handler(request: NextRequest) {
   }
 
   const adminIds = (admins ?? []).map((a) => a.id);
-  if (adminIds.length === 0) {
+  // Filter to admins who haven't opted out of the "announcements" channel.
+  // Curriculum-review alerts are admin operational pings, classified as
+  // announcements in the settings panel taxonomy.
+  const adminPrefsByUser = adminIds.length > 0
+    ? await fetchNotificationPrefs(service, adminIds)
+    : new Map();
+  const optedInAdminIds = adminIds.filter((id) =>
+    userMaySend(adminPrefsByUser.get(id), "announcements", "inApp")
+  );
+  if (optedInAdminIds.length === 0) {
     return NextResponse.json({ message: "No active admins to notify", checked: courses?.length ?? 0 });
   }
 
@@ -96,7 +106,7 @@ async function handler(request: NextRequest) {
     const daysLeft = Math.max(0, Math.ceil(msUntilOneYear / (24 * 60 * 60 * 1000)));
     const label = trigger === "week_2" ? "2 weeks" : "1 month";
 
-    for (const adminId of adminIds) {
+    for (const adminId of optedInAdminIds) {
       notifications.push({
         user_id: adminId,
         type: "reminder",

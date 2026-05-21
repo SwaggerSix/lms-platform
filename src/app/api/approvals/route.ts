@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 import type { ApprovalStatus } from "@/types/database";
 
 /**
@@ -202,14 +203,18 @@ export async function PATCH(request: NextRequest) {
           enrolled_at: new Date().toISOString(),
         });
 
-        // Notify the user
-        await service.from("notifications").insert({
-          user_id: approval.learner_id,
-          title: "Enrollment Approved",
-          body: "Your enrollment request has been approved. You can now start the course.",
-          type: "enrollment",
-          is_read: false,
-        });
+        // Notify the user (gated on their "approvals" preference).
+        const prefsByUser = await fetchNotificationPrefs(service, [approval.learner_id]);
+        if (userMaySend(prefsByUser.get(approval.learner_id), "approvals", "inApp")) {
+          await service.from("notifications").insert({
+            user_id: approval.learner_id,
+            title: "Enrollment Approved",
+            body: "Your enrollment request has been approved. You can now start the course.",
+            type: "enrollment",
+            link: `/learn/my-courses`,
+            is_read: false,
+          });
+        }
       }
     }
 
@@ -217,18 +222,22 @@ export async function PATCH(request: NextRequest) {
     if (body.status === "rejected") {
       const { data: approval } = await service
         .from("enrollment_approvals")
-        .select("learner_id")
+        .select("learner_id, course_id")
         .eq("id", body.id)
         .single();
 
       if (approval) {
-        await service.from("notifications").insert({
-          user_id: approval.learner_id,
-          title: "Enrollment Rejected",
-          body: body.rejection_reason || "Your enrollment request was not approved.",
-          type: "enrollment",
-          is_read: false,
-        });
+        const prefsByUser = await fetchNotificationPrefs(service, [approval.learner_id]);
+        if (userMaySend(prefsByUser.get(approval.learner_id), "approvals", "inApp")) {
+          await service.from("notifications").insert({
+            user_id: approval.learner_id,
+            title: "Enrollment Rejected",
+            body: body.rejection_reason || "Your enrollment request was not approved.",
+            type: "enrollment",
+            link: `/learn/catalog`,
+            is_read: false,
+          });
+        }
       }
     }
 

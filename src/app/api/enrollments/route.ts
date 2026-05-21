@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
+import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -232,17 +233,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
-    // Notify the manager if one exists
+    // Notify the manager if one exists (gated on the manager's "approvals" pref).
     if (learnerProfile?.manager_id) {
       try {
-        await service.from("notifications").insert({
-          user_id: learnerProfile.manager_id,
-          type: "enrollment",
-          title: "Enrollment Request",
-          body: "A team member has requested enrollment in a course that requires approval.",
-          link: "/manager/approvals",
-          is_read: false,
-        });
+        const prefsByUser = await fetchNotificationPrefs(service, [learnerProfile.manager_id]);
+        if (userMaySend(prefsByUser.get(learnerProfile.manager_id), "approvals", "inApp")) {
+          await service.from("notifications").insert({
+            user_id: learnerProfile.manager_id,
+            type: "enrollment",
+            title: "Enrollment Request",
+            body: "A team member has requested enrollment in a course that requires approval.",
+            link: "/manager/approvals",
+            is_read: false,
+          });
+        }
       } catch {
         // Non-critical: don't fail the approval request if notification fails
       }
