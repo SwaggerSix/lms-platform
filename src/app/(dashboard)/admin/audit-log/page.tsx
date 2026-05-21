@@ -1,6 +1,8 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -51,11 +53,29 @@ export default async function AuditLogPage() {
     redirect("/dashboard");
   }
 
-  const { data: auditRows } = await service
+  // Tenant scoping: super_admin/admin see all by default. An explicit
+  // x-tenant-id header narrows them to a specific tenant. Non-admin roles
+  // are blocked above. Once a proper tenant-admin role exists, this branch
+  // will narrow them automatically via tenant_memberships.
+  const hdrs = await headers();
+  const headerTenantId = hdrs.get("x-tenant-id");
+  let tenantId: string | null = headerTenantId || null;
+  if (!tenantId && dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+    const scope = await getTenantScope(dbUser.id, dbUser.role).catch(() => null);
+    tenantId = scope?.tenantId ?? null;
+  }
+
+  let auditQuery = service
     .from("audit_logs")
     .select("*, user:users!user_id(id, first_name, last_name, email)")
     .order("created_at", { ascending: false })
     .limit(100);
+  if (tenantId) {
+    // Include platform-level rows (tenant_id IS NULL) so the tenant admin
+    // still sees system events that affect them.
+    auditQuery = auditQuery.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+  }
+  const { data: auditRows } = await auditQuery;
 
   const entries: AuditEntry[] = (auditRows ?? []).map((row: any) => {
     const u = row.user as any;

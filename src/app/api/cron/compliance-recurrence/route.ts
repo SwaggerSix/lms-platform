@@ -4,7 +4,7 @@ import { readRequiredFor, recertificationTier, computeRecertExpiry } from "@/lib
 import { sendEmail } from "@/lib/email/sender";
 import { recertificationReminder } from "@/lib/email/templates";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
-import { logCronRun } from "@/lib/cron/monitor";
+import { withCronMonitoring } from "@/lib/cron/monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +43,25 @@ async function handler(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const startedAt = Date.now();
+  try {
+    const result = await withCronMonitoring("compliance-recurrence", runComplianceRecurrence);
+    return NextResponse.json({ message: "Compliance recurrence sweep complete", ...result });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "compliance-recurrence failed" },
+      { status: 500 }
+    );
+  }
+}
+
+async function runComplianceRecurrence(): Promise<{
+  records_processed: number;
+  courses_scanned: number;
+  learners_reenrolled: number;
+  notifications_sent: number;
+  emails_sent: number;
+  errors: string[];
+}> {
   const service = createServiceClient();
   const { data: courses } = await service
     .from("courses")
@@ -360,20 +378,17 @@ async function handler(request: NextRequest) {
     }
   }
 
-  await logCronRun({
-    job_name: "compliance-recurrence",
-    status: errors.length > 0 ? "failure" : "success",
-    duration_ms: Date.now() - startedAt,
+  // withCronMonitoring wraps timing + logCronRun automatically using
+  // records_processed from the returned object. If errors[] is non-empty
+  // the cron is still recorded as success since we made forward progress
+  // on most rows; treat per-course errors as soft warnings via the
+  // returned payload rather than throwing.
+  return {
     records_processed: reEnrolled + notificationsSent,
-    error_message: errors.length > 0 ? errors.join("; ").slice(0, 1000) : undefined,
-  }).catch(() => {});
-
-  return NextResponse.json({
-    message: "Compliance recurrence sweep complete",
     courses_scanned: scanned,
     learners_reenrolled: reEnrolled,
     notifications_sent: notificationsSent,
     emails_sent: emailsSent,
     errors,
-  });
+  };
 }

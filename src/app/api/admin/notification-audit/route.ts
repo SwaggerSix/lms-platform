@@ -41,13 +41,13 @@ export async function GET(request: NextRequest) {
   const tenantUserIds = tenantScope?.userIds ?? null;
   const tenantId = tenantScope?.tenantId ?? null;
 
-  // Workflow step logs now carry tenant_id directly (denormalized via the
-  // trigger added in migration 20260318100038). A NULL tenant_id means
-  // platform-wide and is visible to every scoped admin.
-  // Typed loosely because the helper is applied at various chain stages
-  // (.select().eq().range()) — the supabase-js type for filter builders
-  // is too narrow to express that uniformly.
-  const applyWorkflowTenantFilter = <T>(q: T): T => {
+  // Both workflow_step_logs (migration 20260318100038) and
+  // enrollment_rule_logs (migration 20260318100040) now carry tenant_id
+  // directly. A NULL tenant_id means platform-wide and is visible to every
+  // scoped admin. The same helper applies to both — typed loosely because
+  // supabase-js's filter-builder types don't compose cleanly through a
+  // generic helper.
+  const applyTenantFilter = <T>(q: T): T => {
     if (!tenantId) return q;
     return (q as any).or(`tenant_id.eq.${tenantId},tenant_id.is.null`) as T;
   };
@@ -55,17 +55,16 @@ export async function GET(request: NextRequest) {
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK
   // failures into a single CSV (two sections separated by a blank line).
   if (format === "csv") {
-    let ruleCsvQuery = service
-      .from("enrollment_rule_logs")
-      .select("id, rule_id, user_id, error_message, created_at")
-      .eq("action_type", "send_notification")
-      .eq("status", "error")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-    if (tenantUserIds) {
-      ruleCsvQuery = ruleCsvQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
-    }
-    const workflowCsvQuery = applyWorkflowTenantFilter(
+    const ruleCsvQuery = applyTenantFilter(
+      service
+        .from("enrollment_rule_logs")
+        .select("id, rule_id, user_id, error_message, created_at")
+        .eq("action_type", "send_notification")
+        .eq("status", "error")
+        .order("created_at", { ascending: false })
+        .limit(5000) as any
+    );
+    const workflowCsvQuery = applyTenantFilter(
       service
         .from("workflow_step_logs")
         .select("id, run_id, step_id, error_message, created_at")
@@ -142,17 +141,16 @@ export async function GET(request: NextRequest) {
   }
 
   // Rules engine failures (paginated rows + all-time aggregation).
-  let rulePageQuery = service
-    .from("enrollment_rule_logs")
-    .select("id, rule_id, user_id, action_type, status, error_message, created_at", { count: "exact" })
-    .eq("action_type", "send_notification")
-    .eq("status", "error")
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-  if (tenantUserIds) {
-    rulePageQuery = rulePageQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
-  }
-  const workflowPageQuery = applyWorkflowTenantFilter(
+  const rulePageQuery = applyTenantFilter(
+    service
+      .from("enrollment_rule_logs")
+      .select("id, rule_id, user_id, action_type, status, error_message, created_at", { count: "exact" })
+      .eq("action_type", "send_notification")
+      .eq("status", "error")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1) as any
+  );
+  const workflowPageQuery = applyTenantFilter(
     service
       .from("workflow_step_logs")
       .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
@@ -212,7 +210,7 @@ export async function GET(request: NextRequest) {
   const viewMissing =
     !!ruleAggErr?.message && /relation .*notification_audit_rule_summary.* does not exist/i.test(ruleAggErr.message);
 
-  if (!tenantUserIds && !viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
+  if (!tenantId && !viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
     topAffectedRules = (ruleAggRows as any[]).map((r) => ({
       rule_id: r.rule_id,
       failures: Number(r.failures) || 0,
@@ -220,16 +218,17 @@ export async function GET(request: NextRequest) {
     }));
   } else {
     // Fallback / scoped path: scan up to 5000 raw rows and bucket in JS.
-    let fbQuery = service
-      .from("enrollment_rule_logs")
-      .select("rule_id, user_id, created_at")
-      .eq("action_type", "send_notification")
-      .eq("status", "error")
-      .order("created_at", { ascending: false })
-      .limit(5000);
-    if (tenantUserIds) {
-      fbQuery = fbQuery.in("user_id", tenantUserIds.length > 0 ? tenantUserIds : ["__none__"]);
-    }
+    // The materialized view is pre-aggregated globally, so any tenant
+    // scope forces the JS path.
+    const fbQuery = applyTenantFilter(
+      service
+        .from("enrollment_rule_logs")
+        .select("rule_id, created_at, tenant_id")
+        .eq("action_type", "send_notification")
+        .eq("status", "error")
+        .order("created_at", { ascending: false })
+        .limit(5000) as any
+    );
     const { data: fallback } = await fbQuery;
     const allTimeMap: Record<string, { rule_id: string; failures: number; latest: string }> = {};
     for (const row of fallback ?? []) {
@@ -254,7 +253,8 @@ export async function GET(request: NextRequest) {
       ? {
           tenant_id: tenantId,
           user_count: tenantUserIds?.length ?? 0,
-          /** Workflow logs filtered directly via workflow_step_logs.tenant_id (own tenant + NULL/platform-wide). */
+          /** Both rule and workflow log queries filter via the .tenant_id column directly. */
+          rule_logs_scoped: true,
           workflow_logs_scoped: true,
         }
       : null,
