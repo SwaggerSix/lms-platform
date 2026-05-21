@@ -60,6 +60,8 @@ export interface SessionItem {
   max_capacity: number;
   registered_count: number;
   status: ILTSessionStatus;
+  cpe_credits: number;
+  ceu_hours: number;
   attendees: AttendeeItem[];
 }
 
@@ -159,6 +161,8 @@ export default function ILTSessionsClient({
     auto_create_meeting: true,
     max_capacity: 30,
     instructor: "",
+    cpe_credits: 0,
+    ceu_hours: 0,
   });
   const [sendingInvites, setSendingInvites] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
@@ -230,6 +234,8 @@ export default function ILTSessionsClient({
           auto_create_meeting: formData.auto_create_meeting,
           max_capacity: formData.max_capacity,
           instructor_id: formData.instructor || null,
+          cpe_credits: formData.cpe_credits,
+          ceu_hours: formData.ceu_hours,
         }),
       });
 
@@ -258,6 +264,8 @@ export default function ILTSessionsClient({
         max_capacity: created.max_capacity,
         registered_count: 0,
         status: "scheduled",
+        cpe_credits: Number(created.cpe_credits) || 0,
+        ceu_hours: Number(created.ceu_hours) || 0,
         attendees: [],
       };
 
@@ -278,6 +286,8 @@ export default function ILTSessionsClient({
         auto_create_meeting: true,
         max_capacity: 30,
         instructor: "",
+        cpe_credits: 0,
+        ceu_hours: 0,
       });
     } catch (err) {
       console.error("Error creating session:", err);
@@ -1130,6 +1140,30 @@ export default function ILTSessionsClient({
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">NASBA CPE Credits</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    value={formData.cpe_credits}
+                    onChange={(e) => setFormData({ ...formData, cpe_credits: parseFloat(e.target.value) || 0 })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Credits awarded for attending this specific session. 0 if not CPE-eligible.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">CEU Hours</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.25}
+                    value={formData.ceu_hours}
+                    onChange={(e) => setFormData({ ...formData, ceu_hours: parseFloat(e.target.value) || 0 })}
+                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Continuing education unit hours for this session.</p>
                 </div>
               </div>
             </div>

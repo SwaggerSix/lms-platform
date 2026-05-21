@@ -17,6 +17,7 @@ import {
   FileText,
   LayoutGrid,
   List,
+  Download,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
@@ -106,6 +107,30 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
   const formatDate = (d: string | null) => {
     if (!d) return "-";
     return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  const exportObservationsCsv = () => {
+    if (filteredObservations.length === 0) return;
+    const headers = ["Observation ID", "Template", "Subject", "Observer", "Status", "Scheduled", "Completed", "Created"];
+    const rows = filteredObservations.map((o) => [
+      o.id,
+      o.template?.name ?? "",
+      o.subject ? `${o.subject.first_name ?? ""} ${o.subject.last_name ?? ""}`.trim() : "",
+      o.observer ? `${o.observer.first_name ?? ""} ${o.observer.last_name ?? ""}`.trim() : "",
+      o.status,
+      o.scheduled_at ? new Date(o.scheduled_at).toISOString().slice(0, 10) : "",
+      o.completed_at ? new Date(o.completed_at).toISOString().slice(0, 10) : "",
+      o.created_at ? new Date(o.created_at).toISOString().slice(0, 10) : "",
+    ]);
+    const escape = (v: string | number) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [headers.map(escape).join(","), ...rows.map((r) => r.map(escape).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `observations-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const statusBadge = (status: string) => {
@@ -219,6 +244,17 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
               className="rounded-md border border-gray-200 py-1.5 pl-8 pr-3 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none w-48"
             />
           </div>
+          {tab === "observations" && (
+            <button
+              onClick={exportObservationsCsv}
+              disabled={filteredObservations.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download current filtered observations as CSV"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </button>
+          )}
           {tab === "observations" && (
             <select
               value={statusFilter}

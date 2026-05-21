@@ -116,6 +116,8 @@ export default async function AdminILTSessionsPage() {
       max_capacity: row.max_capacity ?? 30,
       registered_count: registeredCountBySession[sessionId] ?? 0,
       status: row.status ?? "scheduled",
+      cpe_credits: Number(row.cpe_credits) || 0,
+      ceu_hours: Number(row.ceu_hours) || 0,
       attendees: attendanceBySession[sessionId] ?? [],
     };
   });

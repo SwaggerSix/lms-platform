@@ -7,8 +7,11 @@ export type WebhookEvent =
   | "enrollment.completed"
   | "course.created"
   | "course.updated"
+  | "course.required_training_changed"
   | "assessment.submitted"
   | "certificate.issued"
+  | "cpe.credits_awarded"
+  | "curriculum_review.due_soon"
   | "user.created"
   | "badge.earned";
 

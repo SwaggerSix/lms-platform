@@ -29,6 +29,8 @@ export interface CertificationItem {
   activeCount: number;
   expiredCount: number;
   color: string;
+  nasbaCpe: boolean;
+  cpeCredits: number;
 }
 
 interface CertificationsClientProps {
@@ -137,6 +139,8 @@ export default function CertificationsClient({ certifications: initialCerts }: C
             activeCount: 0,
             expiredCount: 0,
             color: 'from-indigo-500 to-blue-600',
+            nasbaCpe: false,
+            cpeCredits: 0,
           },
           ...prev,
         ]);
@@ -228,6 +232,12 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                 <BookOpen className="h-4 w-4 text-gray-400" />
                 <span>Linked: <span className="font-medium text-indigo-600">{cert.linkedCourse}</span></span>
               </div>
+
+              {cert.nasbaCpe && (
+                <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                  NASBA CPE · {cert.cpeCredits} {cert.cpeCredits === 1 ? "credit" : "credits"} on recert
+                </div>
+              )}
 
               {/* Stats */}
               <div className="mt-5 grid grid-cols-3 gap-3">

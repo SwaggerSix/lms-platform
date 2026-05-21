@@ -263,6 +263,20 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
         </button>
       </div>
 
+      <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+        <p className="text-sm font-semibold text-indigo-900">Looking for required training assignments?</p>
+        <p className="mt-1 text-sm text-indigo-800">
+          Courses can now be marked as required for specific roles or organizations. Matching users are
+          enrolled automatically as they join, and existing users are swept in when criteria change.
+          Configure this from{" "}
+          <a href="/admin/courses" className="font-medium underline">Admin → Courses</a> — open any
+          course and use the &quot;Required Training&quot; section. Compliance &amp; CPE status per
+          learner are visible under <a href="/admin/reports/cpe" className="font-medium underline">
+            Admin → Reports → NASBA CPE
+          </a>.
+        </p>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {overviewStats.map((stat, index) => {

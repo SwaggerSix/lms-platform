@@ -220,11 +220,16 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  // If required-training criteria were touched, retroactively enrol matching users.
+  // If required-training criteria were touched, retroactively enrol matching users
+  // and notify external integrations.
   if (updates.metadata && typeof updates.metadata === "object" && "required_for" in (updates.metadata as Record<string, unknown>)) {
     syncRequiredEnrollmentsForCourse(id, auth.user.id).catch((err) =>
       console.error("Required-training sync failed for updated course", err)
     );
+    dispatchWebhook("course.required_training_changed", {
+      course_id: id,
+      required_for: (updates.metadata as Record<string, unknown>).required_for,
+    }).catch(() => {});
   }
 
   // Fire webhook (non-blocking)

@@ -238,6 +238,35 @@ export async function PATCH(request: NextRequest) {
             course_id: enrollment.course_id,
           }).catch(() => {});
 
+          // If this is a CPE-eligible course and the learner met the passing
+          // score, fire cpe.credits_awarded for external compliance systems.
+          const { data: completedCourse } = await service
+            .from("courses")
+            .select("metadata, passing_score")
+            .eq("id", enrollment.course_id)
+            .maybeSingle();
+          const completedMeta = (completedCourse?.metadata ?? {}) as Record<string, unknown>;
+          if (completedMeta.nasba_cpe) {
+            const passingScore = Number(completedCourse?.passing_score) || 0;
+            const { data: enr } = await service
+              .from("enrollments")
+              .select("score")
+              .eq("id", enrollment_id)
+              .maybeSingle();
+            const score = Number(enr?.score) || 0;
+            if (passingScore === 0 || score >= passingScore) {
+              dispatchWebhook("cpe.credits_awarded", {
+                enrollment_id,
+                user_id: profile.id,
+                course_id: enrollment.course_id,
+                cpe_credits: Number(completedMeta.cpe_credits) || 0,
+                course_version: completedMeta.course_version ?? null,
+                score,
+                passing_score: passingScore,
+              }).catch(() => {});
+            }
+          }
+
           // Create evaluation survey assignments for this course (non-blocking)
           createEvaluationAssignments({
             userId: profile.id,

@@ -53,6 +53,7 @@ export interface ScheduledReportsClientProps {
 // ── Helpers ──
 
 const reportTypeConfig: Record<string, { label: string; color: string; bg: string }> = {
+  nasba_cpe: { label: "NASBA CPE", color: "text-emerald-700", bg: "bg-emerald-50" },
   completion: { label: "Completion", color: "text-green-700", bg: "bg-green-100" },
   compliance: { label: "Compliance", color: "text-blue-700", bg: "bg-blue-100" },
   enrollment: { label: "Enrollment", color: "text-indigo-700", bg: "bg-indigo-100" },
@@ -103,6 +104,7 @@ const reportTypes = [
   { value: "engagement", label: "Engagement" },
   { value: "learner_progress", label: "Learner Progress" },
   { value: "ilt_attendance", label: "ILT Attendance" },
+  { value: "nasba_cpe", label: "NASBA CPE Credits" },
   { value: "custom", label: "Custom" },
 ];
 
@@ -191,6 +193,8 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
   const [formDepartment, setFormDepartment] = useState("all");
   const [formRole, setFormRole] = useState("all");
   const [formCourse, setFormCourse] = useState("all");
+  const [formCpePassingOnly, setFormCpePassingOnly] = useState(true);
+  const [formCpeGrouping, setFormCpeGrouping] = useState<"detail" | "by_learner">("by_learner");
 
   // Stats
   const activeCount = reports.filter((r) => r.is_active).length;
@@ -297,7 +301,15 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
         body: JSON.stringify({
           name: formName,
           report_type: formType,
-          filters: { date_range: `${formDateFrom}_to_${formDateTo}`, department: formDepartment, role: formRole, course: formCourse },
+          filters: {
+            date_range: `${formDateFrom}_to_${formDateTo}`,
+            department: formDepartment,
+            role: formRole,
+            course: formCourse,
+            ...(formType === "nasba_cpe"
+              ? { cpe_passing_only: formCpePassingOnly, cpe_grouping: formCpeGrouping }
+              : {}),
+          },
           schedule_frequency: formFrequency,
           schedule_day: formFrequency === "daily" ? null : formDay,
           schedule_time: formTime,
@@ -666,6 +678,53 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                   ))}
                 </select>
               </div>
+
+              {formType === "nasba_cpe" && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+                  <p className="text-sm font-semibold text-emerald-900">NASBA CPE options</p>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formCpePassingOnly}
+                      onChange={(e) => setFormCpePassingOnly(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm text-emerald-900">
+                      Count only completions meeting the course&apos;s passing score
+                      <span className="block text-xs text-emerald-700/80">Recommended. NASBA requires a passing assessment to award CPE.</span>
+                    </span>
+                  </label>
+                  <div>
+                    <label className="block text-xs font-medium text-emerald-900 mb-1">Grouping</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormCpeGrouping("by_learner")}
+                        className={cn(
+                          "flex-1 rounded-lg border px-3 py-2 text-xs font-medium",
+                          formCpeGrouping === "by_learner"
+                            ? "border-emerald-600 bg-white text-emerald-700"
+                            : "border-emerald-300 bg-white/50 text-emerald-800 hover:bg-white"
+                        )}
+                      >
+                        By Learner (totals)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormCpeGrouping("detail")}
+                        className={cn(
+                          "flex-1 rounded-lg border px-3 py-2 text-xs font-medium",
+                          formCpeGrouping === "detail"
+                            ? "border-emerald-600 bg-white text-emerald-700"
+                            : "border-emerald-300 bg-white/50 text-emerald-800 hover:bg-white"
+                        )}
+                      >
+                        Per Completion (detail)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Frequency + Day */}
               <div className="grid grid-cols-2 gap-4">

@@ -38,7 +38,7 @@ export default async function CertificationsPage() {
   // Fetch certifications with linked course/path names
   const { data: rows } = await service
     .from('certifications')
-    .select('*, recertification_course:courses!recertification_course_id(title), recertification_path:learning_paths!recertification_path_id(title)')
+    .select('*, recertification_course:courses!recertification_course_id(title, metadata), recertification_path:learning_paths!recertification_path_id(title)')
     .order('created_at', { ascending: false });
 
   // Fetch user_certifications status counts grouped by certification_id
@@ -79,6 +79,11 @@ export default async function CertificationsPage() {
       (row as any).recertification_path?.title ??
       'None';
 
+    // Surface CPE info from the linked recertification course (if any).
+    const linkedCourseMeta = ((row as any).recertification_course?.metadata ?? {}) as Record<string, unknown>;
+    const nasbaCpe = !!linkedCourseMeta.nasba_cpe;
+    const cpeCredits = Number(linkedCourseMeta.cpe_credits) || 0;
+
     return {
       id: row.id,
       name: row.name ?? 'Untitled Certification',
@@ -89,6 +94,8 @@ export default async function CertificationsPage() {
       activeCount: counts.active,
       expiredCount: counts.expired,
       color: GRADIENTS[index % GRADIENTS.length],
+      nasbaCpe,
+      cpeCredits,
     };
   });
 

@@ -81,6 +81,8 @@ export async function GET(request: NextRequest) {
     max_capacity: s.max_capacity,
     min_capacity: s.min_capacity,
     status: s.status,
+    cpe_credits: Number(s.cpe_credits) || 0,
+    ceu_hours: Number(s.ceu_hours) || 0,
     registered_count: s.ilt_attendance?.length ?? 0,
     attendees: (s.ilt_attendance ?? []).map((a: Record<string, unknown>) => ({
       id: a.id,
@@ -128,6 +130,8 @@ export async function POST(request: NextRequest) {
     meeting_id: null,
     meeting_password: null,
     meeting_settings: body.meeting_settings || {},
+    cpe_credits: Number(body.cpe_credits) || 0,
+    ceu_hours: Number(body.ceu_hours) || 0,
   };
 
   // If a meeting provider is specified, try to auto-create the meeting
@@ -335,7 +339,7 @@ export async function PATCH(request: NextRequest) {
       "timezone", "location_type", "location_details", "meeting_url",
       "max_capacity", "instructor_id", "status",
       "meeting_provider", "meeting_id", "meeting_password", "meeting_settings",
-      "recording_url",
+      "recording_url", "cpe_credits", "ceu_hours",
     ];
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +112,16 @@ async function handler(request: NextRequest) {
       id: course.id,
       metadata: { ...metadata, review_alerts_sent: newAlertsSent },
     });
+
+    // Notify external integrations (fire-and-forget).
+    dispatchWebhook("curriculum_review.due_soon", {
+      course_id: course.id,
+      course_slug: course.slug,
+      course_title: course.title,
+      last_curriculum_review: lastReviewStr,
+      days_until_due: daysLeft,
+      alert: trigger,
+    }).catch(() => {});
   }
 
   if (notifications.length > 0) {

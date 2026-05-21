@@ -49,7 +49,19 @@ export interface SettingsData {
   apiKeys: ApiKey[];
 }
 
-const webhookEvents = ["user.created", "user.updated", "course.completed", "enrollment.created", "certificate.issued", "quiz.submitted"];
+const webhookEvents = [
+  "user.created",
+  "user.updated",
+  "course.created",
+  "course.updated",
+  "course.required_training_changed",
+  "enrollment.created",
+  "enrollment.completed",
+  "certificate.issued",
+  "cpe.credits_awarded",
+  "curriculum_review.due_soon",
+  "quiz.submitted",
+];
 
 const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations"] as const;
 
