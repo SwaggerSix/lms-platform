@@ -43,8 +43,10 @@ import { logAudit } from "@/lib/audit";
  */
 /** Standard response options for every branch: replay is side-effectful
  * so caching is wrong on success AND on error (an admin retrying after a
- * 429 must not see a stale 200 from a proxy). */
-const NO_STORE = { headers: { "Cache-Control": "no-store" } };
+ * 429 must not see a stale 200 from a proxy). `private` layered with
+ * `no-store` is the most defensive combination — some older proxies
+ * misread no-store alone. */
+const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");

@@ -119,6 +119,12 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(data, {
+    // Mutation result; never cache. Especially important because the
+    // response body includes the merged preferences blob — a stale
+    // version served to a polling caller could roll back a user's
+    // change.
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
 import { useVisibilityPolling } from "@/hooks/use-visibility-polling";
+import { __resetDocumentVisibilityStoreForTests } from "@/hooks/use-document-visibility";
 
 function Harness({ poll, ...rest }: { poll: () => Promise<void> | void; intervalMs: number; backoffMs: number; backoffAfter: number }) {
   useVisibilityPolling({ poll, ...rest });
@@ -10,6 +11,7 @@ function Harness({ poll, ...rest }: { poll: () => Promise<void> | void; interval
 describe("useVisibilityPolling", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    __resetDocumentVisibilityStoreForTests();
     // Default to visible.
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
@@ -20,6 +22,7 @@ describe("useVisibilityPolling", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    __resetDocumentVisibilityStoreForTests();
   });
 
   it("calls poll on each interval tick", async () => {
@@ -138,5 +141,50 @@ describe("useVisibilityPolling", () => {
       await vi.advanceTimersByTimeAsync(5_000);
     });
     expect(poll).not.toHaveBeenCalled();
+  });
+
+  it("rebuild-on-change: hidden → visible fires immediate poll, no stale timer chain", async () => {
+    const poll = vi.fn().mockResolvedValue(undefined);
+    render(<Harness poll={poll} intervalMs={1_000} backoffMs={10_000} backoffAfter={3} />);
+
+    // First tick while visible.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+    expect(poll).toHaveBeenCalledTimes(1);
+
+    // Hide. Cleanup tears down the in-flight timer; advancing time
+    // should NOT fire any more polls.
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => "hidden",
+    });
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+      // Allow React's commit-phase effects to settle.
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(poll).toHaveBeenCalledTimes(1);
+
+    // Return to visible. The transition triggers an immediate poll
+    // (no waiting for the interval), then the chain resumes.
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => "visible",
+    });
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(poll).toHaveBeenCalledTimes(2);
+
+    // Regular cadence resumes — next tick at +1s.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+    expect(poll).toHaveBeenCalledTimes(3);
   });
 });

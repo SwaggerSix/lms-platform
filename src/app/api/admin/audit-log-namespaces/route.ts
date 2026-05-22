@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isUuid } from "@/lib/validate-uuid";
 
 /**
  * GET /api/admin/audit-log-namespaces?hide_platform=true
@@ -31,8 +32,7 @@ export async function GET(request: NextRequest) {
   // than punting to PostgREST so the caller gets a 400 with a clear
   // message instead of a 5xx from a malformed SQL .or() filter.
   const tenantParam = url.searchParams.get("tenant_id");
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (tenantParam !== null && !UUID_RE.test(tenantParam)) {
+  if (tenantParam !== null && !isUuid(tenantParam)) {
     return NextResponse.json(
       { error: "tenant_id must be a UUID", received: tenantParam },
       { status: 400 }
