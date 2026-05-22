@@ -1,7 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { estimateIntervalMinutes } from "@/lib/cron/monitor";
 
 describe("estimateIntervalMinutes (cron-parser backed)", () => {
+  // Pin "now" inside the 9-17 active window so the ranges/lists case
+  // returns a stable 1h gap rather than the post-window wait until 9am
+  // tomorrow.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-16T10:00:00.000Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("hourly schedules → 60", () => {
     expect(estimateIntervalMinutes("0 * * * *")).toBe(60);
     expect(estimateIntervalMinutes("30 * * * *")).toBe(60);

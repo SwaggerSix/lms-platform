@@ -27,6 +27,10 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
   const hidePlatform = url.searchParams.get("hide_platform") === "true";
+  // Optional explicit tenant scope. UUID format expected; we don't
+  // validate to keep this endpoint dependency-light (PostgREST will
+  // reject malformed UUIDs at the database layer).
+  const tenantParam = url.searchParams.get("tenant_id");
 
   const service = createServiceClient();
   let query = service
@@ -36,6 +40,11 @@ export async function GET(request: NextRequest) {
     .limit(20000);
   if (hidePlatform) {
     query = query.not("tenant_id", "is", null);
+  }
+  if (tenantParam) {
+    // Include platform-level rows (tenant_id IS NULL) alongside the
+    // requested tenant — same convention as the audit-log page.
+    query = query.or(`tenant_id.eq.${tenantParam},tenant_id.is.null`);
   }
   const { data, error } = await query;
 
@@ -92,6 +101,7 @@ export async function GET(request: NextRequest) {
     {
       namespaces,
       hide_platform: hidePlatform,
+      tenant_id: tenantParam,
       /** True when we hit the 20k row cap; some older namespaces may be missing. */
       sample_capped: (data?.length ?? 0) >= 20000,
     },

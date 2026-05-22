@@ -203,11 +203,20 @@ export async function POST(request: NextRequest) {
     },
   }).catch(() => {});
 
-  return NextResponse.json({
-    ok: true,
-    replayed_alerts: alerts.length,
-    hours,
-    job_filter: jobFilter,
-    affected_jobs: jobs.map((j) => j.name),
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      replayed_alerts: alerts.length,
+      hours,
+      job_filter: jobFilter,
+      affected_jobs: jobs.map((j) => j.name),
+    },
+    {
+      // Replay is a side-effectful action — any caching would be wrong.
+      // Browsers already won't cache POSTs, but the explicit no-store
+      // signals intent for any future intermediate (CDN, proxy) that
+      // might be tempted to serve a stale 200.
+      headers: { "Cache-Control": "no-store" },
+    }
+  );
 }
