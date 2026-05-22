@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 import { processRulesForUser, evaluateRule, executeRuleActions } from "@/lib/automation/rules-engine";
 import type { EnrollmentRule, UserRecord } from "@/lib/automation/rules-engine";
 
@@ -43,7 +44,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -56,7 +57,7 @@ export async function POST(
     .single();
 
   if (ruleErr || !rule) {
-    return NextResponse.json({ error: "Rule not found" }, { status: 404 });
+    return jsonNoStore({ error: "Rule not found" }, { status: 404 });
   }
 
   const typedRule = rule as EnrollmentRule;
@@ -68,7 +69,7 @@ export async function POST(
     .eq("status", "active");
 
   if (!users || users.length === 0) {
-    return NextResponse.json({ message: "No active users found", matched: 0, executed: 0 });
+    return jsonNoStore({ message: "No active users found", matched: 0, executed: 0 });
   }
 
   // Fetch completed courses for condition evaluation
@@ -119,5 +120,5 @@ export async function POST(
     newValues: { matched, executed, errors },
   });
 
-  return NextResponse.json({ message: "Rule executed", matched, executed, errors });
+  return jsonNoStore({ message: "Rule executed", matched, executed, errors });
 }

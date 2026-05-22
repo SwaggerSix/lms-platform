@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import {
+  LEGACY_ACTIONS,
+  DOTTED_ACTION_RE,
+  DOTTED_TEMPLATE_LITERAL_RE,
+} from "@/lib/audit-log/action-convention";
 
 function walkTs(dir: string): string[] {
   const out: string[] = [];
@@ -33,11 +38,9 @@ function walkTs(dir: string): string[] {
  * audit_logs.
  */
 
-const LEGACY = new Set(["created", "updated", "deleted", "login", "export"]);
-const DOTTED_RE = /^[a-z][a-z0-9_-]*(\.[a-z0-9][a-z0-9_-]*)+$/;
-// Template-string actions (computed at runtime) are also acceptable
-// when the prefix is dotted — e.g. `replay.cron_alerts.${jobName}`.
-const TEMPLATE_LITERAL_RE = /^`[a-z][a-z0-9_.-]*(\.[a-z0-9][a-z0-9_-]*)*\.\$\{[^}]+\}`$/;
+const LEGACY = LEGACY_ACTIONS;
+const DOTTED_RE = DOTTED_ACTION_RE;
+const TEMPLATE_LITERAL_RE = DOTTED_TEMPLATE_LITERAL_RE;
 
 describe("audit action naming convention", () => {
   it("every logAudit({ action: ... }) literal matches the convention", () => {

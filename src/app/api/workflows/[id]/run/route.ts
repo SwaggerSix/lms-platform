@@ -4,6 +4,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 import { WorkflowEngine } from "@/lib/workflows/engine";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // POST: Manually trigger a workflow run
 export async function POST(
@@ -11,10 +12,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`workflow-run-${auth.user.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -27,11 +28,11 @@ export async function POST(
     .single();
 
   if (error || !workflow) {
-    return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    return jsonNoStore({ error: "Workflow not found" }, { status: 404 });
   }
 
   if (!workflow.is_active) {
-    return NextResponse.json({ error: "Workflow is not active" }, { status: 400 });
+    return jsonNoStore({ error: "Workflow is not active" }, { status: 400 });
   }
 
   // Parse optional trigger data from body
@@ -59,12 +60,9 @@ export async function POST(
       newValues: { run_id: run.id, status: run.status },
     });
 
-    return NextResponse.json(run);
+    return jsonNoStore(run);
   } catch (err) {
     console.error("Workflow execution error:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 }

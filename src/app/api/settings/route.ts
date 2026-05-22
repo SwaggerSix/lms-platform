@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   // Feature flags are readable by any authenticated user (needed for sidebar)
@@ -23,9 +24,9 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error || !data) {
-      return NextResponse.json({ key, value: {} });
+      return jsonCached({ key, value: {} });
     }
-    return NextResponse.json(data);
+    return jsonCached(data);
   }
 
   // Return all settings (admin only)
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonCached(data);
 }
 
 export async function PATCH(request: NextRequest) {

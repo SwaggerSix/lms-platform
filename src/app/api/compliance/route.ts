@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     console.error("Compliance API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonCached(data);
 }
 
 export async function POST(request: NextRequest) {

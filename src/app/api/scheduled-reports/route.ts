@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/scheduled-reports
@@ -25,7 +26,7 @@ export async function GET() {
 
   const reports = data ?? [];
 
-  return NextResponse.json({
+  return jsonCached({
     scheduled_reports: reports,
     total: reports.length,
     active_count: reports.filter((r) => r.is_active).length,
