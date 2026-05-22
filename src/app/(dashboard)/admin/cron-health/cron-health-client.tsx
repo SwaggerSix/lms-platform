@@ -540,6 +540,27 @@ export default function CronHealthClient() {
                       )}
                     </div>
                   </div>
+                  {/* Card-body cache footer for very narrow screens where the
+                      header pills + Recompute button push out of view. Hidden
+                      on sm+ since the header layout there has room. */}
+                  {(alertConfig.schedules_cache || alertConfig.thresholds_cache) && (
+                    <div className="border-t border-amber-100 bg-amber-50/30 px-5 py-2 text-[11px] text-amber-800 sm:hidden">
+                      Server-side caches:
+                      {alertConfig.schedules_cache && (
+                        <span className="ml-1">
+                          vercel.json {formatRelative(alertConfig.schedules_cache.loaded_at)}
+                        </span>
+                      )}
+                      {alertConfig.schedules_cache && alertConfig.thresholds_cache && (
+                        <span className="mx-1 text-amber-400">·</span>
+                      )}
+                      {alertConfig.thresholds_cache && (
+                        <span>
+                          thresholds {formatRelative(alertConfig.thresholds_cache.loaded_at)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })()}

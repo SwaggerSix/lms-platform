@@ -102,6 +102,57 @@ describe("dispatchAlertWebhook — live config refresh", () => {
     }
   });
 
+  it("pagerduty_dedup change (global → per-job) takes effect immediately", async () => {
+    dir = stageDir();
+    process.env.PAGERDUTY_ROUTING_KEY = "rk-test";
+    writeThresholds(dir, {
+      alert_webhook: { adapter: "pagerduty", min_severity: "critical", pagerduty_dedup: "global" },
+    });
+    process.chdir(dir);
+    vi.resetModules();
+    const mod = await import("@/lib/cron/monitor");
+
+    // Multi-job critical payload — global mode fires one trigger with
+    // the shared dedup_key.
+    const multi = {
+      ...baseDegraded,
+      jobs: [
+        { name: "compliance-recurrence", last_run: "2026-03-13T04:15:00Z", status: "success" },
+        { name: "scheduled-reports", last_run: "2026-03-16T09:00:00Z", status: "success" },
+      ],
+      alerts: [
+        "compliance-recurrence [critical]: overdue by ~120m",
+        "scheduled-reports [critical]: overdue by ~60m",
+      ],
+    };
+    await mod.dispatchAlertWebhook(multi);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    let body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.dedup_key).toBe("lms-cron-health");
+
+    // Switch to per-job; next dispatch fires one trigger per job.
+    writeThresholds(dir, {
+      alert_webhook: {
+        adapter: "pagerduty",
+        min_severity: "critical",
+        pagerduty_dedup: "per-job",
+      },
+    });
+    const future = (Date.now() + 5000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+
+    fetchMock.mockClear();
+    await mod.dispatchAlertWebhook(multi);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const keys = fetchMock.mock.calls.map((c) => JSON.parse(c[1].body).dedup_key).sort();
+    expect(keys).toEqual([
+      "lms-cron-health-compliance-recurrence",
+      "lms-cron-health-scheduled-reports",
+    ]);
+
+    delete process.env.PAGERDUTY_ROUTING_KEY;
+  });
+
   it("min_severity change takes effect immediately", async () => {
     dir = stageDir();
     // Start: critical-only filter, warn alerts are dropped.

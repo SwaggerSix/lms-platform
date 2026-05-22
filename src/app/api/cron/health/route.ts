@@ -28,13 +28,25 @@ export async function GET(request: NextRequest) {
 
     const status = health.alerts.length > 0 ? "degraded" : "healthy";
 
-    return NextResponse.json({
-      status,
-      checked_at: new Date().toISOString(),
-      jobs: health.jobs,
-      alerts: health.alerts,
-      alert_count: health.alerts.length,
-    });
+    return NextResponse.json(
+      {
+        status,
+        checked_at: new Date().toISOString(),
+        jobs: health.jobs,
+        alerts: health.alerts,
+        alert_count: health.alerts.length,
+      },
+      {
+        headers: {
+          // Alert state changes more often than config — short TTL so
+          // tab refreshes don't re-run the per-job cron_runs queries
+          // but a polling UI still sees fresh data within 10s. private
+          // (not shared) because the response includes user-visible
+          // alert details.
+          "Cache-Control": "private, max-age=10, stale-while-revalidate=20",
+        },
+      }
+    );
   } catch (err) {
     console.error("Cron health check error:", err);
     return NextResponse.json(

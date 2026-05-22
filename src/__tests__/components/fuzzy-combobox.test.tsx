@@ -109,4 +109,17 @@ describe("FuzzyCombobox", () => {
     fireEvent.focus(screen.getByRole("combobox"));
     expect(screen.getByText("12 rows")).toBeInTheDocument();
   });
+
+  it("windows the rendered list when filtered length exceeds the threshold", () => {
+    const big: ComboboxSuggestion[] = Array.from({ length: 300 }, (_, i) => ({
+      value: `item-${String(i).padStart(3, "0")}`,
+    }));
+    const onChange = vi.fn();
+    render(<FuzzyCombobox value="" onChange={onChange} suggestions={big} />);
+    fireEvent.focus(screen.getByRole("combobox"));
+    // Window holds at most ceil(256/32) + 2*6 = 20 rows.
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBeLessThanOrEqual(20);
+    expect(options.length).toBeGreaterThanOrEqual(8);
+  });
 });
