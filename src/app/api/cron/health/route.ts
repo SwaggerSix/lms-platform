@@ -45,7 +45,11 @@ export async function GET(request: NextRequest) {
           // alert details. Vary: Cookie is defense-in-depth against
           // any future shared cache that ignores `private`.
           "Cache-Control": "private, max-age=10, stale-while-revalidate=20",
-          Vary: "Cookie",
+          // Cookie for session-authed admins; Authorization for the
+          // CRON_SECRET bearer path. Combined value tells caches to
+          // key on either header — never serve one user's response
+          // to a different identity.
+          Vary: "Cookie, Authorization",
         },
       }
     );

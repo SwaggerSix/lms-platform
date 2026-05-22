@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchAlertWebhook } from "@/lib/cron/monitor";
 import { cronJobBasenames } from "@/lib/cron/vercel-config";
 import { getReplayDedupMinutes } from "@/lib/cron/thresholds-config";
 import { logAudit } from "@/lib/audit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/admin/cron-alert-replay
@@ -41,17 +42,11 @@ import { logAudit } from "@/lib/audit";
  *   - undefined / missing key / negative / non-numeric: defaults to 5.
  *   - positive integer: use as-is.
  */
-/** Standard response options for every branch: replay is side-effectful
- * so caching is wrong on success AND on error (an admin retrying after a
- * 429 must not see a stale 200 from a proxy). `private` layered with
- * `no-store` is the most defensive combination — some older proxies
- * misread no-store alone. */
-const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status, ...NO_STORE });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   let hours = 24;
@@ -99,14 +94,14 @@ export async function POST(request: NextRequest) {
 
     const unknown = jobFilter.filter((j) => !knownSet.has(j));
     if (unknown.length > 0) {
-      return NextResponse.json(
+      return jsonNoStore(
         {
           ok: false,
           error: "Unknown job(s)",
           unknown_jobs: unknown,
           known_jobs: Array.from(knownSet).sort(),
         },
-        { status: 400, ...NO_STORE }
+        { status: 400 }
       );
     }
   }
@@ -132,7 +127,7 @@ export async function POST(request: NextRequest) {
       .order("created_at", { ascending: false })
       .limit(1);
     if (recent && recent.length > 0) {
-      return NextResponse.json(
+      return jsonNoStore(
         {
           ok: false,
           reason: "replay_recently_fired",
@@ -141,7 +136,7 @@ export async function POST(request: NextRequest) {
           dedup_scope: auditAction,
           message: `A replay (${auditAction}) fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
         },
-        { status: 429, ...NO_STORE }
+        { status: 429 }
       );
     }
   }
@@ -159,23 +154,20 @@ export async function POST(request: NextRequest) {
   const { data: failureRows, error } = await failureQuery;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500, ...NO_STORE });
+    return jsonNoStore({ error: error.message }, { status: 500 });
   }
 
   const failures = (failureRows ?? []) as any[];
   if (failures.length === 0) {
-    return NextResponse.json(
-      {
-        ok: true,
-        replayed_alerts: 0,
-        hours,
-        job_filter: jobFilter,
-        message: jobFilter
-          ? `No failures for ${jobFilter.join(", ")} in the requested window — nothing to replay.`
-          : "No failures in the requested window — nothing to replay.",
-      },
-      NO_STORE
-    );
+    return jsonNoStore({
+      ok: true,
+      replayed_alerts: 0,
+      hours,
+      job_filter: jobFilter,
+      message: jobFilter
+        ? `No failures for ${jobFilter.join(", ")} in the requested window — nothing to replay.`
+        : "No failures in the requested window — nothing to replay.",
+    });
   }
 
   // Build a synthetic alerts[] from the failure rows. We tag everything
@@ -213,14 +205,11 @@ export async function POST(request: NextRequest) {
     },
   }).catch(() => {});
 
-  return NextResponse.json(
-    {
-      ok: true,
-      replayed_alerts: alerts.length,
-      hours,
-      job_filter: jobFilter,
-      affected_jobs: jobs.map((j) => j.name),
-    },
-    NO_STORE
-  );
+  return jsonNoStore({
+    ok: true,
+    replayed_alerts: alerts.length,
+    hours,
+    job_filter: jobFilter,
+    affected_jobs: jobs.map((j) => j.name),
+  });
 }

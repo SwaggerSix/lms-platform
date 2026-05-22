@@ -14,6 +14,12 @@ interface UseVisibilityPollingOptions {
   backoffAfter: number;
   /** Pause polling when document.visibilityState !== "visible". Default true. */
   pauseWhenHidden?: boolean;
+  /**
+   * Disable polling entirely when false. Use this for "poll only when
+   * some condition holds" cases (e.g. while a sync is active) instead
+   * of passing an infinity-ish intervalMs sentinel. Default true.
+   */
+  enabled?: boolean;
 }
 
 /**
@@ -31,6 +37,7 @@ export function useVisibilityPolling({
   backoffMs,
   backoffAfter,
   pauseWhenHidden = true,
+  enabled = true,
 }: UseVisibilityPollingOptions): void {
   const failuresRef = useRef(0);
   // Keep the latest poll() in a ref so changing closures don't re-trigger
@@ -48,10 +55,12 @@ export function useVisibilityPolling({
   const prevVisibleRef = useRef(visible);
 
   useEffect(() => {
-    // Effect now depends on `visible` so a tab focus change tears down
-    // the current timer chain and rebuilds it. Conceptually cleaner
-    // than the ref-based read: while hidden no timer runs at all; when
-    // visible the chain runs normally.
+    // Effect now depends on `visible` (and `enabled`) so a tab focus
+    // change OR an enabled-flag flip tears down the current timer
+    // chain and rebuilds it. Conceptually cleaner than the ref-based
+    // read: while hidden / disabled no timer runs at all; when visible
+    // and enabled the chain runs normally.
+    if (!enabled) return;
     const isPaused = pauseWhenHidden && !visible;
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -94,5 +103,5 @@ export function useVisibilityPolling({
       cancelled = true;
       if (timeoutId !== null) clearTimeout(timeoutId);
     };
-  }, [intervalMs, backoffMs, backoffAfter, pauseWhenHidden, visible]);
+  }, [intervalMs, backoffMs, backoffAfter, pauseWhenHidden, visible, enabled]);
 }

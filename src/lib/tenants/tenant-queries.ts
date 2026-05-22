@@ -1,6 +1,8 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest } from "next/server";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export interface TenantScope {
   tenantId: string;
   courseIds: string[];
@@ -19,14 +21,23 @@ export async function resolveTenantForUser(
   request?: NextRequest
 ): Promise<string | null> {
   // Platform admins see everything
+  // Validate the x-tenant-id header value: ignore (treat as absent)
+  // anything that isn't a canonical UUID. Stops malformed override
+  // values from landing in SQL filters.
+  const rawHeader = request?.headers.get("x-tenant-id");
+  const headerTenantId = rawHeader && UUID_RE.test(rawHeader) ? rawHeader.toLowerCase() : null;
+  if (rawHeader && !headerTenantId) {
+    console.warn(
+      `resolveTenantForUser: x-tenant-id header value is not a UUID; ignoring (${rawHeader.slice(0, 64)})`
+    );
+  }
+
   if (userRole === "super_admin" || userRole === "admin") {
-    // But if they explicitly pass a tenant header, respect it
-    const headerTenantId = request?.headers.get("x-tenant-id");
-    return headerTenantId || null;
+    // But if they explicitly pass a (valid) tenant header, respect it
+    return headerTenantId;
   }
 
   // Check header first
-  const headerTenantId = request?.headers.get("x-tenant-id");
   if (headerTenantId) return headerTenantId;
 
   // Look up from memberships

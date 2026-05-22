@@ -3,9 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, lrsConfigSchema } from "@/lib/validations";
 import { encryptSecret } from "@/lib/integrations/video-conferencing";
-
-/** Side-effectful POST + mutating endpoint group; no caching. */
-const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/admin/lrs
@@ -45,13 +43,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status, ...NO_STORE });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const body = await request.json();
   const validation = validateBody(lrsConfigSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400, ...NO_STORE });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const data = validation.data;
@@ -74,8 +72,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Failed to create LRS configuration:", error.message);
-    return NextResponse.json({ error: "Failed to create LRS configuration" }, { status: 500, ...NO_STORE });
+    return jsonNoStore({ error: "Failed to create LRS configuration" }, { status: 500 });
   }
 
-  return NextResponse.json({ configuration: config }, { status: 201, ...NO_STORE });
+  return jsonNoStore({ configuration: config }, { status: 201 });
 }

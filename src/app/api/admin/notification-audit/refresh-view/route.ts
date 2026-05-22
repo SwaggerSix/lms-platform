@@ -1,12 +1,7 @@
-import { NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
-
-/** Side-effectful POST; no response from this endpoint should ever be
- * cached. private layered with no-store is the most defensive
- * combination — some older proxies misread no-store alone. */
-const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/admin/notification-audit/refresh-view
@@ -19,7 +14,7 @@ const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
 export async function POST() {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status, ...NO_STORE });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const service = createServiceClient();
@@ -36,14 +31,14 @@ export async function POST() {
   }
 
   if (refreshError) {
-    return NextResponse.json(
+    return jsonNoStore(
       {
         error:
           "View refresh failed. Make sure migrations 20260318100034 and 20260318100035 have been applied " +
           "and the helper RPCs notification_audit_refresh_* exist.",
         detail: refreshError,
       },
-      { status: 500, ...NO_STORE }
+      { status: 500 }
     );
   }
 
@@ -54,11 +49,8 @@ export async function POST() {
     newValues: { concurrent: usedConcurrent },
   }).catch(() => {});
 
-  return NextResponse.json(
-    {
-      ok: true,
-      concurrent: usedConcurrent,
-    },
-    NO_STORE
-  );
+  return jsonNoStore({
+    ok: true,
+    concurrent: usedConcurrent,
+  });
 }

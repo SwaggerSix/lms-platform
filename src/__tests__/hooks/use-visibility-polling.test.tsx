@@ -3,8 +3,18 @@ import { render, act } from "@testing-library/react";
 import { useVisibilityPolling } from "@/hooks/use-visibility-polling";
 import { __resetDocumentVisibilityStoreForTests } from "@/hooks/use-document-visibility";
 
-function Harness({ poll, ...rest }: { poll: () => Promise<void> | void; intervalMs: number; backoffMs: number; backoffAfter: number }) {
-  useVisibilityPolling({ poll, ...rest });
+function Harness({
+  poll,
+  enabled,
+  ...rest
+}: {
+  poll: () => Promise<void> | void;
+  intervalMs: number;
+  backoffMs: number;
+  backoffAfter: number;
+  enabled?: boolean;
+}) {
+  useVisibilityPolling({ poll, ...rest, enabled });
   return null;
 }
 
@@ -141,6 +151,30 @@ describe("useVisibilityPolling", () => {
       await vi.advanceTimersByTimeAsync(5_000);
     });
     expect(poll).not.toHaveBeenCalled();
+  });
+
+  it("enabled=false suspends polling; flipping to true resumes", async () => {
+    const poll = vi.fn().mockResolvedValue(undefined);
+    const { rerender } = render(
+      <Harness poll={poll} intervalMs={1_000} backoffMs={10_000} backoffAfter={3} enabled={false} />
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+    expect(poll).not.toHaveBeenCalled();
+
+    rerender(<Harness poll={poll} intervalMs={1_000} backoffMs={10_000} backoffAfter={3} enabled={true} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+    expect(poll).toHaveBeenCalledTimes(1);
+
+    rerender(<Harness poll={poll} intervalMs={1_000} backoffMs={10_000} backoffAfter={3} enabled={false} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+    // No additional calls while disabled.
+    expect(poll).toHaveBeenCalledTimes(1);
   });
 
   it("rebuild-on-change: hidden → visible fires immediate poll, no stale timer chain", async () => {

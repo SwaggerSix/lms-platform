@@ -65,12 +65,15 @@ export default function SyncStatus({ integrationId, onRefresh }: SyncStatusProps
 
   // Poll for active sync status. Uses the shared visibility-aware
   // polling hook so a backgrounded tab stops hammering the API —
-  // sync logs are useful only when the operator is watching.
+  // sync logs are useful only when the operator is watching. The
+  // `enabled` flag gates the hook entirely so no timer runs when
+  // there's no active sync.
   useVisibilityPolling({
     poll: fetchLogs,
-    intervalMs: activeSyncId ? 3_000 : 60_000 * 60 * 24, // effectively disabled when no active sync
+    intervalMs: 3_000,
     backoffMs: 30_000,
     backoffAfter: 3,
+    enabled: !!activeSyncId,
   });
 
   const formatDate = (dateStr: string | null) => {
