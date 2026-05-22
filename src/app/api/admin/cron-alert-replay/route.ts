@@ -3,7 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchAlertWebhook } from "@/lib/cron/monitor";
 import { cronJobBasenames } from "@/lib/cron/vercel-config";
-import { readThresholdsConfig } from "@/lib/cron/thresholds-config";
+import { getReplayDedupMinutes } from "@/lib/cron/thresholds-config";
 import { logAudit } from "@/lib/audit";
 
 /**
@@ -41,14 +41,6 @@ import { logAudit } from "@/lib/audit";
  *   - undefined / missing key / negative / non-numeric: defaults to 5.
  *   - positive integer: use as-is.
  */
-function loadReplayDedupMinutes(): number {
-  const cfg = readThresholdsConfig();
-  const raw = cfg.replay?.dedup_minutes;
-  if (raw === 0) return 0; // explicit opt-out
-  const v = Number(raw);
-  if (!Number.isFinite(v) || v < 0) return 5;
-  return Math.floor(v);
-}
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
@@ -122,7 +114,7 @@ export async function POST(request: NextRequest) {
   // Idempotency check: look for a recent successful replay in audit_logs
   // *with the same action* — so global suppresses only global, and a
   // per-job suppression doesn't lock out other jobs' replays.
-  const dedupMinutes = loadReplayDedupMinutes();
+  const dedupMinutes = getReplayDedupMinutes();
   if (!force && dedupMinutes > 0) {
     const sinceIso = new Date(Date.now() - dedupMinutes * 60 * 1000).toISOString();
     const { data: recent } = await service

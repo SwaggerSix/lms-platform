@@ -205,6 +205,40 @@ describe("dispatchAlertWebhook — live config refresh", () => {
     expect(mod.leadingFailureStreak([])).toBe(0);
   });
 
+  it("replay.dedup_minutes change takes effect immediately", async () => {
+    dir = stageDir();
+    writeThresholds(dir, { replay: { dedup_minutes: 5 } });
+    process.chdir(dir);
+    vi.resetModules();
+    const { getReplayDedupMinutes } = await import("@/lib/cron/thresholds-config");
+
+    expect(getReplayDedupMinutes()).toBe(5);
+
+    // Set to 30 (longer window).
+    writeThresholds(dir, { replay: { dedup_minutes: 30 } });
+    let future = (Date.now() + 5000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+    expect(getReplayDedupMinutes()).toBe(30);
+
+    // Set to 0 (explicit opt-out).
+    writeThresholds(dir, { replay: { dedup_minutes: 0 } });
+    future = (Date.now() + 10000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+    expect(getReplayDedupMinutes()).toBe(0);
+
+    // Negative → default 5.
+    writeThresholds(dir, { replay: { dedup_minutes: -7 } });
+    future = (Date.now() + 15000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+    expect(getReplayDedupMinutes()).toBe(5);
+
+    // Missing key → default 5.
+    writeThresholds(dir, {});
+    future = (Date.now() + 20000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+    expect(getReplayDedupMinutes()).toBe(5);
+  });
+
   it("min_severity change takes effect immediately", async () => {
     dir = stageDir();
     // Start: critical-only filter, warn alerts are dropped.

@@ -51,3 +51,20 @@ export function thresholdsConfigCacheInfo(): { loaded_at: string; age_ms: number
 export function __resetThresholdsConfigCacheForTests(): void {
   cache = null;
 }
+
+/**
+ * Resolve the replay-suppression window in minutes from the cached
+ * config. Semantics:
+ *   - 0 (explicit zero in config): idempotency is fully disabled.
+ *     Operator-acknowledged "I want every click to fire."
+ *   - undefined / missing key / negative / non-numeric: defaults to 5.
+ *   - positive integer: use as-is.
+ */
+export function getReplayDedupMinutes(): number {
+  const cfg = readThresholdsConfig();
+  const raw = cfg.replay?.dedup_minutes;
+  if (raw === 0) return 0;
+  const v = Number(raw);
+  if (!Number.isFinite(v) || v < 0) return 5;
+  return Math.floor(v);
+}

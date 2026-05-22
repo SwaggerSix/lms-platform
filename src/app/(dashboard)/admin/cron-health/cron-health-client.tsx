@@ -78,6 +78,18 @@ interface AlertConfigResponse {
 
 export default function CronHealthClient() {
   const [data, setData] = useState<HealthResponse | null>(null);
+  // Tick state increments every 30s solely to force a re-render so
+  // relative-time pills ("Nm ago") stay current without a manual
+  // page refresh. The actual values come from formatRelative() called
+  // inline, which uses Date.now() — re-render reads fresh.
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  // Silence "declared but never read" — `tick` is intentionally only
+  // here to trigger renders.
+  void tick;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -136,6 +148,41 @@ export default function CronHealthClient() {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Polling refresh: re-fetch /api/cron/health every 60s while the
+  // tab is visible. Pauses on visibilitychange so a backgrounded tab
+  // doesn't burn requests. Resumes (with an immediate load) when it
+  // returns to the foreground. 60s matches the Cache-Control SWR
+  // window — most poll responses come from the browser cache.
+  useEffect(() => {
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id !== null) return;
+      id = setInterval(() => {
+        if (document.visibilityState === "visible") load();
+      }, 60_000);
+    };
+    const stop = () => {
+      if (id !== null) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        load();
+        start();
+      } else {
+        stop();
+      }
+    };
+    start();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [load]);
 
   // Fetch the alert config once on mount so the page can show

@@ -151,6 +151,17 @@ export function FuzzyCombobox({
     return () => document.removeEventListener("mousedown", onDocMouseDown);
   }, [open]);
 
+  // Cancel any pending rAF callback when the component unmounts so a
+  // scroll in flight doesn't try to setScrollTop on a gone component.
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
+
   const commit = (next: string) => {
     onChange(next);
     setOpen(false);
