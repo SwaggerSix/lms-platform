@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { RelativeTime } from "@/components/ui/relative-time";
+import { RelativeTimeProvider } from "@/components/ui/relative-time-context";
 import { useVisibilityPolling } from "@/hooks/use-visibility-polling";
 
 interface CronJob {
@@ -121,9 +122,6 @@ export default function CronHealthClient() {
     });
   }, [loadHistory]);
 
-  // Tracked across renders so the polling-backoff logic can read the
-  // current failure streak without re-triggering effects.
-  const consecutiveFailuresRef = useRef(0);
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -132,10 +130,8 @@ export default function CronHealthClient() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as HealthResponse;
       setData(json);
-      consecutiveFailuresRef.current = 0;
     } catch (err: any) {
       setError(err?.message ?? "Failed to load");
-      consecutiveFailuresRef.current += 1;
     } finally {
       setLoading(false);
     }
@@ -161,10 +157,6 @@ export default function CronHealthClient() {
     backoffMs: 5 * 60_000,
     backoffAfter: 2,
   });
-  // Suppress unused-var on the legacy ref that the inline polling
-  // path used. Left in place to preserve the API of the load()
-  // callback if any other caller depends on it.
-  void consecutiveFailuresRef;
 
   // Fetch the alert config once on mount so the page can show
   // whether dispatching is wired up (URL present), what adapter is
@@ -193,6 +185,7 @@ export default function CronHealthClient() {
   }, [data, history]);
 
   return (
+    <RelativeTimeProvider>
     <div className="min-h-screen bg-gray-50">
       {/* Screen-reader-only hint shared by every Replay button on this
           page. Visual users get the red accent + tooltip; SR users get
@@ -780,5 +773,6 @@ export default function CronHealthClient() {
         )}
       </div>
     </div>
+    </RelativeTimeProvider>
   );
 }

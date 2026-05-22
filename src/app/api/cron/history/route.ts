@@ -82,6 +82,11 @@ export async function GET(request: NextRequest) {
           "Content-Disposition": `attachment; filename="cron-history-${job}-${new Date()
             .toISOString()
             .slice(0, 10)}.csv"`,
+          // CSV is a downloadable artifact, not a polling target. A
+          // short private cache lets a quick re-download (operator
+          // refreshing while attaching to an incident) avoid the full
+          // 5000-row query.
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
         },
       });
     }

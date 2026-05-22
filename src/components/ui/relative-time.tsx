@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRelativeTimeContext } from "./relative-time-context";
 
 interface RelativeTimeProps {
   iso: string;
@@ -43,12 +44,20 @@ export function RelativeTime({
   prefix,
   suffix,
 }: RelativeTimeProps) {
-  const [, setTick] = useState(0);
+  // Prefer a shared tick when a <RelativeTimeProvider> ancestor exists;
+  // fall back to a per-instance interval otherwise. The shared tick
+  // bypass keeps page-wide overhead at one setInterval regardless of
+  // how many <RelativeTime>s render.
+  const shared = useRelativeTimeContext();
+  const [, setLocalTick] = useState(0);
   useEffect(() => {
+    if (shared) return; // provider drives re-renders
     if (!iso || iso === "never") return;
-    const id = setInterval(() => setTick((t) => t + 1), intervalMs);
+    const id = setInterval(() => setLocalTick((t) => t + 1), intervalMs);
     return () => clearInterval(id);
-  }, [iso, intervalMs]);
+  }, [iso, intervalMs, shared]);
+  // Read shared.tick so React subscribes us to its updates.
+  void shared?.tick;
   const resolvedTitle = title ?? (iso && iso !== "never" ? new Date(iso).toLocaleString() : undefined);
   return (
     <span title={resolvedTitle} className={className}>
