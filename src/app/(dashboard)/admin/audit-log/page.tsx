@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { resolveAuditLogTenant } from "@/lib/audit-log/resolve-tenant";
+import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 import { formatAction, formatTimestamp } from "@/lib/audit-log/format";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
@@ -73,10 +74,9 @@ export default async function AuditLogPage() {
     .select("*, user:users!user_id(id, first_name, last_name, email, organization_id, organization:organizations(id, name))", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(ROW_LIMIT);
-  if (tenantId) {
-    // Include platform-level rows (tenant_id IS NULL) so the tenant admin
-    // still sees system events that affect them.
-    auditQuery = auditQuery.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+  const tenantFilter = buildAuditLogTenantFilter(tenantId);
+  if (tenantFilter) {
+    auditQuery = auditQuery.or(tenantFilter);
   }
   const { data: auditRows, count: totalRowCount } = await auditQuery;
 

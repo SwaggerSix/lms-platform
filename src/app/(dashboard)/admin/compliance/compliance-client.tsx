@@ -140,18 +140,10 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
   };
 
   const openCreateModal = () => {
-    setSelectedReq(null);
-    setModalMode('create');
-    setFormData({
-      name: '',
-      regulation: '',
-      mandatory: true,
-      applicableTo: 'All Employees',
-      linkedCourse: '',
-      frequency: 'Annual',
-    });
-    setError(null);
-    setModalOpen(true);
+    // Required training is now created from the course itself; /api/compliance
+    // POST returns 410. Redirect to the courses admin so the right form
+    // surfaces in context.
+    window.location.href = '/admin/courses';
   };
 
   const closeModal = () => {
@@ -160,58 +152,6 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
     setError(null);
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/compliance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          regulation: formData.regulation,
-          mandatory: formData.mandatory,
-          applicable_to: formData.applicableTo,
-          linked_course: formData.linkedCourse,
-          frequency: formData.frequency,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to create compliance requirement');
-      }
-      const created = await res.json();
-      setRequirements((prev) => [
-        {
-          id: created.id ?? crypto.randomUUID(),
-          name: formData.name,
-          regulation: formData.regulation,
-          mandatory: formData.mandatory,
-          applicableTo: formData.applicableTo,
-          linkedCourse: formData.linkedCourse,
-          frequency: formData.frequency,
-          complianceRate: 0,
-          totalUsers: 0,
-          compliantUsers: 0,
-          overdueUsers: 0,
-          userStatus: [],
-          // The /api/compliance POST endpoint is deprecated; new requirements
-          // should be created via /admin/courses, which writes to
-          // courses.metadata.required_for. We tag the optimistic row as
-          // 'course' so the type stays consistent; a refresh re-fetches
-          // from the canonical source.
-          origin: 'course' as const,
-        },
-        ...prev,
-      ]);
-      closeModal();
-    } catch (err: any) {
-      setError(err.message ?? 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,16 +218,13 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       </div>
 
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-        <p className="text-sm font-semibold text-indigo-900">Unified compliance view</p>
+        <p className="text-sm font-semibold text-indigo-900">Required training</p>
         <p className="mt-1 text-sm text-indigo-800">
-          This page now merges two sources: <span className="font-semibold">course-backed</span>{" "}
-          requirements (defined on each course&apos;s Required Training settings, including
-          regulation, recurrence, and mandatory flag) and any remaining{" "}
-          <span className="font-semibold">legacy</span> rows from the older{" "}
-          <code className="rounded bg-white px-1 py-0.5 text-xs">compliance_requirements</code> table.
-          Edit course-backed rows from{" "}
-          <a href="/admin/courses" className="font-medium underline">Admin → Courses</a>; legacy rows
-          can still be edited inline below or migrated by running the backfill SQL.
+          Each row below comes from a course&apos;s Required Training settings —
+          regulation, recurrence, mandatory flag, and applicable roles all
+          live on the course itself. To add or change a requirement, go to{" "}
+          <a href="/admin/courses" className="font-medium underline">Admin → Courses</a>{" "}
+          and edit the course&apos;s Required Training panel.
         </p>
       </div>
 
@@ -358,24 +295,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     </button>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900">{req.name}</p>
-                      {req.origin === 'course' ? (
-                        <span
-                          className="inline-flex items-center rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200"
-                          title="Lives on the course's Required Training settings"
-                        >
-                          course-backed
-                        </span>
-                      ) : (
-                        <span
-                          className="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200"
-                          title="Legacy row from compliance_requirements. Run the backfill to merge into the course."
-                        >
-                          legacy
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-sm font-medium text-gray-900">{req.name}</p>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{req.regulation}</td>
                   <td className="px-6 py-4 text-center">
@@ -560,7 +480,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                 </div>
               </div>
             ) : (
-              <form onSubmit={modalMode === 'create' ? handleCreate : handleSave} className="p-6 space-y-4">
+              <form onSubmit={handleSave} className="p-6 space-y-4">
                 {error && (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
                 )}
