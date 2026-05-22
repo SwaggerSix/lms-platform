@@ -53,7 +53,7 @@ export async function POST(
 
     logAudit({
       userId: auth.user.id,
-      action: "executed",
+      action: "workflow.execute",
       entityType: "workflow",
       entityId: id,
       newValues: { run_id: run.id, status: run.status },

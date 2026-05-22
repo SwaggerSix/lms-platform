@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { deepMergePreferences, diffPreferences } from "@/lib/preferences/merge";
 import { logAudit } from "@/lib/audit";
 import { jsonNoStore } from "@/lib/api/no-store";
@@ -15,7 +15,7 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!authUser) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -27,10 +27,14 @@ export async function GET() {
     .single();
 
   if (error || !profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json(profile);
+  // No-store on the GET too. Profile data is user-mutable via PATCH;
+  // a stale cached response served right after a save would briefly
+  // show the wrong preferences/avatar/name. Tiny scan-once query, so
+  // the savings from caching wouldn't justify the UX risk.
+  return jsonNoStore(profile);
 }
 
 /**

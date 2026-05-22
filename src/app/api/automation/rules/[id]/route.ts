@@ -113,7 +113,7 @@ export async function POST(
 
   logAudit({
     userId: auth.user.id,
-    action: "manual_rule_execution",
+    action: "rule.execute_manual",
     entityType: "enrollment_rule",
     entityId: id,
     newValues: { matched, executed, errors },

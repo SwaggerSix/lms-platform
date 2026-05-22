@@ -2,8 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getTenantScope } from "@/lib/tenants/tenant-queries";
-import { parseUuid } from "@/lib/validate-uuid";
+import { resolveAuditLogTenant } from "@/lib/audit-log/resolve-tenant";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -64,25 +63,15 @@ export default async function AuditLogPage() {
   //   Platform-level rows (tenant_id IS NULL: cron events, super_admin
   //   actions) remain visible to scoped admins via the .or() filter below.
   const hdrs = await headers();
-  // Validate the x-tenant-id header — a malformed value would land in
-  // the .or() filter as-is, which is at best a 5xx and at worst a
-  // surprising filter shape. parseUuid returns null on anything that
-  // isn't a canonical UUID, which we treat as "no override".
-  //
-  // Note: tenant-queries.ts also validates the header at the
-  // resolveTenantForUser entry point. This page reads the header
-  // directly (not via that function) so this call is the *only*
-  // validation at the audit-log page boundary — not redundant.
-  const headerTenantId = parseUuid(hdrs.get("x-tenant-id"));
-  let tenantId: string | null = headerTenantId;
-  if (!tenantId) {
-    if (dbUser.role === "admin") {
-      tenantId = (dbUser as any).organization_id ?? null;
-    } else if (dbUser.role !== "super_admin") {
-      const scope = await getTenantScope(dbUser.id, dbUser.role).catch(() => null);
-      tenantId = scope?.tenantId ?? null;
-    }
-  }
+  // Scope resolution lives in src/lib/audit-log/resolve-tenant.ts so
+  // the rules (header overrides, admin defaults to own org, etc.) are
+  // testable in isolation and stay consistent across any future readers.
+  const tenantId = await resolveAuditLogTenant({
+    role: dbUser.role,
+    userId: dbUser.id,
+    organizationId: (dbUser as any).organization_id ?? null,
+    headerTenantId: hdrs.get("x-tenant-id"),
+  });
 
   let auditQuery = service
     .from("audit_logs")
