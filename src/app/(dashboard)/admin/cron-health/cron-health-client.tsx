@@ -72,6 +72,8 @@ interface AlertConfigResponse {
     schedule: string;
     interval_minutes: number;
   }>;
+  schedules_cache?: { loaded_at: string; age_ms: number } | null;
+  thresholds_cache?: { loaded_at: string; age_ms: number } | null;
 }
 
 export default function CronHealthClient() {
@@ -447,6 +449,14 @@ export default function CronHealthClient() {
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2 text-xs text-amber-800">
+                      {alertConfig.schedules_cache && (
+                        <span
+                          title={`vercel.json cached server-side at ${new Date(alertConfig.schedules_cache.loaded_at).toLocaleString()}`}
+                          className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
+                        >
+                          cache {formatRelative(alertConfig.schedules_cache.loaded_at)}
+                        </span>
+                      )}
                       {alertConfigFetchedAt && (
                         <span title={new Date(alertConfigFetchedAt).toLocaleString()}>
                           last computed {formatRelative(alertConfigFetchedAt)}

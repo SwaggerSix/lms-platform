@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
 import { estimateIntervalMinutes } from "@/lib/cron/monitor";
 import { readVercelConfig, vercelConfigCacheInfo } from "@/lib/cron/vercel-config";
+import { readThresholdsConfig, thresholdsConfigCacheInfo } from "@/lib/cron/thresholds-config";
 
 /**
  * GET /api/admin/alert-config
@@ -26,15 +25,7 @@ export async function GET() {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  let thresholds: Record<string, unknown> = {};
-  try {
-    const p = join(process.cwd(), "cron-thresholds.json");
-    if (existsSync(p)) {
-      thresholds = JSON.parse(readFileSync(p, "utf8"));
-    }
-  } catch {
-    // missing / malformed → empty config
-  }
+  const thresholds = readThresholdsConfig();
 
   // Parse vercel.json's cron entries so the UI can diff configured vs
   // actual run history. Each entry: { name, path, schedule,
@@ -54,6 +45,7 @@ export async function GET() {
     alert_webhook: (thresholds.alert_webhook ?? null) as Record<string, unknown> | null,
     consecutive_failures: (thresholds.consecutive_failures ?? null) as Record<string, unknown> | null,
     replay: (thresholds.replay ?? null) as Record<string, unknown> | null,
+    thresholds_cache: thresholdsConfigCacheInfo(),
     schedules,
     schedules_cache: vercelConfigCacheInfo(),
     has_webhook_url: !!process.env.CRON_ALERT_WEBHOOK_URL,

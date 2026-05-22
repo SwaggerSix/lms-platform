@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchAlertWebhook } from "@/lib/cron/monitor";
 import { cronJobBasenames } from "@/lib/cron/vercel-config";
+import { readThresholdsConfig } from "@/lib/cron/thresholds-config";
 import { logAudit } from "@/lib/audit";
 
 /**
@@ -43,18 +42,12 @@ import { logAudit } from "@/lib/audit";
  *   - positive integer: use as-is.
  */
 function loadReplayDedupMinutes(): number {
-  try {
-    const p = join(process.cwd(), "cron-thresholds.json");
-    if (!existsSync(p)) return 5;
-    const cfg = JSON.parse(readFileSync(p, "utf8")) as { replay?: { dedup_minutes?: number } };
-    const raw = cfg.replay?.dedup_minutes;
-    if (raw === 0) return 0; // explicit opt-out
-    const v = Number(raw);
-    if (!Number.isFinite(v) || v < 0) return 5;
-    return Math.floor(v);
-  } catch {
-    return 5;
-  }
+  const cfg = readThresholdsConfig();
+  const raw = cfg.replay?.dedup_minutes;
+  if (raw === 0) return 0; // explicit opt-out
+  const v = Number(raw);
+  if (!Number.isFinite(v) || v < 0) return 5;
+  return Math.floor(v);
 }
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");

@@ -10,6 +10,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { FuzzyCombobox } from "@/components/ui/fuzzy-combobox";
 
 export interface AuditEntry {
   id: string;
@@ -143,11 +144,16 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
       // newer dotted-namespace action that starts with "export." (e.g.
       // "export.notification_audit_csv"). Same idea would apply to future
       // namespaces like "refresh." — generalized via lowercase prefix match.
-      const filterLower = actionFilter.toLowerCase();
+      // Treat blank / whitespace-only filter as "All" so a stray space
+      // from an external setter or a paste glitch doesn't accidentally
+      // hide every row.
+      const trimmedFilter = actionFilter.trim();
+      const effectiveFilter = trimmedFilter === "" ? "All" : trimmedFilter;
+      const filterLower = effectiveFilter.toLowerCase();
       const actionLower = entry.action.toLowerCase();
       const matchesAction =
-        actionFilter === "All" ||
-        entry.action === actionFilter ||
+        effectiveFilter === "All" ||
+        entry.action === effectiveFilter ||
         actionLower.startsWith(`${filterLower}.`);
       const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
       return matchesUser && matchesAction && matchesEntity;
@@ -205,53 +211,52 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input type="text" placeholder="Search user..." value={userSearch} onChange={(e) => { setUserSearch(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           </div>
-          {/* Action filter is a free-text combobox backed by a datalist.
-              Lets admins either type a partial namespace ("repl") to
-              narrow the suggestions, or paste an exact action like
-              "replay.cron_alerts.compliance-recurrence". The existing
-              filter logic (exact match + dotted-prefix match) handles
-              both. Datalist values are normalized to the prefix string;
-              labels carry the human description / counts. */}
-          <input
-            type="text"
-            list="action-namespace-list"
+          {/* Action filter: fuzzy-matching combobox. Lets admins either
+              type a partial namespace ("repl") to narrow suggestions
+              with subsequence matching, or paste an exact action like
+              "replay.cron_alerts.compliance-recurrence". The downstream
+              filter logic (exact + dotted-prefix match) handles both. */}
+          <FuzzyCombobox
             value={actionFilter === "All" ? "" : actionFilter}
-            onChange={(e) => {
-              setActionFilter(e.target.value.trim() || "All");
+            onChange={(next) => {
+              const norm = next.trim();
+              setActionFilter(norm || "All");
               setCurrentPage(1);
             }}
             placeholder="All actions — type to filter…"
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 min-w-[14rem]"
-            aria-label="Filter by action"
-          />
-          <datalist id="action-namespace-list">
-            <option value="Created" />
-            <option value="Updated" />
-            <option value="Deleted" />
-            <option value="Login" />
-            <option value="Export" />
-            <option value="profile.preferences" label="Preference Changes" />
-            <option value="refresh" label="View Refreshes" />
-            <option value="replay" label="Replays" />
-            {dynamicNamespaces
-              .filter(([p]) => !["profile", "refresh", "replay"].includes(p))
-              .map(([prefix, count]) => (
-                <option key={prefix} value={prefix} label={`${count} rows`} />
-              ))}
-            {(() => {
+            ariaLabel="Filter by action"
+            className="min-w-[16rem]"
+            suggestions={(() => {
               const commonValues = new Set(["profile.preferences", "refresh", "replay"]);
-              return remoteNamespaces
-                .filter(
-                  (n) =>
-                    n.parent &&
-                    !["created", "updated", "deleted", "login", "export"].includes(n.parent) &&
-                    !commonValues.has(n.prefix)
-                )
-                .map((n) => (
-                  <option key={`sub-${n.prefix}`} value={n.prefix} label={`${n.count} rows`} />
-                ));
+              return [
+                { value: "Created" },
+                { value: "Updated" },
+                { value: "Deleted" },
+                { value: "Login" },
+                { value: "Export" },
+                { value: "profile.preferences", label: "Preference Changes" },
+                { value: "refresh", label: "View Refreshes" },
+                { value: "replay", label: "Replays" },
+                ...dynamicNamespaces
+                  .filter(([p]) => !["profile", "refresh", "replay"].includes(p))
+                  .map(([prefix, count]) => ({
+                    value: prefix,
+                    meta: `${count} rows`,
+                  })),
+                ...remoteNamespaces
+                  .filter(
+                    (n) =>
+                      n.parent &&
+                      !["created", "updated", "deleted", "login", "export"].includes(n.parent) &&
+                      !commonValues.has(n.prefix)
+                  )
+                  .map((n) => ({
+                    value: n.prefix,
+                    meta: `${n.count} rows`,
+                  })),
+              ];
             })()}
-          </datalist>
+          />
           <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Entities</option>
             <option value="User">User</option>

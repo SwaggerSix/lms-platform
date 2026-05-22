@@ -1,4 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { readThresholdsConfig } from "./thresholds-config";
+import { readVercelConfig } from "./vercel-config";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -60,11 +62,6 @@ export function estimateIntervalMinutes(expr: string): number {
 
 function loadIntervalsFromVercelJson(): Record<string, number> | null {
   try {
-    // Lazy require so this never runs in browser/Edge contexts. The
-    // vercel-config helper caches by mtime so subsequent callers (e.g.
-    // /api/admin/alert-config) share one read.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { readVercelConfig } = require("./vercel-config") as typeof import("./vercel-config");
     const cfg = readVercelConfig();
     if (!Array.isArray(cfg.crons)) return null;
     const result: Record<string, number> = {};
@@ -115,14 +112,10 @@ interface CronAlertConfig {
  */
 function loadAlertConfig(): CronAlertConfig {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("node:fs") as typeof import("node:fs");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const path = require("node:path") as typeof import("node:path");
-    const p = path.join(process.cwd(), "cron-thresholds.json");
-    if (!fs.existsSync(p)) return {};
-    const raw = fs.readFileSync(p, "utf8");
-    return JSON.parse(raw) as CronAlertConfig;
+    // The shared helper handles fs reads + mtime caching so concurrent
+    // callers (this module's module-load, the alert-config endpoint,
+    // the replay endpoint) all share one parse.
+    return readThresholdsConfig() as CronAlertConfig;
   } catch {
     return {};
   }
