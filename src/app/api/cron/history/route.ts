@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
           // refreshing while attaching to an incident) avoid the full
           // 5000-row query.
           "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+          Vary: "Cookie",
         },
       });
     }
@@ -96,6 +97,7 @@ export async function GET(request: NextRequest) {
         // Per-job history is read on-demand when a row is expanded.
         // 30s private cache keeps repeat expand-collapse cheap.
         "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        Vary: "Cookie",
       },
     });
   }
@@ -141,6 +143,7 @@ export async function GET(request: NextRequest) {
         // Same TTL as single-job mode — the sparkline eager-prefetch
         // benefits from cache on tab refresh.
         "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        Vary: "Cookie",
       },
     }
   );

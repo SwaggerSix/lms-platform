@@ -42,8 +42,10 @@ export async function GET(request: NextRequest) {
           // tab refreshes don't re-run the per-job cron_runs queries
           // but a polling UI still sees fresh data within 10s. private
           // (not shared) because the response includes user-visible
-          // alert details.
+          // alert details. Vary: Cookie is defense-in-depth against
+          // any future shared cache that ignores `private`.
           "Cache-Control": "private, max-age=10, stale-while-revalidate=20",
+          Vary: "Cookie",
         },
       }
     );

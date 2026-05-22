@@ -140,6 +140,7 @@ export async function GET(request: NextRequest) {
         // attaching to an incident hits the cache rather than re-running
         // the full scan + filter.
         "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        Vary: "Cookie",
       },
     });
   }
@@ -293,6 +294,7 @@ export async function GET(request: NextRequest) {
       // doesn't re-run the paginated + aggregation queries on
       // every tab activation.
       "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      Vary: "Cookie",
     },
   });
 }

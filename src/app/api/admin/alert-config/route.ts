@@ -60,6 +60,7 @@ export async function GET() {
         // proxies (none in this stack today, but future CDN setups
         // benefit) serve a 60s-old response while fetching fresh.
         "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        Vary: "Cookie",
       },
     }
   );

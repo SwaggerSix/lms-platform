@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { parseUuid } from "@/lib/validate-uuid";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -63,8 +64,12 @@ export default async function AuditLogPage() {
   //   Platform-level rows (tenant_id IS NULL: cron events, super_admin
   //   actions) remain visible to scoped admins via the .or() filter below.
   const hdrs = await headers();
-  const headerTenantId = hdrs.get("x-tenant-id");
-  let tenantId: string | null = headerTenantId || null;
+  // Validate the x-tenant-id header — a malformed value would land in
+  // the .or() filter as-is, which is at best a 5xx and at worst a
+  // surprising filter shape. parseUuid returns null on anything that
+  // isn't a canonical UUID, which we treat as "no override".
+  const headerTenantId = parseUuid(hdrs.get("x-tenant-id"));
+  let tenantId: string | null = headerTenantId;
   if (!tenantId) {
     if (dbUser.role === "admin") {
       tenantId = (dbUser as any).organization_id ?? null;

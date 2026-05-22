@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { useVisibilityPolling } from "@/hooks/use-visibility-polling";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -62,13 +63,15 @@ export default function SyncStatus({ integrationId, onRefresh }: SyncStatusProps
     fetchLogs();
   }, [fetchLogs]);
 
-  // Poll for active sync status
-  useEffect(() => {
-    if (!activeSyncId) return;
-
-    const interval = setInterval(fetchLogs, 3000);
-    return () => clearInterval(interval);
-  }, [activeSyncId, fetchLogs]);
+  // Poll for active sync status. Uses the shared visibility-aware
+  // polling hook so a backgrounded tab stops hammering the API —
+  // sync logs are useful only when the operator is watching.
+  useVisibilityPolling({
+    poll: fetchLogs,
+    intervalMs: activeSyncId ? 3_000 : 60_000 * 60 * 24, // effectively disabled when no active sync
+    backoffMs: 30_000,
+    backoffAfter: 3,
+  });
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "-";

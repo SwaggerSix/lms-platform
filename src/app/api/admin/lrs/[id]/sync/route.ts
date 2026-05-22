@@ -3,6 +3,9 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { LRSClient } from "@/lib/xapi/lrs-client";
 
+/** Side-effectful sync — never cache. */
+const NO_STORE = { headers: { "Cache-Control": "private, no-store" } };
+
 /**
  * POST /api/admin/lrs/[id]/sync
  * Trigger a manual sync with an external LRS.
@@ -14,7 +17,7 @@ export async function POST(
 ) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return NextResponse.json({ error: auth.error }, { status: auth.status, ...NO_STORE });
   }
 
   const { id } = await params;
@@ -31,7 +34,7 @@ export async function POST(
     .single();
 
   if (configError || !config) {
-    return NextResponse.json({ error: "LRS configuration not found" }, { status: 404 });
+    return NextResponse.json({ error: "LRS configuration not found" }, { status: 404, ...NO_STORE });
   }
 
   const client = new LRSClient({
@@ -46,7 +49,7 @@ export async function POST(
   // ─── Test Connection ───────────────────────────────────────────────────
   if (action === "test") {
     const result = await client.testConnection();
-    return NextResponse.json(result);
+    return NextResponse.json(result, NO_STORE);
   }
 
   // ─── Push Statements ──────────────────────────────────────────────────
@@ -54,7 +57,7 @@ export async function POST(
     if (!["push", "both"].includes(config.sync_direction)) {
       return NextResponse.json(
         { error: "This LRS is not configured for push sync" },
-        { status: 400 }
+        { status: 400, ...NO_STORE }
       );
     }
 
@@ -73,11 +76,11 @@ export async function POST(
     const { data: statements, error: stmtError } = await query;
 
     if (stmtError) {
-      return NextResponse.json({ error: "Failed to fetch statements" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to fetch statements" }, { status: 500, ...NO_STORE });
     }
 
     if (!statements || statements.length === 0) {
-      return NextResponse.json({ message: "No new statements to sync", count: 0 });
+      return NextResponse.json({ message: "No new statements to sync", count: 0 }, NO_STORE);
     }
 
     let pushed = 0;
@@ -99,12 +102,15 @@ export async function POST(
       .update({ last_sync_at: new Date().toISOString() })
       .eq("id", id);
 
-    return NextResponse.json({
-      message: `Sync complete: ${pushed} pushed, ${failed} failed`,
-      pushed,
-      failed,
-      total: statements.length,
-    });
+    return NextResponse.json(
+      {
+        message: `Sync complete: ${pushed} pushed, ${failed} failed`,
+        pushed,
+        failed,
+        total: statements.length,
+      },
+      NO_STORE
+    );
   }
 
   // ─── Pull Statements ──────────────────────────────────────────────────
@@ -112,7 +118,7 @@ export async function POST(
     if (!["pull", "both"].includes(config.sync_direction)) {
       return NextResponse.json(
         { error: "This LRS is not configured for pull sync" },
-        { status: 400 }
+        { status: 400, ...NO_STORE }
       );
     }
 
@@ -161,18 +167,24 @@ export async function POST(
         .update({ last_sync_at: new Date().toISOString() })
         .eq("id", id);
 
-      return NextResponse.json({
-        message: `Pull complete: ${imported} statements imported`,
-        imported,
-        total: result.statements?.length || 0,
-      });
+      return NextResponse.json(
+        {
+          message: `Pull complete: ${imported} statements imported`,
+          imported,
+          total: result.statements?.length || 0,
+        },
+        NO_STORE
+      );
     } catch (error) {
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "Pull sync failed" },
-        { status: 500 }
+        { status: 500, ...NO_STORE }
       );
     }
   }
 
-  return NextResponse.json({ error: "Invalid action. Use: test, push, or pull" }, { status: 400 });
+  return NextResponse.json(
+    { error: "Invalid action. Use: test, push, or pull" },
+    { status: 400, ...NO_STORE }
+  );
 }

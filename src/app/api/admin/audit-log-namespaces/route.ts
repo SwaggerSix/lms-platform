@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
         // start appearing — typically deploys, not minute-to-minute.
         // 5-minute private cache cuts the per-page-load 20k-row scan.
         "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+        Vary: "Cookie",
       },
     }
   );
