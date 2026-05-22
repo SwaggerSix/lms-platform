@@ -34,6 +34,12 @@ export interface AuditEntry {
 export interface AuditLogClientProps {
   entries: AuditEntry[];
   initialHidePlatform?: boolean;
+  initialEntityFilter?: string;
+  initialOrgFilter?: string;
+  /** Server-side cap on the rows fetched; when totalRowCount exceeds this, the UI warns the admin to narrow filters. */
+  rowLimit?: number;
+  /** Exact row count from the audit_logs query (with the same tenant filter applied). May exceed rowLimit. */
+  totalRowCount?: number;
 }
 
 const actionColors: Record<string, string> = {
@@ -59,7 +65,16 @@ const exportCSV = (data: Record<string, unknown>[], filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export default function AuditLogClient({ entries, initialHidePlatform = false }: AuditLogClientProps) {
+export default function AuditLogClient({
+  entries,
+  initialHidePlatform = false,
+  initialEntityFilter = "All",
+  initialOrgFilter = "All",
+  rowLimit,
+  totalRowCount,
+}: AuditLogClientProps) {
+  const truncated =
+    rowLimit != null && totalRowCount != null && totalRowCount > rowLimit;
   const [dateFrom, setDateFrom] = useState("2026-03-10");
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
@@ -67,8 +82,8 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
   const [remoteNamespaces, setRemoteNamespaces] = useState<
     Array<{ prefix: string; count: number; parent?: string | null }>
   >([]);
-  const [entityFilter, setEntityFilter] = useState("All");
-  const [orgFilter, setOrgFilter] = useState("All");
+  const [entityFilter, setEntityFilter] = useState(initialEntityFilter);
+  const [orgFilter, setOrgFilter] = useState(initialOrgFilter);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
@@ -140,17 +155,22 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
     return { opts, hasUnassigned };
   }, [entries]);
 
-  // Persist the toggle to users.preferences.ui_prefs so it sticks across
-  // sessions. Fire-and-forget — UI doesn't block on the save.
-  const persistHidePlatform = (next: boolean) => {
+  // Persist a single audit_filters prefs blob so the entity + org
+  // selections stick across sessions alongside hide_platform_audit.
+  // Fire-and-forget — UI doesn't block on the save. Each call sends only
+  // the changed key under audit_filters; the server-side PATCH merges
+  // partial preferences into the existing blob.
+  const persistAuditPref = (patch: Record<string, unknown>) => {
     fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        preferences: { ui_prefs: { hide_platform_audit: next } },
+        preferences: { ui_prefs: patch },
       }),
     }).catch(() => {});
   };
+  const persistHidePlatform = (next: boolean) =>
+    persistAuditPref({ hide_platform_audit: next });
   const itemsPerPage = 15;
 
   const toggleRow = (id: string) => {
@@ -231,6 +251,17 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
         </button>
       </div>
 
+      {truncated && (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900"
+        >
+          Showing {rowLimit?.toLocaleString()} of {totalRowCount?.toLocaleString()} rows.
+          Narrow the date range or other filters to see older activity — the export reflects only
+          the rows currently loaded.
+        </div>
+      )}
+
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
@@ -289,7 +320,7 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
               ];
             })()}
           />
-          <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setCurrentPage(1); persistAuditPref({ entity_filter: e.target.value }); }} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             <option value="All">All Entities</option>
             <option value="User">User</option>
             <option value="Course">Course</option>
@@ -299,7 +330,7 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
           </select>
           <select
             value={orgFilter}
-            onChange={(e) => { setOrgFilter(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { setOrgFilter(e.target.value); setCurrentPage(1); persistAuditPref({ org_filter: e.target.value }); }}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             aria-label="Filter by organization"
           >

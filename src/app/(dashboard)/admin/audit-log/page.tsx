@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { resolveAuditLogTenant } from "@/lib/audit-log/resolve-tenant";
+import { formatAction, formatTimestamp } from "@/lib/audit-log/format";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -13,18 +14,6 @@ function getInitials(name: string): string {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-}
-
-function formatAction(action: string): AuditEntry["action"] {
-  const normalized = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
-  const valid = ["Created", "Updated", "Deleted", "Login", "Export", "System"];
-  return (valid.includes(normalized) ? normalized : "System") as AuditEntry["action"];
-}
-
-function formatTimestamp(ts: string): string {
-  const d = new Date(ts);
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 export default async function AuditLogPage() {
@@ -73,17 +62,23 @@ export default async function AuditLogPage() {
     headerTenantId: hdrs.get("x-tenant-id"),
   });
 
+  // Row cap: bumped from 100 → 500 to make the on-page sample useful
+  // for narrowing via filters. When the underlying table exceeds the
+  // cap, the UI shows a banner telling the admin to tighten filters
+  // (date range, action, entity, org). Without that signal the page
+  // would silently truncate.
+  const ROW_LIMIT = 500;
   let auditQuery = service
     .from("audit_logs")
-    .select("*, user:users!user_id(id, first_name, last_name, email, organization_id, organization:organizations(id, name))")
+    .select("*, user:users!user_id(id, first_name, last_name, email, organization_id, organization:organizations(id, name))", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(ROW_LIMIT);
   if (tenantId) {
     // Include platform-level rows (tenant_id IS NULL) so the tenant admin
     // still sees system events that affect them.
     auditQuery = auditQuery.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
   }
-  const { data: auditRows } = await auditQuery;
+  const { data: auditRows, count: totalRowCount } = await auditQuery;
 
   const entries: AuditEntry[] = (auditRows ?? []).map((row: any) => {
     const u = row.user as any;
@@ -122,11 +117,26 @@ export default async function AuditLogPage() {
     };
   });
 
-  // Initial value for the "Hide platform events" toggle. Persisted under
-  // users.preferences.ui_prefs.hide_platform_audit via the existing
-  // PATCH /api/profile path that other settings already use.
+  // Initial values for client-side filters. Persisted under
+  // users.preferences.ui_prefs.{hide_platform_audit, entity_filter, org_filter}
+  // via PATCH /api/profile so they stick across sessions. Strings default
+  // to "All" — the client treats that as "no filter".
   const prefs = ((dbUser as any).preferences ?? {}) as Record<string, any>;
-  const initialHidePlatform = !!prefs.ui_prefs?.hide_platform_audit;
+  const uiPrefs = (prefs.ui_prefs ?? {}) as Record<string, unknown>;
+  const initialHidePlatform = !!uiPrefs.hide_platform_audit;
+  const initialEntityFilter = typeof uiPrefs.entity_filter === "string" ? uiPrefs.entity_filter : "All";
+  const initialOrgFilter = typeof uiPrefs.org_filter === "string" ? uiPrefs.org_filter : "All";
 
-  return <AuditLogClient entries={entries} initialHidePlatform={initialHidePlatform} />;
+  // Server-rendered audit-log views must never serve a stale snapshot;
+  // a page reload after an action should reflect the new row.
+  return (
+    <AuditLogClient
+      entries={entries}
+      initialHidePlatform={initialHidePlatform}
+      initialEntityFilter={initialEntityFilter}
+      initialOrgFilter={initialOrgFilter}
+      rowLimit={ROW_LIMIT}
+      totalRowCount={totalRowCount ?? entries.length}
+    />
+  );
 }

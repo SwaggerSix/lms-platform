@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import ComplianceClient from './compliance-client';
 import type { ComplianceRequirement, ComplianceUserStatus, ComplianceOverviewStat } from './compliance-client';
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
+import { computeRecertExpiry, getRequiredCourseSources } from "@/lib/courses/required-training";
 
 function formatFrequency(months: number | null | undefined): string {
   if (!months) return 'One-time';
@@ -41,16 +41,16 @@ function formatRoles(roles: string[] | null | undefined): string {
 }
 
 interface NormalizedSource {
-  /** Stable id for the row: prefer `course:<courseId>` when course-backed, else `legacy:<id>` */
+  /** Stable id for the row: `course:<courseId>` */
   id: string;
   name: string;
   regulation: string;
   mandatory: boolean;
   frequencyMonths: number | null;
   applicableRoles: string[];
-  courseId: string | null;
+  courseId: string;
   courseName: string;
-  origin: 'course' | 'legacy';
+  origin: 'course';
 }
 
 export default async function CompliancePage() {
@@ -68,59 +68,22 @@ export default async function CompliancePage() {
 
   if (!dbUser) redirect('/login');
 
-  // 1. Pull courses with required_for set on metadata (new system, source of truth).
-  const { data: courseRowsRaw } = await service
-    .from('courses')
-    .select('id, title, metadata')
-    .neq('status', 'archived');
-
-  const courseSources: NormalizedSource[] = [];
-  const handledCourseIds = new Set<string>();
-  for (const row of (courseRowsRaw ?? []) as any[]) {
-    const required = readRequiredFor(row.metadata);
-    if (!required) continue;
-    handledCourseIds.add(row.id);
-    courseSources.push({
-      id: `course:${row.id}`,
-      name: row.title ?? 'Untitled Course',
-      regulation: required.regulation ?? '',
-      mandatory: required.is_mandatory !== false,
-      frequencyMonths: required.frequency_months ?? null,
-      applicableRoles: required.roles,
-      courseId: row.id,
-      courseName: row.title ?? 'Untitled Course',
-      origin: 'course',
-    });
-  }
-
-  // 2. Pull legacy compliance_requirements — merge in any whose course isn't
-  // already covered by the new system. (Once backfill is run, this becomes a no-op.)
-  const { data: legacyRows } = await service
-    .from('compliance_requirements')
-    .select('*, course:courses(id, title)')
-    .is('retired_at', null)
-    .order('created_at', { ascending: false });
-
-  const legacySources: NormalizedSource[] = [];
-  for (const row of (legacyRows ?? []) as any[]) {
-    if (row.course_id && handledCourseIds.has(row.course_id)) {
-      // The course already carries the data — skip to avoid double-counting.
-      continue;
-    }
-    legacySources.push({
-      id: `legacy:${row.id}`,
-      name: row.name,
-      regulation: row.regulation ?? '',
-      mandatory: row.is_mandatory ?? true,
-      frequencyMonths: row.frequency_months ?? null,
-      applicableRoles: row.applicable_roles ?? [],
-      courseId: row.course_id ?? null,
-      courseName: row.course?.title ?? 'No linked course',
-      origin: 'legacy',
-    });
-  }
-
-  const allSources = [...courseSources, ...legacySources];
+  // Single canonical source: courses.metadata.required_for. The legacy
+  // compliance_requirements table is being retired — its rows have been
+  // backfilled onto course metadata. See
+  // supabase/migrations/20260318100031_compliance_backfill.sql.
+  const rawSources = await getRequiredCourseSources(service);
+  const allSources: NormalizedSource[] = rawSources.map((s) => ({
+    id: s.id,
+    name: s.name,
+    regulation: s.regulation,
+    mandatory: s.mandatory,
+    frequencyMonths: s.frequencyMonths,
+    applicableRoles: s.applicableRoles,
+    courseId: s.courseId,
+    courseName: s.courseName,
+    origin: 'course' as const,
+  }));
 
   // 3. For each source, compute enrollment-derived status. Course-backed
   // sources need fresh enrollment lookups; legacy sources use their linked

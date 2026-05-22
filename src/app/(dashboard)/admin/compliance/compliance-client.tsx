@@ -43,8 +43,8 @@ export interface ComplianceRequirement {
   compliantUsers: number;
   overdueUsers: number;
   userStatus: ComplianceUserStatus[];
-  /** "course" = lives on courses.metadata.required_for; "legacy" = compliance_requirements row */
-  origin: 'course' | 'legacy';
+  /** Always "course" now that the legacy compliance_requirements table has been retired. Kept on the type so a future second source (e.g. external compliance system) can re-introduce a discriminator without a breaking change. */
+  origin: 'course';
 }
 
 export interface ComplianceOverviewStat {
@@ -196,7 +196,12 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           compliantUsers: 0,
           overdueUsers: 0,
           userStatus: [],
-          origin: 'legacy' as const,
+          // The /api/compliance POST endpoint is deprecated; new requirements
+          // should be created via /admin/courses, which writes to
+          // courses.metadata.required_for. We tag the optimistic row as
+          // 'course' so the type stays consistent; a refresh re-fetches
+          // from the canonical source.
+          origin: 'course' as const,
         },
         ...prev,
       ]);
