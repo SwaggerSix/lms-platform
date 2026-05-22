@@ -10,6 +10,7 @@ import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training"
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import crypto from "crypto";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // 16 bytes base64url ≈ 22 chars; Supabase requires ≥6.
 function generateTemporaryPassword(): string {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ users: data, total: count, page });
+  return jsonCached({ users: data, total: count, page });
 }
 
 export async function POST(request: NextRequest) {

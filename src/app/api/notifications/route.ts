@@ -38,7 +38,7 @@ export async function GET() {
   }
 
   const unreadCount = data?.filter((n) => !n.is_read).length || 0;
-  return NextResponse.json({ notifications: data, unreadCount });
+  return jsonNoStore({ notifications: data, unreadCount });
 }
 
 export async function POST(request: NextRequest) {

@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createAssessmentSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
     console.error("Assessments API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonCached(data);
 }
 
 export async function POST(request: NextRequest) {

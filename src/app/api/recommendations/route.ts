@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
       currentLevel: s.proficiency_level,
     }));
 
-  return NextResponse.json({
+  return jsonNoStore({
     ai_picks: hydratedAiPicks,
     adaptive_path: adaptivePath,
     similar,

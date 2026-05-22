@@ -8,6 +8,7 @@ import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { syncRequiredEnrollmentsForCourse } from "@/lib/courses/required-training";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     query = query.in("id", tenantScope.courseIds);
   } else if (tenantScope && tenantScope.courseIds.length === 0) {
     // Tenant has no courses assigned — return empty
-    return NextResponse.json({ courses: [], total: 0, page, totalPages: 0 });
+    return jsonCached({ courses: [], total: 0, page, totalPages: 0 });
   }
 
   if (category) query = query.eq("category_id", category);
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     courses: data,
     total: count,
     page,
