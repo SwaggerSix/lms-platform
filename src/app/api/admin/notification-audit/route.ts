@@ -136,6 +136,10 @@ export async function GET(request: NextRequest) {
         "Content-Disposition": `attachment; filename="notification-audit-${new Date()
           .toISOString()
           .slice(0, 10)}.csv"`,
+        // Short private cache so an operator re-downloading while
+        // attaching to an incident hits the cache rather than re-running
+        // the full scan + filter.
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
       },
     });
   }
@@ -281,5 +285,14 @@ export async function GET(request: NextRequest) {
       "Both values violate the notifications.type CHECK constraint, so the inserts rejected.",
       "This branch changes both to use 'announcement', which the CHECK allows.",
     ],
+  }, {
+    headers: {
+      // Audit failures are historical — they don't change between
+      // a click and a refresh. Same 30s/60s window as other admin
+      // observability endpoints so a busy admin viewing the page
+      // doesn't re-run the paginated + aggregation queries on
+      // every tab activation.
+      "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+    },
   });
 }

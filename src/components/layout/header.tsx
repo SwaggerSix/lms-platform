@@ -19,18 +19,8 @@ import { useNotificationStore } from "@/stores/notification-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import GlobalSearch from "@/components/layout/global-search";
+import { RelativeTime } from "@/components/ui/relative-time";
 import type { Notification } from "@/types/database";
-
-function relativeTime(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDays = Math.floor(diffHr / 24);
-  return diffDays === 1 ? "Yesterday" : `${diffDays}d ago`;
-}
 
 function generateBreadcrumbs(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -256,9 +246,10 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                             className="h-2 w-2 rounded-full bg-indigo-500"
                           />
                         )}
-                        <span className="text-[11px] text-gray-500">
-                          {relativeTime(notif.created_at)}
-                        </span>
+                        <RelativeTime
+                          iso={notif.created_at}
+                          className="text-[11px] text-gray-500"
+                        />
                       </div>
                     </div>
                   );

@@ -1,33 +1,19 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useContext, useMemo, useRef, useSyncExternalStore } from "react";
+import { useTickStore, type ExternalStore } from "@/hooks/use-external-store";
 
 /**
  * Coordinates the "now" tick for any number of <RelativeTime> instances
  * inside it. Without the provider each component owns its own
  * setInterval; with the provider one shared interval drives them all.
  *
- * Subscribers use useSyncExternalStore so React handles the
- * subscribe/unsubscribe lifecycle correctly even across concurrent
- * renders — fixes the previous "void shared?.tick" trick that depended
- * on React's render-tracking heuristic.
+ * The provider stands up a tick store via the reusable useTickStore
+ * helper (src/hooks/use-external-store.ts). Subscribers use
+ * useSyncExternalStore for proper concurrent-render handling.
  */
 
-interface RelativeTimeStore {
-  subscribe: (listener: () => void) => () => void;
-  getSnapshot: () => number;
-  /** Server-side renders see tick=0 deterministically. */
-  getServerSnapshot: () => number;
-}
-
-const RelativeTimeContext = createContext<RelativeTimeStore | null>(null);
+const RelativeTimeContext = createContext<ExternalStore<number> | null>(null);
 
 interface RelativeTimeProviderProps {
   /** Tick cadence in ms. Default 30s — matches the standalone fallback. */
@@ -36,41 +22,8 @@ interface RelativeTimeProviderProps {
 }
 
 export function RelativeTimeProvider({ intervalMs = 30_000, children }: RelativeTimeProviderProps) {
-  const tickRef = useRef(0);
-  const listenersRef = useRef(new Set<() => void>());
-
-  const subscribe = useCallback((listener: () => void) => {
-    listenersRef.current.add(listener);
-    return () => {
-      listenersRef.current.delete(listener);
-    };
-  }, []);
-
-  const getSnapshot = useCallback(() => tickRef.current, []);
-  const getServerSnapshot = useCallback(() => 0, []);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      tickRef.current += 1;
-      // Snapshot the set to avoid mutation-during-iteration if a
-      // listener unsubscribes itself during the broadcast.
-      for (const listener of Array.from(listenersRef.current)) listener();
-    }, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-
-  // Store identity is stable across renders so consumers don't churn
-  // their useSyncExternalStore subscriptions on every parent render.
-  const storeRef = useRef<RelativeTimeStore | null>(null);
-  if (storeRef.current === null) {
-    storeRef.current = { subscribe, getSnapshot, getServerSnapshot };
-  }
-
-  return (
-    <RelativeTimeContext.Provider value={storeRef.current}>
-      {children}
-    </RelativeTimeContext.Provider>
-  );
+  const store = useTickStore(intervalMs);
+  return <RelativeTimeContext.Provider value={store}>{children}</RelativeTimeContext.Provider>;
 }
 
 /**
@@ -81,14 +34,17 @@ export function RelativeTimeProvider({ intervalMs = 30_000, children }: Relative
 export function useSharedRelativeTimeTick(): number | null {
   const store = useContext(RelativeTimeContext);
   // useSyncExternalStore must be called unconditionally. When there's
-  // no store, we still call it with a no-op store so the hook count is
-  // stable across renders.
-  const noopStore = useRef<RelativeTimeStore>({
-    subscribe: () => () => {},
-    getSnapshot: () => 0,
+  // no store we hand it a noop with stable identity per render so the
+  // hook count stays consistent.
+  const noopStoreRef = useRef<ExternalStore<number>>({
+    get: () => 0,
     getServerSnapshot: () => 0,
+    set: () => {},
+    subscribe: () => () => {},
   });
-  const active = store ?? noopStore.current;
-  const tick = useSyncExternalStore(active.subscribe, active.getSnapshot, active.getServerSnapshot);
-  return store ? tick : null;
+  const active = store ?? noopStoreRef.current;
+  const tick = useSyncExternalStore(active.subscribe, active.get, active.getServerSnapshot);
+  // useMemo to avoid changing the returned value when both args are
+  // the same — keeps consumers of "is there a provider" stable.
+  return useMemo(() => (store ? tick : null), [store, tick]);
 }
