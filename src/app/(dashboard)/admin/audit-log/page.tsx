@@ -68,6 +68,11 @@ export default async function AuditLogPage() {
   // the .or() filter as-is, which is at best a 5xx and at worst a
   // surprising filter shape. parseUuid returns null on anything that
   // isn't a canonical UUID, which we treat as "no override".
+  //
+  // Note: tenant-queries.ts also validates the header at the
+  // resolveTenantForUser entry point. This page reads the header
+  // directly (not via that function) so this call is the *only*
+  // validation at the audit-log page boundary — not redundant.
   const headerTenantId = parseUuid(hdrs.get("x-tenant-id"));
   let tenantId: string | null = headerTenantId;
   if (!tenantId) {

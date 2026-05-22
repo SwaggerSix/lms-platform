@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { deepMergePreferences, diffPreferences } from "@/lib/preferences/merge";
 import { logAudit } from "@/lib/audit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/profile — return the authenticated user's full profile.
@@ -43,7 +44,7 @@ export async function PATCH(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!authUser) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -56,7 +57,7 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const body = await request.json();
@@ -68,7 +69,7 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (Object.keys(sanitized).length === 0) {
-    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+    return jsonNoStore({ error: "No valid fields to update" }, { status: 400 });
   }
 
   // preferences is a JSON blob with many top-level keys (notifications,
@@ -98,7 +99,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Profile API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Audit the preference change — when admins (or compliance) need to
@@ -119,12 +120,10 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(data, {
-    // Mutation result; never cache. Especially important because the
-    // response body includes the merged preferences blob — a stale
-    // version served to a polling caller could roll back a user's
-    // change.
-    headers: { "Cache-Control": "private, no-store" },
-  });
+  // Mutation result; never cache. Especially important because the
+  // response body includes the merged preferences blob — a stale
+  // version served to a polling caller could roll back a user's
+  // change.
+  return jsonNoStore(data);
 }
 
