@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { getRequiredCourseSources } from "@/lib/courses/required-training";
 
 export const VALID_REPORT_TYPES = [
   "completion",
@@ -79,35 +80,22 @@ async function generateCompletionReport(
 async function generateComplianceReport(
   service: ReturnType<typeof createServiceClient>
 ) {
-  const { data: requirements, error } = await service
-    .from("compliance_requirements")
-    .select("id, name, frequency_months, course_id, course:courses(title)");
-
-  if (error) throw error;
+  // Source of truth: courses with metadata.required_for set. The legacy
+  // compliance_requirements table is being retired; readRequiredFor /
+  // getRequiredCourseSources are the canonical readers.
+  const sources = await getRequiredCourseSources(service);
 
   const rows = [];
-  for (const req of (requirements ?? []) as any[]) {
-    if (!req.course_id) {
-      rows.push({
-        requirement_name: req.name,
-        course_title: "N/A",
-        total_enrolled: 0,
-        completed_count: 0,
-        compliance_rate: 0,
-        frequency_months: req.frequency_months ?? null,
-      });
-      continue;
-    }
-
+  for (const source of sources) {
     const [totalResult, completedResult] = await Promise.all([
       service
         .from("enrollments")
         .select("*", { count: "exact", head: true })
-        .eq("course_id", req.course_id),
+        .eq("course_id", source.courseId),
       service
         .from("enrollments")
         .select("*", { count: "exact", head: true })
-        .eq("course_id", req.course_id)
+        .eq("course_id", source.courseId)
         .eq("status", "completed"),
     ]);
 
@@ -119,12 +107,12 @@ async function generateComplianceReport(
         : 0;
 
     rows.push({
-      requirement_name: req.name,
-      course_title: req.course?.title ?? "N/A",
+      requirement_name: source.name,
+      course_title: source.courseName,
       total_enrolled: totalEnrolled,
       completed_count: completedCount,
       compliance_rate: complianceRate,
-      frequency_months: req.frequency_months ?? null,
+      frequency_months: source.frequencyMonths,
     });
   }
 

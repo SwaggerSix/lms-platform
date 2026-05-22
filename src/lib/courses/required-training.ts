@@ -160,6 +160,26 @@ export async function getRequiredCourseSources(
   return sources;
 }
 
+/**
+ * Same as getRequiredCourseSources, but restricted to courses visible
+ * inside a tenant scope (the set of course IDs the acting manager/learner
+ * is allowed to read). Pass `null` for the scope to return all sources
+ * (admin / super_admin case).
+ *
+ * Kept as a thin wrapper rather than a parameter to getRequiredCourseSources
+ * so the unscoped helper stays cheap to test and call from cron jobs
+ * that operate platform-wide.
+ */
+export async function getTenantScopedRequiredCourseSources(
+  service: ReturnType<typeof createServiceClient>,
+  scope: { courseIds: string[] } | null
+): Promise<RequiredCourseSource[]> {
+  const sources = await getRequiredCourseSources(service);
+  if (!scope) return sources;
+  const allowed = new Set(scope.courseIds);
+  return sources.filter((s) => allowed.has(s.courseId));
+}
+
 interface SyncResult {
   enrolled: number;
   skipped: number;

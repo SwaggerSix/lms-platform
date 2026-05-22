@@ -25,6 +25,10 @@ export interface AuditEntry {
   details?: { oldValue?: Record<string, string>; newValue?: Record<string, string> };
   /** When tenant_id IS NULL on the source row, this is a platform-level event (cron, super_admin action). */
   isPlatform?: boolean;
+  /** Acting user's organization_id, when known. Null for system/platform rows or users without an org. */
+  userOrganizationId?: string | null;
+  /** Display name of the acting user's organization, for the filter dropdown. */
+  userOrganizationName?: string | null;
 }
 
 export interface AuditLogClientProps {
@@ -64,6 +68,7 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
     Array<{ prefix: string; count: number; parent?: string | null }>
   >([]);
   const [entityFilter, setEntityFilter] = useState("All");
+  const [orgFilter, setOrgFilter] = useState("All");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [hidePlatform, setHidePlatform] = useState(initialHidePlatform);
@@ -115,6 +120,26 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
       .sort((a, b) => b[1] - a[1]);
   }, [entries, remoteNamespaces, hidePlatform]);
 
+  // Build the set of organizations represented in the current entry
+  // sample, so the dropdown reflects what's actually filterable. "None"
+  // is added when at least one entry has no org (system/platform rows
+  // or users without an organization_id) so admins can narrow to those.
+  const orgOptions = useMemo(() => {
+    const byId = new Map<string, string>();
+    let hasUnassigned = false;
+    for (const e of entries) {
+      if (e.userOrganizationId) {
+        byId.set(e.userOrganizationId, e.userOrganizationName ?? "(unnamed org)");
+      } else {
+        hasUnassigned = true;
+      }
+    }
+    const opts = Array.from(byId.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return { opts, hasUnassigned };
+  }, [entries]);
+
   // Persist the toggle to users.preferences.ui_prefs so it sticks across
   // sessions. Fire-and-forget — UI doesn't block on the save.
   const persistHidePlatform = (next: boolean) => {
@@ -156,7 +181,14 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
         entry.action === effectiveFilter ||
         actionLower.startsWith(`${filterLower}.`);
       const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
-      return matchesUser && matchesAction && matchesEntity;
+      // Org filter narrows to rows whose acting user belongs to the
+      // selected organization. "None" matches rows with no org
+      // (system events, users without an organization_id).
+      const matchesOrg =
+        orgFilter === "All" ||
+        (orgFilter === "None" && !entry.userOrganizationId) ||
+        entry.userOrganizationId === orgFilter;
+      return matchesUser && matchesAction && matchesEntity && matchesOrg;
     });
     if (dateFrom) {
       result = result.filter(e => e.timestamp >= dateFrom);
@@ -264,6 +296,18 @@ export default function AuditLogClient({ entries, initialHidePlatform = false }:
             <option value="Enrollment">Enrollment</option>
             <option value="Assessment">Assessment</option>
             <option value="Settings">Settings</option>
+          </select>
+          <select
+            value={orgFilter}
+            onChange={(e) => { setOrgFilter(e.target.value); setCurrentPage(1); }}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            aria-label="Filter by organization"
+          >
+            <option value="All">All Organizations</option>
+            {orgOptions.hasUnassigned && <option value="None">(No organization)</option>}
+            {orgOptions.opts.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
           </select>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">
             <input

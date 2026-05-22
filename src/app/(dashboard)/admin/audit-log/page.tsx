@@ -75,7 +75,7 @@ export default async function AuditLogPage() {
 
   let auditQuery = service
     .from("audit_logs")
-    .select("*, user:users!user_id(id, first_name, last_name, email)")
+    .select("*, user:users!user_id(id, first_name, last_name, email, organization_id, organization:organizations(id, name))")
     .order("created_at", { ascending: false })
     .limit(100);
   if (tenantId) {
@@ -91,6 +91,8 @@ export default async function AuditLogPage() {
       ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email || "Unknown"
       : "System";
     const userAvatar = userName === "System" ? "SY" : getInitials(userName);
+    const userOrgId = u?.organization_id ?? null;
+    const userOrgName = u?.organization?.name ?? null;
 
     const oldValues = row.old_values as Record<string, string> | null;
     const newValues = row.new_values as Record<string, string> | null;
@@ -107,6 +109,8 @@ export default async function AuditLogPage() {
       ipAddress: row.ip_address ?? "—",
       description: row.action,
       isPlatform: row.tenant_id == null,
+      userOrganizationId: userOrgId,
+      userOrganizationName: userOrgName,
       ...(hasDetails
         ? {
             details: {

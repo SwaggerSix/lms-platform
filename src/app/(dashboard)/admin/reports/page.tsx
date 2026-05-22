@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getRequiredCourseSources } from "@/lib/courses/required-training";
 import ReportsClient from "./reports-client";
 import type { ReportRow, RecentReport, ReportSummary } from "./reports-client";
 
@@ -60,7 +61,7 @@ export default async function ReportsPage() {
     completedResult,
     activeUsersResult,
     publishedCoursesResult,
-    complianceReqResult,
+    requiredSources,
     enrollmentRowsResult,
   ] = await Promise.all([
     // Total enrollments count
@@ -92,13 +93,10 @@ export default async function ReportsPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "published"),
 
-    // Compliance requirements with enrollments for compliance rate.
-    // Excludes retired rows (their data lives on courses.metadata.required_for).
-    service
-      .from("compliance_requirements")
-      .select("id, course_id")
-      .is("retired_at", null)
-      .limit(100),
+    // Required-training courses, sourced from courses.metadata.required_for
+    // (the canonical source — legacy compliance_requirements table is
+    // being retired).
+    getRequiredCourseSources(service),
 
     // Recent enrollments with user and course details for report table
     service
@@ -110,11 +108,8 @@ export default async function ReportsPage() {
 
   // Calculate compliance rate
   let complianceRate = 0;
-  const complianceReqs = (complianceReqResult.data ?? []) as any[];
-  if (complianceReqs.length > 0) {
-    const courseIds = complianceReqs
-      .map((r: any) => r.course_id)
-      .filter(Boolean);
+  if (requiredSources.length > 0) {
+    const courseIds = requiredSources.map((s) => s.courseId);
 
     if (courseIds.length > 0) {
       const [complianceTotal, complianceCompleted] = await Promise.all([

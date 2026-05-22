@@ -4,6 +4,7 @@ import {
   recertificationTier,
   userMatchesRequiredFor,
   getRequiredCourseSources,
+  getTenantScopedRequiredCourseSources,
 } from "@/lib/courses/required-training";
 
 describe("readRequiredFor", () => {
@@ -295,6 +296,33 @@ describe("getRequiredCourseSources", () => {
       }),
     } as unknown as Parameters<typeof getRequiredCourseSources>[0];
     await expect(getRequiredCourseSources(erroringService)).resolves.toEqual([]);
+  });
+
+  it("tenant-scoped wrapper: null scope returns every source (admin)", async () => {
+    const service = makeService([
+      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
+      { id: "c2", title: "T2", metadata: { required_for: { roles: ["learner"] } } },
+    ]);
+    const out = await getTenantScopedRequiredCourseSources(service, null);
+    expect(out.map((s) => s.courseId).sort()).toEqual(["c1", "c2"]);
+  });
+
+  it("tenant-scoped wrapper: filters to scope.courseIds", async () => {
+    const service = makeService([
+      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
+      { id: "c2", title: "T2", metadata: { required_for: { roles: ["learner"] } } },
+      { id: "c3", title: "T3", metadata: { required_for: { roles: ["learner"] } } },
+    ]);
+    const out = await getTenantScopedRequiredCourseSources(service, { courseIds: ["c1", "c3"] });
+    expect(out.map((s) => s.courseId).sort()).toEqual(["c1", "c3"]);
+  });
+
+  it("tenant-scoped wrapper: empty scope returns empty array", async () => {
+    const service = makeService([
+      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
+    ]);
+    const out = await getTenantScopedRequiredCourseSources(service, { courseIds: [] });
+    expect(out).toEqual([]);
   });
 
   it("mandatory defaults to true unless explicitly false", async () => {
