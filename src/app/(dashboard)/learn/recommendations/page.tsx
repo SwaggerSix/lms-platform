@@ -7,6 +7,10 @@ import {
   getAdaptivePath,
   getSimilarCourses,
 } from "@/lib/ai/recommendations";
+import {
+  getRequiredCourseSources,
+  userMatchesRequiredFor,
+} from "@/lib/courses/required-training";
 import RecommendationsClient from "./recommendations-client";
 import type { RecommendedCourse, SkillGapItem, AiRecommendation, AdaptivePathData, SimilarCourseBucket } from "./recommendations-client";
 
@@ -638,20 +642,30 @@ export default async function RecommendationsPage() {
   const requiredForRoleCourses: RecommendedCourse[] = [];
 
   if (jobTitle || orgId) {
-    let complianceQuery = service
-      .from("compliance_requirements")
-      .select("course_id, name")
-      .eq("is_mandatory", true);
+    // Canonical source: courses.metadata.required_for. Filter to sources
+    // that match this learner's role/org via userMatchesRequiredFor, and
+    // skip non-mandatory entries — the section header reads "Required
+    // for Your Role".
+    const allRequired = await getRequiredCourseSources(service);
+    const matching = allRequired.filter(
+      (s) =>
+        s.mandatory &&
+        userMatchesRequiredFor(
+          {
+            roles: s.applicableRoles,
+            organization_ids: s.applicableOrgIds,
+            is_mandatory: true,
+          },
+          { role: dbUser?.role ?? null, organization_id: orgId ?? null }
+        )
+    );
 
-    const { data: complianceReqs } = await complianceQuery;
-
-    for (const req of complianceReqs ?? []) {
+    for (const req of matching) {
       if (requiredForRoleCourses.length >= 6) break;
-      if (!req.course_id) continue;
-      if (enrolledCourseIds.has(req.course_id)) continue;
+      if (enrolledCourseIds.has(req.courseId)) continue;
 
-      const course = courseById.get(req.course_id);
-      if (!course || usedIds.has(req.course_id)) continue;
+      const course = courseById.get(req.courseId);
+      if (!course || usedIds.has(req.courseId)) continue;
       const rec = take(course, `Required: ${req.name}`);
       if (rec) requiredForRoleCourses.push(rec);
     }

@@ -246,19 +246,19 @@ describe("getRequiredCourseSources", () => {
         },
       ])
     );
-    expect(out).toEqual([
-      {
-        id: "course:c1",
-        name: "Safety Training",
-        regulation: "OSHA",
-        mandatory: true,
-        frequencyMonths: 12,
-        applicableRoles: ["learner"],
-        applicableOrgIds: ["org-1"],
-        courseId: "c1",
-        courseName: "Safety Training",
-      },
-    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({
+      id: "course:c1",
+      name: "Safety Training",
+      regulation: "OSHA",
+      mandatory: true,
+      frequencyMonths: 12,
+      applicableRoles: ["learner"],
+      applicableOrgIds: ["org-1"],
+      courseId: "c1",
+      courseName: "Safety Training",
+    });
+    expect(out[0].createdAt).toBeInstanceOf(Date);
   });
 
   it("defaults missing fields to safe values", async () => {

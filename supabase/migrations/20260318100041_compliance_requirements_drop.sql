@@ -1,21 +1,19 @@
--- DRAFT — NOT auto-applied. Lives under supabase/pending/ (outside the
--- supabase/migrations/ directory the CLI scans) so it can sit in the repo
--- without risk of accidental application. Move into supabase/migrations/
--- only when the preconditions below have been verified in production:
+-- Drop compliance_requirements after the retirement work has landed.
+-- Preconditions:
 --
---   1. POST /api/compliance has been removed from the codebase, or you've
---      confirmed via access logs that it has not been hit in the last 30+
---      days. The retirement migration (20260318100032) only added a
---      Deprecation header; the endpoint still works.
---   2. All retired_at IS NULL rows have been either retired or audited and
---      explicitly approved for retention (the preconditions below abort the
---      drop if any non-retired rows still exist).
---   3. No external consumers (BI tools, exports, analytics) read from the
---      compliance_requirements table directly.
+--   1. POST /api/compliance returns 410 Gone (done in the same PR as
+--      this migration). Read endpoints / readers all source from
+--      courses.metadata.required_for via getRequiredCourseSources.
+--   2. All retired_at IS NULL rows have been either retired or audited
+--      and explicitly approved for retention. The DO block below
+--      aborts the drop if any non-retired rows still exist.
+--   3. No external consumers (BI tools, exports, analytics) read from
+--      the compliance_requirements table directly. If yours does,
+--      flip it to read from courses.metadata.required_for first.
 --
--- This migration is intentionally aggressive: if the preconditions fail it
--- raises and rolls back, so it's safe to attempt and observe rather than
--- run blindly.
+-- This migration is intentionally aggressive: if the preconditions
+-- fail it raises and rolls back, so it's safe to attempt and observe
+-- rather than run blindly.
 
 DO $$
 DECLARE

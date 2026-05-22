@@ -119,6 +119,8 @@ export interface RequiredCourseSource {
   applicableOrgIds: string[];
   courseId: string;
   courseName: string;
+  /** courses.created_at parsed as a Date. Falls back to now() when null. */
+  createdAt: Date;
 }
 
 /**
@@ -136,13 +138,13 @@ export async function getRequiredCourseSources(
 ): Promise<RequiredCourseSource[]> {
   const { data: rows, error } = await service
     .from("courses")
-    .select("id, title, metadata")
+    .select("id, title, metadata, created_at")
     .neq("status", "archived");
 
   if (error || !rows) return [];
 
   const sources: RequiredCourseSource[] = [];
-  for (const row of rows as { id: string; title: string | null; metadata: unknown }[]) {
+  for (const row of rows as { id: string; title: string | null; metadata: unknown; created_at: string | null }[]) {
     const required = readRequiredFor(row.metadata);
     if (!required) continue;
     sources.push({
@@ -155,6 +157,7 @@ export async function getRequiredCourseSources(
       applicableOrgIds: required.organization_ids,
       courseId: row.id,
       courseName: row.title ?? "Untitled Course",
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     });
   }
   return sources;

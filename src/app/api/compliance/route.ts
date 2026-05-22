@@ -36,54 +36,35 @@ export async function GET(request: NextRequest) {
   return jsonCached(data);
 }
 
-export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
-  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
-
-  const service = createServiceClient();
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const { name, regulation, mandatory, applicable_to, linked_course, frequency } = body;
-
-  if (!name) {
-    return jsonNoStore({ error: "Requirement name is required" }, { status: 400 });
-  }
-
-  const { data, error } = await service
-    .from("compliance_requirements")
-    .insert({
-      name,
-      description: regulation || '',
-      regulation: regulation || '',
-      course_id: linked_course || null,
-      frequency_months: frequency || 12,
-      is_mandatory: mandatory !== undefined ? mandatory : true,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Compliance API POST error:", error.message);
-    return jsonNoStore({ error: "Failed to create requirement: " + error.message }, { status: 500 });
-  }
-  // Deprecation: this endpoint writes to the legacy compliance_requirements
-  // table. New requirements should be configured via courses.metadata.required_for
-  // (Admin → Courses → Required Training). Headers per draft-ietf-httpapi-deprecation-header-02.
-  console.warn(
-    "[compliance] Deprecated POST /api/compliance hit. Migrate to courses.metadata.required_for."
-  );
-  return jsonNoStore(data, {
-    status: 201,
-    headers: {
-      Deprecation: "true",
-      Link: '</admin/courses>; rel="successor-version"',
+/**
+ * POST is permanently retired. New required-training records are
+ * configured via courses.metadata.required_for from
+ * /admin/courses → Required Training. The legacy compliance_requirements
+ * table has been backfilled and is on its way to being dropped — no
+ * new rows should be written to it.
+ *
+ * Returns 410 Gone with a Sunset/Link header pointing to the successor
+ * path so any lingering integrations get a machine-readable redirect.
+ * The PATCH and GET branches stay live during the read-cutover window
+ * and will follow once all callers are flipped.
+ */
+export async function POST() {
+  return jsonNoStore(
+    {
+      error: "Endpoint retired. Configure required training via /admin/courses (Required Training section).",
+      successor: "/admin/courses",
     },
-  });
+    {
+      status: 410,
+      headers: {
+        Deprecation: "true",
+        // RFC 8594 Sunset header: a fixed past date signals the
+        // sunset is already complete.
+        Sunset: "Wed, 01 Jan 2026 00:00:00 GMT",
+        Link: '</admin/courses>; rel="successor-version"',
+      },
+    }
+  );
 }
 
 export async function PATCH(request: NextRequest) {

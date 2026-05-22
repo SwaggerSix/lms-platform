@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { readRequiredFor, computeRecertExpiry } from "@/lib/courses/required-training";
+import { computeRecertExpiry, getRequiredCourseSources } from "@/lib/courses/required-training";
 import ComplianceClient, {
   type ComplianceRequirement,
   type MemberCompliance,
@@ -27,11 +27,10 @@ interface ReqSource {
   id: string;
   name: string;
   regulation: string;
-  courseId: string | null;
+  courseId: string;
   frequencyMonths: number | null;
   /** Reference date for the "next due" calculation when no completion exists. */
   createdAt: Date;
-  origin: "course" | "legacy";
 }
 
 export default async function CompliancePage() {
@@ -59,58 +58,23 @@ export default async function CompliancePage() {
   const members = teamMembers ?? [];
   const memberIds = members.map((m: any) => m.id);
 
-  // 1. Pull courses with required_for set on metadata (new system).
-  const { data: courseRows } = await service
-    .from("courses")
-    .select("id, title, metadata, created_at")
-    .neq("status", "archived");
+  // Canonical source: courses.metadata.required_for. The manager compliance
+  // view is specifically about MANDATORY compliance, so non-mandatory
+  // required-training is filtered out.
+  const rawSources = await getRequiredCourseSources(service);
+  const sources: ReqSource[] = rawSources
+    .filter((s) => s.mandatory)
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      regulation: s.regulation || "Other",
+      courseId: s.courseId,
+      frequencyMonths: s.frequencyMonths,
+      createdAt: s.createdAt,
+    }));
 
-  const sources: ReqSource[] = [];
-  const handledCourseIds = new Set<string>();
-  for (const c of (courseRows ?? []) as any[]) {
-    const required = readRequiredFor(c.metadata);
-    if (!required) continue;
-    // Skip non-mandatory required-training for the manager compliance view —
-    // it's specifically about mandatory compliance.
-    if (required.is_mandatory === false) continue;
-    handledCourseIds.add(c.id);
-    sources.push({
-      id: `course:${c.id}`,
-      name: c.title ?? "Untitled Course",
-      regulation: required.regulation ?? "Other",
-      courseId: c.id,
-      frequencyMonths: required.frequency_months ?? null,
-      createdAt: new Date(c.created_at ?? Date.now()),
-      origin: "course",
-    });
-  }
-
-  // 2. Legacy compliance_requirements (mandatory only) where the linked
-  // course isn't already covered by the new system.
-  const { data: legacyRows } = await service
-    .from("compliance_requirements")
-    .select("*, course:courses(id, title)")
-    .eq("is_mandatory", true)
-    .is("retired_at", null)
-    .order("created_at", { ascending: true });
-
-  for (const r of (legacyRows ?? []) as any[]) {
-    if (r.course_id && handledCourseIds.has(r.course_id)) continue;
-    sources.push({
-      id: `legacy:${r.id}`,
-      name: r.name,
-      regulation: r.regulation ?? "Other",
-      courseId: r.course_id ?? null,
-      frequencyMonths: r.frequency_months ?? null,
-      createdAt: new Date(r.created_at),
-      origin: "legacy",
-    });
-  }
-
-  // 3. Pull enrollments + lesson progress for the team across all involved courses.
-  const courseIds = Array.from(
-    new Set(sources.map((s) => s.courseId).filter((id): id is string => !!id))
-  );
+  // Pull enrollments + lesson progress for the team across all involved courses.
+  const courseIds = Array.from(new Set(sources.map((s) => s.courseId)));
 
   const { data: allEnrollments } = courseIds.length > 0 && memberIds.length > 0
     ? await service
