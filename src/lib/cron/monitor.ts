@@ -110,19 +110,24 @@ interface CronAlertConfig {
  * root. Falls back to 2× expected (warn) and 4× expected (critical) when a
  * job isn't listed.
  */
-function loadAlertConfig(): CronAlertConfig {
+/**
+ * Read fresh config on every call. Delegates to the mtime-aware shared
+ * helper so the actual fs read happens at most once per file change
+ * across all callers. Replaces the previous module-load snapshot — a
+ * deploy that updates cron-thresholds.json now takes effect on the
+ * next dispatch rather than waiting for a process restart.
+ */
+function getAlertConfig(): CronAlertConfig {
   try {
-    // The shared helper handles fs reads + mtime caching so concurrent
-    // callers (this module's module-load, the alert-config endpoint,
-    // the replay endpoint) all share one parse.
     return readThresholdsConfig() as CronAlertConfig;
   } catch {
     return {};
   }
 }
 
-const ALERT_CONFIG = loadAlertConfig();
-const JOB_THRESHOLDS: Record<string, JobThresholds> = ALERT_CONFIG.thresholds ?? {};
+function getJobThresholds(): Record<string, JobThresholds> {
+  return getAlertConfig().thresholds ?? {};
+}
 
 /** POST the alert payload to CRON_ALERT_WEBHOOK_URL when alerts fire and
  * severity meets the configured min_severity. Fire-and-forget, never throws.
@@ -142,10 +147,11 @@ export async function dispatchAlertWebhook(payload: {
   const url = process.env.CRON_ALERT_WEBHOOK_URL;
   if (!url) return;
 
-  const adapter = ALERT_CONFIG.alert_webhook?.adapter ?? "generic";
-  const pdDedup = ALERT_CONFIG.alert_webhook?.pagerduty_dedup ?? "global";
+  const cfg = getAlertConfig();
+  const adapter = cfg.alert_webhook?.adapter ?? "generic";
+  const pdDedup = cfg.alert_webhook?.pagerduty_dedup ?? "global";
 
-  const dryRun = ALERT_CONFIG.alert_webhook?.dry_run === true;
+  const dryRun = cfg.alert_webhook?.dry_run === true;
   const postBody = async (body: Record<string, unknown>) => {
     if (dryRun) {
       // Single-line JSON record per dispatch so log aggregators (Datadog,
@@ -155,7 +161,7 @@ export async function dispatchAlertWebhook(payload: {
         JSON.stringify({
           type: "cron_alert_dry_run",
           timestamp: new Date().toISOString(),
-          adapter: ALERT_CONFIG.alert_webhook?.adapter ?? "generic",
+          adapter: cfg.alert_webhook?.adapter ?? "generic",
           url,
           body,
         })
@@ -191,7 +197,7 @@ export async function dispatchAlertWebhook(payload: {
     return;
   }
 
-  const minSev = ALERT_CONFIG.alert_webhook?.min_severity ?? "critical";
+  const minSev = cfg.alert_webhook?.min_severity ?? "critical";
   const wantsCritical = minSev === "critical";
   const matching = payload.alerts.filter((a) =>
     wantsCritical ? /\[critical\]/.test(a) : /\[(critical|warn)\]/.test(a)
@@ -392,6 +398,11 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
   const alerts: string[] = [];
   const jobs: CronJobHealth[] = [];
 
+  // Snapshot config once per health-check call so all per-job overrides
+  // and the streak window see a consistent view.
+  const cfg = getAlertConfig();
+  const jobThresholds = getJobThresholds();
+
   // Get the most recent run for each known job
   const knownJobs = Object.keys(EXPECTED_INTERVALS);
 
@@ -431,7 +442,7 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
       const lastRunTime = new Date(latestRun.created_at).getTime();
       const elapsedMs = Date.now() - lastRunTime;
       const elapsedMin = elapsedMs / 60000;
-      const overrides = JOB_THRESHOLDS[jobName] ?? {};
+      const overrides = jobThresholds[jobName] ?? {};
       const warnAt = overrides.warn_minutes ?? expectedMinutes * GRACE_MULTIPLIER;
       const criticalAt = overrides.critical_minutes ?? expectedMinutes * GRACE_MULTIPLIER * 2;
 
@@ -452,8 +463,8 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
   // row trigger the alert) are configurable in cron-thresholds.json.
   // Default: window=5, threshold=3 — matches the legacy behavior of
   // looking at the last 3 runs.
-  const cfWindow = Math.max(1, ALERT_CONFIG.consecutive_failures?.window ?? 5);
-  const cfThreshold = Math.max(1, ALERT_CONFIG.consecutive_failures?.threshold ?? 3);
+  const cfWindow = Math.max(1, cfg.consecutive_failures?.window ?? 5);
+  const cfThreshold = Math.max(1, cfg.consecutive_failures?.threshold ?? 3);
   for (const jobName of knownJobs) {
     const { data: recentRuns } = await service
       .from("cron_runs")

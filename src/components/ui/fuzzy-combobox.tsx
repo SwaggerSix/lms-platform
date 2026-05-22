@@ -43,6 +43,7 @@ export function FuzzyCombobox({
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const listId = useMemo(() => `combo-${Math.random().toString(36).slice(2, 9)}`, []);
 
   // Subsequence-match scorer. Returns:
@@ -84,6 +85,19 @@ export function FuzzyCombobox({
   useEffect(() => {
     if (highlight >= filtered.length) setHighlight(Math.max(0, filtered.length - 1));
   }, [filtered, highlight]);
+
+  // Scroll the highlighted item into view on keyboard nav so it stays
+  // visible even when the dropdown overflows.
+  useEffect(() => {
+    if (!open || !listRef.current) return;
+    const items = listRef.current.querySelectorAll('[role="option"]');
+    const node = items[highlight] as HTMLElement | undefined;
+    // JSDOM and very old browsers don't implement scrollIntoView; guard
+    // before calling so tests and edge-case clients don't throw.
+    if (node && typeof node.scrollIntoView === "function") {
+      node.scrollIntoView({ block: "nearest" });
+    }
+  }, [highlight, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -144,6 +158,7 @@ export function FuzzyCombobox({
       {open && filtered.length > 0 && (
         <ul
           id={listId}
+          ref={listRef}
           role="listbox"
           className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
         >

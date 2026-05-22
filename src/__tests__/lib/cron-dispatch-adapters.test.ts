@@ -58,20 +58,18 @@ function withConfig(
 }
 
 async function importMonitorFromDir(dir: string) {
-  const originalCwd = process.cwd();
+  // Stays chdir'd into `dir` so subsequent dispatchAlertWebhook calls
+  // see the staged cron-thresholds.json via readThresholdsConfig's
+  // per-call process.cwd() lookup. The afterEach hook restores the
+  // original cwd.
   process.chdir(dir);
   vi.resetModules();
-  try {
-    // Re-import via the dynamic specifier so the module re-evaluates and
-    // re-reads cron-thresholds.json in the temp cwd.
-    return await import("@/lib/cron/monitor");
-  } finally {
-    process.chdir(originalCwd);
-  }
+  return await import("@/lib/cron/monitor");
 }
 
 describe("dispatchAlertWebhook — adapter dispatch", () => {
   const originalFetch = globalThis.fetch;
+  const originalCwd = process.cwd();
   let fetchMock: ReturnType<typeof vi.fn>;
   let cleanups: Array<() => void> = [];
 
@@ -82,6 +80,7 @@ describe("dispatchAlertWebhook — adapter dispatch", () => {
   });
 
   afterEach(() => {
+    process.chdir(originalCwd);
     globalThis.fetch = originalFetch;
     delete process.env.CRON_ALERT_WEBHOOK_URL;
     delete process.env.PAGERDUTY_ROUTING_KEY;
