@@ -41,10 +41,15 @@ import { logAudit } from "@/lib/audit";
  *   - undefined / missing key / negative / non-numeric: defaults to 5.
  *   - positive integer: use as-is.
  */
+/** Standard response options for every branch: replay is side-effectful
+ * so caching is wrong on success AND on error (an admin retrying after a
+ * 429 must not see a stale 200 from a proxy). */
+const NO_STORE = { headers: { "Cache-Control": "no-store" } };
+
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return NextResponse.json({ error: auth.error }, { status: auth.status, ...NO_STORE });
   }
 
   let hours = 24;
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest) {
           unknown_jobs: unknown,
           known_jobs: Array.from(knownSet).sort(),
         },
-        { status: 400 }
+        { status: 400, ...NO_STORE }
       );
     }
   }
@@ -134,7 +139,7 @@ export async function POST(request: NextRequest) {
           dedup_scope: auditAction,
           message: `A replay (${auditAction}) fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
         },
-        { status: 429 }
+        { status: 429, ...NO_STORE }
       );
     }
   }
@@ -152,20 +157,23 @@ export async function POST(request: NextRequest) {
   const { data: failureRows, error } = await failureQuery;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, ...NO_STORE });
   }
 
   const failures = (failureRows ?? []) as any[];
   if (failures.length === 0) {
-    return NextResponse.json({
-      ok: true,
-      replayed_alerts: 0,
-      hours,
-      job_filter: jobFilter,
-      message: jobFilter
-        ? `No failures for ${jobFilter.join(", ")} in the requested window — nothing to replay.`
-        : "No failures in the requested window — nothing to replay.",
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        replayed_alerts: 0,
+        hours,
+        job_filter: jobFilter,
+        message: jobFilter
+          ? `No failures for ${jobFilter.join(", ")} in the requested window — nothing to replay.`
+          : "No failures in the requested window — nothing to replay.",
+      },
+      NO_STORE
+    );
   }
 
   // Build a synthetic alerts[] from the failure rows. We tag everything
@@ -211,12 +219,6 @@ export async function POST(request: NextRequest) {
       job_filter: jobFilter,
       affected_jobs: jobs.map((j) => j.name),
     },
-    {
-      // Replay is a side-effectful action — any caching would be wrong.
-      // Browsers already won't cache POSTs, but the explicit no-store
-      // signals intent for any future intermediate (CDN, proxy) that
-      // might be tempted to serve a stale 200.
-      headers: { "Cache-Control": "no-store" },
-    }
+    NO_STORE
   );
 }

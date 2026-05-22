@@ -43,57 +43,56 @@ export function useVisibilityPolling({
   // Single shared visibility store — all consumers of the polling hook
   // route through one document listener even if the page hosts many.
   const visible = useDocumentVisibility();
-  // Mirror visibility into a ref so the effect's scheduled callback
-  // reads the current value without re-running the effect on every
-  // visibility toggle (which would tear down + recreate the timer
-  // chain on every focus change).
-  const visibleRef = useRef(visible);
-  visibleRef.current = visible;
+  // Track previous visibility across renders so we can detect the
+  // hidden → visible transition and fire an immediate refresh.
+  const prevVisibleRef = useRef(visible);
 
   useEffect(() => {
+    // Effect now depends on `visible` so a tab focus change tears down
+    // the current timer chain and rebuilds it. Conceptually cleaner
+    // than the ref-based read: while hidden no timer runs at all; when
+    // visible the chain runs normally.
+    const isPaused = pauseWhenHidden && !visible;
+
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let cancelled = false;
 
+    const runPoll = async () => {
+      try {
+        await pollRef.current();
+        failuresRef.current = 0;
+      } catch {
+        failuresRef.current += 1;
+      }
+    };
+
     const schedule = () => {
-      if (cancelled) return;
+      if (cancelled || isPaused) return;
       const interval = failuresRef.current >= backoffAfter ? backoffMs : intervalMs;
       timeoutId = setTimeout(async () => {
-        if (!pauseWhenHidden || visibleRef.current) {
-          try {
-            await pollRef.current();
-            failuresRef.current = 0;
-          } catch {
-            failuresRef.current += 1;
-          }
-        }
+        await runPoll();
         schedule();
       }, interval);
     };
 
-    schedule();
+    // Hidden → visible transition: fire an immediate poll so the
+    // operator doesn't wait an interval for fresh data. Then schedule
+    // the regular chain.
+    const becameVisible = !isPaused && prevVisibleRef.current === false && visible === true;
+    prevVisibleRef.current = visible;
+
+    if (becameVisible) {
+      (async () => {
+        await runPoll();
+        schedule();
+      })();
+    } else {
+      schedule();
+    }
+
     return () => {
       cancelled = true;
       if (timeoutId !== null) clearTimeout(timeoutId);
     };
-  }, [intervalMs, backoffMs, backoffAfter, pauseWhenHidden]);
-
-  // Separate effect: fire an immediate poll when the tab becomes
-  // visible again (so the operator doesn't wait an interval for
-  // fresh data). Only triggers on the hidden → visible transition.
-  const prevVisibleRef = useRef(visible);
-  useEffect(() => {
-    if (!pauseWhenHidden) return;
-    if (prevVisibleRef.current === visible) return;
-    prevVisibleRef.current = visible;
-    if (visible) {
-      (async () => {
-        try {
-          await pollRef.current();
-          failuresRef.current = 0;
-        } catch {
-          failuresRef.current += 1;
-        }
-      })();
-    }
-  }, [visible, pauseWhenHidden]);
+  }, [intervalMs, backoffMs, backoffAfter, pauseWhenHidden, visible]);
 }
