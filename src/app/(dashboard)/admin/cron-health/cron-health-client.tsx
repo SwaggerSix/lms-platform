@@ -448,11 +448,34 @@ export default function CronHealthClient() {
                         <code className="rounded bg-white/60 px-1">cron_runs</code> history.
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 text-xs text-amber-800">
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-amber-800">
+                      {/* Narrow screens (< md): show a single combined pill so
+                          the two cache ages don't push the Recompute button
+                          off-screen. Wider screens show them separately. */}
+                      {(alertConfig.schedules_cache || alertConfig.thresholds_cache) && (
+                        <span
+                          title={[
+                            alertConfig.schedules_cache
+                              ? `vercel.json cached at ${new Date(alertConfig.schedules_cache.loaded_at).toLocaleString()}`
+                              : null,
+                            alertConfig.thresholds_cache
+                              ? `cron-thresholds.json cached at ${new Date(alertConfig.thresholds_cache.loaded_at).toLocaleString()}`
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                          className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200 md:hidden"
+                        >
+                          caches:{" "}
+                          {alertConfig.schedules_cache && formatRelative(alertConfig.schedules_cache.loaded_at)}
+                          {alertConfig.schedules_cache && alertConfig.thresholds_cache && " / "}
+                          {alertConfig.thresholds_cache && formatRelative(alertConfig.thresholds_cache.loaded_at)}
+                        </span>
+                      )}
                       {alertConfig.schedules_cache && (
                         <span
                           title={`vercel.json cached server-side at ${new Date(alertConfig.schedules_cache.loaded_at).toLocaleString()}`}
-                          className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
+                          className="hidden md:inline-flex rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
                         >
                           vercel.json {formatRelative(alertConfig.schedules_cache.loaded_at)}
                         </span>
@@ -460,7 +483,7 @@ export default function CronHealthClient() {
                       {alertConfig.thresholds_cache && (
                         <span
                           title={`cron-thresholds.json cached server-side at ${new Date(alertConfig.thresholds_cache.loaded_at).toLocaleString()}`}
-                          className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
+                          className="hidden md:inline-flex rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
                         >
                           thresholds {formatRelative(alertConfig.thresholds_cache.loaded_at)}
                         </span>

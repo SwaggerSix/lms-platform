@@ -66,10 +66,19 @@ export function FuzzyCombobox({
     return firstMatch + 1;
   };
 
-  const filtered = useMemo(() => {
+  // Cap the rendered list at 200 items. For larger suggestion sets this
+  // keeps DOM size bounded without falling back to true virtualization
+  // (overkill for the audit-log filter's expected size). A "showing N
+  // of M" hint renders below when the cap kicks in so the user knows
+  // to narrow their query.
+  const RENDER_CAP = 200;
+  const { filtered, totalMatches } = useMemo(() => {
     const q = value.trim();
-    if (!q) return suggestions.slice(0, 50);
-    return suggestions
+    if (!q) {
+      const all = suggestions;
+      return { filtered: all.slice(0, RENDER_CAP), totalMatches: all.length };
+    }
+    const scored = suggestions
       .map((s, idx) => {
         const v = score(s.value, q);
         const l = s.label ? score(s.label, q) : -1;
@@ -77,9 +86,11 @@ export function FuzzyCombobox({
         return { suggestion: s, score: best, idx };
       })
       .filter((x) => x.score >= 0)
-      .sort((a, b) => a.score - b.score || a.idx - b.idx)
-      .slice(0, 50)
-      .map((x) => x.suggestion);
+      .sort((a, b) => a.score - b.score || a.idx - b.idx);
+    return {
+      filtered: scored.slice(0, RENDER_CAP).map((x) => x.suggestion),
+      totalMatches: scored.length,
+    };
   }, [value, suggestions]);
 
   useEffect(() => {
@@ -185,6 +196,14 @@ export function FuzzyCombobox({
               {s.meta && <span className="shrink-0 text-xs text-gray-400">{s.meta}</span>}
             </li>
           ))}
+          {totalMatches > filtered.length && (
+            <li
+              role="presentation"
+              className="border-t border-gray-100 px-3 py-1.5 text-[11px] text-gray-500"
+            >
+              Showing {filtered.length} of {totalMatches} matches — keep typing to narrow.
+            </li>
+          )}
         </ul>
       )}
     </div>
