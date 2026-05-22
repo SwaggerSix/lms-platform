@@ -5,6 +5,7 @@ import { authorize } from "@/lib/auth/authorize";
 import type { DocumentVisibility } from "@/types/database";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/documents
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     data: data ?? [],
     total: data?.length ?? 0,
   });

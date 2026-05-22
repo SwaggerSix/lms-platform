@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { readRequiredFor, recertificationTier } from "@/lib/courses/required-training";
+import { describe, it, expect, vi } from "vitest";
+import {
+  readRequiredFor,
+  recertificationTier,
+  userMatchesRequiredFor,
+  getRequiredCourseSources,
+} from "@/lib/courses/required-training";
 
 describe("readRequiredFor", () => {
   it("returns null when metadata is missing or empty", () => {
@@ -162,5 +167,154 @@ describe("recertificationTier", () => {
       const nowFixed = new Date("2026-01-10T12:00:00.000Z");
       expect(recertificationTier(completed, 12.7, nowFixed)).toBe("7");
     });
+  });
+});
+
+describe("userMatchesRequiredFor", () => {
+  const base = {
+    roles: [] as string[],
+    organization_ids: [] as string[],
+    is_mandatory: true,
+  };
+
+  it("empty roles + empty orgs is a wildcard (matches anyone)", () => {
+    expect(userMatchesRequiredFor(base, { role: "learner", organization_id: "org-1" })).toBe(true);
+    expect(userMatchesRequiredFor(base, { role: null, organization_id: null })).toBe(true);
+  });
+
+  it("role list requires the user's role to be in it", () => {
+    const req = { ...base, roles: ["learner"] };
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: null })).toBe(true);
+    expect(userMatchesRequiredFor(req, { role: "manager", organization_id: null })).toBe(false);
+    expect(userMatchesRequiredFor(req, { role: null, organization_id: null })).toBe(false);
+  });
+
+  it("organization_id list requires the user's org to be in it", () => {
+    const req = { ...base, organization_ids: ["org-1"] };
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: "org-1" })).toBe(true);
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: "org-2" })).toBe(false);
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: null })).toBe(false);
+  });
+
+  it("both roles and orgs set → AND semantics (both must match)", () => {
+    const req = { ...base, roles: ["learner"], organization_ids: ["org-1"] };
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: "org-1" })).toBe(true);
+    expect(userMatchesRequiredFor(req, { role: "learner", organization_id: "org-2" })).toBe(false);
+    expect(userMatchesRequiredFor(req, { role: "manager", organization_id: "org-1" })).toBe(false);
+  });
+});
+
+describe("getRequiredCourseSources", () => {
+  // Build a minimal service-client stub that returns whatever course rows
+  // we feed in. The helper only uses .from().select().neq() then awaits
+  // the chain, so a single thenable resolves the query.
+  function makeService(rows: unknown[]) {
+    const chain = {
+      select: () => chain,
+      neq: () => Promise.resolve({ data: rows, error: null }),
+    };
+    return { from: () => chain } as unknown as Parameters<typeof getRequiredCourseSources>[0];
+  }
+
+  it("returns empty array when no courses carry required_for", () => {
+    return expect(
+      getRequiredCourseSources(
+        makeService([
+          { id: "c1", title: "Plain Course", metadata: {} },
+          { id: "c2", title: null, metadata: { other: "data" } },
+        ])
+      )
+    ).resolves.toEqual([]);
+  });
+
+  it("normalizes a single course with required_for into a RequiredCourseSource", async () => {
+    const out = await getRequiredCourseSources(
+      makeService([
+        {
+          id: "c1",
+          title: "Safety Training",
+          metadata: {
+            required_for: {
+              roles: ["learner"],
+              organization_ids: ["org-1"],
+              regulation: "OSHA",
+              frequency_months: 12,
+              is_mandatory: true,
+            },
+          },
+        },
+      ])
+    );
+    expect(out).toEqual([
+      {
+        id: "course:c1",
+        name: "Safety Training",
+        regulation: "OSHA",
+        mandatory: true,
+        frequencyMonths: 12,
+        applicableRoles: ["learner"],
+        applicableOrgIds: ["org-1"],
+        courseId: "c1",
+        courseName: "Safety Training",
+      },
+    ]);
+  });
+
+  it("defaults missing fields to safe values", async () => {
+    const out = await getRequiredCourseSources(
+      makeService([
+        {
+          id: "c1",
+          title: null,
+          metadata: { required_for: { roles: ["learner"] } },
+        },
+      ])
+    );
+    expect(out[0]).toMatchObject({
+      name: "Untitled Course",
+      regulation: "",
+      frequencyMonths: null,
+      applicableOrgIds: [],
+      mandatory: true,
+    });
+  });
+
+  it("skips archived-shape courses (none returned because .neq filters at the query layer)", async () => {
+    // Sanity: helper doesn't introspect the status field directly — the
+    // .neq("status", "archived") filter is applied by the query builder.
+    // This test just confirms an empty input array yields an empty output.
+    await expect(getRequiredCourseSources(makeService([]))).resolves.toEqual([]);
+  });
+
+  it("returns empty array when the query errors", async () => {
+    const erroringService = {
+      from: () => ({
+        select: () => ({
+          neq: () => Promise.resolve({ data: null, error: new Error("db down") }),
+        }),
+      }),
+    } as unknown as Parameters<typeof getRequiredCourseSources>[0];
+    await expect(getRequiredCourseSources(erroringService)).resolves.toEqual([]);
+  });
+
+  it("mandatory defaults to true unless explicitly false", async () => {
+    const out = await getRequiredCourseSources(
+      makeService([
+        {
+          id: "c1",
+          title: "T1",
+          metadata: { required_for: { roles: ["learner"], is_mandatory: false } },
+        },
+        {
+          id: "c2",
+          title: "T2",
+          metadata: { required_for: { roles: ["learner"] } },
+        },
+      ])
+    );
+    expect(out.map((s) => [s.courseId, s.mandatory])).toEqual([
+      ["c1", false],
+      ["c2", true],
+    ]);
   });
 });

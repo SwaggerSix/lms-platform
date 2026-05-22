@@ -107,6 +107,59 @@ export function recertificationTier(
   return null;
 }
 
+export interface RequiredCourseSource {
+  /** Stable identifier for UI keys: `course:<courseId>`. */
+  id: string;
+  /** Course title or "Untitled Course". */
+  name: string;
+  regulation: string;
+  mandatory: boolean;
+  frequencyMonths: number | null;
+  applicableRoles: string[];
+  applicableOrgIds: string[];
+  courseId: string;
+  courseName: string;
+}
+
+/**
+ * Single source for every page/route that needs the list of courses
+ * currently flagged as required training. Replaces the merged
+ * legacy-table + course-metadata reads that the admin/manager pages
+ * still do — once readers cut over to this helper, the legacy
+ * compliance_requirements table can be dropped.
+ *
+ * Excludes archived courses. Pure read; safe to call with the service
+ * client only (RLS not exercised since we filter in JS).
+ */
+export async function getRequiredCourseSources(
+  service: ReturnType<typeof createServiceClient>
+): Promise<RequiredCourseSource[]> {
+  const { data: rows, error } = await service
+    .from("courses")
+    .select("id, title, metadata")
+    .neq("status", "archived");
+
+  if (error || !rows) return [];
+
+  const sources: RequiredCourseSource[] = [];
+  for (const row of rows as { id: string; title: string | null; metadata: unknown }[]) {
+    const required = readRequiredFor(row.metadata);
+    if (!required) continue;
+    sources.push({
+      id: `course:${row.id}`,
+      name: row.title ?? "Untitled Course",
+      regulation: required.regulation ?? "",
+      mandatory: required.is_mandatory !== false,
+      frequencyMonths: required.frequency_months ?? null,
+      applicableRoles: required.roles,
+      applicableOrgIds: required.organization_ids,
+      courseId: row.id,
+      courseName: row.title ?? "Untitled Course",
+    });
+  }
+  return sources;
+}
+
 interface SyncResult {
   enrolled: number;
   skipped: number;

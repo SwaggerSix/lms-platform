@@ -11,6 +11,7 @@ import {
 import type { ILTSessionStatus } from "@/types/database";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/ilt-sessions
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
     })),
   }));
 
-  return NextResponse.json({
+  return jsonCached({
     sessions,
     total: sessions.length,
   });

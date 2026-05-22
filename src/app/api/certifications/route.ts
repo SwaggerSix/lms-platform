@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createCertificationSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
     console.error("Certifications API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-    return NextResponse.json(data);
+    return jsonCached(data);
   }
 
   const { data, error } = await service
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     console.error("Certifications API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonCached(data);
 }
 
 export async function POST(request: NextRequest) {

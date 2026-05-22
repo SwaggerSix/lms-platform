@@ -5,6 +5,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { validateBody, createArticleSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/knowledge-base
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (error || !article) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
-    return NextResponse.json({ article });
+    return jsonCached({ article });
   }
 
   // Build articles query
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     article_count: articles.filter((a) => a.category_id === cat.id).length,
   }));
 
-  return NextResponse.json({
+  return jsonCached({
     articles,
     categories,
     total: articles.length,
