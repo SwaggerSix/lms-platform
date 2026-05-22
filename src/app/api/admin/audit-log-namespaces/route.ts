@@ -88,10 +88,20 @@ export async function GET(request: NextRequest) {
     return b.count - a.count;
   });
 
-  return NextResponse.json({
-    namespaces,
-    hide_platform: hidePlatform,
-    /** True when we hit the 20k row cap; some older namespaces may be missing. */
-    sample_capped: (data?.length ?? 0) >= 20000,
-  });
+  return NextResponse.json(
+    {
+      namespaces,
+      hide_platform: hidePlatform,
+      /** True when we hit the 20k row cap; some older namespaces may be missing. */
+      sample_capped: (data?.length ?? 0) >= 20000,
+    },
+    {
+      headers: {
+        // Namespaces only change when new dotted-namespace actions
+        // start appearing — typically deploys, not minute-to-minute.
+        // 5-minute private cache cuts the per-page-load 20k-row scan.
+        "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+      },
+    }
+  );
 }

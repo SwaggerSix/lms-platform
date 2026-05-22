@@ -7,6 +7,8 @@ import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
 import { useNotificationStore } from "@/stores/notification-store";
 import { useRealtimeSubscription } from "@/hooks/use-realtime";
+import { RelativeTime } from "@/components/ui/relative-time";
+import { RelativeTimeProvider } from "@/components/ui/relative-time-context";
 import type { Notification as DbNotification } from "@/types/database";
 
 export interface NotificationRow {
@@ -20,19 +22,6 @@ export interface NotificationRow {
   created_at: string;
 }
 
-function relativeTime(iso: string): string {
-  if (!iso) return "";
-  const ms = Date.now() - new Date(iso).getTime();
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 const TYPE_BADGES: Record<string, { label: string; cls: string }> = {
   reminder: { label: "Reminder", cls: "bg-amber-50 text-amber-700 ring-amber-200" },
@@ -106,6 +95,7 @@ export default function NotificationsClient({
   );
 
   return (
+    <RelativeTimeProvider>
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-3xl px-6 py-8">
         <div className="flex items-center justify-between">
@@ -195,7 +185,7 @@ export default function NotificationsClient({
                         <p className="mt-0.5 text-sm text-gray-600 line-clamp-3">{notif.body}</p>
                       )}
                     </div>
-                    <span className="shrink-0 text-xs text-gray-500">{relativeTime(notif.created_at)}</span>
+                    <RelativeTime iso={notif.created_at} className="shrink-0 text-xs text-gray-500" />
                   </div>
                 );
 
@@ -233,5 +223,6 @@ export default function NotificationsClient({
         </div>
       </div>
     </div>
+    </RelativeTimeProvider>
   );
 }
