@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/paths/enroll
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -26,24 +27,24 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const rl = await rateLimit(`path-enroll-${profile.id}`, 20, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   let body: { path_id?: string };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid request body" }, { status: 400 });
   }
 
   const { path_id } = body;
   if (!path_id) {
-    return NextResponse.json({ error: "path_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "path_id is required" }, { status: 400 });
   }
 
   // Verify the path exists and is published
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (pathError || !path) {
-    return NextResponse.json({ error: "Learning path not found" }, { status: 404 });
+    return jsonNoStore({ error: "Learning path not found" }, { status: 404 });
   }
 
   // Check if already enrolled
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (existing) {
-    return NextResponse.json({ error: "Already enrolled in this path" }, { status: 409 });
+    return jsonNoStore({ error: "Already enrolled in this path" }, { status: 409 });
   }
 
   // Create the enrollment
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
 
   if (enrollError) {
     console.error("Path enrollment error:", enrollError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Also enroll the user in all courses within the path (if not already enrolled)
@@ -130,5 +131,5 @@ export async function POST(request: NextRequest) {
     newValues: { path_id, path_title: path.title },
   });
 
-  return NextResponse.json({ data: enrollment }, { status: 201 });
+  return jsonNoStore({ data: enrollment }, { status: 201 });
 }

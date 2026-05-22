@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, updateWorkflowSchema } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // GET: Get a single workflow with its steps
 export async function GET(
@@ -40,7 +41,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
 
@@ -48,12 +49,12 @@ export async function PUT(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(updateWorkflowSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -65,9 +66,9 @@ export async function PUT(
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    if (error.code === "PGRST116") return jsonNoStore({ error: "Workflow not found" }, { status: 404 });
     console.error("Workflows API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -78,7 +79,7 @@ export async function PUT(
     newValues: validation.data,
   });
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 // DELETE: Delete a workflow
@@ -87,7 +88,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -95,7 +96,7 @@ export async function DELETE(
 
   if (error) {
     console.error("Workflows API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -105,5 +106,5 @@ export async function DELETE(
     entityId: id,
   });
 
-  return NextResponse.json({ message: "Workflow deleted" });
+  return jsonNoStore({ message: "Workflow deleted" });
 }

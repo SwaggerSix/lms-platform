@@ -4,6 +4,7 @@ import { validateBody } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const ruleActionSchema = z.object({
   type: z.enum(["enroll_course", "enroll_path", "assign_badge", "send_notification"]),
@@ -64,18 +65,18 @@ export async function GET(request: NextRequest) {
 // POST: Create new rule (admin only)
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(createRuleSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Automation rules API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -106,29 +107,29 @@ export async function POST(request: NextRequest) {
     newValues: { name: data.name, trigger_type: data.trigger_type },
   });
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 // PATCH: Update rule (admin only)
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { id, ...updates } = body;
   if (!id) {
-    return NextResponse.json({ error: "Rule id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Rule id is required" }, { status: 400 });
   }
 
   const validation = validateBody(updateRuleSchema, updates);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -143,10 +144,10 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     if (error.code === "PGRST116") {
-      return NextResponse.json({ error: "Rule not found" }, { status: 404 });
+      return jsonNoStore({ error: "Rule not found" }, { status: 404 });
     }
     console.error("Automation rules API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -157,19 +158,19 @@ export async function PATCH(request: NextRequest) {
     newValues: validation.data,
   });
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 // DELETE: Delete rule (admin only)
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Rule id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Rule id is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -180,7 +181,7 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Automation rules API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -190,5 +191,5 @@ export async function DELETE(request: NextRequest) {
     entityId: id,
   });
 
-  return NextResponse.json({ message: "Rule deleted" });
+  return jsonNoStore({ message: "Rule deleted" });
 }

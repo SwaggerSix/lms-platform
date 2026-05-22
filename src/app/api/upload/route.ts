@@ -8,6 +8,7 @@ import {
   BUCKET_MIME_TYPES,
   generateFilePath,
 } from "@/lib/storage";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const VALID_BUCKETS: StorageBucket[] = [
   "documents",
@@ -58,20 +59,20 @@ export async function POST(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
   // Rate limit: 20 uploads per minute per user
   const { success } = await rateLimit(`upload:${user.id}`, 20, 60000);
   if (!success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return jsonNoStore({ error: "Too many requests" }, { status: 429 });
   }
 
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid form data" },
       { status: 400 }
     );
@@ -84,12 +85,12 @@ export async function POST(request: NextRequest) {
 
   // Validate file presence
   if (!file || typeof file === "string") {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    return jsonNoStore({ error: "No file provided" }, { status: 400 });
   }
 
   // Validate bucket
   if (!isValidBucket(bucketParam)) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: `Invalid bucket "${bucketParam}". Allowed: ${VALID_BUCKETS.join(", ")}` },
       { status: 400 }
     );
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
   const maxSize = BUCKET_LIMITS[bucket];
   if (file.size > maxSize) {
     const maxMB = Math.round(maxSize / (1024 * 1024));
-    return NextResponse.json(
+    return jsonNoStore(
       { error: `File too large. Maximum size is ${maxMB}MB.` },
       { status: 400 }
     );
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
   // Validate MIME type
   const allowedTypes = BUCKET_MIME_TYPES[bucket];
   if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json(
+    return jsonNoStore(
       {
         error: `File type "${file.type}" is not allowed. Accepted: ${allowedTypes.map((t) => t.split("/")[1]).join(", ")}`,
       },
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
   // Validate magic bytes match the claimed MIME type
   const fileBuffer = await file.arrayBuffer();
   if (!validateMagicBytes(fileBuffer, file.type)) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "File content does not match the declared file type." },
       { status: 400 }
     );
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Upload API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Get public URL
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     .from(bucket)
     .getPublicUrl(data.path);
 
-  return NextResponse.json({
+  return jsonNoStore({
     path: data.path,
     url: urlData.publicUrl,
     size: file.size,
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
 
@@ -191,14 +192,14 @@ export async function DELETE(request: NextRequest) {
   const path = searchParams.get("path");
 
   if (!bucket || !path) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Both 'bucket' and 'path' query parameters are required" },
       { status: 400 }
     );
   }
 
   if (!isValidBucket(bucket)) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: `Invalid bucket "${bucket}". Allowed: ${VALID_BUCKETS.join(", ")}` },
       { status: 400 }
     );
@@ -210,8 +211,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Upload API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "File deleted", path });
+  return jsonNoStore({ message: "File deleted", path });
 }

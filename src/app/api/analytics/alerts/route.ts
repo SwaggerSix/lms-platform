@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateAlertSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -42,23 +43,23 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const alertId = body.id;
   if (!alertId) {
-    return NextResponse.json({ error: "Alert id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Alert id is required" }, { status: 400 });
   }
 
   const validation = validateBody(updateAlertSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -71,11 +72,11 @@ export async function PUT(request: NextRequest) {
     .single();
 
   if (!alert) {
-    return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+    return jsonNoStore({ error: "Alert not found" }, { status: 404 });
   }
 
   if (alert.user_id !== auth.user.id && auth.user.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   const { data, error } = await service
@@ -87,8 +88,8 @@ export async function PUT(request: NextRequest) {
 
   if (error) {
     console.error("Alert update error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateFieldMappingsSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin");
@@ -26,12 +27,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const body = await request.json();
   const validation = validateBody(updateFieldMappingsSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -56,8 +57,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   if (error) {
     console.error("Field mappings PUT error:", error.message);
-    return NextResponse.json({ error: "Failed to update mappings" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to update mappings" }, { status: 500 });
   }
 
-  return NextResponse.json({ mappings: data });
+  return jsonNoStore({ mappings: data });
 }

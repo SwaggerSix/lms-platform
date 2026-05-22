@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 import { logCronRun } from "@/lib/cron/monitor";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +25,11 @@ async function handler(request: NextRequest) {
   const startedAt = Date.now();
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -41,7 +42,7 @@ async function handler(request: NextRequest) {
 
   if (coursesErr) {
     console.error("[curriculum-review-alerts] courses query error", coursesErr);
-    return NextResponse.json({ error: "Failed to load courses" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to load courses" }, { status: 500 });
   }
 
   const { data: admins, error: adminsErr } = await service
@@ -52,7 +53,7 @@ async function handler(request: NextRequest) {
 
   if (adminsErr) {
     console.error("[curriculum-review-alerts] admins query error", adminsErr);
-    return NextResponse.json({ error: "Failed to load admins" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to load admins" }, { status: 500 });
   }
 
   const adminIds = (admins ?? []).map((a) => a.id);
@@ -66,7 +67,7 @@ async function handler(request: NextRequest) {
     userMaySend(adminPrefsByUser.get(id), "announcements", "inApp")
   );
   if (optedInAdminIds.length === 0) {
-    return NextResponse.json({ message: "No active admins to notify", checked: courses?.length ?? 0 });
+    return jsonNoStore({ message: "No active admins to notify", checked: courses?.length ?? 0 });
   }
 
   const notifications: Array<{
@@ -140,7 +141,7 @@ async function handler(request: NextRequest) {
     const { error: notifErr } = await service.from("notifications").insert(notifications);
     if (notifErr) {
       console.error("[curriculum-review-alerts] notification insert error", notifErr);
-      return NextResponse.json({ error: "Failed to insert notifications" }, { status: 500 });
+      return jsonNoStore({ error: "Failed to insert notifications" }, { status: 500 });
     }
   }
 
@@ -161,7 +162,7 @@ async function handler(request: NextRequest) {
     records_processed: notifications.length,
   }).catch(() => {});
 
-  return NextResponse.json({
+  return jsonNoStore({
     message: "Curriculum review alerts processed",
     checked: courses?.length ?? 0,
     courses_triggered: courseUpdates.length,

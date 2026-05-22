@@ -8,6 +8,7 @@ import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -67,16 +68,16 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const validation = validateBody(createEnrollmentSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Get the user profile
@@ -88,18 +89,18 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+    return jsonNoStore({ error: "User profile not found" }, { status: 404 });
   }
 
   const rl = await rateLimit(`enrollments:${profile.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   // IDOR fix: only admin/manager can enroll other users
   let targetUserId = profile.id;
   let assignedBy = null;
   if (validation.data.user_id && validation.data.user_id !== profile.id) {
     if (!["admin", "manager"].includes(profile.role)) {
-      return NextResponse.json({ error: "Forbidden: cannot enroll other users" }, { status: 403 });
+      return jsonNoStore({ error: "Forbidden: cannot enroll other users" }, { status: 403 });
     }
     targetUserId = validation.data.user_id;
     assignedBy = profile.id;
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (unmetPrerequisites.length > 0) {
-      return NextResponse.json(
+      return jsonNoStore(
         {
           error: "Prerequisites not met",
           unmet_prerequisites: unmetPrerequisites,
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (existingRequest) {
-      return NextResponse.json(
+      return jsonNoStore(
         { message: "Enrollment request already pending", approval: existingRequest },
         { status: 202 }
       );
@@ -230,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     if (approvalError) {
       console.error("Enrollment approval error:", approvalError.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
     // Notify the manager if one exists (gated on the manager's "approvals" pref).
@@ -252,7 +253,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(
+    return jsonNoStore(
       { message: "Enrollment request submitted for approval", approval: approvalData },
       { status: 202 }
     );
@@ -273,10 +274,10 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "Already enrolled in this course" }, { status: 409 });
+      return jsonNoStore({ error: "Already enrolled in this course" }, { status: 409 });
     }
     console.error("Enrollments API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Award points for enrollment
@@ -311,7 +312,7 @@ export async function POST(request: NextRequest) {
     newValues: { user_id: enrollmentData.user_id, course_id: validation.data.course_id },
   });
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function DELETE(request: NextRequest) {
@@ -319,7 +320,7 @@ export async function DELETE(request: NextRequest) {
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -330,14 +331,14 @@ export async function DELETE(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+    return jsonNoStore({ error: "User profile not found" }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Enrollment id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Enrollment id is required" }, { status: 400 });
   }
 
   // IDOR fix: verify enrollment belongs to authenticated user or user is admin
@@ -348,11 +349,11 @@ export async function DELETE(request: NextRequest) {
     .single();
 
   if (!enrollment) {
-    return NextResponse.json({ error: "Enrollment not found" }, { status: 404 });
+    return jsonNoStore({ error: "Enrollment not found" }, { status: 404 });
   }
 
   if (enrollment.user_id !== profile.id && profile.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   const { error } = await service
@@ -362,7 +363,7 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Enrollments API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -372,5 +373,5 @@ export async function DELETE(request: NextRequest) {
     entityId: id,
   });
 
-  return NextResponse.json({ message: "Enrollment cancelled" });
+  return jsonNoStore({ message: "Enrollment cancelled" });
 }

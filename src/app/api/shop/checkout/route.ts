@@ -8,17 +8,18 @@ import {
   validateCoupon,
   generateOrderNumber,
 } from "@/lib/ecommerce/pricing";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`checkout-${auth.user.id}`, 5, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(checkoutSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -30,11 +31,11 @@ export async function POST(request: NextRequest) {
 
   if (cartError) {
     console.error("Checkout cart error:", cartError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (!cartItems || cartItems.length === 0) {
-    return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    return jsonNoStore({ error: "Cart is empty" }, { status: 400 });
   }
 
   // Validate coupon if provided
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
   if (validation.data.coupon_code) {
     const couponResult = await validateCoupon(validation.data.coupon_code, auth.user.id);
     if (!couponResult.valid) {
-      return NextResponse.json({ error: couponResult.reason }, { status: 400 });
+      return jsonNoStore({ error: couponResult.reason }, { status: 400 });
     }
     coupon = couponResult.coupon!;
   }
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
   // Check min_purchase for coupon
   const totals = calculateOrderTotal(lineItems, coupon);
   if (coupon && coupon.min_purchase && totals.subtotal < coupon.min_purchase) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: `Minimum purchase of ${coupon.min_purchase} required for this coupon` },
       { status: 400 }
     );
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
   if (orderError) {
     console.error("Order create error:", orderError.message);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create order" }, { status: 500 });
   }
 
   // Create order items
@@ -165,7 +166,7 @@ export async function POST(request: NextRequest) {
   // Clear cart
   await service.from("cart_items").delete().eq("user_id", auth.user.id);
 
-  return NextResponse.json({
+  return jsonNoStore({
     order: {
       ...order,
       items: orderItems,

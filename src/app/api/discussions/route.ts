@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createDiscussionSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/discussions
@@ -76,12 +77,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const validation = validateBody(createDiscussionSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -92,11 +93,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const rl = await rateLimit(`discussions:${profile.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   const action = body.action;
 
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     const { title, body: threadBody, course } = body;
 
     if (!title || !threadBody) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "title and body are required" },
         { status: 400 }
       );
@@ -140,10 +141,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Discussions API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ thread }, { status: 201 });
+    return jsonNoStore({ thread }, { status: 201 });
   }
 
   // ---- Reply to an existing thread ----
@@ -151,7 +152,7 @@ export async function POST(request: NextRequest) {
     const { thread_id, body: replyBody } = body;
 
     if (!thread_id || !replyBody) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "thread_id and body are required" },
         { status: 400 }
       );
@@ -174,10 +175,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Discussions API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ reply }, { status: 201 });
+    return jsonNoStore({ reply }, { status: 201 });
   }
 
   // ---- Upvote a discussion post ----
@@ -185,7 +186,7 @@ export async function POST(request: NextRequest) {
     const { discussion_id } = body;
 
     if (!discussion_id) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "discussion_id is required" },
         { status: 400 }
       );
@@ -199,7 +200,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!current) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Discussion not found" },
         { status: 404 }
       );
@@ -214,11 +215,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Discussions API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ discussion: updated });
+    return jsonNoStore({ discussion: updated });
   }
 
-  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  return jsonNoStore({ error: "Unknown action" }, { status: 400 });
 }

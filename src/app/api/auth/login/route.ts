@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
   // Rate limit: 10 attempts per minute per IP
   const { success } = await rateLimit(`login:${ip}`, 10, 60000);
   if (!success) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Too many login attempts. Please wait a moment." },
       { status: 429 }
     );
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   const { email, password } = body;
 
   if (!email || !password) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Email and password are required" },
       { status: 400 }
     );
@@ -43,13 +44,13 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid email or password" },
       { status: 401 }
     );
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     access_token: data.session.access_token,
     refresh_token: data.session.refresh_token,
     expires_at: data.session.expires_at,

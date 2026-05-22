@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createSSOProviderSchema, updateSSOProviderSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET() {
   const auth = await authorize("admin");
@@ -29,18 +30,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(createSSOProviderSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (existing) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: `An SSO provider already exists for domain "${validation.data.domain}"` },
       { status: 409 }
     );
@@ -75,26 +76,26 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("SSO API POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(updateSSOProviderSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { id, ...updates } = validation.data;
@@ -110,7 +111,7 @@ export async function PATCH(request: NextRequest) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: `An SSO provider already exists for domain "${updates.domain}"` },
         { status: 409 }
       );
@@ -136,21 +137,21 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("SSO API PATCH error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Provider id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Provider id is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -161,8 +162,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("SSO API DELETE error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "SSO provider deleted" });
+  return jsonNoStore({ message: "SSO provider deleted" });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/push/send
@@ -19,14 +20,14 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await authorize("admin");
     if (!auth.authorized) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+      return jsonNoStore({ error: auth.error }, { status: auth.status });
     }
 
     const body = await request.json();
     const { title, body: notifBody, url, user_ids } = body;
 
     if (!title || !notifBody) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "title and body are required" },
         { status: 400 }
       );
@@ -47,14 +48,14 @@ export async function POST(request: NextRequest) {
 
     if (fetchError) {
       console.error("Failed to fetch push subscriptions:", fetchError.message);
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Failed to fetch subscriptions" },
         { status: 500 }
       );
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({
+      return jsonNoStore({
         success: true,
         sent: 0,
         message: "No subscriptions found",
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error("VAPID keys not configured");
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Push notifications not configured (missing VAPID keys)" },
         { status: 500 }
       );
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     await Promise.allSettled(sendPromises);
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: true,
       sent,
       failed,
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err: any) {
     console.error("Push send error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 500 }
     );

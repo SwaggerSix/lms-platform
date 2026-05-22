@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const service = createServiceClient();
@@ -43,11 +44,11 @@ export async function POST(request: NextRequest) {
   const { name, description, design_data, is_default } = body;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
-    return NextResponse.json({ error: "Template name is required" }, { status: 400 });
+    return jsonNoStore({ error: "Template name is required" }, { status: 400 });
   }
 
   if (!design_data || typeof design_data !== "object") {
-    return NextResponse.json({ error: "Design data is required" }, { status: 400 });
+    return jsonNoStore({ error: "Design data is required" }, { status: 400 });
   }
 
   // If this is being set as default, unset any existing default
@@ -72,16 +73,16 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Certificate templates API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const service = createServiceClient();
@@ -89,7 +90,7 @@ export async function PATCH(request: NextRequest) {
   const { id, ...updates } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Template id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Template id is required" }, { status: 400 });
   }
 
   // Whitelist allowed fields
@@ -119,16 +120,16 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Certificate templates API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const service = createServiceClient();
@@ -136,7 +137,7 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Template id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Template id is required" }, { status: 400 });
   }
 
   // Archive instead of hard delete
@@ -149,8 +150,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Certificate templates API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Template archived", data });
+  return jsonNoStore({ message: "Template archived", data });
 }

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createFeedbackResponseSchema, updateFeedbackResponseSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -70,18 +71,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`feedback-response-${auth.user.id}`, 30, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   let body;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(createFeedbackResponseSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -93,11 +94,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!nomination || nomination.reviewer_id !== auth.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   if (nomination.status === "completed") {
-    return NextResponse.json({ error: "Feedback already submitted" }, { status: 400 });
+    return jsonNoStore({ error: "Feedback already submitted" }, { status: 400 });
   }
 
   const isDraft = validation.data.is_draft;
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Feedback response POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Update nomination status
@@ -123,20 +124,20 @@ export async function POST(request: NextRequest) {
     .update({ status: isDraft ? "in_progress" : "completed" })
     .eq("id", validation.data.nomination_id);
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function PUT(request: NextRequest) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(updateFeedbackResponseSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -148,11 +149,11 @@ export async function PUT(request: NextRequest) {
     .single();
 
   if (!existing || (existing.nomination as any)?.reviewer_id !== auth.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   if (existing.submitted_at && !existing.is_draft) {
-    return NextResponse.json({ error: "Cannot edit submitted feedback" }, { status: 400 });
+    return jsonNoStore({ error: "Cannot edit submitted feedback" }, { status: 400 });
   }
 
   const isDraft = validation.data.is_draft;
@@ -170,7 +171,7 @@ export async function PUT(request: NextRequest) {
 
   if (error) {
     console.error("Feedback response PUT error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Update nomination status
@@ -182,5 +183,5 @@ export async function PUT(request: NextRequest) {
       .eq("id", nomId);
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

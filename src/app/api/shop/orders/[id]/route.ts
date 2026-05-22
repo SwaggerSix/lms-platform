@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateOrderSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(
   request: NextRequest,
@@ -37,12 +38,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const body = await request.json();
   const validation = validateBody(updateOrderSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -53,7 +54,7 @@ export async function PUT(
     .eq("id", id)
     .single();
 
-  if (!existing) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  if (!existing) return jsonNoStore({ error: "Order not found" }, { status: 404 });
 
   // If refunding, handle enrollment removal
   if (validation.data.status === "refunded" && existing.status === "completed") {
@@ -81,8 +82,8 @@ export async function PUT(
 
   if (error) {
     console.error("Order update error:", error.message);
-    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to update order" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

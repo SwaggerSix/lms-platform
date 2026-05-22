@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { validateBody, createArticleSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/knowledge-base
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
@@ -106,15 +107,15 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Failed to create KB category:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json(data, { status: 201 });
+    return jsonNoStore(data, { status: 201 });
   }
 
   // ── Create Article ──
   const validation = validateBody(createArticleSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { data, error } = await service
@@ -136,10 +137,10 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Failed to create KB article:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 /**
@@ -155,17 +156,17 @@ export async function PATCH(request: NextRequest) {
   // Actions that any authenticated user can perform
   if (action === "increment_view" || action === "helpful" || action === "not_helpful") {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   } else {
     // All other PATCH operations require admin
     const auth = await authorize("admin");
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   // ── Update Category ──
   if (body.type === "category") {
     if (!id) {
-      return NextResponse.json({ error: "Category ID required" }, { status: 400 });
+      return jsonNoStore({ error: "Category ID required" }, { status: 400 });
     }
     const updateFields: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) updateFields.name = body.name;
@@ -182,16 +183,16 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (error.code === "PGRST116") {
-        return NextResponse.json({ error: "Category not found" }, { status: 404 });
+        return jsonNoStore({ error: "Category not found" }, { status: 404 });
       }
       console.error("Failed to update KB category:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json(data);
+    return jsonNoStore(data);
   }
 
   if (!id) {
-    return NextResponse.json({ error: "Article ID required" }, { status: 400 });
+    return jsonNoStore({ error: "Article ID required" }, { status: 400 });
   }
 
   if (action === "increment_view") {
@@ -219,7 +220,7 @@ export async function PATCH(request: NextRequest) {
       .select("*")
       .eq("id", id)
       .single();
-    return NextResponse.json(updated);
+    return jsonNoStore(updated);
   }
 
   if (action === "helpful") {
@@ -239,7 +240,7 @@ export async function PATCH(request: NextRequest) {
       .select("*")
       .eq("id", id)
       .single();
-    return NextResponse.json(updated);
+    return jsonNoStore(updated);
   }
 
   if (action === "not_helpful") {
@@ -259,7 +260,7 @@ export async function PATCH(request: NextRequest) {
       .select("*")
       .eq("id", id)
       .single();
-    return NextResponse.json(updated);
+    return jsonNoStore(updated);
   }
 
   // General update — whitelist allowed fields
@@ -278,13 +279,13 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     if (error.code === "PGRST116") {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+      return jsonNoStore({ error: "Article not found" }, { status: 404 });
     }
     console.error("Failed to update KB article:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 /**
@@ -293,7 +294,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
@@ -301,7 +302,7 @@ export async function DELETE(request: NextRequest) {
   const type = searchParams.get("type");
 
   if (!id) {
-    return NextResponse.json({ error: "ID required" }, { status: 400 });
+    return jsonNoStore({ error: "ID required" }, { status: 400 });
   }
   const service = createServiceClient();
 
@@ -314,9 +315,9 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       console.error("Failed to delete KB category:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json({ success: true, deleted: id });
+    return jsonNoStore({ success: true, deleted: id });
   }
 
   // ── Delete Article ──
@@ -327,8 +328,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Failed to delete KB article:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, deleted: id });
+  return jsonNoStore({ success: true, deleted: id });
 }

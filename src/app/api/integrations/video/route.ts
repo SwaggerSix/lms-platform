@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { encryptSecret } from "@/lib/integrations/video-conferencing";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/integrations/video
@@ -47,21 +48,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const body = await request.json();
   const { provider, client_id, client_secret, settings } = body;
 
   if (!provider || !["zoom", "teams", "google_meet"].includes(provider)) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Valid provider is required (zoom, teams, google_meet)" },
       { status: 400 }
     );
   }
 
   if (!client_id || !client_secret) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "client_id and client_secret are required" },
       { status: 400 }
     );
@@ -90,10 +91,10 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Video integrations POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     integration: {
       id: data.id,
       provider: data.provider,
@@ -114,14 +115,14 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const body = await request.json();
   const { provider, settings, is_active, client_id, client_secret } = body;
 
   if (!provider) {
-    return NextResponse.json({ error: "provider is required" }, { status: 400 });
+    return jsonNoStore({ error: "provider is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -146,14 +147,14 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Video integrations PATCH error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (!data) {
-    return NextResponse.json({ error: "Integration not found" }, { status: 404 });
+    return jsonNoStore({ error: "Integration not found" }, { status: 404 });
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     integration: {
       id: data.id,
       provider: data.provider,
@@ -174,14 +175,14 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { searchParams } = new URL(request.url);
   const provider = searchParams.get("provider");
 
   if (!provider) {
-    return NextResponse.json({ error: "provider query param is required" }, { status: 400 });
+    return jsonNoStore({ error: "provider query param is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -192,8 +193,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Video integrations DELETE error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, message: `${provider} integration removed` });
+  return jsonNoStore({ success: true, message: `${provider} integration removed` });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { withCronMonitoring } from "@/lib/cron/monitor";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +22,11 @@ export async function POST(request: NextRequest) {
 async function handler(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -41,9 +42,9 @@ async function handler(request: NextRequest) {
       }
       return { concurrent: false, records_processed: 1 };
     });
-    return NextResponse.json({ ok: true, ...result });
+    return jsonNoStore({ ok: true, ...result });
   } catch (err) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: err instanceof Error ? err.message : "refresh failed" },
       { status: 500 }
     );

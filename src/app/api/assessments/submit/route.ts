@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -11,20 +12,20 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { assessment_id, answers, time_spent } = body;
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Rate limit: 10 submissions per minute per user
   const { success } = await rateLimit(`assessment-submit:${authUser.user.id}`, 10, 60000);
   if (!success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return jsonNoStore({ error: "Too many requests" }, { status: 429 });
   }
 
   const service = createServiceClient();
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   // Fetch assessment and questions
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!assessment) {
-    return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+    return jsonNoStore({ error: "Assessment not found" }, { status: 404 });
   }
 
   // Grade the assessment
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Assessment submit error:", error.message);
-    return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+    return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
   }
 
   // Award points
@@ -130,5 +131,5 @@ export async function POST(request: NextRequest) {
     score,
   }).catch(() => {});
 
-  return NextResponse.json({ attempt, score, passed, totalPoints, earnedPoints });
+  return jsonNoStore({ attempt, score, passed, totalPoints, earnedPoints });
 }

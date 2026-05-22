@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/xapi/activities/state
@@ -70,12 +71,12 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rl = await rateLimit(`xapi-state-put-${auth.user.id}`, 30, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -84,7 +85,7 @@ export async function PUT(request: NextRequest) {
   const registration = searchParams.get("registration");
 
   if (!activityId || !stateId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "activityId and stateId parameters required" },
       { status: 400 }
     );
@@ -109,10 +110,10 @@ export async function PUT(request: NextRequest) {
 
   if (error) {
     console.error("Failed to store activity state:", error.message);
-    return NextResponse.json({ error: "Failed to store activity state" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to store activity state" }, { status: 500 });
   }
 
-  return NextResponse.json(null, {
+  return jsonNoStore(null, {
     status: 204,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });
@@ -125,7 +126,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { searchParams } = new URL(request.url);
@@ -133,7 +134,7 @@ export async function DELETE(request: NextRequest) {
   const stateId = searchParams.get("stateId");
 
   if (!activityId) {
-    return NextResponse.json({ error: "activityId parameter required" }, { status: 400 });
+    return jsonNoStore({ error: "activityId parameter required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -152,10 +153,10 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Failed to delete activity state:", error.message);
-    return NextResponse.json({ error: "Failed to delete activity state" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to delete activity state" }, { status: 500 });
   }
 
-  return NextResponse.json(null, {
+  return jsonNoStore(null, {
     status: 204,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });

@@ -5,13 +5,14 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
 import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -19,7 +20,7 @@ export async function PATCH(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const { id } = await params;
 
@@ -38,7 +39,7 @@ export async function PATCH(
 
   if (error) {
     console.error("Users API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -69,7 +70,7 @@ export async function PATCH(
     );
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(
@@ -77,13 +78,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
   const { id } = await params;
 
   if (id === auth.user.id) {
-    return NextResponse.json({ error: "You cannot delete your own account" }, { status: 400 });
+    return jsonNoStore({ error: "You cannot delete your own account" }, { status: 400 });
   }
 
   const { data: existing, error: fetchError } = await service
@@ -94,21 +95,21 @@ export async function DELETE(
 
   if (fetchError) {
     if (fetchError.code === "PGRST116") {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return jsonNoStore({ error: "User not found" }, { status: 404 });
     }
     console.error("Users API error:", fetchError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (!existing) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const { error: deleteError } = await service.from("users").delete().eq("id", id);
 
   if (deleteError) {
     console.error("Users API error:", deleteError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (existing.auth_id) {
@@ -125,5 +126,5 @@ export async function DELETE(
     oldValues: { email: existing.email },
   });
 
-  return NextResponse.json({ message: "User deleted successfully" });
+  return jsonNoStore({ message: "User deleted successfully" });
 }

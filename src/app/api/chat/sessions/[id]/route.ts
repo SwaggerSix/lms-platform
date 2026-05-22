@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -49,7 +50,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     .single();
 
   if (!session || session.user_id !== auth.user.id) {
-    return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    return jsonNoStore({ error: "Session not found" }, { status: 404 });
   }
 
   const { error } = await service
@@ -59,8 +60,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   if (error) {
     console.error("Chat session DELETE error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Session deleted" });
+  return jsonNoStore({ message: "Session deleted" });
 }

@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, xapiStatementSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/xapi/statements
@@ -80,12 +81,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rl = await rateLimit(`xapi-post-${auth.user.id}`, 60, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const body = await request.json();
@@ -94,11 +95,11 @@ export async function POST(request: NextRequest) {
   const statements = Array.isArray(body) ? body : [body];
 
   if (statements.length === 0) {
-    return NextResponse.json({ error: "No statements provided" }, { status: 400 });
+    return jsonNoStore({ error: "No statements provided" }, { status: 400 });
   }
 
   if (statements.length > 50) {
-    return NextResponse.json({ error: "Maximum 50 statements per request" }, { status: 400 });
+    return jsonNoStore({ error: "Maximum 50 statements per request" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
   for (const stmt of statements) {
     const validation = validateBody(xapiStatementSchema, stmt);
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+      return jsonNoStore({ error: validation.error }, { status: 400 });
     }
 
     const data = validation.data;
@@ -138,14 +139,14 @@ export async function POST(request: NextRequest) {
       console.error("Failed to store xAPI statement:", error.message);
       // Skip duplicates (unique constraint on statement_id)
       if (!error.message.includes("duplicate")) {
-        return NextResponse.json({ error: "Failed to store statement" }, { status: 500 });
+        return jsonNoStore({ error: "Failed to store statement" }, { status: 500 });
       }
     }
 
     ids.push(statementId);
   }
 
-  return NextResponse.json(ids, {
+  return jsonNoStore(ids, {
     status: 200,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });
@@ -158,25 +159,25 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rl = await rateLimit(`xapi-put-${auth.user.id}`, 60, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const { searchParams } = new URL(request.url);
   const statementId = searchParams.get("statementId");
 
   if (!statementId) {
-    return NextResponse.json({ error: "statementId parameter required" }, { status: 400 });
+    return jsonNoStore({ error: "statementId parameter required" }, { status: 400 });
   }
 
   const body = await request.json();
   const validation = validateBody(xapiStatementSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const data = validation.data;
@@ -190,7 +191,7 @@ export async function PUT(request: NextRequest) {
     .single();
 
   if (existing) {
-    return NextResponse.json(null, {
+    return jsonNoStore(null, {
       status: 204,
       headers: { "X-Experience-API-Version": "1.0.3" },
     });
@@ -219,10 +220,10 @@ export async function PUT(request: NextRequest) {
 
   if (error) {
     console.error("Failed to store xAPI statement:", error.message);
-    return NextResponse.json({ error: "Failed to store statement" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to store statement" }, { status: 500 });
   }
 
-  return NextResponse.json(null, {
+  return jsonNoStore(null, {
     status: 204,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });

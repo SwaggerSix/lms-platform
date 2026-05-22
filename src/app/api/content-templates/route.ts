@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { validateBody } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const createTemplateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -45,18 +46,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rl = await rateLimit(`content-templates-create:${auth.user.id}`, 20, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const body = await request.json();
   const validation = validateBody(createTemplateSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -75,8 +76,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Content templates POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ template: data }, { status: 201 });
+  return jsonNoStore({ template: data }, { status: 201 });
 }

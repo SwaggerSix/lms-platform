@@ -52,4 +52,18 @@ describe("logAudit runtime convention guard", () => {
     await logAudit({ action: "doThing", entityType: "x" });
     expect(warnSpy).toHaveBeenCalled();
   });
+
+  it("silences the warning in production (NODE_ENV=production)", async () => {
+    const orig = process.env.NODE_ENV;
+    (process.env as Record<string, string>).NODE_ENV = "production";
+    try {
+      vi.resetModules();
+      const { logAudit } = await import("@/lib/audit");
+      await logAudit({ action: "manual_thing", entityType: "x" });
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = orig ?? "test";
+      vi.resetModules();
+    }
+  });
 });

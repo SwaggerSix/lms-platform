@@ -4,13 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { hrisSync } from "@/lib/integrations/hris-sync";
 import { crmSync } from "@/lib/integrations/crm-sync";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`sync-${auth.user.id}`, 5, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -22,11 +23,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .single();
 
   if (error || !integration) {
-    return NextResponse.json({ error: "Integration not found" }, { status: 404 });
+    return jsonNoStore({ error: "Integration not found" }, { status: 404 });
   }
 
   if (!integration.is_active) {
-    return NextResponse.json({ error: "Integration is not active" }, { status: 400 });
+    return jsonNoStore({ error: "Integration is not active" }, { status: 400 });
   }
 
   const body = await request.json().catch(() => ({}));
@@ -41,10 +42,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       result = await hrisSync.syncUsers(id, syncType);
     }
 
-    return NextResponse.json({ result });
+    return jsonNoStore({ result });
   } catch (err) {
     console.error("Sync error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: err instanceof Error ? err.message : "Sync failed" },
       { status: 500 }
     );

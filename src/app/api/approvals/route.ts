@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 import type { ApprovalStatus } from "@/types/database";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/approvals
@@ -61,12 +62,12 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
 
     if (!body.course_id) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "course_id is required" },
         { status: 400 }
       );
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!profile) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return jsonNoStore({ error: "User not found" }, { status: 404 });
     }
 
     const { data, error } = await service
@@ -100,12 +101,12 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Approvals API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ data }, { status: 201 });
+    return jsonNoStore({ data }, { status: 201 });
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );
@@ -118,28 +119,28 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin", "manager");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   try {
     const supabase = await createClient();
     const body = await request.json();
 
     if (!body.id || !body.status) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "id and status are required" },
         { status: 400 }
       );
     }
 
     if (!["approved", "rejected"].includes(body.status)) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "status must be 'approved' or 'rejected'" },
         { status: 400 }
       );
     }
 
     if (body.status === "rejected" && !body.rejection_reason) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "rejection_reason is required when rejecting" },
         { status: 400 }
       );
@@ -154,14 +155,14 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (fetchError || !existing) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Approval request not found" },
         { status: 404 }
       );
     }
 
     if (existing.status !== "pending") {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Only pending requests can be updated" },
         { status: 409 }
       );
@@ -183,7 +184,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error("Approvals API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
     // When approved, create the actual enrollment and notify the user
@@ -241,9 +242,9 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ data });
+    return jsonNoStore({ data });
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );

@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, addToCartSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET() {
   const auth = await authorize("admin", "manager", "instructor", "learner");
@@ -25,14 +26,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`cart-add-${auth.user.id}`, 30, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(addToCartSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!product || product.status !== "active") {
-    return NextResponse.json({ error: "Product not available" }, { status: 404 });
+    return jsonNoStore({ error: "Product not available" }, { status: 404 });
   }
 
   // Check if user is already enrolled
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (enrollment) {
-    return NextResponse.json({ error: "You are already enrolled in this course" }, { status: 409 });
+    return jsonNoStore({ error: "You are already enrolled in this course" }, { status: 409 });
   }
 
   const { data, error } = await service
@@ -70,21 +71,21 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Cart add error:", error.message);
-    return NextResponse.json({ error: "Failed to add to cart" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to add to cart" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(request.url);
   const productId = searchParams.get("product_id");
 
   if (!productId) {
-    return NextResponse.json({ error: "product_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "product_id is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -96,8 +97,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Cart delete error:", error.message);
-    return NextResponse.json({ error: "Failed to remove from cart" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to remove from cart" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return jsonNoStore({ success: true });
 }

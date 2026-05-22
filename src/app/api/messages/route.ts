@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import type { MessageType } from "@/types/database";
 import { validateBody, sendMessageSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/messages
@@ -154,7 +155,7 @@ export async function POST(request: NextRequest) {
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Look up profile ID from the users table
@@ -166,19 +167,19 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!postProfile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
   const currentUserId = postProfile.id;
 
   const rl = await rateLimit(`messages:${postProfile.id}`, 20, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   // Create a new conversation
   if (body.action === "create_conversation") {
     const { participant_ids, type, title } = body;
 
     if (!participant_ids || !Array.isArray(participant_ids) || participant_ids.length === 0) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "participant_ids is required" },
         { status: 400 }
       );
@@ -197,7 +198,7 @@ export async function POST(request: NextRequest) {
 
     if (convError) {
       console.error("Messages API error:", convError.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
     // Add participants
@@ -212,13 +213,13 @@ export async function POST(request: NextRequest) {
 
     await service.from("conversation_participants").insert(participantInserts);
 
-    return NextResponse.json({ conversation }, { status: 201 });
+    return jsonNoStore({ conversation }, { status: 201 });
   }
 
   // Send a message
   const msgValidation = validateBody(sendMessageSchema, body);
   if (!msgValidation.success) {
-    return NextResponse.json({ error: msgValidation.error }, { status: 400 });
+    return jsonNoStore({ error: msgValidation.error }, { status: 400 });
   }
   const { conversation_id, content, message_type, attachment_url, attachment_name } = body;
 
@@ -230,7 +231,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!conv) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Conversation not found" },
       { status: 404 }
     );
@@ -245,7 +246,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!senderParticipant) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Forbidden" },
       { status: 403 }
     );
@@ -266,7 +267,7 @@ export async function POST(request: NextRequest) {
 
   if (msgError) {
     console.error("Messages API error:", msgError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Update conversation updated_at
@@ -275,7 +276,7 @@ export async function POST(request: NextRequest) {
     .update({ updated_at: new Date().toISOString() })
     .eq("id", conversation_id);
 
-  return NextResponse.json({ message }, { status: 201 });
+  return jsonNoStore({ message }, { status: 201 });
 }
 
 /**
@@ -288,7 +289,7 @@ export async function PATCH(request: NextRequest) {
   const { conversation_id } = body;
 
   if (!conversation_id) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "conversation_id is required" },
       { status: 400 }
     );
@@ -297,7 +298,7 @@ export async function PATCH(request: NextRequest) {
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Look up profile ID from users table
@@ -309,7 +310,7 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (!patchProfile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
   const currentUserId = patchProfile.id;
 
@@ -328,7 +329,7 @@ export async function PATCH(request: NextRequest) {
     .eq("id", conversation_id)
     .single();
 
-  return NextResponse.json({
+  return jsonNoStore({
     conversation: { ...conversation, unread_count: 0 },
     marked_read_at: now,
   });

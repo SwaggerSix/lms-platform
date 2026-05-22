@@ -2,13 +2,14 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateModuleDripSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * PATCH /api/modules - Update module drip/scheduling settings
  */
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
 
@@ -16,12 +17,12 @@ export async function PATCH(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(updateModuleDripSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { id, ...updates } = validation.data;
@@ -34,7 +35,7 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (!mod) {
-    return NextResponse.json({ error: "Module not found" }, { status: 404 });
+    return jsonNoStore({ error: "Module not found" }, { status: 404 });
   }
 
   if (auth.user.role === "instructor") {
@@ -45,7 +46,7 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (!course || course.created_by !== auth.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return jsonNoStore({ error: "Forbidden" }, { status: 403 });
     }
   }
 
@@ -58,8 +59,8 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Modules API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

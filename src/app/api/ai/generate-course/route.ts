@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { rateLimit } from "@/lib/rate-limit";
 import { generateCourseOutline, generateCourseFromMaterials } from "@/lib/ai/course-generator";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Anthropic API key is not configured. Please set the ANTHROPIC_API_KEY environment variable." },
       { status: 503 }
     );
@@ -13,12 +14,12 @@ export async function POST(request: NextRequest) {
 
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rateLimitResult = await rateLimit(`ai-course-${auth.user.id}`, 5, 60000);
   if (!rateLimitResult.success) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Rate limit exceeded. Please wait a moment before trying again." },
       { status: 429 }
     );
@@ -37,13 +38,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { topic, source_material, difficulty, estimated_duration, target_audience, course_type, title } = body;
 
   if (!topic && !source_material) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Either 'topic' or 'source_material' is required." },
       { status: 400 }
     );
@@ -67,10 +68,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(outline);
+    return jsonNoStore(outline);
   } catch (error) {
     console.error("AI course generation error:", error);
     const message = error instanceof Error ? error.message : "Failed to generate course outline";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return jsonNoStore({ error: message }, { status: 500 });
   }
 }

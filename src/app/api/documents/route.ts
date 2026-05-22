@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import type { DocumentVisibility } from "@/types/database";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/documents
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   try {
     const supabase = await createClient();
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (!body.title) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Title is required" },
         { status: 400 }
       );
@@ -102,12 +103,12 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Documents API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ data }, { status: 201 });
+    return jsonNoStore({ data }, { status: 201 });
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );
@@ -120,14 +121,14 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   try {
     const supabase = await createClient();
     const body = await request.json();
 
     if (!body.id) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Document id is required" },
         { status: 400 }
       );
@@ -150,15 +151,15 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (error.code === "PGRST116") {
-        return NextResponse.json({ error: "Document not found" }, { status: 404 });
+        return jsonNoStore({ error: "Document not found" }, { status: 404 });
       }
       console.error("Documents API error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json({ data });
+    return jsonNoStore({ data });
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );
@@ -171,14 +172,14 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Document id is required" },
       { status: 400 }
     );
@@ -194,11 +195,11 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     if (error.code === "PGRST116") {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return jsonNoStore({ error: "Document not found" }, { status: 404 });
     }
     console.error("Documents API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ data, message: "Document deleted" });
+  return jsonNoStore({ data, message: "Document deleted" });
 }

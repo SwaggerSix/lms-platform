@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createNominationSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
@@ -31,12 +32,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin", "manager");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   let body;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   // Support bulk nominations
@@ -70,5 +71,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  return NextResponse.json({ created: results, errors }, { status: results.length > 0 ? 201 : 400 });
+  return jsonNoStore({ created: results, errors }, { status: results.length > 0 ? 201 : 400 });
 }

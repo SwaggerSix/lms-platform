@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createAssessmentSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -56,13 +57,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
   const validation = validateBody(createAssessmentSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const assessmentData = validation.data;
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Assessments API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (questions?.length) {
@@ -95,23 +96,23 @@ export async function POST(request: NextRequest) {
     const { error: qError } = await service.from("questions").insert(questionsWithId);
     if (qError) {
       console.error("Assessments API error:", qError.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
   }
 
-  return NextResponse.json(assessment, { status: 201 });
+  return jsonNoStore(assessment, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
   const { id, questions } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Assessment id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Assessment id is required" }, { status: 400 });
   }
 
   const allowedFields = ["title", "description", "course_id", "type", "passing_score", "time_limit", "max_attempts", "status"] as const;
@@ -130,7 +131,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Assessments API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (questions?.length) {
@@ -148,19 +149,19 @@ export async function PATCH(request: NextRequest) {
     await service.from("questions").insert(questionsWithId);
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Assessment id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Assessment id is required" }, { status: 400 });
   }
   const service = createServiceClient();
 
@@ -171,8 +172,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Assessments API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Assessment deleted" });
+  return jsonNoStore({ message: "Assessment deleted" });
 }

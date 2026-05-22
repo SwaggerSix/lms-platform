@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkCronHealth, logCronRun } from "@/lib/cron/monitor";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +26,11 @@ async function handler(request: NextRequest) {
   const startedAt = Date.now();
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -40,7 +41,7 @@ async function handler(request: NextRequest) {
       duration_ms: Date.now() - startedAt,
       records_processed: health.jobs.length,
     });
-    return NextResponse.json({
+    return jsonNoStore({
       status: health.alerts.length > 0 ? "degraded" : "healthy",
       jobs_checked: health.jobs.length,
       alert_count: health.alerts.length,
@@ -53,7 +54,7 @@ async function handler(request: NextRequest) {
       records_processed: 0,
       error_message: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json(
+    return jsonNoStore(
       { error: err instanceof Error ? err.message : "self-check failed" },
       { status: 500 }
     );

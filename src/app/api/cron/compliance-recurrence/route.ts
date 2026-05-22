@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { recertificationReminder } from "@/lib/email/templates";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
 import { withCronMonitoring } from "@/lib/cron/monitor";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export const dynamic = "force-dynamic";
 
@@ -36,18 +37,18 @@ export async function POST(request: NextRequest) {
 async function handler(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const result = await withCronMonitoring("compliance-recurrence", runComplianceRecurrence);
-    return NextResponse.json({ message: "Compliance recurrence sweep complete", ...result });
+    return jsonNoStore({ message: "Compliance recurrence sweep complete", ...result });
   } catch (err) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: err instanceof Error ? err.message : "compliance-recurrence failed" },
       { status: 500 }
     );

@@ -5,22 +5,23 @@ import { validateBody, sendChatMessageSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getSystemPrompt, buildChatMessages, generateResponse, summarizeConversation } from "@/lib/ai/chatbot";
 import type { ChatMessage } from "@/lib/ai/chatbot";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`chat-ai-msg:${auth.user.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id } = await params;
   let body;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(sendChatMessageSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .single();
 
   if (!session) {
-    return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    return jsonNoStore({ error: "Session not found" }, { status: 404 });
   }
 
   // Get conversation history
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .update(updates)
     .eq("id", id);
 
-  return NextResponse.json({
+  return jsonNoStore({
     userMessage: userMsg,
     assistantMessage: assistantMsg,
     session: { ...session, ...updates },

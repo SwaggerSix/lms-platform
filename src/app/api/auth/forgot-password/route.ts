@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
   const ipLimit = await rateLimit(`forgot-pw-ip:${ip}`, 3, 60000);
   if (!ipLimit.success) {
     // Always return success to avoid revealing rate-limit info
-    return NextResponse.json({
+    return jsonNoStore({
       message: "If an account with that email exists, we've sent a password reset link.",
     });
   }
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Invalid request body" },
       { status: 400 }
     );
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   const { email } = body;
 
   if (!email) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Email is required" },
       { status: 400 }
     );
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
   const emailLimit = await rateLimit(`forgot-pw-email:${email.toLowerCase()}`, 3, 3600000);
   if (!emailLimit.success) {
     // Always return success to avoid revealing rate-limit info
-    return NextResponse.json({
+    return jsonNoStore({
       message: "If an account with that email exists, we've sent a password reset link.",
     });
   }
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
   });
 
   // Always return success
-  return NextResponse.json({
+  return jsonNoStore({
     message: "If an account with that email exists, we've sent a password reset link.",
   });
 }

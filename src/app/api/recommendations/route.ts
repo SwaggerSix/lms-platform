@@ -7,6 +7,7 @@ import {
   getSimilarCourses,
   computeUserPreferences,
 } from "@/lib/ai/recommendations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const COURSE_SELECT = `
   id,
@@ -189,7 +190,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -200,10 +201,10 @@ export async function POST() {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const preferences = await computeUserPreferences(profile.id);
 
-  return NextResponse.json({ preferences });
+  return jsonNoStore({ preferences });
 }

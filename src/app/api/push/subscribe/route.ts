@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/push/subscribe
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       !subscription.keys?.p256dh ||
       !subscription.keys?.auth
     ) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Invalid subscription data. Requires endpoint, keys.p256dh, and keys.auth." },
         { status: 400 }
       );
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!dbUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return jsonNoStore({ error: "User not found" }, { status: 404 });
     }
 
     // Upsert push subscription with separate key columns
@@ -81,17 +82,17 @@ export async function POST(request: NextRequest) {
         .eq("id", dbUser.id);
 
       if (metaError) {
-        return NextResponse.json(
+        return jsonNoStore(
           { error: "Failed to save subscription" },
           { status: 500 }
         );
       }
     }
 
-    return NextResponse.json({ success: true });
+    return jsonNoStore({ success: true });
   } catch (err) {
     console.error("Push subscribe error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 500 }
     );
@@ -111,14 +112,14 @@ export async function DELETE(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { endpoint } = body;
 
     if (!endpoint) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Endpoint is required" },
         { status: 400 }
       );
@@ -133,7 +134,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (!dbUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return jsonNoStore({ error: "User not found" }, { status: 404 });
     }
 
     // Try to delete from push_subscriptions table
@@ -151,10 +152,10 @@ export async function DELETE(request: NextRequest) {
         .eq("id", dbUser.id);
     }
 
-    return NextResponse.json({ success: true });
+    return jsonNoStore({ success: true });
   } catch (err) {
     console.error("Push unsubscribe error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 500 }
     );

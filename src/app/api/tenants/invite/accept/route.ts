@@ -2,15 +2,16 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, acceptInviteSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // POST /api/tenants/invite/accept - Accept an invitation
 export async function POST(request: NextRequest) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const body = await request.json();
   const validation = validateBody(acceptInviteSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -23,12 +24,12 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (invErr || !invitation) {
-    return NextResponse.json({ error: "Invalid or expired invitation" }, { status: 404 });
+    return jsonNoStore({ error: "Invalid or expired invitation" }, { status: 404 });
   }
 
   // Check expiration
   if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
-    return NextResponse.json({ error: "Invitation has expired" }, { status: 410 });
+    return jsonNoStore({ error: "Invitation has expired" }, { status: 410 });
   }
 
   // Verify email matches (get user email from users table)
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (userRecord && userRecord.email !== invitation.email) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "This invitation was sent to a different email address" },
       { status: 403 }
     );
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       .from("tenant_invitations")
       .update({ accepted_at: new Date().toISOString() })
       .eq("id", invitation.id);
-    return NextResponse.json({ error: "Already a member of this tenant" }, { status: 409 });
+    return jsonNoStore({ error: "Already a member of this tenant" }, { status: 409 });
   }
 
   // Add membership and mark accepted
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
   ]);
 
   if (memberErr) {
-    return NextResponse.json({ error: "Failed to join tenant" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to join tenant" }, { status: 500 });
   }
 
   // Get tenant info
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     .eq("id", invitation.tenant_id)
     .single();
 
-  return NextResponse.json({
+  return jsonNoStore({
     success: true,
     tenant,
     role: invitation.role,

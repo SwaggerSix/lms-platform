@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { sendEmail, welcomeWithTemporaryPassword } from "@/lib/email";
 import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 function generateTemporaryPassword(): string {
   return crypto.randomBytes(16).toString("base64url");
@@ -47,7 +48,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body: {
     users?: InputRow[];
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const rows = Array.isArray(body.users) ? body.users : [];
@@ -71,10 +72,10 @@ export async function POST(request: NextRequest) {
   const loginUrl = getLoginUrl(request);
 
   if (rows.length === 0) {
-    return NextResponse.json({ error: "No user rows supplied" }, { status: 400 });
+    return jsonNoStore({ error: "No user rows supplied" }, { status: 400 });
   }
   if (rows.length > 500) {
-    return NextResponse.json({ error: "Maximum 500 users per import" }, { status: 400 });
+    return jsonNoStore({ error: "Maximum 500 users per import" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -232,7 +233,7 @@ export async function POST(request: NextRequest) {
   const skipped = results.filter((r) => r.status === "skipped").length;
   const failed = results.filter((r) => r.status === "failed").length;
 
-  return NextResponse.json({
+  return jsonNoStore({
     summary: { total: rows.length, created, skipped, failed },
     results,
   });

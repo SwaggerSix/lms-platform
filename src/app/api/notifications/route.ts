@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createNotificationSchema } from "@/lib/validations";
 import { fetchNotificationPrefs, userMaySend } from "@/lib/notifications/preferences";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET() {
   const supabase = await createClient();
@@ -43,18 +44,18 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const validation = validateBody(createNotificationSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { title, body: announcementBody, audience, priority, scheduled_for, status } = validation.data;
@@ -79,9 +80,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Notification operation failed:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json(data, { status: 201 });
+    return jsonNoStore(data, { status: 201 });
   }
 
   if (scheduled_for) {
@@ -102,9 +103,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Notification operation failed:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json(data, { status: 201 });
+    return jsonNoStore(data, { status: 201 });
   }
 
   // Send now — broadcast to target users
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
 
   const validAudiences = ["all", "admin", "manager", "instructor", "learner"];
   if (!validAudiences.includes(audienceType)) {
-    return NextResponse.json({ error: "Invalid audience type" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid audience type" }, { status: 400 });
   }
 
   let userQuery = service.from("users").select("id");
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
   const { data: targetUsers } = await userQuery;
 
   if (!targetUsers || targetUsers.length === 0) {
-    return NextResponse.json({ error: "No target users found" }, { status: 400 });
+    return jsonNoStore({ error: "No target users found" }, { status: 400 });
   }
 
   // Honor each target user's "announcements" notification preference.
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
 
   if (filteredTargets.length === 0) {
     // Not an error — the broadcast was processed, just no one was eligible.
-    return NextResponse.json(
+    return jsonNoStore(
       {
         sent: 0,
         skipped: targetIds.length,
@@ -162,9 +163,9 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Failed to send notifications:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json({ sent: data?.length || 0 }, { status: 201 });
+  return jsonNoStore({ sent: data?.length || 0 }, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -173,14 +174,14 @@ export async function PATCH(request: NextRequest) {
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   // Mark all read (existing behavior)
@@ -200,7 +201,7 @@ export async function PATCH(request: NextRequest) {
         .eq("is_read", false);
     }
 
-    return NextResponse.json({ success: true });
+    return jsonNoStore({ success: true });
   }
 
   // Mark single notification as read (existing behavior)
@@ -212,7 +213,7 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (!notifProfile) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return jsonNoStore({ error: "User not found" }, { status: 404 });
     }
 
     const { error } = await service
@@ -223,15 +224,15 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error("Notification operation failed:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json({ success: true });
+    return jsonNoStore({ success: true });
   }
 
   // Edit an announcement (admin)
   if (body.id && body.title) {
     const auth = await authorize("admin");
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
     const updates: Record<string, any> = {};
     if (body.title) updates.title = body.title;
@@ -247,25 +248,25 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error("Notification operation failed:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
-    return NextResponse.json(data);
+    return jsonNoStore(data);
   }
 
-  return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  return jsonNoStore({ error: "Invalid request" }, { status: 400 });
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Notification id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Notification id is required" }, { status: 400 });
   }
 
   const { error } = await service
@@ -275,7 +276,7 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Failed to delete notification:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json({ message: "Notification deleted" });
+  return jsonNoStore({ message: "Notification deleted" });
 }

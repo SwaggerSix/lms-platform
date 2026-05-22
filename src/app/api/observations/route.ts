@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createObservationSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
@@ -66,14 +67,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`obs-create-${auth.user.id}`, 20, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(createObservationSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!template) {
-    return NextResponse.json({ error: "Template not found or inactive" }, { status: 400 });
+    return jsonNoStore({ error: "Template not found or inactive" }, { status: 400 });
   }
 
   // Verify subject exists
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!subject) {
-    return NextResponse.json({ error: "Subject user not found" }, { status: 400 });
+    return jsonNoStore({ error: "Subject user not found" }, { status: 400 });
   }
 
   const { data, error } = await service
@@ -115,8 +116,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Observation POST error:", error.message);
-    return NextResponse.json({ error: "Failed to create observation" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create observation" }, { status: 500 });
   }
 
-  return NextResponse.json({ observation: data }, { status: 201 });
+  return jsonNoStore({ observation: data }, { status: 201 });
 }

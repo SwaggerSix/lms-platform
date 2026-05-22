@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { validateBody } from "@/lib/validations";
 import { z } from "zod";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const addPrerequisiteSchema = z.object({
   prerequisite_course_id: z.string().uuid(),
@@ -90,32 +91,32 @@ export async function POST(
 ) {
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { slug } = await params;
   const courseId = await resolveCourseId(slug);
   if (!courseId) {
-    return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    return jsonNoStore({ error: "Course not found" }, { status: 404 });
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(addPrerequisiteSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const { prerequisite_course_id, requirement_type, min_score } = validation.data;
 
   // Cannot add self as prerequisite (also enforced by DB constraint)
   if (prerequisite_course_id === courseId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "A course cannot be a prerequisite of itself" },
       { status: 400 }
     );
@@ -130,7 +131,7 @@ export async function POST(
     .single();
 
   if (!prereqCourse) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Prerequisite course not found" },
       { status: 404 }
     );
@@ -138,7 +139,7 @@ export async function POST(
 
   // Validate min_score is provided when requirement_type is min_score
   if (requirement_type === "min_score" && (min_score == null || min_score < 0)) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "min_score is required and must be >= 0 when requirement_type is 'min_score'" },
       { status: 400 }
     );
@@ -147,7 +148,7 @@ export async function POST(
   // Check for circular dependencies
   const hasCycle = await wouldCreateCycle(courseId, prerequisite_course_id);
   if (hasCycle) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Adding this prerequisite would create a circular dependency" },
       { status: 400 }
     );
@@ -168,16 +169,16 @@ export async function POST(
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "This prerequisite already exists for the course" },
         { status: 409 }
       );
     }
     console.error("Prerequisites POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function DELETE(
@@ -186,20 +187,20 @@ export async function DELETE(
 ) {
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { slug } = await params;
   const courseId = await resolveCourseId(slug);
   if (!courseId) {
-    return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    return jsonNoStore({ error: "Course not found" }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);
   const prerequisiteId = searchParams.get("prerequisite_id");
 
   if (!prerequisiteId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "prerequisite_id query parameter is required" },
       { status: 400 }
     );
@@ -216,7 +217,7 @@ export async function DELETE(
     .single();
 
   if (!existing) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Prerequisite not found for this course" },
       { status: 404 }
     );
@@ -229,8 +230,8 @@ export async function DELETE(
 
   if (error) {
     console.error("Prerequisites DELETE error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Prerequisite removed" });
+  return jsonNoStore({ message: "Prerequisite removed" });
 }

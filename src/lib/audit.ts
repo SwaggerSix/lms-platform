@@ -28,7 +28,11 @@ export async function logAudit(params: AuditLogParams): Promise<void> {
   // can only be validated here. Warn-and-continue rather than throw —
   // a malformed action is worth recording (with a flag) instead of
   // dropping the audit row entirely.
-  if (!isValidAuditAction(params.action)) {
+  //
+  // Gated to non-production so prod logs don't drown if a dynamic
+  // action accidentally proliferates; CI + dev + preview still
+  // surface the warning so the regression is caught.
+  if (process.env.NODE_ENV !== "production" && !isValidAuditAction(params.action)) {
     console.warn(
       `[audit] non-conformant action "${params.action}" for entity_type ${params.entityType}. Convention: legacy verb or dotted namespace.`
     );

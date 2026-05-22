@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createTenantSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // GET /api/tenants - List tenants the current user belongs to
 export async function GET(request: NextRequest) {
@@ -53,14 +54,14 @@ export async function GET(request: NextRequest) {
 // POST /api/tenants - Create a new tenant
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`tenant-create-${auth.user.id}`, 5, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(createTenantSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
     .select("id")
     .eq("slug", validation.data.slug)
     .single();
-  if (existing) return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
+  if (existing) return jsonNoStore({ error: "Slug already taken" }, { status: 409 });
 
   // Create tenant
   const { data: tenant, error } = await service
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Create tenant error:", error.message);
-    return NextResponse.json({ error: "Failed to create tenant" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create tenant" }, { status: 500 });
   }
 
   // Add creator as owner membership
@@ -94,5 +95,5 @@ export async function POST(request: NextRequest) {
     role: "owner",
   });
 
-  return NextResponse.json({ tenant }, { status: 201 });
+  return jsonNoStore({ tenant }, { status: 201 });
 }

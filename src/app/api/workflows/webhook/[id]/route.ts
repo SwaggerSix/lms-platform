@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { WorkflowEngine } from "@/lib/workflows/engine";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // POST: External webhook trigger for a workflow
 export async function POST(
@@ -11,7 +12,7 @@ export async function POST(
   const { id } = await params;
 
   const rl = await rateLimit(`workflow-webhook-${id}`, 30, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const service = createServiceClient();
 
@@ -23,26 +24,26 @@ export async function POST(
     .single();
 
   if (error || !workflow) {
-    return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    return jsonNoStore({ error: "Workflow not found" }, { status: 404 });
   }
 
   if (!workflow.is_active) {
-    return NextResponse.json({ error: "Workflow is not active" }, { status: 400 });
+    return jsonNoStore({ error: "Workflow is not active" }, { status: 400 });
   }
 
   if (workflow.trigger_type !== "webhook") {
-    return NextResponse.json({ error: "Workflow is not a webhook trigger" }, { status: 400 });
+    return jsonNoStore({ error: "Workflow is not a webhook trigger" }, { status: 400 });
   }
 
   // Validate webhook secret (required)
   const config = workflow.trigger_config as Record<string, unknown>;
   if (!config.secret) {
     console.error(`Workflow ${id} has no webhook secret configured`);
-    return NextResponse.json({ error: "Webhook not configured" }, { status: 403 });
+    return jsonNoStore({ error: "Webhook not configured" }, { status: 403 });
   }
   const authHeader = request.headers.get("x-webhook-secret");
   if (authHeader !== config.secret) {
-    return NextResponse.json({ error: "Invalid webhook secret" }, { status: 401 });
+    return jsonNoStore({ error: "Invalid webhook secret" }, { status: 401 });
   }
 
   // Parse webhook payload
@@ -60,10 +61,10 @@ export async function POST(
 
   try {
     const run = await engine.executeWorkflow(id, triggerData);
-    return NextResponse.json({ run_id: run.id, status: run.status });
+    return jsonNoStore({ run_id: run.id, status: run.status });
   } catch (err) {
     console.error("Webhook workflow execution error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Workflow execution failed" },
       { status: 500 }
     );

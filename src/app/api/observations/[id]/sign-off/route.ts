@@ -3,18 +3,19 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, signOffObservationSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin", "manager");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`obs-signoff-${auth.user.id}`, 20, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const validation = validateBody(signOffObservationSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -26,11 +27,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .single();
 
   if (!observation) {
-    return NextResponse.json({ error: "Observation not found" }, { status: 404 });
+    return jsonNoStore({ error: "Observation not found" }, { status: 404 });
   }
 
   if (observation.status !== "completed") {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Observation must be completed before sign-off" },
       { status: 400 }
     );
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Signer cannot be the observer (separation of duties)
   if (observation.observer_id === auth.user.id) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Observer cannot sign off their own observation" },
       { status: 400 }
     );
@@ -79,8 +80,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (error) {
     console.error("Observation sign-off error:", error.message);
-    return NextResponse.json({ error: "Failed to sign off observation" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to sign off observation" }, { status: 500 });
   }
 
-  return NextResponse.json({ observation: data });
+  return jsonNoStore({ observation: data });
 }

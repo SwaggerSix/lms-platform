@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/xapi/activities/profile
@@ -67,12 +68,12 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rl = await rateLimit(`xapi-profile-put-${auth.user.id}`, 20, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -80,7 +81,7 @@ export async function PUT(request: NextRequest) {
   const profileId = searchParams.get("profileId");
 
   if (!activityId || !profileId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "activityId and profileId parameters required" },
       { status: 400 }
     );
@@ -103,10 +104,10 @@ export async function PUT(request: NextRequest) {
 
   if (error) {
     console.error("Failed to store activity profile:", error.message);
-    return NextResponse.json({ error: "Failed to store activity profile" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to store activity profile" }, { status: 500 });
   }
 
-  return NextResponse.json(null, {
+  return jsonNoStore(null, {
     status: 204,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });
@@ -119,7 +120,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { searchParams } = new URL(request.url);
@@ -127,7 +128,7 @@ export async function DELETE(request: NextRequest) {
   const profileId = searchParams.get("profileId");
 
   if (!activityId || !profileId) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "activityId and profileId parameters required" },
       { status: 400 }
     );
@@ -143,10 +144,10 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Failed to delete activity profile:", error.message);
-    return NextResponse.json({ error: "Failed to delete activity profile" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to delete activity profile" }, { status: 500 });
   }
 
-  return NextResponse.json(null, {
+  return jsonNoStore(null, {
     status: 204,
     headers: { "X-Experience-API-Version": "1.0.3" },
   });

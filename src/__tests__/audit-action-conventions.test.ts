@@ -1,11 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import {
-  LEGACY_ACTIONS,
-  DOTTED_ACTION_RE,
-  DOTTED_TEMPLATE_LITERAL_RE,
-} from "@/lib/audit-log/action-convention";
+import { LEGACY_ACTIONS } from "@/lib/audit-log/action-convention";
+import { findActionLiteralOffenders } from "@/lib/audit-log/scan-action-literals";
 
 function walkTs(dir: string): string[] {
   const out: string[] = [];
@@ -38,35 +35,15 @@ function walkTs(dir: string): string[] {
  * audit_logs.
  */
 
-const LEGACY = LEGACY_ACTIONS;
-const DOTTED_RE = DOTTED_ACTION_RE;
-const TEMPLATE_LITERAL_RE = DOTTED_TEMPLATE_LITERAL_RE;
-
 describe("audit action naming convention", () => {
   it("every logAudit({ action: ... }) literal matches the convention", () => {
     const files = walkTs(join(process.cwd(), "src/app/api"));
     const offenders: Array<{ file: string; action: string }> = [];
 
-    // Match both string-literal and template-literal action values.
-    const STRING_LITERAL = /action:\s*"([^"]+)"/g;
-    const TEMPLATE_LITERAL = /action:\s*(`[^`]+`)/g;
-
     for (const file of files) {
       const source = readFileSync(file, "utf8");
-      for (const m of source.matchAll(STRING_LITERAL)) {
-        const v = m[1];
-        if (LEGACY.has(v) || DOTTED_RE.test(v)) continue;
-        offenders.push({ file: file.replace(process.cwd() + "/", ""), action: v });
-      }
-      for (const m of source.matchAll(TEMPLATE_LITERAL)) {
-        const v = m[1];
-        if (TEMPLATE_LITERAL_RE.test(v)) continue;
-        // Some template literals just wrap a single legacy verb in
-        // backticks. That's fine.
-        const stripped = v.replace(/^`|`$/g, "");
-        if (!stripped.includes("${") && (LEGACY.has(stripped) || DOTTED_RE.test(stripped))) continue;
-        offenders.push({ file: file.replace(process.cwd() + "/", ""), action: v });
-      }
+      const rel = file.replace(process.cwd() + "/", "");
+      offenders.push(...findActionLiteralOffenders(rel, source));
     }
 
     expect(offenders, `Offenders: ${JSON.stringify(offenders, null, 2)}`).toEqual([]);
@@ -75,7 +52,7 @@ describe("audit action naming convention", () => {
   it("legacy verb set is the documented list", () => {
     // Lock the legacy set so adding a new bare verb requires touching
     // the test (and the implicit convention discussion).
-    expect(Array.from(LEGACY).sort()).toEqual([
+    expect(Array.from(LEGACY_ACTIONS).sort()).toEqual([
       "created",
       "deleted",
       "export",

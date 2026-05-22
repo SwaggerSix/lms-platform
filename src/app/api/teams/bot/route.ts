@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // ─── Bot Framework Configuration ────────────────────────────────
 
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     const tokenValid = await verifyBotFrameworkToken(authHeader);
     if (!tokenValid) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "Unauthorized: invalid Bot Framework token" },
         { status: 401 }
       );
@@ -59,14 +60,14 @@ export async function POST(request: NextRequest) {
         return await handleConversationUpdate(activity);
 
       case "invoke":
-        return NextResponse.json({ status: 200 }, { status: 200 });
+        return jsonNoStore({ status: 200 }, { status: 200 });
 
       default:
-        return NextResponse.json({ status: 200 }, { status: 200 });
+        return jsonNoStore({ status: 200 }, { status: 200 });
     }
   } catch (err: any) {
     console.error("Teams bot error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 500 }
     );
@@ -111,7 +112,7 @@ async function handleMessage(activity: BotActivity): Promise<NextResponse> {
     );
   }
 
-  return NextResponse.json({ status: 200 }, { status: 200 });
+  return jsonNoStore({ status: 200 }, { status: 200 });
 }
 
 // ─── Conversation Update Handler ────────────────────────────────
@@ -141,7 +142,7 @@ async function handleConversationUpdate(
     );
   }
 
-  return NextResponse.json({ status: 200 }, { status: 200 });
+  return jsonNoStore({ status: 200 }, { status: 200 });
 }
 
 // ─── Response Builders ──────────────────────────────────────────

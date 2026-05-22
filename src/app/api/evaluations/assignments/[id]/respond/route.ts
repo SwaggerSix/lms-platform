@@ -3,23 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, submitEvaluationResponseSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`eval-respond-${auth.user.id}`, 30, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id: assignmentId } = await params;
 
   let body;
   try { body = await request.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(submitEvaluationResponseSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -31,19 +32,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .single();
 
   if (assignmentError || !assignment) {
-    return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+    return jsonNoStore({ error: "Assignment not found" }, { status: 404 });
   }
 
   if (assignment.user_id !== auth.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   if (assignment.status === "completed") {
-    return NextResponse.json({ error: "Assignment already completed" }, { status: 409 });
+    return jsonNoStore({ error: "Assignment already completed" }, { status: 409 });
   }
 
   if (assignment.status === "expired") {
-    return NextResponse.json({ error: "Assignment has expired" }, { status: 410 });
+    return jsonNoStore({ error: "Assignment has expired" }, { status: 410 });
   }
 
   // Insert response and mark assignment complete atomically
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (responseError) {
     console.error("Evaluation response insert error:", responseError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   const { error: updateError } = await service
@@ -75,5 +76,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Response was saved — don't fail the request, just log
   }
 
-  return NextResponse.json(response, { status: 201 });
+  return jsonNoStore(response, { status: 201 });
 }

@@ -8,13 +8,14 @@ import { createEvaluationAssignments } from "@/lib/evaluations/create-assignment
 import { sendEmail } from "@/lib/email/sender";
 import { courseCompletion } from "@/lib/email/templates";
 import { userMaySend } from "@/lib/notifications/preferences";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -25,19 +26,19 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+    return jsonNoStore({ error: "User profile not found" }, { status: 404 });
   }
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const { enrollment_id, lesson_id, status, add_time_spent } = body;
 
   if (!enrollment_id) {
-    return NextResponse.json({ error: "enrollment_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "enrollment_id is required" }, { status: 400 });
   }
 
   // Verify the enrollment belongs to this user
@@ -48,7 +49,7 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (!enrollment || enrollment.user_id !== profile.id) {
-    return NextResponse.json({ error: "Enrollment not found" }, { status: 404 });
+    return jsonNoStore({ error: "Enrollment not found" }, { status: 404 });
   }
 
   // Update time_spent on enrollment if requested
@@ -92,7 +93,7 @@ export async function PATCH(request: NextRequest) {
       if (existing) {
         // Don't downgrade completed -> in_progress
         if (existing.status === "completed" && status !== "completed") {
-          return NextResponse.json({ ok: true, skipped: true });
+          return jsonNoStore({ ok: true, skipped: true });
         }
         const updateData: Record<string, unknown> = { status };
         if (status === "completed") {
@@ -105,7 +106,7 @@ export async function PATCH(request: NextRequest) {
 
         if (updateError) {
           console.error("Progress update error:", updateError.message);
-          return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+          return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
         }
       } else {
         // Insert fresh
@@ -115,7 +116,7 @@ export async function PATCH(request: NextRequest) {
 
         if (insertError) {
           console.error("Progress insert error:", insertError.message);
-          return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+          return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
         }
       }
     }
@@ -321,10 +322,10 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, newBadges, courseCompleted });
+    return jsonNoStore({ ok: true, newBadges, courseCompleted });
   }
 
-  return NextResponse.json({ ok: true });
+  return jsonNoStore({ ok: true });
 }
 
 // Support sendBeacon (which sends POST)

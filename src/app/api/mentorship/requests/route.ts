@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createMentorshipRequestSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -42,21 +43,21 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`mentorship-request-${auth.user.id}`, 5, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(createMentorshipRequestSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "You already have an active mentorship request" },
       { status: 409 }
     );
@@ -93,15 +94,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!mentor) {
-      return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
+      return jsonNoStore({ error: "Mentor not found" }, { status: 404 });
     }
 
     if (mentor.current_mentee_count >= mentor.max_mentees) {
-      return NextResponse.json({ error: "Mentor has no available capacity" }, { status: 409 });
+      return jsonNoStore({ error: "Mentor has no available capacity" }, { status: 409 });
     }
 
     if (mentor.availability === "unavailable") {
-      return NextResponse.json({ error: "Mentor is currently unavailable" }, { status: 409 });
+      return jsonNoStore({ error: "Mentor is currently unavailable" }, { status: 409 });
     }
 
     requestData.mentor_id = validation.data.mentor_id;
@@ -119,8 +120,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Mentorship request create error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }

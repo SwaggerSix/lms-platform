@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createObservationTemplateSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
@@ -34,14 +35,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`obs-template-create-${auth.user.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(createObservationTemplateSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
   const { data, error } = await service
@@ -55,8 +56,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Observation template POST error:", error.message);
-    return NextResponse.json({ error: "Failed to create template" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create template" }, { status: 500 });
   }
 
-  return NextResponse.json({ template: data }, { status: 201 });
+  return jsonNoStore({ template: data }, { status: 201 });
 }

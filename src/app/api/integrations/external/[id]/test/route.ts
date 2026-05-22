@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { hrisSync } from "@/lib/integrations/hris-sync";
 import { crmSync } from "@/lib/integrations/crm-sync";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * POST /api/integrations/external/[id]/test
@@ -17,11 +18,11 @@ export async function POST(
 ) {
   const auth = await authorize("admin");
   if (!auth.authorized)
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`integration-test-${auth.user.id}`, 10, 60000);
   if (!rl.success)
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -33,7 +34,7 @@ export async function POST(
     .single();
 
   if (error || !integration) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Integration not found" },
       { status: 404 }
     );
@@ -49,7 +50,7 @@ export async function POST(
       result = await hrisSync.testConnection(id);
     }
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: result.success,
       message: result.message,
       provider: integration.provider,
@@ -57,7 +58,7 @@ export async function POST(
     });
   } catch (err) {
     console.error("Integration test connection error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       {
         success: false,
         message:

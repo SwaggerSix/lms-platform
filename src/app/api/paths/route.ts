@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createPathSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -38,13 +39,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
   const validation = validateBody(createPathSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
   const { items, ...pathData } = validation.data;
   const service = createServiceClient();
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Paths API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (items?.length) {
@@ -69,19 +70,19 @@ export async function POST(request: NextRequest) {
     await service.from("learning_path_items").insert(pathItems);
   }
 
-  return NextResponse.json(path, { status: 201 });
+  return jsonNoStore(path, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
   const { id, items } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Learning path id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Learning path id is required" }, { status: 400 });
   }
 
   const allowedFields = ["title", "description", "slug", "status", "difficulty", "estimated_duration", "thumbnail_url"] as const;
@@ -100,7 +101,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Paths API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   if (items?.length) {
@@ -113,19 +114,19 @@ export async function PATCH(request: NextRequest) {
     await service.from("learning_path_items").insert(pathItems);
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Learning path id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Learning path id is required" }, { status: 400 });
   }
   const service = createServiceClient();
 
@@ -136,8 +137,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Paths API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Learning path deleted" });
+  return jsonNoStore({ message: "Learning path deleted" });
 }

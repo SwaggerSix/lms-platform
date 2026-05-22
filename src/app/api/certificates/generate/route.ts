@@ -10,17 +10,18 @@ import {
   type DesignData,
   type CertificateData,
 } from "@/lib/certificates/renderer";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   // Certificate PDF generation is CPU-intensive — limit to 10 per minute per user
   const rl = await rateLimit(`cert-generate-${auth.user.id}`, 10, 60000);
   if (!rl.success) {
-    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const service = createServiceClient();
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
       .eq("user_id", user_id)
       .eq("certification_id", certification_id);
   } else {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Provide user_certification_id or both user_id and certification_id" },
       { status: 400 }
     );
@@ -54,12 +55,12 @@ export async function POST(request: NextRequest) {
   const { data: userCert, error: ucError } = await userCertQuery.single();
 
   if (ucError || !userCert) {
-    return NextResponse.json({ error: "User certification not found" }, { status: 404 });
+    return jsonNoStore({ error: "User certification not found" }, { status: 404 });
   }
 
   // Check permissions: admins can generate for anyone, others only for themselves
   if (!["admin", "manager"].includes(auth.user.role) && userCert.user_id !== auth.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   // Fetch the user's name
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
     })
     .eq("id", userCert.id);
 
-  return NextResponse.json({
+  return jsonNoStore({
     verification_code: verificationCode,
     public_url: publicUrl,
     svg: svgString,

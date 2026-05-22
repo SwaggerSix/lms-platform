@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createProductSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -69,31 +70,31 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`product-create-${auth.user.id}`, 20, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Too many requests" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(createProductSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
   // Check course exists
   const { data: course } = await service.from("courses").select("id").eq("id", validation.data.course_id).single();
-  if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
+  if (!course) return jsonNoStore({ error: "Course not found" }, { status: 404 });
 
   // Check no existing product for this course
   const { data: existing } = await service.from("products").select("id").eq("course_id", validation.data.course_id).single();
-  if (existing) return NextResponse.json({ error: "A product already exists for this course" }, { status: 409 });
+  if (existing) return jsonNoStore({ error: "A product already exists for this course" }, { status: 409 });
 
   const { data, error } = await service.from("products").insert(validation.data).select().single();
 
   if (error) {
     console.error("Product create error:", error.message);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create product" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }

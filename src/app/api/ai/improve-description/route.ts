@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { rateLimit } from "@/lib/rate-limit";
 import { improveCourseDescription } from "@/lib/ai/course-generator";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Anthropic API key is not configured. Please set the ANTHROPIC_API_KEY environment variable." },
       { status: 503 }
     );
@@ -13,12 +14,12 @@ export async function POST(request: NextRequest) {
 
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rateLimitResult = await rateLimit(`ai-desc-${auth.user.id}`, 10, 60000);
   if (!rateLimitResult.success) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Rate limit exceeded. Please wait a moment before trying again." },
       { status: 429 }
     );
@@ -32,21 +33,21 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { description, title } = body;
 
   if (!description || !title) {
-    return NextResponse.json({ error: "Both 'description' and 'title' are required." }, { status: 400 });
+    return jsonNoStore({ error: "Both 'description' and 'title' are required." }, { status: 400 });
   }
 
   try {
     const improved = await improveCourseDescription(description, title);
-    return NextResponse.json(improved);
+    return jsonNoStore(improved);
   } catch (error) {
     console.error("AI description improvement error:", error);
     const message = error instanceof Error ? error.message : "Failed to improve description";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return jsonNoStore({ error: message }, { status: 500 });
   }
 }

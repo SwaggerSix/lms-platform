@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { randomBytes, createHash } from "crypto";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -9,18 +10,18 @@ function hashToken(token: string): string {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { provider_id } = body;
   if (!provider_id || typeof provider_id !== "string") {
-    return NextResponse.json({ error: "provider_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "provider_id is required" }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (fetchError || !provider) {
-    return NextResponse.json({ error: "SSO provider not found" }, { status: 404 });
+    return jsonNoStore({ error: "SSO provider not found" }, { status: 404 });
   }
 
   // Generate a random SCIM token
@@ -52,11 +53,11 @@ export async function POST(request: NextRequest) {
 
   if (updateError) {
     console.error("SCIM token generation error:", updateError.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Return the plaintext token only once
-  return NextResponse.json({
+  return jsonNoStore({
     token: plainToken,
     message: "SCIM token generated. Store this token securely — it will not be shown again.",
   });

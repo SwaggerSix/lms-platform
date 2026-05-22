@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { createDailySnapshot } from "@/lib/analytics/snapshots";
 import { calculateRiskScore } from "@/lib/analytics/predictive";
 import { withCronMonitoring } from "@/lib/cron/monitor";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * Cron endpoint: compute daily snapshots and risk predictions for all active users.
@@ -21,11 +22,11 @@ async function handler(request: NextRequest) {
   // Verify cron secret
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -135,12 +136,12 @@ async function handler(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return jsonNoStore({
       message: "Daily analytics computed",
       results,
     });
   } catch (err) {
     console.error("Daily analytics cron error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 }

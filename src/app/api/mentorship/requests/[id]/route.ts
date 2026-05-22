@@ -2,13 +2,14 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateMentorshipRequestSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
 
@@ -16,12 +17,12 @@ export async function PUT(
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const validation = validateBody(updateMentorshipRequestSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const service = createServiceClient();
@@ -34,7 +35,7 @@ export async function PUT(
     .single();
 
   if (!existing) {
-    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    return jsonNoStore({ error: "Request not found" }, { status: 404 });
   }
 
   // Only mentee, mentor, or admin can update
@@ -43,7 +44,7 @@ export async function PUT(
   const isAdmin = auth.user.role === "admin";
 
   if (!isParticipant && !isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   const updates: any = { status: validation.data.status };
@@ -109,10 +110,10 @@ export async function PUT(
 
   if (error) {
     console.error("Mentorship request update error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(
@@ -120,7 +121,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const service = createServiceClient();
@@ -133,15 +134,15 @@ export async function DELETE(
     .single();
 
   if (!existing) {
-    return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    return jsonNoStore({ error: "Request not found" }, { status: 404 });
   }
 
   if (existing.mentee_id !== auth.user.id && auth.user.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
   if (existing.status === "active") {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Cannot delete an active mentorship. Cancel it first." },
       { status: 400 }
     );
@@ -154,8 +155,8 @@ export async function DELETE(
 
   if (error) {
     console.error("Mentorship request delete error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Request deleted" });
+  return jsonNoStore({ message: "Request deleted" });
 }

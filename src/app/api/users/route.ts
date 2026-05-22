@@ -9,6 +9,7 @@ import { processRulesForUser } from "@/lib/automation/rules-engine";
 import { enrollUserInAllRequiredCourses } from "@/lib/courses/required-training";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import crypto from "crypto";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // 16 bytes base64url ≈ 22 chars; Supabase requires ≥6.
 function generateTemporaryPassword(): string {
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -75,11 +76,11 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const validation = validateBody(createUserSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   // Mass assignment fix: whitelist allowed fields
@@ -101,10 +102,10 @@ export async function POST(request: NextRequest) {
   if (authErr || !authCreated?.user) {
     const msg = authErr?.message || "";
     if (/registered|exists/i.test(msg)) {
-      return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 });
+      return jsonNoStore({ error: "A user with this email already exists" }, { status: 409 });
     }
     console.error("Users API auth create error:", msg);
-    return NextResponse.json({ error: "Failed to create auth account" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create auth account" }, { status: 500 });
   }
 
   const { data, error } = await service
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     // Roll back the orphaned auth user so the admin can retry with the same email.
     await service.auth.admin.deleteUser(authCreated.user.id).catch(() => {});
     console.error("Users API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   // Fire webhook (non-blocking)
@@ -149,5 +150,5 @@ export async function POST(request: NextRequest) {
     console.error("Required-training enrollment failed for new user", err)
   );
 
-  return NextResponse.json({ ...data, temporary_password: temporaryPassword }, { status: 201 });
+  return jsonNoStore({ ...data, temporary_password: temporaryPassword }, { status: 201 });
 }

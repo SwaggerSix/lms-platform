@@ -3,10 +3,11 @@ import { authorize } from "@/lib/auth/authorize";
 import { rateLimit } from "@/lib/rate-limit";
 import { locales } from "@/i18n/config";
 import { getAI } from "@/lib/ai/openai";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
+    return jsonNoStore(
       {
         error:
           "AI API key is not configured. Please set the ANTHROPIC_API_KEY environment variable.",
@@ -17,12 +18,12 @@ export async function POST(request: NextRequest) {
 
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const rateLimitResult = await rateLimit(`ai-translate-${auth.user.id}`, 10, 60000);
   if (!rateLimitResult.success) {
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Rate limit exceeded. Please wait a moment before trying again." },
       { status: 429 }
     );
@@ -33,23 +34,23 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { text, target_locale, source_locale } = body;
 
   if (!text || typeof text !== "string" || text.trim().length === 0) {
-    return NextResponse.json({ error: "Text is required and must be a non-empty string." }, { status: 400 });
+    return jsonNoStore({ error: "Text is required and must be a non-empty string." }, { status: 400 });
   }
 
   if (!target_locale || !locales.includes(target_locale as (typeof locales)[number])) {
-    return NextResponse.json({ error: `Invalid target_locale. Must be one of: ${locales.join(", ")}` }, { status: 400 });
+    return jsonNoStore({ error: `Invalid target_locale. Must be one of: ${locales.join(", ")}` }, { status: 400 });
   }
 
   const resolvedSource = source_locale || "en";
 
   if (resolvedSource === target_locale) {
-    return NextResponse.json({ translated_text: text, source_locale: resolvedSource, target_locale });
+    return jsonNoStore({ translated_text: text, source_locale: resolvedSource, target_locale });
   }
 
   const localeNameMap: Record<string, string> = {
@@ -73,16 +74,16 @@ export async function POST(request: NextRequest) {
     const translatedText = response.content[0]?.type === "text" ? response.content[0].text.trim() : "";
 
     if (!translatedText) {
-      return NextResponse.json({ error: "Translation returned empty result." }, { status: 500 });
+      return jsonNoStore({ error: "Translation returned empty result." }, { status: 500 });
     }
 
-    return NextResponse.json({
+    return jsonNoStore({
       translated_text: translatedText,
       source_locale: resolvedSource,
       target_locale,
     });
   } catch (err: unknown) {
     console.error("Translation error:", err);
-    return NextResponse.json({ error: "Failed to connect to translation service. Please try again later." }, { status: 500 });
+    return jsonNoStore({ error: "Failed to connect to translation service. Please try again later." }, { status: 500 });
   }
 }

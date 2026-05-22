@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateTenantSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 async function verifyTenantAccess(userId: string, tenantId: string, requiredRoles?: string[]) {
   const service = createServiceClient();
@@ -54,17 +55,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const auth = await authorize();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   // Only admin or tenant owner/admin can update
   if (auth.user.role !== "admin") {
     const access = await verifyTenantAccess(auth.user.id, id, ["owner", "admin"]);
-    if (!access) return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    if (!access) return jsonNoStore({ error: "Insufficient permissions" }, { status: 403 });
   }
 
   const body = await request.json();
   const validation = validateBody(updateTenantSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
   const { data: tenant, error } = await service
@@ -75,23 +76,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     .single();
 
   if (error) {
-    if (error.code === "23505") return NextResponse.json({ error: "Slug or domain already taken" }, { status: 409 });
-    return NextResponse.json({ error: "Failed to update tenant" }, { status: 500 });
+    if (error.code === "23505") return jsonNoStore({ error: "Slug or domain already taken" }, { status: 409 });
+    return jsonNoStore({ error: "Failed to update tenant" }, { status: 500 });
   }
 
-  return NextResponse.json({ tenant });
+  return jsonNoStore({ tenant });
 }
 
 // DELETE /api/tenants/[id]
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
   const { error } = await service.from("tenants").delete().eq("id", id);
 
-  if (error) return NextResponse.json({ error: "Failed to delete tenant" }, { status: 500 });
+  if (error) return jsonNoStore({ error: "Failed to delete tenant" }, { status: 500 });
 
-  return NextResponse.json({ success: true });
+  return jsonNoStore({ success: true });
 }

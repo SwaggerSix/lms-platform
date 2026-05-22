@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/profile/skills — return the authenticated user's skills list.
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!authUser) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return jsonNoStore({ error: "Not authenticated" }, { status: 401 });
   }
 
   const service = createServiceClient();
@@ -63,14 +64,14 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return jsonNoStore({ error: "User not found" }, { status: 404 });
   }
 
   const body = await request.json();
   const { skill_name, proficiency_level, notes } = body;
 
   if (!skill_name || !proficiency_level) {
-    return NextResponse.json({ error: "skill_name and proficiency_level are required" }, { status: 400 });
+    return jsonNoStore({ error: "skill_name and proficiency_level are required" }, { status: 400 });
   }
 
   // Look up the skill by name
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (skillErr || !skillRow) {
-    return NextResponse.json({ error: "Skill not found" }, { status: 404 });
+    return jsonNoStore({ error: "Skill not found" }, { status: 404 });
   }
 
   const { data, error } = await service
@@ -102,8 +103,8 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Skills self-assessment error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }

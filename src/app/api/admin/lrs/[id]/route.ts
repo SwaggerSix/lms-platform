@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, lrsConfigUpdateSchema } from "@/lib/validations";
 import { LRSClient } from "@/lib/xapi/lrs-client";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * PUT /api/admin/lrs/[id]
@@ -14,14 +15,14 @@ export async function PUT(
 ) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { id } = await params;
   const body = await request.json();
   const validation = validateBody(lrsConfigUpdateSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   const data = validation.data;
@@ -47,14 +48,14 @@ export async function PUT(
 
   if (error) {
     console.error("Failed to update LRS configuration:", error.message);
-    return NextResponse.json({ error: "Failed to update LRS configuration" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to update LRS configuration" }, { status: 500 });
   }
 
   if (!config) {
-    return NextResponse.json({ error: "Configuration not found" }, { status: 404 });
+    return jsonNoStore({ error: "Configuration not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ configuration: config });
+  return jsonNoStore({ configuration: config });
 }
 
 /**
@@ -67,7 +68,7 @@ export async function DELETE(
 ) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return jsonNoStore({ error: auth.error }, { status: auth.status });
   }
 
   const { id } = await params;
@@ -80,8 +81,8 @@ export async function DELETE(
 
   if (error) {
     console.error("Failed to delete LRS configuration:", error.message);
-    return NextResponse.json({ error: "Failed to delete LRS configuration" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to delete LRS configuration" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return jsonNoStore({ success: true });
 }

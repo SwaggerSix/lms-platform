@@ -10,6 +10,7 @@ import {
 } from "@/lib/integrations/video-conferencing";
 import type { ILTSessionStatus } from "@/types/database";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/ilt-sessions
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const body = await request.json();
 
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("ILT sessions POST error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   const response: Record<string, unknown> = { ...data };
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
     response.meeting_warning = meetingError;
   }
 
-  return NextResponse.json(response, { status: 201 });
+  return jsonNoStore(response, { status: 201 });
 }
 
 /**
@@ -196,7 +197,7 @@ export async function PATCH(request: NextRequest) {
   const { session_id, action } = body;
 
   if (!session_id) {
-    return NextResponse.json({ error: "session_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "session_id is required" }, { status: 400 });
   }
 
   // Register a learner for a session (any authenticated user)
@@ -204,7 +205,7 @@ export async function PATCH(request: NextRequest) {
     // Verify user is authenticated
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
     }
 
     // IDOR fix: always use authenticated user's profile, never from body
@@ -214,7 +215,7 @@ export async function PATCH(request: NextRequest) {
       .eq("auth_id", authUser.id)
       .single();
     if (!profile) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+      return jsonNoStore({ error: "User profile not found" }, { status: 404 });
     }
     const user_id = profile.id;
 
@@ -226,10 +227,10 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return jsonNoStore({ error: "Session not found" }, { status: 404 });
     }
     if (session.status === "cancelled") {
-      return NextResponse.json({ error: "Session is cancelled" }, { status: 400 });
+      return jsonNoStore({ error: "Session is cancelled" }, { status: 400 });
     }
 
     const { count: registeredCount } = await service
@@ -249,7 +250,7 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (existing?.registration_status === "registered") {
-      return NextResponse.json({ error: "Already registered" }, { status: 409 });
+      return jsonNoStore({ error: "Already registered" }, { status: 409 });
     }
 
     if (existing) {
@@ -264,7 +265,7 @@ export async function PATCH(request: NextRequest) {
 
       if (updateError) {
         console.error("ILT attendance update error:", updateError.message);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return jsonNoStore({ error: "Internal server error" }, { status: 500 });
       }
     } else {
       // Create new attendance record
@@ -278,11 +279,11 @@ export async function PATCH(request: NextRequest) {
 
       if (insertError) {
         console.error("ILT attendance insert error:", insertError.message);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return jsonNoStore({ error: "Internal server error" }, { status: 500 });
       }
     }
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: true,
       status: isFull ? "waitlisted" : "registered",
     });
@@ -290,13 +291,13 @@ export async function PATCH(request: NextRequest) {
 
   // All actions below require admin or instructor role
   const auth = await authorize("admin", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   // Mark attendance for a single attendee
   if (action === "mark_attendance") {
     const { attendee_id, attendance_status, notes } = body;
     if (!attendee_id || !attendance_status) {
-      return NextResponse.json(
+      return jsonNoStore(
         { error: "attendee_id and attendance_status are required" },
         { status: 400 }
       );
@@ -319,7 +320,7 @@ export async function PATCH(request: NextRequest) {
 
     if (attendError) {
       console.error("ILT mark attendance error:", attendError.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
     // Return updated session with attendance
@@ -329,7 +330,7 @@ export async function PATCH(request: NextRequest) {
       .eq("id", session_id)
       .single();
 
-    return NextResponse.json(session);
+    return jsonNoStore(session);
   }
 
   // Update session details
@@ -391,13 +392,13 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       console.error("ILT session update error:", error.message);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return jsonNoStore({ error: "Internal server error" }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    return jsonNoStore(data);
   }
 
-  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  return jsonNoStore({ error: "Invalid action" }, { status: 400 });
 }
 
 /**
@@ -407,13 +408,13 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get("session_id");
 
   if (!sessionId) {
-    return NextResponse.json({ error: "session_id is required" }, { status: 400 });
+    return jsonNoStore({ error: "session_id is required" }, { status: 400 });
   }
 
   // Fetch session to get meeting info before cancelling
@@ -440,8 +441,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("ILT session delete error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, message: "Session cancelled" });
+  return jsonNoStore({ success: true, message: "Session cancelled" });
 }

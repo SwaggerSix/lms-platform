@@ -6,6 +6,7 @@ import { HRISSync } from "@/lib/integrations/hris-sync";
 import { CRMSync } from "@/lib/integrations/crm-sync";
 import type { IntegrationConfig as HRISConfig } from "@/lib/integrations/hris-sync";
 import type { IntegrationConfig as CRMConfig } from "@/lib/integrations/crm-sync";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 const HRIS_PROVIDERS = ["bamboohr", "workday", "adp"];
 const CRM_PROVIDERS = ["salesforce", "hubspot"];
@@ -30,14 +31,14 @@ function isPrivateUrl(urlStr: string): boolean {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`test-connection-${auth.user.id}`, 10, 60000);
-  if (!rl.success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  if (!rl.success) return jsonNoStore({ error: "Rate limit exceeded" }, { status: 429 });
 
   const body = await request.json();
   const validation = validateBody(testConnectionSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const { provider, config } = validation.data;
 
@@ -56,10 +57,10 @@ export async function POST(request: NextRequest) {
       // Custom webhook - test with a ping
       const webhookUrl = (config as any).base_url || (config as any).webhook_url;
       if (!webhookUrl) {
-        return NextResponse.json({ success: false, message: "Webhook URL is required" });
+        return jsonNoStore({ success: false, message: "Webhook URL is required" });
       }
       if (isPrivateUrl(webhookUrl)) {
-        return NextResponse.json({ success: false, message: "URL points to a private or internal address" });
+        return jsonNoStore({ success: false, message: "URL points to a private or internal address" });
       }
       try {
         const resp = await fetch(webhookUrl, { method: "HEAD" });
@@ -69,9 +70,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(result);
+    return jsonNoStore(result);
   } catch (err) {
-    return NextResponse.json({
+    return jsonNoStore({
       success: false,
       message: err instanceof Error ? err.message : "Connection test failed",
     });

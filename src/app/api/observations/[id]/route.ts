@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateObservationSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
@@ -40,12 +41,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin", "manager", "instructor");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
   const body = await request.json();
   const validation = validateBody(updateObservationSchema, body);
-  if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
+  if (!validation.success) return jsonNoStore({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
 
@@ -57,17 +58,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     .single();
 
   if (!existing) {
-    return NextResponse.json({ error: "Observation not found" }, { status: 404 });
+    return jsonNoStore({ error: "Observation not found" }, { status: 404 });
   }
 
   const isAdmin = auth.user.role === "admin" || auth.user.role === "manager";
   if (!isAdmin && existing.observer_id !== auth.user.id) {
-    return NextResponse.json({ error: "Only the observer can update this observation" }, { status: 403 });
+    return jsonNoStore({ error: "Only the observer can update this observation" }, { status: 403 });
   }
 
   // Cannot edit signed-off observations
   if (existing.status === "signed_off" && !isAdmin) {
-    return NextResponse.json({ error: "Cannot modify a signed-off observation" }, { status: 400 });
+    return jsonNoStore({ error: "Cannot modify a signed-off observation" }, { status: 400 });
   }
 
   const updateData: Record<string, unknown> = { ...validation.data };
@@ -86,8 +87,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   if (error) {
     console.error("Observation PUT error:", error.message);
-    return NextResponse.json({ error: "Failed to update observation" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to update observation" }, { status: 500 });
   }
 
-  return NextResponse.json({ observation: data });
+  return jsonNoStore({ observation: data });
 }

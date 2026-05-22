@@ -3,19 +3,20 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const body = await request.json();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
 
   const service = createServiceClient();
   const { data: profile } = await service.from("users").select("id").eq("auth_id", user.id).single();
 
   if (!profile) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonNoStore({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { error } = await service.from("analytics_events").insert({
@@ -29,14 +30,14 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Analytics API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json({ success: true }, { status: 201 });
+  return jsonNoStore({ success: true }, { status: 201 });
 }
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const tenantScope = await getTenantScope(auth.user.id, auth.user.role, request);
 
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
       completionsQuery,
     ]);
 
-    return NextResponse.json({
+    return jsonNoStore({
       total_users: users.count || 0,
       active_courses: courses.count || 0,
       total_enrollments: enrollments.count || 0,
@@ -78,5 +79,5 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ error: "Unknown metric" }, { status: 400 });
+  return jsonNoStore({ error: "Unknown metric" }, { status: 400 });
 }

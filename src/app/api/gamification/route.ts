@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
   const { name, description, icon, criteria_type, criteria_count, points } = body;
 
   if (!name) {
-    return NextResponse.json({ error: "Badge name is required" }, { status: 400 });
+    return jsonNoStore({ error: "Badge name is required" }, { status: 400 });
   }
 
   const { data, error } = await service
@@ -117,15 +118,15 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Gamification API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
   const service = createServiceClient();
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const body = await request.json();
@@ -133,7 +134,7 @@ export async function PATCH(request: NextRequest) {
   const { id, ...updates } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Badge id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Badge id is required" }, { status: 400 });
   }
 
   // Build the update payload
@@ -152,7 +153,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Gamification API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
