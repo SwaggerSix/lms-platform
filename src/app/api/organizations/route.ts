@@ -5,6 +5,7 @@ import { validateBody, createOrgSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonCached } from "@/lib/api/cached";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET() {
   const supabase = await createClient();
@@ -26,14 +27,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
   const body = await request.json();
   const validation = validateBody(createOrgSchema, body);
   if (!validation.success) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return jsonNoStore({ error: validation.error }, { status: 400 });
   }
 
   // Mass assignment fix: whitelist allowed fields
@@ -50,14 +51,14 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Organizations API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data, { status: 201 });
+  return jsonNoStore(data, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -65,7 +66,7 @@ export async function PATCH(request: NextRequest) {
   const { id, ...updates } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Organization id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Organization id is required" }, { status: 400 });
   }
 
   // Mass assignment fix: whitelist allowed fields
@@ -83,14 +84,14 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Organizations API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -98,7 +99,7 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Organization id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Organization id is required" }, { status: 400 });
   }
 
   const { error } = await service
@@ -108,7 +109,7 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Organizations API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json({ message: "Organization deleted" });
+  return jsonNoStore({ message: "Organization deleted" });
 }

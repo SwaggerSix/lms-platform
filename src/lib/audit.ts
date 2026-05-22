@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { isValidAuditAction } from "@/lib/audit-log/action-convention";
 
 export interface AuditLogParams {
   userId?: string;
@@ -22,6 +23,16 @@ export interface AuditLogParams {
  * Insert an audit log entry. Fire-and-forget — errors are logged but never thrown.
  */
 export async function logAudit(params: AuditLogParams): Promise<void> {
+  // Runtime guard. The audit-action-conventions test catches static
+  // literals at CI time, but actions built from interpolated values
+  // can only be validated here. Warn-and-continue rather than throw —
+  // a malformed action is worth recording (with a flag) instead of
+  // dropping the audit row entirely.
+  if (!isValidAuditAction(params.action)) {
+    console.warn(
+      `[audit] non-conformant action "${params.action}" for entity_type ${params.entityType}. Convention: legacy verb or dotted namespace.`
+    );
+  }
   try {
     const service = createServiceClient();
     const { error } = await service.from("audit_logs").insert({

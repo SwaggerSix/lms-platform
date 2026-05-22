@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
 import { jsonCached } from "@/lib/api/cached";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   // Feature flags are readable by any authenticated user (needed for sidebar)
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
 
@@ -55,12 +56,12 @@ export async function PATCH(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
   const { key, value } = body;
 
   if (!key || value === undefined) {
-    return NextResponse.json({ error: "Missing key or value" }, { status: 400 });
+    return jsonNoStore({ error: "Missing key or value" }, { status: 400 });
   }
 
   const { data, error } = await service
@@ -71,7 +72,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Settings API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
 
   logAudit({
@@ -82,5 +83,5 @@ export async function PATCH(request: NextRequest) {
     newValues: { key, value },
   });
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { jsonCached } from "@/lib/api/cached";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/scheduled-reports
@@ -39,7 +40,7 @@ export async function GET() {
  */
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -68,10 +69,10 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Scheduled reports API error:", error.message);
-    return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+    return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
   }
 
-  return NextResponse.json({ scheduled_report: data }, { status: 201 });
+  return jsonNoStore({ scheduled_report: data }, { status: 201 });
 }
 
 /**
@@ -80,14 +81,14 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
   const body = await request.json();
 
   if (!body.id) {
-    return NextResponse.json({ error: "Schedule ID is required" }, { status: 400 });
+    return jsonNoStore({ error: "Schedule ID is required" }, { status: 400 });
   }
 
   const { id } = body;
@@ -106,13 +107,13 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     if (error.code === "PGRST116") {
-      return NextResponse.json({ error: "Scheduled report not found" }, { status: 404 });
+      return jsonNoStore({ error: "Scheduled report not found" }, { status: 404 });
     }
     console.error("Scheduled reports API error:", error.message);
-    return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+    return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
   }
 
-  return NextResponse.json({ scheduled_report: data });
+  return jsonNoStore({ scheduled_report: data });
 }
 
 /**
@@ -121,7 +122,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -129,7 +130,7 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: "Schedule ID is required" }, { status: 400 });
+    return jsonNoStore({ error: "Schedule ID is required" }, { status: 400 });
   }
 
   const { error } = await service
@@ -139,8 +140,8 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("Scheduled reports API error:", error.message);
-    return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
+    return jsonNoStore({ error: "An internal error occurred" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, deleted_id: id });
+  return jsonNoStore({ success: true, deleted_id: id });
 }

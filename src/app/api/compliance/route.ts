@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonCached } from "@/lib/api/cached";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -37,20 +38,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return jsonNoStore({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const { name, regulation, mandatory, applicable_to, linked_course, frequency } = body;
 
   if (!name) {
-    return NextResponse.json({ error: "Requirement name is required" }, { status: 400 });
+    return jsonNoStore({ error: "Requirement name is required" }, { status: 400 });
   }
 
   const { data, error } = await service
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Compliance API POST error:", error.message);
-    return NextResponse.json({ error: "Failed to create requirement: " + error.message }, { status: 500 });
+    return jsonNoStore({ error: "Failed to create requirement: " + error.message }, { status: 500 });
   }
   // Deprecation: this endpoint writes to the legacy compliance_requirements
   // table. New requirements should be configured via courses.metadata.required_for
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
   console.warn(
     "[compliance] Deprecated POST /api/compliance hit. Migrate to courses.metadata.required_for."
   );
-  return NextResponse.json(data, {
+  return jsonNoStore(data, {
     status: 201,
     headers: {
       Deprecation: "true",
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const auth = await authorize("admin");
-  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
   const service = createServiceClient();
@@ -95,7 +96,7 @@ export async function PATCH(request: NextRequest) {
   const { id } = body;
 
   if (!id) {
-    return NextResponse.json({ error: "Compliance requirement id is required" }, { status: 400 });
+    return jsonNoStore({ error: "Compliance requirement id is required" }, { status: 400 });
   }
 
   const allowedFields = ["name", "description", "regulation", "course_id", "path_id", "frequency_months", "applicable_roles", "applicable_org_ids", "is_mandatory"] as const;
@@ -113,7 +114,7 @@ export async function PATCH(request: NextRequest) {
 
   if (error) {
     console.error("Compliance API error:", error.message);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonNoStore({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
