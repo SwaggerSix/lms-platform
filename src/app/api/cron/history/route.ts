@@ -86,7 +86,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(summarize(job, data ?? []));
+    return NextResponse.json(summarize(job, data ?? []), {
+      headers: {
+        // Per-job history is read on-demand when a row is expanded.
+        // 30s private cache keeps repeat expand-collapse cheap.
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      },
+    });
   }
 
   // ── Batch ────────────────────────────────────────────────────
@@ -123,7 +129,16 @@ export async function GET(request: NextRequest) {
     out[name] = summarize(name, byJob[name] ?? []);
   }
 
-  return NextResponse.json({ jobs: out });
+  return NextResponse.json(
+    { jobs: out },
+    {
+      headers: {
+        // Same TTL as single-job mode — the sparkline eager-prefetch
+        // benefits from cache on tab refresh.
+        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+      },
+    }
+  );
 }
 
 function summarize(name: string, rows: any[]): JobSummary {

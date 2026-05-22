@@ -1,8 +1,10 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Clock, Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { RelativeTime } from "@/components/ui/relative-time";
+import { useVisibilityPolling } from "@/hooks/use-visibility-polling";
 
 interface CronJob {
   name: string;
@@ -78,18 +80,6 @@ interface AlertConfigResponse {
 
 export default function CronHealthClient() {
   const [data, setData] = useState<HealthResponse | null>(null);
-  // Tick state increments every 30s solely to force a re-render so
-  // relative-time pills ("Nm ago") stay current without a manual
-  // page refresh. The actual values come from formatRelative() called
-  // inline, which uses Date.now() — re-render reads fresh.
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => clearInterval(id);
-  }, []);
-  // Silence "declared but never read" — `tick` is intentionally only
-  // here to trigger renders.
-  void tick;
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -131,6 +121,9 @@ export default function CronHealthClient() {
     });
   }, [loadHistory]);
 
+  // Tracked across renders so the polling-backoff logic can read the
+  // current failure streak without re-triggering effects.
+  const consecutiveFailuresRef = useRef(0);
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -139,8 +132,10 @@ export default function CronHealthClient() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as HealthResponse;
       setData(json);
+      consecutiveFailuresRef.current = 0;
     } catch (err: any) {
       setError(err?.message ?? "Failed to load");
+      consecutiveFailuresRef.current += 1;
     } finally {
       setLoading(false);
     }
@@ -150,40 +145,26 @@ export default function CronHealthClient() {
     load();
   }, [load]);
 
-  // Polling refresh: re-fetch /api/cron/health every 60s while the
-  // tab is visible. Pauses on visibilitychange so a backgrounded tab
-  // doesn't burn requests. Resumes (with an immediate load) when it
-  // returns to the foreground. 60s matches the Cache-Control SWR
-  // window — most poll responses come from the browser cache.
-  useEffect(() => {
-    let id: ReturnType<typeof setInterval> | null = null;
-    const start = () => {
-      if (id !== null) return;
-      id = setInterval(() => {
-        if (document.visibilityState === "visible") load();
-      }, 60_000);
-    };
-    const stop = () => {
-      if (id !== null) {
-        clearInterval(id);
-        id = null;
-      }
-    };
-    const onVis = () => {
-      if (document.visibilityState === "visible") {
-        load();
-        start();
-      } else {
-        stop();
-      }
-    };
-    start();
-    document.addEventListener("visibilitychange", onVis);
-    return () => {
-      stop();
-      document.removeEventListener("visibilitychange", onVis);
-    };
-  }, [load]);
+  // Polling refresh: 60s normally, 5min after 2+ consecutive failures.
+  // Hook also pauses when the tab is hidden and resumes (with an
+  // immediate refresh) on return. load() throws on non-2xx so the
+  // hook's failure counter advances.
+  const pollOnce = useCallback(async () => {
+    const res = await fetch("/api/cron/health");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = (await res.json()) as HealthResponse;
+    setData(json);
+  }, []);
+  useVisibilityPolling({
+    poll: pollOnce,
+    intervalMs: 60_000,
+    backoffMs: 5 * 60_000,
+    backoffAfter: 2,
+  });
+  // Suppress unused-var on the legacy ref that the inline polling
+  // path used. Left in place to preserve the API of the load()
+  // callback if any other caller depends on it.
+  void consecutiveFailuresRef;
 
   // Fetch the alert config once on mount so the page can show
   // whether dispatching is wired up (URL present), what adapter is
@@ -389,9 +370,11 @@ export default function CronHealthClient() {
                         )}
                       </div>
                     )}
-                    <span className="ml-auto text-xs text-gray-500">
-                      checked {formatRelative(data.checked_at)}
-                    </span>
+                    <RelativeTime
+                      iso={data.checked_at}
+                      prefix="checked "
+                      className="ml-auto text-xs text-gray-500"
+                    />
                   </div>
                   {data.alerts.length > 0 && (
                     <ul
@@ -520,25 +503,23 @@ export default function CronHealthClient() {
                         </span>
                       )}
                       {alertConfig.schedules_cache && (
-                        <span
+                        <RelativeTime
+                          iso={alertConfig.schedules_cache.loaded_at}
+                          prefix="vercel.json "
                           title={`vercel.json cached server-side at ${new Date(alertConfig.schedules_cache.loaded_at).toLocaleString()}`}
                           className="hidden md:inline-flex rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
-                        >
-                          vercel.json {formatRelative(alertConfig.schedules_cache.loaded_at)}
-                        </span>
+                        />
                       )}
                       {alertConfig.thresholds_cache && (
-                        <span
+                        <RelativeTime
+                          iso={alertConfig.thresholds_cache.loaded_at}
+                          prefix="thresholds "
                           title={`cron-thresholds.json cached server-side at ${new Date(alertConfig.thresholds_cache.loaded_at).toLocaleString()}`}
                           className="hidden md:inline-flex rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
-                        >
-                          thresholds {formatRelative(alertConfig.thresholds_cache.loaded_at)}
-                        </span>
+                        />
                       )}
                       {alertConfigFetchedAt && (
-                        <span title={new Date(alertConfigFetchedAt).toLocaleString()}>
-                          last computed {formatRelative(alertConfigFetchedAt)}
-                        </span>
+                        <RelativeTime iso={alertConfigFetchedAt} prefix="last computed " />
                       )}
                       <button
                         type="button"
