@@ -153,6 +153,58 @@ describe("dispatchAlertWebhook — live config refresh", () => {
     delete process.env.PAGERDUTY_ROUTING_KEY;
   });
 
+  it("consecutive_failures threshold change takes effect immediately", async () => {
+    dir = stageDir();
+    writeThresholds(dir, {
+      consecutive_failures: { window: 5, threshold: 3 },
+    });
+    process.chdir(dir);
+    vi.resetModules();
+    const mod = await import("@/lib/cron/monitor");
+
+    expect(mod.getConsecutiveFailuresConfig()).toEqual({ window: 5, threshold: 3 });
+
+    // Bump the threshold so a 3-in-a-row streak no longer alerts.
+    writeThresholds(dir, {
+      consecutive_failures: { window: 10, threshold: 5 },
+    });
+    const future = (Date.now() + 5000) / 1000;
+    utimesSync(join(dir, "cron-thresholds.json"), future, future);
+
+    expect(mod.getConsecutiveFailuresConfig()).toEqual({ window: 10, threshold: 5 });
+  });
+
+  it("leadingFailureStreak counts the leading run only", async () => {
+    dir = stageDir();
+    process.chdir(dir);
+    vi.resetModules();
+    const mod = await import("@/lib/cron/monitor");
+
+    // Newest first.
+    expect(
+      mod.leadingFailureStreak([
+        { status: "failure" },
+        { status: "failure" },
+        { status: "failure" },
+      ])
+    ).toBe(3);
+    expect(
+      mod.leadingFailureStreak([
+        { status: "success" },
+        { status: "failure" },
+        { status: "failure" },
+      ])
+    ).toBe(0);
+    expect(
+      mod.leadingFailureStreak([
+        { status: "failure" },
+        { status: "success" },
+        { status: "failure" },
+      ])
+    ).toBe(1);
+    expect(mod.leadingFailureStreak([])).toBe(0);
+  });
+
   it("min_severity change takes effect immediately", async () => {
     dir = stageDir();
     // Start: critical-only filter, warn alerts are dropped.

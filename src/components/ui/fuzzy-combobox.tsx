@@ -45,6 +45,7 @@ export function FuzzyCombobox({
   const [scrollTop, setScrollTop] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const rafIdRef = useRef<number | null>(null);
   const listId = useMemo(() => `combo-${Math.random().toString(36).slice(2, 9)}`, []);
 
   // Fixed item height matches the per-row padding in the rendered <li>.
@@ -200,7 +201,24 @@ export function FuzzyCombobox({
           id={listId}
           ref={listRef}
           role="listbox"
-          onScroll={virtualize ? (e) => setScrollTop((e.target as HTMLUListElement).scrollTop) : undefined}
+          onScroll={
+            virtualize
+              ? (e) => {
+                  // rAF-throttle so scroll events don't trigger a state
+                  // update on every wheel tick. Without this, scrolling
+                  // a 1000-item list ran one setState per scroll event
+                  // (~60+/sec on Chromium). The rAF coalesces them and
+                  // takes the last scrollTop, which is what we want
+                  // because intermediate windows are unobservable.
+                  const target = e.target as HTMLUListElement;
+                  if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+                  rafIdRef.current = requestAnimationFrame(() => {
+                    rafIdRef.current = null;
+                    setScrollTop(target.scrollTop);
+                  });
+                }
+              : undefined
+          }
           className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg"
         >
           {/* Top spacer maintains scroll height for items above the window. */}

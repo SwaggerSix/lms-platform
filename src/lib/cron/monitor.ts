@@ -47,6 +47,36 @@ const FALLBACK_INTERVALS: Record<string, number> = {
  * which the previous bespoke parser couldn't. Falls back to 24h on any
  * parse error so monitor stays functional with malformed input.
  */
+/**
+ * Counts the leading run of "failure" statuses in a list of run rows
+ * ordered newest-first. Returns 0 when the most recent run wasn't a
+ * failure. Used by checkCronHealth's consecutive-failures detector;
+ * extracted so we can test the boundary behavior without a Supabase
+ * round-trip.
+ */
+export function leadingFailureStreak(rows: Array<{ status: string }>): number {
+  let streak = 0;
+  for (const r of rows) {
+    if (r.status === "failure") streak++;
+    else break;
+  }
+  return streak;
+}
+
+/**
+ * Read-through accessor for the consecutive_failures config block.
+ * Clamps window and threshold to a minimum of 1. Exported so the
+ * live-config tests can verify mtime-invalidation triggers a fresh
+ * read between calls.
+ */
+export function getConsecutiveFailuresConfig(): { window: number; threshold: number } {
+  const cfg = getAlertConfig();
+  return {
+    window: Math.max(1, cfg.consecutive_failures?.window ?? 5),
+    threshold: Math.max(1, cfg.consecutive_failures?.threshold ?? 3),
+  };
+}
+
 export function estimateIntervalMinutes(expr: string): number {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -474,13 +504,7 @@ export async function checkCronHealth(): Promise<CronHealthReport> {
       .limit(cfWindow);
 
     if (!recentRuns || recentRuns.length < cfThreshold) continue;
-    // Walk the run history from newest → oldest and count the leading
-    // streak of failures. If the streak reaches cfThreshold, alert.
-    let streak = 0;
-    for (const r of recentRuns) {
-      if (r.status === "failure") streak++;
-      else break;
-    }
+    const streak = leadingFailureStreak(recentRuns);
     if (streak >= cfThreshold) {
       alerts.push(
         `${jobName} [critical]: ${streak} consecutive failures (threshold ${cfThreshold}) — requires investigation`

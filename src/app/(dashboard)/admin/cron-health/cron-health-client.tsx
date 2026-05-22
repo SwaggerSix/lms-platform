@@ -464,7 +464,7 @@ export default function CronHealthClient() {
                           ]
                             .filter(Boolean)
                             .join(" · ")}
-                          className="rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200 md:hidden"
+                          className="hidden sm:inline-flex md:hidden rounded-full bg-white/60 px-2 py-0.5 text-[10px] font-medium text-amber-900 ring-1 ring-inset ring-amber-200"
                         >
                           caches:{" "}
                           {alertConfig.schedules_cache && formatRelative(alertConfig.schedules_cache.loaded_at)}
