@@ -87,4 +87,22 @@ describe("AuditLogClient truncation banner", () => {
     const { AUDIT_LOG_ROW_LIMIT } = await import("@/lib/audit-log/resolve-tenant");
     expect(AUDIT_LOG_ROW_LIMIT).toBe(500);
   });
+
+  it("audit-log page.tsx threads AUDIT_LOG_ROW_LIMIT through .limit() and rowLimit prop", async () => {
+    // Catches a drift where someone hardcodes `500` back into the
+    // page (or any other literal). Page source must reference the
+    // shared constant — not just import it.
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const source = await readFile(
+      join(process.cwd(), "src/app/(dashboard)/admin/audit-log/page.tsx"),
+      "utf8"
+    );
+    expect(source).toContain("AUDIT_LOG_ROW_LIMIT");
+    expect(source).toMatch(/\.limit\(AUDIT_LOG_ROW_LIMIT\)/);
+    expect(source).toMatch(/rowLimit=\{AUDIT_LOG_ROW_LIMIT\}/);
+    // No bare `500` literal in the page (matches it as a standalone
+    // number; comments / strings won't trip).
+    expect(source).not.toMatch(/[^0-9]500[^0-9]/);
+  });
 });

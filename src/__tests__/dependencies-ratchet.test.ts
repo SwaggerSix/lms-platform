@@ -87,6 +87,7 @@ describe("dependency ratchet", () => {
       [
         "build",
         "dev",
+        "install-hooks",
         "lint",
         "start",
         "test",

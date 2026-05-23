@@ -1,19 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { walkFiles } from "./_walk";
 import { LEGACY_ACTIONS } from "@/lib/audit-log/action-convention";
 import { findActionLiteralOffenders } from "@/lib/audit-log/scan-action-literals";
-
-function walkTs(dir: string): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    const s = statSync(p);
-    if (s.isDirectory()) out.push(...walkTs(p));
-    else if (s.isFile() && p.endsWith(".ts")) out.push(p);
-  }
-  return out;
-}
 
 /**
  * Naming convention for audit_logs.action across the codebase:
@@ -37,7 +27,7 @@ function walkTs(dir: string): string[] {
 
 describe("audit action naming convention", () => {
   it("every logAudit({ action: ... }) literal matches the convention", () => {
-    const files = walkTs(join(process.cwd(), "src/app/api"));
+    const files = walkFiles(join(process.cwd(), "src/app/api"));
     const offenders: Array<{ file: string; action: string }> = [];
 
     for (const file of files) {

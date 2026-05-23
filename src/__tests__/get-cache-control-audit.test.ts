@@ -1,17 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-
-function walkTs(dir: string): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    const s = statSync(p);
-    if (s.isDirectory()) out.push(...walkTs(p));
-    else if (s.isFile() && p.endsWith(".ts")) out.push(p);
-  }
-  return out;
-}
+import { walkFiles } from "./_walk";
 
 /**
  * Convention: every GET route handler under src/app/api/ must
@@ -68,7 +58,7 @@ function isClassified(body: string): boolean {
 
 describe("GET cache-control audit (enforced)", () => {
   it("every GET handler is classified — no bare NextResponse.json returns", () => {
-    const files = walkTs(join(process.cwd(), "src/app/api"));
+    const files = walkFiles(join(process.cwd(), "src/app/api"));
     const unclassified: string[] = [];
 
     for (const file of files) {

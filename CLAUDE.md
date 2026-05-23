@@ -54,6 +54,15 @@ playbook (scanner unit test → codebase-walk advisory → ratchet →
 enforce). See `src/lib/audit-log/scan-action-literals.ts` and
 `src/__tests__/lib/scan-action-literals.test.ts` for the template.
 
+## Optional local pre-commit hook
+
+Run `npm run install-hooks` once to point Git at `.githooks/`. The
+`pre-commit` script runs `npm run test:conventions` (~5s) and blocks
+the commit if a guardrail fires. Bypass with `git commit --no-verify`
+when intentionally landing a change that needs a snapshot updated
+in a follow-up. The CI workflow runs the same guardrails on every
+PR, so the local hook is purely for fast feedback.
+
 ## Coding style
 
 - Prefer `jsonCached` / `jsonNoStore` over hand-rolled `NextResponse.json`

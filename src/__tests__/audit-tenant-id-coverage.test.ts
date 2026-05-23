@@ -1,17 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-
-function walkTs(dir: string): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    const s = statSync(p);
-    if (s.isDirectory()) out.push(...walkTs(p));
-    else if (s.isFile() && p.endsWith(".ts")) out.push(p);
-  }
-  return out;
-}
+import { walkFiles } from "./_walk";
 
 /**
  * Advisory audit: every logAudit({...}) call site in src/app/api/
@@ -73,7 +63,7 @@ function findLogAuditCalls(source: string, file: string): CallSite[] {
 
 describe("logAudit tenantId coverage (advisory)", () => {
   it("inline-snapshot of logAudit call sites that pass tenantId explicitly", () => {
-    const files = walkTs(join(process.cwd(), "src/app/api"));
+    const files = walkFiles(join(process.cwd(), "src/app/api"));
     const sites: CallSite[] = [];
     for (const file of files) {
       const source = readFileSync(file, "utf8");
@@ -103,7 +93,7 @@ describe("logAudit tenantId coverage (advisory)", () => {
   });
 
   it("inline-snapshot of logAudit sites that rely on the DB trigger (no explicit tenantId)", () => {
-    const files = walkTs(join(process.cwd(), "src/app/api"));
+    const files = walkFiles(join(process.cwd(), "src/app/api"));
     const sites: CallSite[] = [];
     for (const file of files) {
       const source = readFileSync(file, "utf8");

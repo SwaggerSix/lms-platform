@@ -1,17 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-
-function walkTs(dir: string): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    const s = statSync(p);
-    if (s.isDirectory()) out.push(...walkTs(p));
-    else if (s.isFile() && p.endsWith(".ts")) out.push(p);
-  }
-  return out;
-}
+import { walkFiles } from "./_walk";
 
 /**
  * Every POST/PATCH/DELETE/PUT route handler must return through
@@ -80,7 +70,7 @@ function extractMutationBodies(source: string): string[] {
 
 describe("mutation handlers don't bare NextResponse.json", () => {
   it("every POST/PATCH/DELETE/PUT body returns via jsonNoStore", () => {
-    const files = walkTs(join(process.cwd(), "src/app/api"));
+    const files = walkFiles(join(process.cwd(), "src/app/api"));
     const offenders: Array<{ file: string; snippet: string }> = [];
 
     for (const file of files) {

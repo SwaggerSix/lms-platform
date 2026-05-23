@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+# Pre-commit hook: run the convention guardrails. Fast (~5s) and
+# blocks the commit if a guardrail fires, so a regression is caught
+# before the PR opens. Enable with `npm run install-hooks`.
+#
+# Bypass via `git commit --no-verify` when intentionally landing a
+# change that needs the snapshot updated in a follow-up.
+
+set -e
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "[pre-commit] npm not on PATH; skipping convention check." >&2
+  exit 0
+fi
+
+npm run test:conventions --silent

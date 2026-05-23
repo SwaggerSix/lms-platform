@@ -1,18 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
-
-function walkSrc(dir: string): string[] {
-  const out: string[] = [];
-  for (const name of readdirSync(dir)) {
-    if (name === "node_modules" || name.startsWith(".")) continue;
-    const p = join(dir, name);
-    const s = statSync(p);
-    if (s.isDirectory()) out.push(...walkSrc(p));
-    else if (s.isFile() && (p.endsWith(".ts") || p.endsWith(".tsx"))) out.push(p);
-  }
-  return out;
-}
+import { walkFiles } from "./_walk";
 
 /**
  * The compliance_requirements table is being dropped by
@@ -38,7 +27,7 @@ const FORBIDDEN_QUERY_PATTERNS = [
 
 describe("compliance_requirements table is no longer queried", () => {
   it("no .from('compliance_requirements') call survives in src/", () => {
-    const files = walkSrc(join(process.cwd(), "src"));
+    const files = walkFiles(join(process.cwd(), "src"));
     const offenders: Array<{ file: string; line: number; snippet: string }> = [];
     // The guardrail test itself naturally contains the patterns it's
     // looking for. Skip self-reference.
