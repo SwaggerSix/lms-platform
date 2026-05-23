@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createTenantSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // GET /api/tenants - List tenants the current user belongs to
 export async function GET(request: NextRequest) {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { data, count, error } = await query;
     if (error) return NextResponse.json({ error: "Failed to fetch tenants" }, { status: 500 });
 
-    return NextResponse.json({ tenants: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
+    return jsonCached({ tenants: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
   }
 
   // Non-admin: list tenants user is a member of
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error: "Failed to fetch tenants" }, { status: 500 });
 
   const tenants = (memberships || []).map((m: any) => ({ ...m.tenant, membership_role: m.role }));
-  return NextResponse.json({ tenants, total: tenants.length, page, totalPages: 1 });
+  return jsonCached({ tenants, total: tenants.length, page, totalPages: 1 });
 }
 
 // POST /api/tenants - Create a new tenant

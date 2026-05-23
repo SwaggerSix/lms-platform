@@ -20,7 +20,7 @@ export async function GET() {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ coupons: data });
+  return jsonNoStore({ coupons: data });
 }
 
 export async function POST(request: NextRequest) {

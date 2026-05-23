@@ -36,6 +36,7 @@ export interface AuditLogClientProps {
   initialHidePlatform?: boolean;
   initialEntityFilter?: string;
   initialOrgFilter?: string;
+  initialActionFilter?: string;
   /** Server-side cap on the rows fetched; when totalRowCount exceeds this, the UI warns the admin to narrow filters. */
   rowLimit?: number;
   /** Exact row count from the audit_logs query (with the same tenant filter applied). May exceed rowLimit. */
@@ -70,6 +71,7 @@ export default function AuditLogClient({
   initialHidePlatform = false,
   initialEntityFilter = "All",
   initialOrgFilter = "All",
+  initialActionFilter = "All",
   rowLimit,
   totalRowCount,
 }: AuditLogClientProps) {
@@ -78,7 +80,7 @@ export default function AuditLogClient({
   const [dateFrom, setDateFrom] = useState("2026-03-10");
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [userSearch, setUserSearch] = useState("");
-  const [actionFilter, setActionFilter] = useState("All");
+  const [actionFilter, setActionFilter] = useState(initialActionFilter);
   const [remoteNamespaces, setRemoteNamespaces] = useState<
     Array<{ prefix: string; count: number; parent?: string | null }>
   >([]);
@@ -283,8 +285,10 @@ export default function AuditLogClient({
             value={actionFilter === "All" ? "" : actionFilter}
             onChange={(next) => {
               const norm = next.trim();
-              setActionFilter(norm || "All");
+              const value = norm || "All";
+              setActionFilter(value);
               setCurrentPage(1);
+              persistAuditPref({ action_filter: value });
             }}
             placeholder="All actions — type to filter…"
             ariaLabel="Filter by action"

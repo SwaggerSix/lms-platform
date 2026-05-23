@@ -5,6 +5,7 @@ import { validateBody, createMentorProfileSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     mentors: filtered,
     total: search ? filtered.length : count,
     page,

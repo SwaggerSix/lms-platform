@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createSSOProviderSchema, updateSSOProviderSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET() {
   const auth = await authorize("admin");
@@ -25,7 +26,7 @@ export async function GET() {
     has_scim_token: !!scim_token_hash,
   }));
 
-  return NextResponse.json(sanitized);
+  return jsonCached(sanitized);
 }
 
 export async function POST(request: NextRequest) {

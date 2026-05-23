@@ -20,10 +20,13 @@ export async function POST(
   const { id } = await params;
   const service = createServiceClient();
 
-  // Verify workflow exists and is active
+  // Verify workflow exists and is active. Pull tenant_id too so the
+  // audit row is scoped to the workflow's tenant rather than relying
+  // on the actor→org trigger (which would attribute a super_admin
+  // cross-tenant trigger to the wrong tenant).
   const { data: workflow, error } = await service
     .from("workflows")
-    .select("id, name, is_active")
+    .select("id, name, is_active, tenant_id")
     .eq("id", id)
     .single();
 
@@ -58,6 +61,9 @@ export async function POST(
       entityType: "workflow",
       entityId: id,
       newValues: { run_id: run.id, status: run.status },
+      // Tag the audit row to the workflow's tenant, not the actor's,
+      // so cross-tenant super_admin triggers attribute correctly.
+      tenantId: (workflow as { tenant_id?: string }).tenant_id ?? undefined,
     });
 
     return jsonNoStore(run);

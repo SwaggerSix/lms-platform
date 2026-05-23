@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ has_sso: false });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     has_sso: true,
   });
 }

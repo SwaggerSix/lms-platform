@@ -126,6 +126,7 @@ export default async function AuditLogPage() {
   const initialHidePlatform = !!uiPrefs.hide_platform_audit;
   const initialEntityFilter = typeof uiPrefs.entity_filter === "string" ? uiPrefs.entity_filter : "All";
   const initialOrgFilter = typeof uiPrefs.org_filter === "string" ? uiPrefs.org_filter : "All";
+  const initialActionFilter = typeof uiPrefs.action_filter === "string" ? uiPrefs.action_filter : "All";
 
   // Server-rendered audit-log views must never serve a stale snapshot;
   // a page reload after an action should reflect the new row.
@@ -135,6 +136,7 @@ export default async function AuditLogPage() {
       initialHidePlatform={initialHidePlatform}
       initialEntityFilter={initialEntityFilter}
       initialOrgFilter={initialOrgFilter}
+      initialActionFilter={initialActionFilter}
       rowLimit={ROW_LIMIT}
       totalRowCount={totalRowCount ?? entries.length}
     />

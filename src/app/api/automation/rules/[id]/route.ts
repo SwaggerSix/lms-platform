@@ -118,6 +118,10 @@ export async function POST(
     entityType: "enrollment_rule",
     entityId: id,
     newValues: { matched, executed, errors },
+    // Attribute the audit row to the rule's tenant so cross-tenant
+    // super_admin triggers tag correctly (vs falling back to the
+    // actor→org DB trigger).
+    tenantId: (rule as { tenant_id?: string }).tenant_id ?? undefined,
   });
 
   return jsonNoStore({ message: "Rule executed", matched, executed, errors });

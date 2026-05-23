@@ -30,7 +30,7 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json(order);
+  return jsonNoStore(order);
 }
 
 export async function PUT(

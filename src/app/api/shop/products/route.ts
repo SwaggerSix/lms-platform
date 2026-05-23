@@ -6,6 +6,7 @@ import { validateBody, createProductSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     products: data,
     total: count,
     page,

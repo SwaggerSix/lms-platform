@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor", "learner");
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     orders: data,
     total: count,
     page,

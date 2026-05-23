@@ -4,6 +4,7 @@ import { validateBody, updateWorkflowSchema } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // GET: Get a single workflow with its steps
 export async function GET(
@@ -32,7 +33,7 @@ export async function GET(
     .eq("workflow_id", id)
     .order("sequence_order", { ascending: true });
 
-  return NextResponse.json({ ...workflow, steps: steps ?? [] });
+  return jsonCached({ ...workflow, steps: steps ?? [] });
 }
 
 // PUT: Update a workflow

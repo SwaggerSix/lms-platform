@@ -90,7 +90,7 @@ describe("GET cache-control audit (advisory)", () => {
     // failure message than a diff. Lower this number each time the
     // snapshot shrinks; once it hits 0 the ratchet stops being needed
     // and the test can flip to `toEqual([])`.
-    const MAX_UNCLASSIFIED = 59;
+    const MAX_UNCLASSIFIED = 48;
     expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower MAX_UNCLASSIFIED.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
 
     // Snapshot the current backlog. New GETs landing here force a
@@ -126,9 +126,6 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/integrations/video/route.ts",
         "src/app/api/mentorship/match/route.ts",
         "src/app/api/mentorship/profiles/[id]/route.ts",
-        "src/app/api/mentorship/profiles/route.ts",
-        "src/app/api/mentorship/requests/route.ts",
-        "src/app/api/mentorship/sessions/route.ts",
         "src/app/api/microlearning/nuggets/[id]/route.ts",
         "src/app/api/microlearning/nuggets/route.ts",
         "src/app/api/microlearning/progress/route.ts",
@@ -138,18 +135,10 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/observations/templates/route.ts",
         "src/app/api/paths/[id]/route.ts",
         "src/app/api/profile/skills/route.ts",
-        "src/app/api/shop/coupons/route.ts",
-        "src/app/api/shop/orders/[id]/route.ts",
-        "src/app/api/shop/orders/route.ts",
-        "src/app/api/shop/products/route.ts",
-        "src/app/api/sso/check-domain/route.ts",
-        "src/app/api/sso/route.ts",
         "src/app/api/tenants/[id]/branding/route.ts",
         "src/app/api/tenants/[id]/courses/route.ts",
         "src/app/api/tenants/[id]/members/route.ts",
         "src/app/api/tenants/[id]/route.ts",
-        "src/app/api/tenants/route.ts",
-        "src/app/api/workflows/[id]/route.ts",
         "src/app/api/workflows/[id]/runs/route.ts",
         "src/app/api/workflows/[id]/steps/route.ts",
         "src/app/api/xapi/activities/profile/route.ts",
