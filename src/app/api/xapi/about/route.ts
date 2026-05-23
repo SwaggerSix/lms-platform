@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/xapi/about
  * Returns LRS capabilities and version information per xAPI spec.
  */
 export async function GET() {
-  return NextResponse.json(
+  return jsonCached(
     {
       version: ["1.0.3", "1.0.2", "1.0.1"],
       extensions: {

@@ -90,7 +90,7 @@ describe("GET cache-control audit (advisory)", () => {
     // failure message than a diff. Lower this number each time the
     // snapshot shrinks; once it hits 0 the ratchet stops being needed
     // and the test can flip to `toEqual([])`.
-    const MAX_UNCLASSIFIED = 69;
+    const MAX_UNCLASSIFIED = 59;
     expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower MAX_UNCLASSIFIED.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
 
     // Snapshot the current backlog. New GETs landing here force a
@@ -99,12 +99,6 @@ describe("GET cache-control audit (advisory)", () => {
     expect(unclassified).toMatchInlineSnapshot(`
       [
         "src/app/api/admin/lrs/route.ts",
-        "src/app/api/analytics/alerts/route.ts",
-        "src/app/api/analytics/engagement/route.ts",
-        "src/app/api/analytics/predictions/route.ts",
-        "src/app/api/analytics/risk/route.ts",
-        "src/app/api/analytics/snapshots/route.ts",
-        "src/app/api/approvals/route.ts",
         "src/app/api/assessments/[id]/route.ts",
         "src/app/api/automation/rules/[id]/logs/route.ts",
         "src/app/api/automation/rules/[id]/route.ts",
@@ -114,7 +108,6 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/cron/scheduled-reports/route.ts",
         "src/app/api/email/route.ts",
         "src/app/api/embed/[token]/route.ts",
-        "src/app/api/embed/widgets/route.ts",
         "src/app/api/evaluations/assignments/route.ts",
         "src/app/api/evaluations/reports/[courseId]/route.ts",
         "src/app/api/evaluations/templates/[id]/route.ts",
@@ -145,7 +138,6 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/observations/templates/route.ts",
         "src/app/api/paths/[id]/route.ts",
         "src/app/api/profile/skills/route.ts",
-        "src/app/api/search/route.ts",
         "src/app/api/shop/coupons/route.ts",
         "src/app/api/shop/orders/[id]/route.ts",
         "src/app/api/shop/orders/route.ts",
@@ -157,11 +149,9 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/tenants/[id]/members/route.ts",
         "src/app/api/tenants/[id]/route.ts",
         "src/app/api/tenants/route.ts",
-        "src/app/api/transcript/route.ts",
         "src/app/api/workflows/[id]/route.ts",
         "src/app/api/workflows/[id]/runs/route.ts",
         "src/app/api/workflows/[id]/steps/route.ts",
-        "src/app/api/xapi/about/route.ts",
         "src/app/api/xapi/activities/profile/route.ts",
         "src/app/api/xapi/activities/state/route.ts",
         "src/app/api/xapi/statements/route.ts",

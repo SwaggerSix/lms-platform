@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { estimateIntervalMinutes } from "@/lib/cron/monitor";
 import { readVercelConfig, vercelConfigCacheInfo } from "@/lib/cron/vercel-config";
 import { readThresholdsConfig, thresholdsConfigCacheInfo } from "@/lib/cron/thresholds-config";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/admin/alert-config
@@ -41,27 +42,16 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json(
-    {
-      alert_webhook: (thresholds.alert_webhook ?? null) as Record<string, unknown> | null,
-      consecutive_failures: (thresholds.consecutive_failures ?? null) as Record<string, unknown> | null,
-      replay: (thresholds.replay ?? null) as Record<string, unknown> | null,
-      thresholds_cache: thresholdsConfigCacheInfo(),
-      schedules,
-      schedules_cache: vercelConfigCacheInfo(),
-      has_webhook_url: !!process.env.CRON_ALERT_WEBHOOK_URL,
-      has_pagerduty_routing_key: !!process.env.PAGERDUTY_ROUTING_KEY,
-    },
-    {
-      headers: {
-        // Config is admin-only and changes rarely. Allow private (the
-        // admin's browser) caching for 30s so a tab refresh doesn't
-        // re-stat the files; revalidate=60s lets stale-while-revalidate
-        // proxies (none in this stack today, but future CDN setups
-        // benefit) serve a 60s-old response while fetching fresh.
-        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
-        Vary: "Cookie",
-      },
-    }
-  );
+  // Config is admin-only and changes rarely; jsonCached's default
+  // 30s/60s window is exactly what this endpoint wants.
+  return jsonCached({
+    alert_webhook: (thresholds.alert_webhook ?? null) as Record<string, unknown> | null,
+    consecutive_failures: (thresholds.consecutive_failures ?? null) as Record<string, unknown> | null,
+    replay: (thresholds.replay ?? null) as Record<string, unknown> | null,
+    thresholds_cache: thresholdsConfigCacheInfo(),
+    schedules,
+    schedules_cache: vercelConfigCacheInfo(),
+    has_webhook_url: !!process.env.CRON_ALERT_WEBHOOK_URL,
+    has_pagerduty_routing_key: !!process.env.PAGERDUTY_ROUTING_KEY,
+  });
 }

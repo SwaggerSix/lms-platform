@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { trackLearningEvent } from "@/lib/ai/track-event";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
     }).catch(() => {});
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     courses: coursesResult.data ?? [],
     articles: articlesResult.data ?? [],
     users: usersResult.data ?? [],

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isUuid } from "@/lib/validate-uuid";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/admin/audit-log-namespaces?hide_platform=true
@@ -104,7 +105,10 @@ export async function GET(request: NextRequest) {
     return b.count - a.count;
   });
 
-  return NextResponse.json(
+  // Namespaces only change when new dotted-namespace actions start
+  // appearing — typically deploys, not minute-to-minute. 5-minute
+  // private cache cuts the per-page-load 20k-row scan.
+  return jsonCached(
     {
       namespaces,
       hide_platform: hidePlatform,
@@ -112,14 +116,6 @@ export async function GET(request: NextRequest) {
       /** True when we hit the 20k row cap; some older namespaces may be missing. */
       sample_capped: (data?.length ?? 0) >= 20000,
     },
-    {
-      headers: {
-        // Namespaces only change when new dotted-namespace actions
-        // start appearing — typically deploys, not minute-to-minute.
-        // 5-minute private cache cuts the per-page-load 20k-row scan.
-        "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
-        Vary: "Cookie",
-      },
-    }
+    { maxAge: 300, swr: 600 }
   );
 }

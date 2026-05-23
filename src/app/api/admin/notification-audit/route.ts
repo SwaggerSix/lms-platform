@@ -3,6 +3,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/admin/notification-audit?limit=100&offset=0
@@ -252,7 +253,7 @@ export async function GET(request: NextRequest) {
     aggregationCapped = (fallback?.length ?? 0) >= 5000;
   }
 
-  return NextResponse.json({
+  return jsonCached({
     page: { limit, offset },
     tenant_scope: tenantId
       ? {
@@ -286,15 +287,7 @@ export async function GET(request: NextRequest) {
       "Both values violate the notifications.type CHECK constraint, so the inserts rejected.",
       "This branch changes both to use 'announcement', which the CHECK allows.",
     ],
-  }, {
-    headers: {
-      // Audit failures are historical — they don't change between
-      // a click and a refresh. Same 30s/60s window as other admin
-      // observability endpoints so a busy admin viewing the page
-      // doesn't re-run the paginated + aggregation queries on
-      // every tab activation.
-      "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
-      Vary: "Cookie",
-    },
   });
+  // Audit failures are historical — they don't change between a click
+  // and a refresh. jsonCached's 30s/60s default is exactly that window.
 }

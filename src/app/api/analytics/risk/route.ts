@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { identifyAtRiskLearners } from "@/lib/analytics/predictive";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
@@ -17,6 +18,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error("At-risk learners API error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonCached({ error: "Internal server error" }, { status: 500 });
   }
 }

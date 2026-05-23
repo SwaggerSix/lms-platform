@@ -5,6 +5,7 @@ import { validateBody, createWidgetSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import crypto from "crypto";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ widgets: data });
+  return jsonCached({ widgets: data });
 }
 
 export async function POST(request: NextRequest) {

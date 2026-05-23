@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateAlertSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ alerts: data ?? [] });
+  return jsonCached({ alerts: data ?? [] });
 }
 
 export async function PUT(request: NextRequest) {

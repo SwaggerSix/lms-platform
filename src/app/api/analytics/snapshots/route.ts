@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { getTrendData } from "@/lib/analytics/snapshots";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -20,6 +21,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ snapshots });
   } catch (err) {
     console.error("Snapshots API error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return jsonCached({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { EnrollmentStatus, CourseType } from "@/types/database";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/transcript
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
     .filter((e) => e.status === "completed")
     .reduce((sum, e) => sum + (e.credits || 0), 0);
 
-  return NextResponse.json({
+  return jsonCached({
     entries,
     total: entries.length,
     summary: {

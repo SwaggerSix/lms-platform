@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -44,5 +45,5 @@ export async function GET(request: NextRequest) {
     return true;
   });
 
-  return NextResponse.json({ predictions: unique });
+  return jsonCached({ predictions: unique });
 }
