@@ -98,6 +98,29 @@ describe("logAudit tenantId passthrough", () => {
     }
   });
 
+  it("malformed tenantId is silent in production but still falls back to null", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const orig = process.env.NODE_ENV;
+    (process.env as Record<string, string>).NODE_ENV = "production";
+    try {
+      vi.resetModules();
+      const { logAudit } = await import("@/lib/audit");
+      await logAudit({
+        action: "created",
+        entityType: "course",
+        entityId: "c1",
+        tenantId: "still-not-a-uuid",
+      });
+      expect(inserted).toHaveLength(1);
+      expect(inserted[0].tenant_id).toBeNull();
+      expect(warnSpy).not.toHaveBeenCalled();
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = orig ?? "test";
+      vi.resetModules();
+      warnSpy.mockRestore();
+    }
+  });
+
   it("forwards every standard field to the insert payload", async () => {
     const { logAudit } = await import("@/lib/audit");
     await logAudit({

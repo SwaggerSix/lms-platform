@@ -30,3 +30,38 @@ removals that affect future work.
   `/api/compliance` returns 410 Gone on every method. Drop migration
   is `supabase/migrations/20260318100041_compliance_requirements_drop.sql`
   with two precondition guards.
+
+## Convention playbook
+
+When introducing a new "every callsite must do X" rule, the established
+pattern in this repo:
+
+1. **Pick the call-site shape** the convention applies to (every GET
+   handler, every `logAudit({...})` call, etc.) and write a scanner
+   that finds them. Extract the regex + brace-walker into
+   `src/lib/...` so a unit test can pin the detection logic against
+   crafted in-memory sources (see
+   `src/lib/audit-log/scan-action-literals.ts` for the template).
+2. **Land a codebase-walking test** under `src/__tests__/`. Start in
+   advisory mode: `toMatchInlineSnapshot` of the current set of
+   offenders. New offenders land in the diff first, which forces
+   the contributor to either fix them or update the snapshot.
+3. **Add a ratchet** (see the now-retired `audit-ratchet.json` for the
+   pattern) when the backlog is too large to fix in one PR.
+   Decrement on each cleanup; once it hits zero, flip the test to
+   `toEqual([])` and delete the ratchet file.
+4. **Add the test path to `npm run test:conventions`** so the whole
+   convention bundle runs together (~5s) and surfaces via
+   `.github/workflows/conventions.yml` on every PR.
+5. **Document the convention** on the entry point itself (helper
+   function, route, or migration) so a future contributor reading
+   the implementation finds the rule there too — not only in the
+   test that enforces it. `src/lib/audit.ts`'s docstring is an
+   example.
+
+Why three layers (scanner unit test + codebase walk + smoke test):
+the scanner test pins the detection logic, the codebase walk asserts
+the live tree is clean, and the smoke test
+(`src/__tests__/lib/convention-smoke.test.ts`) proves the guardrails
+actually fire on synthetic broken sources — the codebase walk alone
+can only prove the current tree, not that a regression would be caught.

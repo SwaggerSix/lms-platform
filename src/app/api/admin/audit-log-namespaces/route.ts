@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
-import { isUuid } from "@/lib/validate-uuid";
+import { isUuid, parseUuid } from "@/lib/validate-uuid";
 import { jsonCached } from "@/lib/api/cached";
 
 /**
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
     );
   }
   if (tenantParam === null) {
-    const headerTenant = request.headers.get("x-tenant-id");
-    if (headerTenant && isUuid(headerTenant)) {
-      tenantParam = headerTenant.toLowerCase();
-    }
+    // parseUuid handles both the validation and the lowercase
+    // normalization in one call, matching the pattern used elsewhere
+    // in the codebase (resolveAuditLogTenant, resolveTenantForUser).
+    tenantParam = parseUuid(request.headers.get("x-tenant-id"));
   }
 
   const service = createServiceClient();
