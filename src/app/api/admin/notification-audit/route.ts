@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonCached } from "@/lib/api/cached";
+import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 
 /**
  * GET /api/admin/notification-audit?limit=100&offset=0
@@ -48,9 +49,10 @@ export async function GET(request: NextRequest) {
   // scoped admin. The same helper applies to both — typed loosely because
   // supabase-js's filter-builder types don't compose cleanly through a
   // generic helper.
+  const tenantFilter = buildAuditLogTenantFilter(tenantId);
   const applyTenantFilter = <T>(q: T): T => {
-    if (!tenantId) return q;
-    return (q as any).or(`tenant_id.eq.${tenantId},tenant_id.is.null`) as T;
+    if (!tenantFilter) return q;
+    return (q as any).or(tenantFilter) as T;
   };
 
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK

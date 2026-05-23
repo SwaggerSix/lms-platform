@@ -113,6 +113,14 @@ describe("/api/admin/audit-log-namespaces tenant resolution", () => {
     expect(capturedOrFilter).toBe(`tenant_id.eq.${TENANT_A},tenant_id.is.null`);
   });
 
+  it("uppercase query param is lowercased before being filtered", async () => {
+    // parseUuid normalizes on the query path now too (used to only
+    // normalize on the header path).
+    const res = await invokeGet({ tenantQuery: TENANT_A.toUpperCase() });
+    expect(res.status).toBe(200);
+    expect(capturedOrFilter).toBe(`tenant_id.eq.${TENANT_A},tenant_id.is.null`);
+  });
+
   it("hide_platform=true triggers the .not('tenant_id', 'is', null) branch", async () => {
     const res = await invokeGet({ hidePlatform: true });
     expect(res.status).toBe(200);

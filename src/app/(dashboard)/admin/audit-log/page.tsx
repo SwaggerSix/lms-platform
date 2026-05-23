@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { resolveAuditLogTenant } from "@/lib/audit-log/resolve-tenant";
+import { resolveAuditLogTenant, AUDIT_LOG_ROW_LIMIT } from "@/lib/audit-log/resolve-tenant";
 import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 import { formatAction, formatTimestamp } from "@/lib/audit-log/format";
 import AuditLogClient from "./audit-log-client";
@@ -63,17 +63,15 @@ export default async function AuditLogPage() {
     headerTenantId: hdrs.get("x-tenant-id"),
   });
 
-  // Row cap: bumped from 100 → 500 to make the on-page sample useful
-  // for narrowing via filters. When the underlying table exceeds the
-  // cap, the UI shows a banner telling the admin to tighten filters
-  // (date range, action, entity, org). Without that signal the page
-  // would silently truncate.
-  const ROW_LIMIT = 500;
+  // Row cap lives on AUDIT_LOG_ROW_LIMIT in lib/audit-log/resolve-tenant.ts
+  // — co-located with the tenant resolver since both belong to the same
+  // audit-log scope module. When the underlying table exceeds the cap,
+  // the UI shows a banner telling the admin to tighten filters.
   let auditQuery = service
     .from("audit_logs")
     .select("*, user:users!user_id(id, first_name, last_name, email, organization_id, organization:organizations(id, name))", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(ROW_LIMIT);
+    .limit(AUDIT_LOG_ROW_LIMIT);
   const tenantFilter = buildAuditLogTenantFilter(tenantId);
   if (tenantFilter) {
     auditQuery = auditQuery.or(tenantFilter);
@@ -137,7 +135,7 @@ export default async function AuditLogPage() {
       initialEntityFilter={initialEntityFilter}
       initialOrgFilter={initialOrgFilter}
       initialActionFilter={initialActionFilter}
-      rowLimit={ROW_LIMIT}
+      rowLimit={AUDIT_LOG_ROW_LIMIT}
       totalRowCount={totalRowCount ?? entries.length}
       scopedTenantId={tenantId}
     />

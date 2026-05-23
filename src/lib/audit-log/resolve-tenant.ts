@@ -1,6 +1,18 @@
 import { parseUuid } from "@/lib/validate-uuid";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
+/**
+ * Server-side cap on the audit_logs row fetch for /admin/audit-log.
+ * The client shows a truncation banner when count > AUDIT_LOG_ROW_LIMIT;
+ * tighter filters bring the result back under the cap. Co-located
+ * with the tenant resolver so the audit-log scope module has one home.
+ *
+ * Bumping the cap is a deliberate change — the audit-log truncation
+ * test imports this constant directly so a change here surfaces in
+ * the test bundle without a separate ratchet.
+ */
+export const AUDIT_LOG_ROW_LIMIT = 500;
+
 interface ResolveAuditLogTenantInput {
   /** Acting user's role. */
   role: string;

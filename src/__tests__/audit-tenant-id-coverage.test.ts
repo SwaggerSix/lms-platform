@@ -123,7 +123,7 @@ describe("logAudit tenantId coverage (advisory)", () => {
       [
         "src/app/api/admin/cron-alert-replay/route.ts:196",
         "src/app/api/admin/notification-audit/refresh-view/route.ts:45",
-        "src/app/api/admin/notification-audit/route.ts:121",
+        "src/app/api/admin/notification-audit/route.ts:123",
         "src/app/api/automation/rules/route.ts:103",
         "src/app/api/automation/rules/route.ts:154",
         "src/app/api/automation/rules/route.ts:188",
