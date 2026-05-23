@@ -15,7 +15,11 @@ import { join } from "node:path";
 
 const pkg = JSON.parse(
   readFileSync(join(process.cwd(), "package.json"), "utf8")
-) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+) as {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
+};
 
 describe("dependency ratchet", () => {
   it("dependency names are snapshotted (catches accidental dep creep)", () => {
@@ -73,6 +77,23 @@ describe("dependency ratchet", () => {
         "postgres",
         "supabase",
         "vitest",
+      ]
+    `);
+  });
+
+  it("npm scripts are snapshotted (catches accidental script churn)", () => {
+    const names = Object.keys(pkg.scripts ?? {}).sort();
+    expect(names).toMatchInlineSnapshot(`
+      [
+        "build",
+        "dev",
+        "lint",
+        "start",
+        "test",
+        "test:conventions",
+        "test:coverage",
+        "test:ui",
+        "test:watch",
       ]
     `);
   });

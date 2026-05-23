@@ -29,15 +29,26 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
   const hidePlatform = url.searchParams.get("hide_platform") === "true";
-  // Optional explicit tenant scope. Validate UUID format here rather
-  // than punting to PostgREST so the caller gets a 400 with a clear
-  // message instead of a 5xx from a malformed SQL .or() filter.
-  const tenantParam = url.searchParams.get("tenant_id");
+  // Optional explicit tenant scope. The query string takes precedence
+  // (explicit caller intent), then the x-tenant-id header (matches the
+  // /admin/audit-log page's resolveAuditLogTenant convention). Validate
+  // UUID format here rather than punting to PostgREST so the caller
+  // gets a 400 with a clear message instead of a 5xx from a malformed
+  // SQL .or() filter. A malformed header is silently ignored rather
+  // than 400'd, since headers are often set by upstream middleware
+  // outside the caller's control.
+  let tenantParam = url.searchParams.get("tenant_id");
   if (tenantParam !== null && !isUuid(tenantParam)) {
     return NextResponse.json(
       { error: "tenant_id must be a UUID", received: tenantParam },
       { status: 400 }
     );
+  }
+  if (tenantParam === null) {
+    const headerTenant = request.headers.get("x-tenant-id");
+    if (headerTenant && isUuid(headerTenant)) {
+      tenantParam = headerTenant.toLowerCase();
+    }
   }
 
   const service = createServiceClient();

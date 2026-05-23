@@ -29,3 +29,8 @@ jobs:
         run: npm ci
       - name: Run convention guardrails
         run: npm run test:conventions
+      - name: Audit production dependencies (high+ severity)
+        # `--omit=dev` keeps devDependency findings out of the gate
+        # (test tooling churns more than prod). Fails the job if any
+        # high or critical CVE lands in the runtime dep tree.
+        run: npm audit --omit=dev --audit-level=high
