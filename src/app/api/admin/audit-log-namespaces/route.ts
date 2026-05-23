@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
-import { isUuid, parseUuid } from "@/lib/validate-uuid";
+import { parseUuid } from "@/lib/validate-uuid";
+import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 import { jsonCached } from "@/lib/api/cached";
 
 /**
@@ -37,17 +38,21 @@ export async function GET(request: NextRequest) {
   // SQL .or() filter. A malformed header is silently ignored rather
   // than 400'd, since headers are often set by upstream middleware
   // outside the caller's control.
-  let tenantParam = url.searchParams.get("tenant_id");
-  if (tenantParam !== null && !isUuid(tenantParam)) {
-    return NextResponse.json(
-      { error: "tenant_id must be a UUID", received: tenantParam },
-      { status: 400 }
-    );
-  }
-  if (tenantParam === null) {
-    // parseUuid handles both the validation and the lowercase
-    // normalization in one call, matching the pattern used elsewhere
-    // in the codebase (resolveAuditLogTenant, resolveTenantForUser).
+  // Query-param branch: parseUuid does the validation AND the lowercase
+  // normalization; null result on a non-null raw input means "malformed
+  // value supplied" → 400. Header branch follows the same helper but
+  // silently drops a malformed value.
+  const rawQueryTenant = url.searchParams.get("tenant_id");
+  let tenantParam: string | null = null;
+  if (rawQueryTenant !== null) {
+    tenantParam = parseUuid(rawQueryTenant);
+    if (tenantParam === null) {
+      return NextResponse.json(
+        { error: "tenant_id must be a UUID", received: rawQueryTenant },
+        { status: 400 }
+      );
+    }
+  } else {
     tenantParam = parseUuid(request.headers.get("x-tenant-id"));
   }
 
@@ -60,10 +65,12 @@ export async function GET(request: NextRequest) {
   if (hidePlatform) {
     query = query.not("tenant_id", "is", null);
   }
-  if (tenantParam) {
-    // Include platform-level rows (tenant_id IS NULL) alongside the
-    // requested tenant — same convention as the audit-log page.
-    query = query.or(`tenant_id.eq.${tenantParam},tenant_id.is.null`);
+  // Same convention as the audit-log page: scoped tenant rows AND
+  // platform-level rows (tenant_id IS NULL). Single helper keeps the
+  // filter format consistent between the two readers.
+  const tenantFilter = buildAuditLogTenantFilter(tenantParam);
+  if (tenantFilter) {
+    query = query.or(tenantFilter);
   }
   const { data, error } = await query;
 

@@ -78,4 +78,19 @@ describe("AuditLogClient truncation banner", () => {
     const banner = screen.getByRole("status");
     expect(banner.textContent).toContain("12,345,678");
   });
+
+  it("page.tsx ROW_LIMIT is the documented 500 — bumping forces a deliberate update here", async () => {
+    // Lock the page-level cap that all the fixtures above assume. The
+    // page's ROW_LIMIT constant isn't exported (top-level exports
+    // confuse Next routing), so we read it out of the source as a
+    // string and assert the literal. Bumping the cap requires
+    // touching this test in the same commit.
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const source = await readFile(
+      join(process.cwd(), "src/app/(dashboard)/admin/audit-log/page.tsx"),
+      "utf8"
+    );
+    expect(source).toMatch(/const\s+ROW_LIMIT\s*=\s*500;/);
+  });
 });

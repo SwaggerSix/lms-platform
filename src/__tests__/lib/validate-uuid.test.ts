@@ -31,6 +31,14 @@ describe("isUuid", () => {
   it("rejects empty string", () => {
     expect(isUuid("")).toBe(false);
   });
+  it("rejects strings with surrounding whitespace (callers must trim)", () => {
+    expect(isUuid(" 550e8400-e29b-41d4-a716-446655440000")).toBe(false);
+    expect(isUuid("550e8400-e29b-41d4-a716-446655440000 ")).toBe(false);
+    expect(isUuid("\n550e8400-e29b-41d4-a716-446655440000\n")).toBe(false);
+  });
+  it("accepts v7 UUIDs (regex is version-agnostic)", () => {
+    expect(isUuid("0190a3d8-1234-7abc-9def-0123456789ab")).toBe(true);
+  });
 });
 
 describe("parseUuid", () => {
@@ -47,5 +55,24 @@ describe("parseUuid", () => {
   it("returns null for malformed strings", () => {
     expect(parseUuid("not-a-uuid")).toBeNull();
     expect(parseUuid("550e8400-e29b-41d4-a716-44665544000")).toBeNull();
+    expect(parseUuid("")).toBeNull();
+  });
+  it("returns null on surrounding whitespace (parseUuid is strict — does NOT trim)", () => {
+    expect(parseUuid(" 550e8400-e29b-41d4-a716-446655440000")).toBeNull();
+    expect(parseUuid("550e8400-e29b-41d4-a716-446655440000 ")).toBeNull();
+  });
+  it("returns null on non-object weirdness", () => {
+    expect(parseUuid({})).toBeNull();
+    expect(parseUuid([])).toBeNull();
+    expect(parseUuid(false)).toBeNull();
+    expect(parseUuid(true)).toBeNull();
+  });
+  it("accepts v7 UUIDs", () => {
+    expect(parseUuid("0190a3d8-1234-7abc-9def-0123456789ab")).toBe(
+      "0190a3d8-1234-7abc-9def-0123456789ab"
+    );
+    expect(parseUuid("0190A3D8-1234-7ABC-9DEF-0123456789AB")).toBe(
+      "0190a3d8-1234-7abc-9def-0123456789ab"
+    );
   });
 });
