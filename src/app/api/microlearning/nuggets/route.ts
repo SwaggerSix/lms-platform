@@ -5,6 +5,7 @@ import { validateBody, createNuggetSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     user_status: progressMap[n.id] || null,
   }));
 
-  return NextResponse.json({
+  return jsonCached({
     nuggets,
     total: count,
     page,

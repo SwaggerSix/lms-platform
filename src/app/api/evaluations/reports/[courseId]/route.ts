@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ courseId: string }> }) {
   const auth = await authorize("admin", "super_admin", "manager");
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return bucket;
   });
 
-  return NextResponse.json({
+  return jsonCached({
     course_id: courseId,
     total_assignments: assignments?.length ?? 0,
     summaries,

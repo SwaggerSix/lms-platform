@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Cycle not found" }, { status: 404 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

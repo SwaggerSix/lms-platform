@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createEvaluationTemplateSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ templates: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
+  return jsonCached({ templates: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
 }
 
 export async function POST(request: NextRequest) {

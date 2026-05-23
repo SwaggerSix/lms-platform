@@ -21,6 +21,18 @@ export interface AuditLogParams {
 
 /**
  * Insert an audit log entry. Fire-and-forget — errors are logged but never thrown.
+ *
+ * Tenant attribution convention:
+ *   - Most call sites omit `tenantId` and let the
+ *     audit_logs_set_tenant_id DB trigger fill it from the actor's
+ *     organization_id. Fine for in-tenant admin actions where the
+ *     actor and the entity share a tenant.
+ *   - Pass `tenantId` explicitly when the entity belongs to a different
+ *     tenant than the actor (super_admin cross-tenant trigger of a
+ *     workflow / rule / etc.) so the audit row attributes correctly.
+ *     Look up the entity's tenant_id in the same query that fetches it.
+ *   - Pass `tenantId` for service-role inserts (cron jobs) where the
+ *     "actor" doesn't carry tenant info but the operated-on row does.
  */
 export async function logAudit(params: AuditLogParams): Promise<void> {
   // Runtime guard. The audit-action-conventions test catches static

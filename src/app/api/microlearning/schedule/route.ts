@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     is_active: true,
   };
 
-  return NextResponse.json(schedule);
+  return jsonNoStore(schedule);
 }
 
 export async function PUT(request: NextRequest) {

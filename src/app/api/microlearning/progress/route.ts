@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         Math.max((data ?? []).filter((p) => p.score != null).length, 1),
   };
 
-  return NextResponse.json({ progress: data, stats });
+  return jsonNoStore({ progress: data, stats });
 }
 
 export async function POST(request: NextRequest) {

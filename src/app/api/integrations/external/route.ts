@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createExternalIntegrationSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     },
   }));
 
-  return NextResponse.json({ integrations: sanitized });
+  return jsonCached({ integrations: sanitized });
 }
 
 export async function POST(request: NextRequest) {

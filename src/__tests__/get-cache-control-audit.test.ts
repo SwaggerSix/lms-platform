@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import ratchet from "./audit-ratchet.json";
 
 function walkTs(dir: string): string[] {
   const out: string[] = [];
@@ -84,14 +85,13 @@ describe("GET cache-control audit (advisory)", () => {
 
     unclassified.sort();
 
-    // Ratchet: backlog can only shrink. The hard ceiling lives next to
-    // the snapshot so a regression that adds new unclassified GETs
-    // fails the assertion before the snapshot ever runs — clearer
-    // failure message than a diff. Lower this number each time the
-    // snapshot shrinks; once it hits 0 the ratchet stops being needed
-    // and the test can flip to `toEqual([])`.
-    const MAX_UNCLASSIFIED = 48;
-    expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower MAX_UNCLASSIFIED.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
+    // Ratchet: backlog can only shrink. The hard ceiling lives in
+    // audit-ratchet.json so updates show up as a single-line diff in
+    // PRs (rather than buried in a TS edit). Lower the number each
+    // time the snapshot shrinks; once it hits 0 the ratchet can be
+    // removed and this test can flip to `toEqual([])`.
+    const MAX_UNCLASSIFIED = ratchet.max_unclassified;
+    expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower max_unclassified in audit-ratchet.json.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
 
     // Snapshot the current backlog. New GETs landing here force a
     // conscious choice; removing an endpoint from the list (because it
@@ -108,28 +108,15 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/cron/scheduled-reports/route.ts",
         "src/app/api/email/route.ts",
         "src/app/api/embed/[token]/route.ts",
-        "src/app/api/evaluations/assignments/route.ts",
-        "src/app/api/evaluations/reports/[courseId]/route.ts",
-        "src/app/api/evaluations/templates/[id]/route.ts",
-        "src/app/api/evaluations/templates/route.ts",
-        "src/app/api/evaluations/triggers/route.ts",
-        "src/app/api/feedback/competencies/route.ts",
         "src/app/api/feedback/cycles/[id]/nominations/route.ts",
         "src/app/api/feedback/cycles/[id]/report/route.ts",
-        "src/app/api/feedback/cycles/[id]/route.ts",
-        "src/app/api/feedback/responses/route.ts",
         "src/app/api/gamification/route.ts",
         "src/app/api/integrations/external/[id]/logs/route.ts",
         "src/app/api/integrations/external/[id]/mappings/route.ts",
-        "src/app/api/integrations/external/[id]/route.ts",
-        "src/app/api/integrations/external/route.ts",
         "src/app/api/integrations/video/route.ts",
         "src/app/api/mentorship/match/route.ts",
         "src/app/api/mentorship/profiles/[id]/route.ts",
         "src/app/api/microlearning/nuggets/[id]/route.ts",
-        "src/app/api/microlearning/nuggets/route.ts",
-        "src/app/api/microlearning/progress/route.ts",
-        "src/app/api/microlearning/schedule/route.ts",
         "src/app/api/observations/[id]/route.ts",
         "src/app/api/observations/templates/[id]/route.ts",
         "src/app/api/observations/templates/route.ts",
