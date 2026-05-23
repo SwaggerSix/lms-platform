@@ -1,0 +1,39 @@
+name: Build
+
+# Runs `next build` to catch issues that only surface during the
+# production build — e.g. module-init code that reads env vars at
+# import time, missing types in compiled output, or new SSR routes
+# that break under static analysis. Vercel's deploy step does this
+# too, but landing a broken commit and waiting for Vercel to fail is
+# wasted feedback time.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder values so module-init code reading env doesn't
+      # throw at build time. Real production secrets are set in the
+      # Vercel project; the build itself is content-only and doesn't
+      # talk to Supabase.
+      NEXT_PUBLIC_SUPABASE_URL: "http://localhost:54321"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "ci-anon-key"
+      SUPABASE_SERVICE_ROLE_KEY: "ci-service-role-key"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Next build
+        run: npm run build

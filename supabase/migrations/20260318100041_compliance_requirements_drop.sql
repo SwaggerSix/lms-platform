@@ -1,4 +1,17 @@
 -- Drop compliance_requirements after the retirement work has landed.
+--
+-- Successor: courses.metadata.required_for (JSONB column on the
+-- courses table). All readers source from getRequiredCourseSources()
+-- in src/lib/courses/required-training.ts. A `git blame` landing here
+-- from a compliance question should look at:
+--   - src/lib/courses/required-training.ts  ← parsing + helpers
+--   - src/app/api/compliance/route.ts       ← 410 Gone for legacy API
+--   - src/app/(dashboard)/{admin,manager,learn}/compliance/...
+--     and src/app/(dashboard)/learn/recommendations/page.tsx
+--                                           ← downstream readers
+--   - supabase/migrations/20260318100031_compliance_backfill.sql
+--                                           ← row-level backfill
+--
 -- Preconditions:
 --
 --   1. POST /api/compliance returns 410 Gone (done in the same PR as
