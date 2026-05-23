@@ -29,6 +29,14 @@ can withhold them.
 - Never `git push --force` or amend a pushed commit without explicit
   request.
 
+## Local check commands
+
+- `npm test` — full Vitest suite.
+- `npm run test:conventions` — convention bundle (~5s). Used by the
+  pre-commit hook and the `conventions.yml` CI workflow.
+- `npm run check` — `lint && test:conventions`. Quick pre-push gate
+  that covers both ESLint and the convention suite.
+
 ## Guardrails to maintain
 
 Each new convention follows the playbook in `CHANGELOG.md`'s
@@ -58,10 +66,26 @@ enforce). See `src/lib/audit-log/scan-action-literals.ts` and
 
 Run `npm run install-hooks` once to point Git at `.githooks/`. The
 `pre-commit` script runs `npm run test:conventions` (~5s) and blocks
-the commit if a guardrail fires. Bypass with `git commit --no-verify`
-when intentionally landing a change that needs a snapshot updated
-in a follow-up. The CI workflow runs the same guardrails on every
-PR, so the local hook is purely for fast feedback.
+the commit if a guardrail fires. The CI workflow runs the same
+guardrails on every PR, so the local hook is purely for fast
+feedback.
+
+### Bypass policy
+
+`git commit --no-verify` skips the hook. Use it when:
+
+- A snapshot test is failing because the change is the new
+  intentional snapshot. Bypass, then run `vitest -u` in the same
+  commit (or the next one) and ship both edits together.
+- The hook itself is broken (transient npm cache issue, system
+  Node version mismatch). File a follow-up to fix the hook; don't
+  leave the bypass habit lingering.
+
+Don't bypass to silence a genuine guardrail failure. The guardrails
+are the contract; if a convention no longer fits, change the
+guardrail in the same PR. The CI check on the PR catches anything
+the local bypass let through, so the worst case is a wasted CI run,
+not a regression landing on main.
 
 ## Coding style
 

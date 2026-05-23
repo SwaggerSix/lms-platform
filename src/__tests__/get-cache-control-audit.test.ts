@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { walkFiles } from "./_walk";
+import { walkFiles } from "@/lib/testing/walk";
 
 /**
  * Convention: every GET route handler under src/app/api/ must

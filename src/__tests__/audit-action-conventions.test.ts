@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { walkFiles } from "./_walk";
+import { walkFiles } from "@/lib/testing/walk";
 import { LEGACY_ACTIONS } from "@/lib/audit-log/action-convention";
 import { findActionLiteralOffenders } from "@/lib/audit-log/scan-action-literals";
 

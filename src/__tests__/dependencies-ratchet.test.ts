@@ -86,6 +86,7 @@ describe("dependency ratchet", () => {
     expect(names).toMatchInlineSnapshot(`
       [
         "build",
+        "check",
         "dev",
         "install-hooks",
         "lint",
