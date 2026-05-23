@@ -48,6 +48,9 @@ export async function PATCH(
     entityType: "user",
     entityId: id,
     newValues: sanitized,
+    // Attribute to the target user's tenant so super_admin
+    // cross-tenant edits surface in the right tenant's audit log.
+    tenantId: (data as { organization_id?: string } | null)?.organization_id ?? undefined,
   });
 
   // Fire-and-forget: process automation rules for role/org changes
@@ -89,7 +92,7 @@ export async function DELETE(
 
   const { data: existing, error: fetchError } = await service
     .from("users")
-    .select("id, email, auth_id")
+    .select("id, email, auth_id, organization_id")
     .eq("id", id)
     .single();
 
@@ -124,6 +127,10 @@ export async function DELETE(
     entityType: "user",
     entityId: id,
     oldValues: { email: existing.email },
+    // Attribute to the deleted user's tenant — the user row is gone
+    // by the time the trigger fires, so the actor→org fallback
+    // wouldn't help here.
+    tenantId: (existing as { organization_id?: string }).organization_id ?? undefined,
   });
 
   return jsonNoStore({ message: "User deleted successfully" });

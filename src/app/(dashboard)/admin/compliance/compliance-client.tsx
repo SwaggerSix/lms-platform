@@ -43,7 +43,7 @@ export interface ComplianceRequirement {
   compliantUsers: number;
   overdueUsers: number;
   userStatus: ComplianceUserStatus[];
-  /** Always "course" now that the legacy compliance_requirements table has been retired. Kept on the type so a future second source (e.g. external compliance system) can re-introduce a discriminator without a breaking change. */
+  /** Discriminator on the source of the row. Currently always 'course' (data lives in courses.metadata.required_for); kept on the type so a future second source can be added without a breaking change. */
   origin: 'course';
 }
 

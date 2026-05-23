@@ -138,6 +138,9 @@ export async function POST(request: NextRequest) {
     entityType: "user",
     entityId: data.id,
     newValues: { email: data.email, role: data.role },
+    // Attribute to the new user's tenant rather than the actor's
+    // — important for super_admin cross-tenant creates.
+    tenantId: (data as { organization_id?: string }).organization_id ?? undefined,
   });
 
   // Fire-and-forget: process automation rules for new user

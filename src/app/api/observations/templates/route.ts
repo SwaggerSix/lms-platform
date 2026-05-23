@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createObservationTemplateSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin", "manager", "instructor");
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ templates: data });
+  return jsonCached({ templates: data });
 }
 
 export async function POST(request: NextRequest) {

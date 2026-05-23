@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, addTenantMemberSchema } from "@/lib/validations";
 import { checkTenantLimits } from "@/lib/tenants/tenant-context";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 async function verifyTenantAdmin(userId: string, tenantId: string, platformRole: string) {
   if (platformRole === "admin") return true;
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   if (error) return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
 
-  return NextResponse.json({ members: data });
+  return jsonCached({ members: data });
 }
 
 // POST /api/tenants/[id]/members - Add a member

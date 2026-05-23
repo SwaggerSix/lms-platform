@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateTenantBrandingSchema } from "@/lib/validations";
 import { getTenantBranding } from "@/lib/tenants/tenant-context";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // GET /api/tenants/[id]/branding
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const branding = await getTenantBranding(id);
   if (!branding) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
-  return NextResponse.json({ branding });
+  return jsonCached({ branding });
 }
 
 // PUT /api/tenants/[id]/branding

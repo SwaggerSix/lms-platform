@@ -48,6 +48,26 @@ describe("jsonCached", () => {
     expect(res.headers.get("vary")).toBe("Cookie");
   });
 
+  it("default header set is locked via snapshot (catches any change to defaults)", () => {
+    // Snapshot every header the helper emits at default options. If
+    // someone tweaks the 30s/60s window, swaps `private` for `public`,
+    // or adds a Vary entry without updating callers, the diff lands
+    // here first — easier to review than a behavior change buried in
+    // the helper.
+    const res = jsonCached({ ok: true });
+    const headers: Record<string, string> = {};
+    res.headers.forEach((v, k) => {
+      headers[k] = v;
+    });
+    expect(headers).toMatchInlineSnapshot(`
+      {
+        "cache-control": "private, max-age=30, stale-while-revalidate=60",
+        "content-type": "application/json",
+        "vary": "Cookie",
+      }
+    `);
+  });
+
   it("honors custom maxAge and swr", () => {
     const res = jsonCached({ ok: true }, { maxAge: 5, swr: 15 });
     expect(res.headers.get("cache-control")).toBe(

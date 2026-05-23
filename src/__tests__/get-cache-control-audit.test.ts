@@ -117,22 +117,10 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/mentorship/match/route.ts",
         "src/app/api/mentorship/profiles/[id]/route.ts",
         "src/app/api/microlearning/nuggets/[id]/route.ts",
-        "src/app/api/observations/[id]/route.ts",
-        "src/app/api/observations/templates/[id]/route.ts",
-        "src/app/api/observations/templates/route.ts",
         "src/app/api/paths/[id]/route.ts",
-        "src/app/api/profile/skills/route.ts",
-        "src/app/api/tenants/[id]/branding/route.ts",
-        "src/app/api/tenants/[id]/courses/route.ts",
-        "src/app/api/tenants/[id]/members/route.ts",
-        "src/app/api/tenants/[id]/route.ts",
-        "src/app/api/workflows/[id]/runs/route.ts",
-        "src/app/api/workflows/[id]/steps/route.ts",
         "src/app/api/xapi/activities/profile/route.ts",
         "src/app/api/xapi/activities/state/route.ts",
         "src/app/api/xapi/statements/route.ts",
-        "src/app/api/xr/content/[id]/route.ts",
-        "src/app/api/xr/content/route.ts",
       ]
     `);
   });

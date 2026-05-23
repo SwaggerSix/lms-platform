@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // GET: Get run history for a workflow
 export async function GET(
@@ -46,5 +47,5 @@ export async function GET(
     })
   );
 
-  return NextResponse.json({ runs: runsWithLogs });
+  return jsonNoStore({ runs: runsWithLogs });
 }

@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateTenantSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 async function verifyTenantAccess(userId: string, tenantId: string, requiredRoles?: string[]) {
   const service = createServiceClient();
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     service.from("tenant_courses").select("id", { count: "exact", head: true }).eq("tenant_id", id),
   ]);
 
-  return NextResponse.json({
+  return jsonCached({
     tenant: { ...tenant, member_count: memberCount || 0, course_count: courseCount || 0 },
   });
 }

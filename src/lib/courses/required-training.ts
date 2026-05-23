@@ -5,10 +5,7 @@ export interface RequiredForConfig {
   roles: string[];
   organization_ids: string[];
   due_days?: number;
-  /**
-   * Compliance metadata (formerly in compliance_requirements). All optional —
-   * a required-training course that is not compliance-driven omits these.
-   */
+  /** Compliance metadata. All optional — a required-training course that is not compliance-driven omits these. */
   regulation?: string;
   frequency_months?: number;
   is_mandatory?: boolean;
@@ -125,10 +122,7 @@ export interface RequiredCourseSource {
 
 /**
  * Single source for every page/route that needs the list of courses
- * currently flagged as required training. Replaces the merged
- * legacy-table + course-metadata reads that the admin/manager pages
- * still do — once readers cut over to this helper, the legacy
- * compliance_requirements table can be dropped.
+ * currently flagged as required training.
  *
  * Excludes archived courses. Pure read; safe to call with the service
  * client only (RLS not exercised since we filter in JS).

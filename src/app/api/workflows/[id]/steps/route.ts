@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createWorkflowStepSchema, bulkUpdateStepsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // GET: List all steps for a workflow
 export async function GET(
@@ -26,7 +27,7 @@ export async function GET(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ steps: data ?? [] });
+  return jsonCached({ steps: data ?? [] });
 }
 
 // POST: Add a new step to a workflow

@@ -1,4 +1,4 @@
 {
   "$comment": "Single source of truth for the GET cache-control audit ratchet. Lower max_unclassified each time the snapshot in get-cache-control-audit.test.ts shrinks; once it hits 0 the ratchet stops being needed and the test can flip to toEqual([]).",
-  "max_unclassified": 35
+  "max_unclassified": 23
 }

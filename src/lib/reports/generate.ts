@@ -80,9 +80,6 @@ async function generateCompletionReport(
 async function generateComplianceReport(
   service: ReturnType<typeof createServiceClient>
 ) {
-  // Source of truth: courses with metadata.required_for set. The legacy
-  // compliance_requirements table is being retired; readRequiredFor /
-  // getRequiredCourseSources are the canonical readers.
   const sources = await getRequiredCourseSources(service);
 
   const rows = [];

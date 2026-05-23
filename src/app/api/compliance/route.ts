@@ -6,8 +6,6 @@ import { jsonNoStore } from "@/lib/api/no-store";
  * training is configured via courses.metadata.required_for from
  * /admin/courses → Required Training; reads should go through
  * GET /api/courses (or the server-side helper getRequiredCourseSources).
- * The legacy compliance_requirements table is dropped by migration
- * 20260318100041_compliance_requirements_drop.sql.
  *
  * All methods return 410 Gone with the same RFC 8594 Sunset + Link
  * headers so any lingering integration gets a single, machine-readable

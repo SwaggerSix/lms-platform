@@ -93,9 +93,6 @@ export default async function ReportsPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "published"),
 
-    // Required-training courses, sourced from courses.metadata.required_for
-    // (the canonical source — legacy compliance_requirements table is
-    // being retired).
     getRequiredCourseSources(service),
 
     // Recent enrollments with user and course details for report table

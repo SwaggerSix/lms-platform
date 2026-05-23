@@ -68,10 +68,6 @@ export default async function CompliancePage() {
 
   if (!dbUser) redirect('/login');
 
-  // Single canonical source: courses.metadata.required_for. The legacy
-  // compliance_requirements table is being retired — its rows have been
-  // backfilled onto course metadata. See
-  // supabase/migrations/20260318100031_compliance_backfill.sql.
   const rawSources = await getRequiredCourseSources(service);
   const allSources: NormalizedSource[] = rawSources.map((s) => ({
     id: s.id,
