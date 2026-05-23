@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return NextResponse.json({ conversations: conversationsWithLastMessage });
+  return jsonNoStore({ conversations: conversationsWithLastMessage });
 }
 
 /**

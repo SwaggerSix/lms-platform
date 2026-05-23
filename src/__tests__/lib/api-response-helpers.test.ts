@@ -79,4 +79,25 @@ describe("jsonCached", () => {
     expect(res.headers.get("x-total")).toBe("42");
     expect(res.headers.get("vary")).toBe("Cookie");
   });
+
+  it("varyExtra: ['Authorization'] yields 'Cookie, Authorization'", () => {
+    const res = jsonCached({ ok: true }, { varyExtra: ["Authorization"] });
+    expect(res.headers.get("vary")).toBe("Cookie, Authorization");
+  });
+
+  it("varyExtra dedupes against Cookie and itself (case-insensitive)", () => {
+    const res = jsonCached(
+      { ok: true },
+      { varyExtra: ["cookie", "Authorization", "AUTHORIZATION", "X-Tenant-Id"] }
+    );
+    expect(res.headers.get("vary")).toBe("Cookie, Authorization, X-Tenant-Id");
+  });
+
+  it("caller-supplied Vary header trumps varyExtra (escape hatch)", () => {
+    const res = jsonCached(
+      { ok: true },
+      { varyExtra: ["Authorization"], headers: { Vary: "Accept-Language" } }
+    );
+    expect(res.headers.get("vary")).toBe("Accept-Language");
+  });
 });

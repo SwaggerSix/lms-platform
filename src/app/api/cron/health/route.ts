@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { checkCronHealth } from "@/lib/cron/monitor";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/cron/health
@@ -28,7 +29,12 @@ export async function GET(request: NextRequest) {
 
     const status = health.alerts.length > 0 ? "degraded" : "healthy";
 
-    return NextResponse.json(
+    // Short TTL so tab refreshes don't re-run the per-job cron_runs
+    // queries but a polling UI still sees fresh data within 10s.
+    // Vary includes Authorization (in addition to Cookie) because this
+    // endpoint accepts dual auth — session cookie OR CRON_SECRET
+    // bearer — and a cache must key on whichever identity is in play.
+    return jsonCached(
       {
         status,
         checked_at: new Date().toISOString(),
@@ -36,22 +42,7 @@ export async function GET(request: NextRequest) {
         alerts: health.alerts,
         alert_count: health.alerts.length,
       },
-      {
-        headers: {
-          // Alert state changes more often than config — short TTL so
-          // tab refreshes don't re-run the per-job cron_runs queries
-          // but a polling UI still sees fresh data within 10s. private
-          // (not shared) because the response includes user-visible
-          // alert details. Vary: Cookie is defense-in-depth against
-          // any future shared cache that ignores `private`.
-          "Cache-Control": "private, max-age=10, stale-while-revalidate=20",
-          // Cookie for session-authed admins; Authorization for the
-          // CRON_SECRET bearer path. Combined value tells caches to
-          // key on either header — never serve one user's response
-          // to a different identity.
-          Vary: "Cookie, Authorization",
-        },
-      }
+      { maxAge: 10, swr: 20, varyExtra: ["Authorization"] }
     );
   } catch (err) {
     console.error("Cron health check error:", err);

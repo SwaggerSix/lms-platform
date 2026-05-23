@@ -29,6 +29,12 @@ export interface MemberCompliance {
   progress: number;
 }
 
+// Distinct from the admin compliance ComplianceRequirement: this one
+// carries a precomputed Tailwind color class for the regulation chip
+// because the manager view renders regulation as a colored badge, where
+// the admin view renders it as plain text. Keeping the two types
+// separate (vs. unifying with optional fields) keeps the rendering
+// surface explicit on each page.
 export interface ComplianceRequirement {
   id: string;
   name: string;

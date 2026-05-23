@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createMarketplaceProviderSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     course_count: (p.course_count as any)?.[0]?.count || 0,
   }));
 
-  return NextResponse.json({ providers });
+  return jsonCached({ providers });
 }
 
 export async function POST(request: NextRequest) {

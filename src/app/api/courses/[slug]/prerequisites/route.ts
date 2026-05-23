@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { validateBody } from "@/lib/validations";
 import { z } from "zod";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 const addPrerequisiteSchema = z.object({
   prerequisite_course_id: z.string().uuid(),
@@ -82,7 +83,7 @@ export async function GET(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ course_id: courseId, prerequisites: data });
+  return jsonCached({ course_id: courseId, prerequisites: data });
 }
 
 export async function POST(

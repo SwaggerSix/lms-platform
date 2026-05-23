@@ -84,6 +84,15 @@ describe("GET cache-control audit (advisory)", () => {
 
     unclassified.sort();
 
+    // Ratchet: backlog can only shrink. The hard ceiling lives next to
+    // the snapshot so a regression that adds new unclassified GETs
+    // fails the assertion before the snapshot ever runs — clearer
+    // failure message than a diff. Lower this number each time the
+    // snapshot shrinks; once it hits 0 the ratchet stops being needed
+    // and the test can flip to `toEqual([])`.
+    const MAX_UNCLASSIFIED = 69;
+    expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower MAX_UNCLASSIFIED.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
+
     // Snapshot the current backlog. New GETs landing here force a
     // conscious choice; removing an endpoint from the list (because it
     // was classified) requires updating the snapshot in the same commit.
@@ -97,17 +106,10 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/analytics/snapshots/route.ts",
         "src/app/api/approvals/route.ts",
         "src/app/api/assessments/[id]/route.ts",
-        "src/app/api/auth/me/route.ts",
         "src/app/api/automation/rules/[id]/logs/route.ts",
         "src/app/api/automation/rules/[id]/route.ts",
-        "src/app/api/certificates/templates/route.ts",
-        "src/app/api/certificates/verify/[code]/route.ts",
         "src/app/api/chat/sessions/[id]/route.ts",
         "src/app/api/chat/sessions/route.ts",
-        "src/app/api/content-blocks/route.ts",
-        "src/app/api/content-templates/route.ts",
-        "src/app/api/courses/[slug]/prerequisites/route.ts",
-        "src/app/api/courses/[slug]/route.ts",
         "src/app/api/cron/compute-recommendations/route.ts",
         "src/app/api/cron/scheduled-reports/route.ts",
         "src/app/api/email/route.ts",
@@ -129,14 +131,11 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/integrations/external/[id]/route.ts",
         "src/app/api/integrations/external/route.ts",
         "src/app/api/integrations/video/route.ts",
-        "src/app/api/marketplace/providers/[id]/route.ts",
-        "src/app/api/marketplace/providers/route.ts",
         "src/app/api/mentorship/match/route.ts",
         "src/app/api/mentorship/profiles/[id]/route.ts",
         "src/app/api/mentorship/profiles/route.ts",
         "src/app/api/mentorship/requests/route.ts",
         "src/app/api/mentorship/sessions/route.ts",
-        "src/app/api/messages/route.ts",
         "src/app/api/microlearning/nuggets/[id]/route.ts",
         "src/app/api/microlearning/nuggets/route.ts",
         "src/app/api/microlearning/progress/route.ts",
@@ -147,14 +146,12 @@ describe("GET cache-control audit (advisory)", () => {
         "src/app/api/paths/[id]/route.ts",
         "src/app/api/profile/skills/route.ts",
         "src/app/api/search/route.ts",
-        "src/app/api/shop/cart/route.ts",
         "src/app/api/shop/coupons/route.ts",
         "src/app/api/shop/orders/[id]/route.ts",
         "src/app/api/shop/orders/route.ts",
         "src/app/api/shop/products/route.ts",
         "src/app/api/sso/check-domain/route.ts",
         "src/app/api/sso/route.ts",
-        "src/app/api/teams/manifest/route.ts",
         "src/app/api/tenants/[id]/branding/route.ts",
         "src/app/api/tenants/[id]/courses/route.ts",
         "src/app/api/tenants/[id]/members/route.ts",

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 
 /**
@@ -174,5 +175,5 @@ export async function GET(
     }).catch(() => {});
   }
 
-  return NextResponse.json(data);
+  return jsonCached(data);
 }

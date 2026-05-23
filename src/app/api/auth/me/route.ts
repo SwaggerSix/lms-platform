@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET() {
   // Verify the user is authenticated via their session cookie
@@ -26,5 +27,5 @@ export async function GET() {
     return NextResponse.json({ error: "Profile not found" }, { status: 404 });
   }
 
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }

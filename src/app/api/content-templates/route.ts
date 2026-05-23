@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { validateBody } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 const createTemplateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ templates: data });
+  return jsonCached({ templates: data });
 }
 
 export async function POST(request: NextRequest) {

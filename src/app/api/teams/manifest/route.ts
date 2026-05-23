@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/teams/manifest
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (err: any) {
     console.error("Error generating Teams manifest ZIP:", err);
-    return NextResponse.json(
+    return jsonCached(
       { error: "Failed to generate manifest package" },
       { status: 500 }
     );

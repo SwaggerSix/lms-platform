@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { generateCertificatePDF } from "@/lib/pdf/generate";
+import { jsonCached } from "@/lib/api/cached";
 
 // Public verification endpoint - NO auth required
 export async function GET(
@@ -104,7 +105,7 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({
+  return jsonCached({
     valid,
     status: statusText,
     learner_name: learnerName,

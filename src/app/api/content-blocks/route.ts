@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import { validateBody } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 const createBlockSchema = z.object({
   lesson_id: z.string().uuid(),
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ blocks: data });
+  return jsonCached({ blocks: data });
 }
 
 export async function POST(request: NextRequest) {

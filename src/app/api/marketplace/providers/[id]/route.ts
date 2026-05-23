@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, updateMarketplaceProviderSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin");
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .select("*, marketplace_courses!inner(provider_id)", { count: "exact", head: true })
     .eq("marketplace_courses.provider_id", id);
 
-  return NextResponse.json({
+  return jsonCached({
     ...data,
     stats: {
       total_courses: courseCount || 0,
