@@ -1,0 +1,30 @@
+name: Tests
+
+# Full Vitest run. Slower than conventions.yml; lives as a separate
+# workflow so PRs see both a fast convention check (under 10s) and a
+# complete check (~30s) as independent statuses.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Vitest
+        run: npm test

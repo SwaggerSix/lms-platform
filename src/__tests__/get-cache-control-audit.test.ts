@@ -14,15 +14,18 @@ function walkTs(dir: string): string[] {
 }
 
 /**
- * Enforced: every GET route handler under src/app/api/ must explicitly
- * choose a Cache-Control posture by returning through jsonCached,
- * jsonNoStore, or by setting a Cache-Control header on its
- * NextResponse.json call. Bare NextResponse.json in a GET inherits the
- * framework default and leaves cacheability ambiguous.
+ * Convention: every GET route handler under src/app/api/ must
+ * explicitly choose a Cache-Control posture — either route the
+ * response through jsonCached (cacheable read, 30s default + Vary:
+ * Cookie), jsonNoStore (user-mutable / live state), or set
+ * Cache-Control explicitly. A bare NextResponse.json in a GET
+ * inherits the framework default and leaves cacheability ambiguous.
  *
- * This was originally an advisory ratchet that allowed the legacy
- * backlog to drain over time. Backlog hit zero on 2026-05-23, so the
- * test now hard-fails on any unclassified GET.
+ * This test enforces the convention by walking every route.ts under
+ * src/app/api/ and failing if any GET body lacks one of the three
+ * markers. The detection helpers are mirrored in
+ * src/__tests__/lib/get-cache-control-scanner.test.ts where the
+ * regex behavior itself is unit-tested.
  */
 
 function extractGetBody(source: string): string | null {
@@ -54,9 +57,11 @@ function extractGetBody(source: string): string | null {
 }
 
 function isClassified(body: string): boolean {
+  // Word-boundary anchored so identifier prefixes (e.g. a hypothetical
+  // `jsonCachedThing(`) don't false-positive.
   return (
-    /jsonCached\(/.test(body) ||
-    /jsonNoStore\(/.test(body) ||
+    /\bjsonCached\(/.test(body) ||
+    /\bjsonNoStore\(/.test(body) ||
     /"Cache-Control"\s*:/.test(body)
   );
 }

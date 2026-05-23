@@ -42,8 +42,8 @@ function extractGetBody(source: string): string | null {
 
 function isClassified(body: string): boolean {
   return (
-    /jsonCached\(/.test(body) ||
-    /jsonNoStore\(/.test(body) ||
+    /\bjsonCached\(/.test(body) ||
+    /\bjsonNoStore\(/.test(body) ||
     /"Cache-Control"\s*:/.test(body)
   );
 }
@@ -106,18 +106,13 @@ describe("isClassified", () => {
     expect(isClassified(`return NextResponse.json(data);`)).toBe(false);
   });
 
-  it("identifier-prefix behavior is documented (current matcher is lax)", () => {
-    // The regex anchors on `jsonCached(` and `jsonNoStore(` literally —
-    // no word-boundary check on the left. `jsonCachedThing(` would NOT
-    // match because the trailing `(` is consumed by `jsonCached` so the
-    // overall regex (which expects `(`) fails. Pin both cases:
+  it("rejects identifier prefixes on both ends (word-boundary anchored)", () => {
+    // `\b` anchors prevent false positives from either side of the
+    // identifier. None of these should match.
     expect(isClassified(`return jsonCached(x);`)).toBe(true);
     expect(isClassified(`return jsonCachedThing();`)).toBe(false);
-    // A leading-prefix false positive (e.g. wherethejsonCached(...)) is
-    // also impossible because there's an identifier immediately before
-    // the `(` — the regex would match the substring `jsonCached(`
-    // contained within. That's a quirk we accept; route handlers don't
-    // contain such strings.
+    expect(isClassified(`return mYjsonCached(x);`)).toBe(false);
+    expect(isClassified(`return notJsonNoStore();`)).toBe(false);
   });
 });
 
