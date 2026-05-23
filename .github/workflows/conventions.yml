@@ -35,6 +35,12 @@ jobs:
         # check surfaces obvious mistakes first. Matches the local
         # `npm run check` flow that the pre-push hook uses.
         run: npm run lint
+      - name: Type check
+        # `tsc --noEmit` catches type-level regressions that lint
+        # doesn't (mostly TS-specific shape errors). Lives in
+        # conventions.yml as well as tests.yml so the fast pre-PR
+        # check fails on a type error too — same reasoning as lint.
+        run: npx tsc --noEmit
       - name: Run convention guardrails
         run: npm run test:conventions
       - name: Audit production dependencies (high+ severity)
