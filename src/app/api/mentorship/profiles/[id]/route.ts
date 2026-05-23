@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(
   request: NextRequest,
@@ -56,5 +57,5 @@ export async function GET(
     mentorReviews = revs ?? [];
   }
 
-  return NextResponse.json({ ...data, reviews: mentorReviews });
+  return jsonCached({ ...data, reviews: mentorReviews });
 }

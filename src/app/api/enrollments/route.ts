@@ -310,6 +310,9 @@ export async function POST(request: NextRequest) {
     entityType: "enrollment",
     entityId: data.id,
     newValues: { user_id: enrollmentData.user_id, course_id: validation.data.course_id },
+    // Attribute to the course's tenant — the enrollment row itself
+    // doesn't carry tenant_id, but the course does (joined above).
+    tenantId: (data as { course?: { tenant_id?: string } }).course?.tenant_id ?? undefined,
   });
 
   return jsonNoStore(data, { status: 201 });
@@ -344,7 +347,7 @@ export async function DELETE(request: NextRequest) {
   // IDOR fix: verify enrollment belongs to authenticated user or user is admin
   const { data: enrollment } = await service
     .from("enrollments")
-    .select("user_id")
+    .select("user_id, course:courses(tenant_id)")
     .eq("id", id)
     .single();
 
@@ -371,6 +374,9 @@ export async function DELETE(request: NextRequest) {
     action: "deleted",
     entityType: "enrollment",
     entityId: id,
+    // The enrollment row is gone, but the joined course tenant_id
+    // (fetched above) attributes the audit row to the right tenant.
+    tenantId: (enrollment as { course?: { tenant_id?: string } } | null)?.course?.tenant_id ?? undefined,
   });
 
   return jsonNoStore({ message: "Enrollment cancelled" });

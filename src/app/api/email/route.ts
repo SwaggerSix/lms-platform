@@ -14,6 +14,7 @@ import {
   type EmailTemplate,
 } from "@/lib/email/templates";
 import { sendEmail } from "@/lib/email/sender";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 type TemplateType =
   | "enrollment_confirmation"
@@ -218,7 +219,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error("Email template preview error:", err);
-    return NextResponse.json(
+    return jsonNoStore(
       { error: "Internal server error" },
       { status: 400 }
     );

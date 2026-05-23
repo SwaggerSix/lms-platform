@@ -3,6 +3,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { createServiceClient } from "@/lib/supabase/service";
 import { generateReport, type ReportType } from "@/lib/reports/generate";
 import { addDays, addMonths } from "date-fns";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // Vercel Cron: runs every hour
 export const dynamic = "force-dynamic";
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ message: "Reports processed", count: processed });
+  return jsonNoStore({ message: "Reports processed", count: processed });
 }
 
 function esc(val: unknown): string {

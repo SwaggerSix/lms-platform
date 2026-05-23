@@ -4,6 +4,7 @@ import {
   computeUserPreferences,
   computeCourseSimilarity,
 } from "@/lib/ai/recommendations";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 /**
  * GET /api/cron/compute-recommendations
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
 
   console.log("Recommendation cron completed:", results);
 
-  return NextResponse.json({
+  return jsonNoStore({
     success: true,
     ...results,
   });

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     console.error("Gamification API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data);
+  return jsonNoStore(data);
 }
 
 export async function POST(request: NextRequest) {

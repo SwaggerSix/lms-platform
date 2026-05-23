@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import ratchet from "./audit-ratchet.json";
 
 function walkTs(dir: string): string[] {
   const out: string[] = [];
@@ -15,18 +14,15 @@ function walkTs(dir: string): string[] {
 }
 
 /**
- * Advisory audit: every GET route handler should explicitly choose a
- * Cache-Control posture by returning through jsonCached, jsonNoStore,
- * or by setting a Cache-Control header on its NextResponse.json call.
- * Bare NextResponse.json in a GET inherits the framework default and
- * leaves cacheability ambiguous.
+ * Enforced: every GET route handler under src/app/api/ must explicitly
+ * choose a Cache-Control posture by returning through jsonCached,
+ * jsonNoStore, or by setting a Cache-Control header on its
+ * NextResponse.json call. Bare NextResponse.json in a GET inherits the
+ * framework default and leaves cacheability ambiguous.
  *
- * The scanner returns an "unclassified" list. ENFORCED endpoints have
- * been audited and should never regress; UNCLASSIFIED endpoints are
- * legacy GETs that haven't been triaged yet. The test passes as long
- * as the live set of unclassified endpoints matches the SNAPSHOT — so
- * any new GET route is forced through the choice up-front, but the
- * legacy backlog doesn't block CI.
+ * This was originally an advisory ratchet that allowed the legacy
+ * backlog to drain over time. Backlog hit zero on 2026-05-23, so the
+ * test now hard-fails on any unclassified GET.
  */
 
 function extractGetBody(source: string): string | null {
@@ -65,8 +61,8 @@ function isClassified(body: string): boolean {
   );
 }
 
-describe("GET cache-control audit (advisory)", () => {
-  it("reports the unclassified GET set so new GETs are forced to choose", () => {
+describe("GET cache-control audit (enforced)", () => {
+  it("every GET handler is classified — no bare NextResponse.json returns", () => {
     const files = walkTs(join(process.cwd(), "src/app/api"));
     const unclassified: string[] = [];
 
@@ -85,43 +81,9 @@ describe("GET cache-control audit (advisory)", () => {
 
     unclassified.sort();
 
-    // Ratchet: backlog can only shrink. The hard ceiling lives in
-    // audit-ratchet.json so updates show up as a single-line diff in
-    // PRs (rather than buried in a TS edit). Lower the number each
-    // time the snapshot shrinks; once it hits 0 the ratchet can be
-    // removed and this test can flip to `toEqual([])`.
-    const MAX_UNCLASSIFIED = ratchet.max_unclassified;
-    expect(unclassified.length, `Unclassified GET handlers: ${unclassified.length} (ceiling ${MAX_UNCLASSIFIED}). Classify the new endpoint via jsonCached/jsonNoStore or lower max_unclassified in audit-ratchet.json.`).toBeLessThanOrEqual(MAX_UNCLASSIFIED);
-
-    // Snapshot the current backlog. New GETs landing here force a
-    // conscious choice; removing an endpoint from the list (because it
-    // was classified) requires updating the snapshot in the same commit.
-    expect(unclassified).toMatchInlineSnapshot(`
-      [
-        "src/app/api/admin/lrs/route.ts",
-        "src/app/api/assessments/[id]/route.ts",
-        "src/app/api/automation/rules/[id]/logs/route.ts",
-        "src/app/api/automation/rules/[id]/route.ts",
-        "src/app/api/chat/sessions/[id]/route.ts",
-        "src/app/api/chat/sessions/route.ts",
-        "src/app/api/cron/compute-recommendations/route.ts",
-        "src/app/api/cron/scheduled-reports/route.ts",
-        "src/app/api/email/route.ts",
-        "src/app/api/embed/[token]/route.ts",
-        "src/app/api/feedback/cycles/[id]/nominations/route.ts",
-        "src/app/api/feedback/cycles/[id]/report/route.ts",
-        "src/app/api/gamification/route.ts",
-        "src/app/api/integrations/external/[id]/logs/route.ts",
-        "src/app/api/integrations/external/[id]/mappings/route.ts",
-        "src/app/api/integrations/video/route.ts",
-        "src/app/api/mentorship/match/route.ts",
-        "src/app/api/mentorship/profiles/[id]/route.ts",
-        "src/app/api/microlearning/nuggets/[id]/route.ts",
-        "src/app/api/paths/[id]/route.ts",
-        "src/app/api/xapi/activities/profile/route.ts",
-        "src/app/api/xapi/activities/state/route.ts",
-        "src/app/api/xapi/statements/route.ts",
-      ]
-    `);
+    expect(
+      unclassified,
+      `Found unclassified GET handlers. Each must return via jsonCached / jsonNoStore or set Cache-Control explicitly: ${JSON.stringify(unclassified, null, 2)}`
+    ).toEqual([]);
   });
 });

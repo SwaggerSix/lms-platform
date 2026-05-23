@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
   }
 
   const stateIds = (data || []).map((d) => d.state_id);
-  return NextResponse.json(stateIds, {
+  return jsonNoStore(stateIds, {
     headers: { "X-Experience-API-Version": "1.0.3" },
   });
 }

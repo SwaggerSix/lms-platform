@@ -35,7 +35,7 @@ export async function GET(
     .order("created_at", { ascending: false })
     .limit(50);
 
-  return NextResponse.json({ rule, logs: logs ?? [] });
+  return jsonNoStore({ rule, logs: logs ?? [] });
 }
 
 // POST: Manually trigger rule execution for all matching users

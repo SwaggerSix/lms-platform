@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 function corsHeaders(origin: string | null, allowedDomains: string[]) {
   // If no domains configured, allow all
@@ -124,5 +125,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
   }
 
-  return NextResponse.json(widgetData, { headers });
+  return jsonNoStore(widgetData, { headers });
 }

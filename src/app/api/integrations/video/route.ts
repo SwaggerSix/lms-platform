@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { encryptSecret } from "@/lib/integrations/video-conferencing";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/integrations/video
@@ -38,7 +39,7 @@ export async function GET() {
     updated_at: row.updated_at,
   }));
 
-  return NextResponse.json({ integrations });
+  return jsonCached({ integrations });
 }
 
 /**

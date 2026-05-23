@@ -33,7 +33,7 @@ export async function GET() {
     has_token: !!token_encrypted,
   }));
 
-  return NextResponse.json({ configurations: sanitized });
+  return jsonNoStore({ configurations: sanitized });
 }
 
 /**

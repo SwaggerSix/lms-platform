@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to query statements" }, { status: 500 });
   }
 
-  return NextResponse.json(
+  return jsonNoStore(
     {
       statements: data,
       total: count,

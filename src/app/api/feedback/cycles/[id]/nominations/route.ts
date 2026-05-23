@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ nominations: data });
+  return jsonNoStore({ nominations: data });
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:conventions": "vitest run src/__tests__/get-cache-control-audit.test.ts src/__tests__/mutation-no-store-convention.test.ts src/__tests__/audit-action-conventions.test.ts src/__tests__/no-compliance-requirements-queries.test.ts src/__tests__/supabase-pending-empty.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",

@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 // GET: Get execution logs for a rule with pagination
 export async function GET(
@@ -48,7 +49,7 @@ export async function GET(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({
+  return jsonNoStore({
     logs: data ?? [],
     total: count ?? 0,
     page,

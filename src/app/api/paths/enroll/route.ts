@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   // Verify the path exists and is published
   const { data: path, error: pathError } = await service
     .from("learning_paths")
-    .select("id, title")
+    .select("id, title, tenant_id")
     .eq("id", path_id)
     .eq("status", "published")
     .single();
@@ -129,6 +129,10 @@ export async function POST(request: NextRequest) {
     entityType: "learning_path_enrollment",
     entityId: enrollment.id,
     newValues: { path_id, path_title: path.title },
+    // Attribute to the path's tenant rather than the enrolling
+    // learner's — super_admin cross-tenant enrolls otherwise tag
+    // the wrong tenant's audit log.
+    tenantId: (path as { tenant_id?: string }).tenant_id ?? undefined,
   });
 
   return jsonNoStore({ data: enrollment }, { status: 201 });

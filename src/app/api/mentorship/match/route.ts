@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { findBestMentors } from "@/lib/mentorship/matching";
+import { jsonNoStore } from "@/lib/api/no-store";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -18,6 +19,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ matches });
   } catch (err) {
     console.error("Mentor matching error:", err);
-    return NextResponse.json({ error: "Failed to find matches" }, { status: 500 });
+    return jsonNoStore({ error: "Failed to find matches" }, { status: 500 });
   }
 }

@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   }
 
   const profileIds = (data || []).map((d) => d.profile_id);
-  return NextResponse.json(profileIds, {
+  return jsonNoStore(profileIds, {
     headers: { "X-Experience-API-Version": "1.0.3" },
   });
 }

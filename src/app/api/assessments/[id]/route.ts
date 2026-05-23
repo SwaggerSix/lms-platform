@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(
   request: NextRequest,
@@ -38,5 +39,5 @@ export async function GET(
     }));
   }
 
-  return NextResponse.json(data);
+  return jsonCached(data);
 }

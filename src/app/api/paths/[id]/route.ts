@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(
   request: NextRequest,
@@ -28,5 +29,5 @@ export async function GET(
     return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  return jsonCached(data);
 }

@@ -346,3 +346,56 @@ describe("getRequiredCourseSources", () => {
     ]);
   });
 });
+
+describe("end-to-end: tenant scope + role/org match", () => {
+  function makeService(rows: unknown[]) {
+    const chain = {
+      select: () => chain,
+      neq: () => Promise.resolve({ data: rows, error: null }),
+    };
+    return { from: () => chain } as unknown as Parameters<typeof getRequiredCourseSources>[0];
+  }
+
+  it("scope filter then role match yields exactly the matching course", async () => {
+    const rows = [
+      { id: "c1", title: "OSHA 101", metadata: { required_for: { roles: ["learner"], organization_ids: ["org-A"] } } },
+      // c2 is in scope but applies to managers, not learners.
+      { id: "c2", title: "Manager Training", metadata: { required_for: { roles: ["manager"], organization_ids: ["org-A"] } } },
+      // c3 matches role but is outside the tenant scope.
+      { id: "c3", title: "HR All-Hands", metadata: { required_for: { roles: ["learner"], organization_ids: ["org-B"] } } },
+      // c4 has no required_for — should never appear.
+      { id: "c4", title: "Optional Course", metadata: {} },
+    ];
+    const scoped = await getTenantScopedRequiredCourseSources(makeService(rows), {
+      courseIds: ["c1", "c2"],
+    });
+    expect(scoped.map((s) => s.courseId).sort()).toEqual(["c1", "c2"]);
+
+    const learner = { role: "learner", organization_id: "org-A" };
+    const matching = scoped.filter((s) =>
+      userMatchesRequiredFor(
+        { roles: s.applicableRoles, organization_ids: s.applicableOrgIds, is_mandatory: true },
+        learner
+      )
+    );
+    expect(matching.map((s) => s.courseId)).toEqual(["c1"]);
+  });
+
+  it("empty role list on a course is a wildcard — matches any learner in scope", async () => {
+    const rows = [
+      { id: "c1", title: "All Hands", metadata: { required_for: { roles: [], organization_ids: ["org-A"] } } },
+      { id: "c2", title: "Mgr Only", metadata: { required_for: { roles: ["manager"], organization_ids: ["org-A"] } } },
+    ];
+    const sources = await getTenantScopedRequiredCourseSources(makeService(rows), {
+      courseIds: ["c1", "c2"],
+    });
+    const learner = { role: "learner", organization_id: "org-A" };
+    const matching = sources.filter((s) =>
+      userMatchesRequiredFor(
+        { roles: s.applicableRoles, organization_ids: s.applicableOrgIds, is_mandatory: true },
+        learner
+      )
+    );
+    expect(matching.map((s) => s.courseId)).toEqual(["c1"]);
+  });
+});
