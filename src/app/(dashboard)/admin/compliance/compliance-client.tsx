@@ -86,7 +86,9 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'view' | 'edit' | 'create'>('view');
+  // Create mode now redirects to /admin/courses (where required training
+  // actually lives); only view and edit remain on this page.
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
   const [selectedReq, setSelectedReq] = useState<ComplianceRequirement | null>(null);
   const [formData, setFormData] = useState<ComplianceFormData>({
     name: '',
@@ -385,13 +387,13 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
         </table>
       </div>
 
-      {/* View/Edit/Create Modal */}
-      {modalOpen && (selectedReq || modalMode === 'create') && (
+      {/* View/Edit Modal */}
+      {modalOpen && selectedReq && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-xl rounded-xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">
-                {modalMode === 'view' ? 'Requirement Details' : modalMode === 'create' ? 'Add Compliance Requirement' : 'Edit Requirement'}
+                {modalMode === 'view' ? 'Requirement Details' : 'Edit Requirement'}
               </h2>
               <div className="flex items-center gap-2">
                 {modalMode === 'view' && (
@@ -572,7 +574,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {modalMode === 'create' ? 'Create Requirement' : 'Save Changes'}
+                    Save Changes
                   </button>
                 </div>
               </form>

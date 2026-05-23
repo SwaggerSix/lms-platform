@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 // GET: List all workflows (admin only)
 export async function GET(request: NextRequest) {
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ workflows: data ?? [] });
+  return jsonCached({ workflows: data ?? [] });
 }
 
 // POST: Create a new workflow (admin only)

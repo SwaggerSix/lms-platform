@@ -20,6 +20,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import GlobalSearch from "@/components/layout/global-search";
 import { RelativeTime } from "@/components/ui/relative-time";
+import { RelativeTimeProvider } from "@/components/ui/relative-time-context";
 import type { Notification } from "@/types/database";
 
 function generateBreadcrumbs(pathname: string) {
@@ -225,6 +226,10 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                   Mark all read
                 </button>
               </div>
+              {/* RelativeTimeProvider folds the N per-row intervals into one
+                  shared tick — important when 10 notifications each used to
+                  spin their own setInterval. */}
+              <RelativeTimeProvider>
               <div className="max-h-80 overflow-y-auto" role="list">
                 {notifications.slice(0, 10).map((notif) => {
                   const body = (
@@ -289,6 +294,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                   );
                 })}
               </div>
+              </RelativeTimeProvider>
               <div className="border-t border-gray-100 px-4 py-2">
                 <Link
                   href="/notifications"

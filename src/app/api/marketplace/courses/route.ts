@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { jsonCached } from "@/lib/api/cached";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     user_enrollment: enrollmentMap[c.id] || null,
   }));
 
-  return NextResponse.json({
+  return jsonCached({
     courses,
     total: count,
     page,

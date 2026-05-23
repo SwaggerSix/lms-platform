@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ cycles: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
+  return jsonNoStore({ cycles: data, total: count, page, totalPages: Math.ceil((count || 0) / limit) });
 }
 
 export async function POST(request: NextRequest) {

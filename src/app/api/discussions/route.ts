@@ -5,6 +5,7 @@ import { validateBody, createDiscussionSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 /**
  * GET /api/discussions
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return NextResponse.json({
+  return jsonCached({
     threads: threadsWithCounts,
     total: count ?? 0,
     page,

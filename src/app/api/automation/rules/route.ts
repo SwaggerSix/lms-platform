@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { jsonCached } from "@/lib/api/cached";
 
 const ruleActionSchema = z.object({
   type: z.enum(["enroll_course", "enroll_path", "assign_badge", "send_notification"]),
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ rules: data ?? [] });
+  return jsonCached({ rules: data ?? [] });
 }
 
 // POST: Create new rule (admin only)
