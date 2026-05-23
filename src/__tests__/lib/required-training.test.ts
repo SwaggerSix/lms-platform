@@ -4,7 +4,6 @@ import {
   recertificationTier,
   userMatchesRequiredFor,
   getRequiredCourseSources,
-  getTenantScopedRequiredCourseSources,
 } from "@/lib/courses/required-training";
 
 describe("readRequiredFor", () => {
@@ -298,33 +297,6 @@ describe("getRequiredCourseSources", () => {
     await expect(getRequiredCourseSources(erroringService)).resolves.toEqual([]);
   });
 
-  it("tenant-scoped wrapper: null scope returns every source (admin)", async () => {
-    const service = makeService([
-      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
-      { id: "c2", title: "T2", metadata: { required_for: { roles: ["learner"] } } },
-    ]);
-    const out = await getTenantScopedRequiredCourseSources(service, null);
-    expect(out.map((s) => s.courseId).sort()).toEqual(["c1", "c2"]);
-  });
-
-  it("tenant-scoped wrapper: filters to scope.courseIds", async () => {
-    const service = makeService([
-      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
-      { id: "c2", title: "T2", metadata: { required_for: { roles: ["learner"] } } },
-      { id: "c3", title: "T3", metadata: { required_for: { roles: ["learner"] } } },
-    ]);
-    const out = await getTenantScopedRequiredCourseSources(service, { courseIds: ["c1", "c3"] });
-    expect(out.map((s) => s.courseId).sort()).toEqual(["c1", "c3"]);
-  });
-
-  it("tenant-scoped wrapper: empty scope returns empty array", async () => {
-    const service = makeService([
-      { id: "c1", title: "T1", metadata: { required_for: { roles: ["learner"] } } },
-    ]);
-    const out = await getTenantScopedRequiredCourseSources(service, { courseIds: [] });
-    expect(out).toEqual([]);
-  });
-
   it("mandatory defaults to true unless explicitly false", async () => {
     const out = await getRequiredCourseSources(
       makeService([
@@ -366,9 +338,11 @@ describe("end-to-end: tenant scope + role/org match", () => {
       // c4 has no required_for — should never appear.
       { id: "c4", title: "Optional Course", metadata: {} },
     ];
-    const scoped = await getTenantScopedRequiredCourseSources(makeService(rows), {
-      courseIds: ["c1", "c2"],
-    });
+    // Mirrors what /learn/recommendations does inline: fetch all
+    // sources, then filter by (scope courseIds) AND (role/org match).
+    const all = await getRequiredCourseSources(makeService(rows));
+    const inScope = new Set(["c1", "c2"]);
+    const scoped = all.filter((s) => inScope.has(s.courseId));
     expect(scoped.map((s) => s.courseId).sort()).toEqual(["c1", "c2"]);
 
     const learner = { role: "learner", organization_id: "org-A" };
@@ -386,9 +360,7 @@ describe("end-to-end: tenant scope + role/org match", () => {
       { id: "c1", title: "All Hands", metadata: { required_for: { roles: [], organization_ids: ["org-A"] } } },
       { id: "c2", title: "Mgr Only", metadata: { required_for: { roles: ["manager"], organization_ids: ["org-A"] } } },
     ];
-    const sources = await getTenantScopedRequiredCourseSources(makeService(rows), {
-      courseIds: ["c1", "c2"],
-    });
+    const sources = await getRequiredCourseSources(makeService(rows));
     const learner = { role: "learner", organization_id: "org-A" };
     const matching = sources.filter((s) =>
       userMatchesRequiredFor(

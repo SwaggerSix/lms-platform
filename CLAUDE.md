@@ -62,6 +62,21 @@ playbook (scanner unit test → codebase-walk advisory → ratchet →
 enforce). See `src/lib/audit-log/scan-action-literals.ts` and
 `src/__tests__/lib/scan-action-literals.test.ts` for the template.
 
+Convention tests that walk the source tree use `walkFiles` from
+`@/lib/testing/walk`:
+
+```ts
+import { walkFiles } from "@/lib/testing/walk";
+const files = walkFiles(join(process.cwd(), "src/app/api"));
+```
+
+Don't roll a new recursive walker inside an individual test — the
+shared helper standardizes the exclusion semantics (skip
+`node_modules` + dotfiles by default) and accepts an `extensions`
+override for `.tsx`-inclusive scans. New convention tests should
+land their file under `src/__tests__/conventions/` so they pick up
+the test:conventions glob automatically.
+
 ## Optional local hooks
 
 Two install paths, pick whichever you prefer; both invoke the same

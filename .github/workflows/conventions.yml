@@ -30,6 +30,11 @@ jobs:
         # which catches half-committed dependency changes (someone ran
         # `npm install <pkg>` but only committed package.json).
         run: npm ci
+      - name: Lint
+        # Run before the convention bundle so the cheaper / fail-fast
+        # check surfaces obvious mistakes first. Matches the local
+        # `npm run check` flow that the pre-push hook uses.
+        run: npm run lint
       - name: Run convention guardrails
         run: npm run test:conventions
       - name: Audit production dependencies (high+ severity)

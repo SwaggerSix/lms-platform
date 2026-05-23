@@ -14,6 +14,7 @@ import { join } from "node:path";
  */
 
 const HOOK_PATH = join(process.cwd(), ".githooks", "pre-commit");
+const PRE_PUSH_PATH = join(process.cwd(), ".githooks", "pre-push");
 
 describe("pre-commit hook", () => {
   it("exists at .githooks/pre-commit", () => {
@@ -49,5 +50,32 @@ describe("pre-commit hook", () => {
     const cmd = pkg.scripts?.["install-hooks"] ?? "";
     expect(cmd).toContain("core.hooksPath");
     expect(cmd).toContain(".githooks");
+  });
+});
+
+describe("pre-push hook", () => {
+  it("exists at .githooks/pre-push", () => {
+    expect(existsSync(PRE_PUSH_PATH)).toBe(true);
+  });
+
+  it("is executable", () => {
+    const mode = statSync(PRE_PUSH_PATH).mode;
+    // eslint-disable-next-line no-bitwise
+    expect((mode & 0o111) !== 0).toBe(true);
+  });
+
+  it("invokes `npm run check` (lint + conventions)", () => {
+    const source = readFileSync(PRE_PUSH_PATH, "utf8");
+    expect(source).toContain("npm run check");
+  });
+
+  it("has a shebang", () => {
+    const source = readFileSync(PRE_PUSH_PATH, "utf8");
+    expect(source.startsWith("#!")).toBe(true);
+  });
+
+  it("uses `set -e` so a failing check propagates", () => {
+    const source = readFileSync(PRE_PUSH_PATH, "utf8");
+    expect(source).toMatch(/^set -e/m);
   });
 });
