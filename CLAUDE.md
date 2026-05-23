@@ -62,13 +62,21 @@ playbook (scanner unit test → codebase-walk advisory → ratchet →
 enforce). See `src/lib/audit-log/scan-action-literals.ts` and
 `src/__tests__/lib/scan-action-literals.test.ts` for the template.
 
-## Optional local pre-commit hook
+## Optional local hooks
 
-Run `npm run install-hooks` once to point Git at `.githooks/`. The
-`pre-commit` script runs `npm run test:conventions` (~5s) and blocks
-the commit if a guardrail fires. The CI workflow runs the same
-guardrails on every PR, so the local hook is purely for fast
-feedback.
+Two install paths, pick whichever you prefer; both invoke the same
+underlying commands.
+
+- **Native git hooks (no devDep)**: `npm run install-hooks` points
+  `core.hooksPath` at `.githooks/`. `pre-commit` runs
+  `npm run test:conventions` (~5s); `pre-push` runs `npm run check`
+  (lint + conventions).
+- **Lefthook**: `npx lefthook install` reads `lefthook.yml`. Same
+  pair of commands wired up; useful if you already have lefthook on
+  your path.
+
+The CI workflow runs the same guardrails on every PR, so the local
+hooks are purely for fast feedback.
 
 ### Bypass policy
 

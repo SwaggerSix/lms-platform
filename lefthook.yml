@@ -1,0 +1,18 @@
+# Optional lefthook configuration. Equivalent to .githooks/ but
+# usable for contributors who prefer lefthook's parallel execution,
+# globbing, and per-file granularity.
+#
+# Install once with `npx lefthook install` (devDep not committed —
+# add it locally with `npm install -g @evilmartians/lefthook`).
+# .githooks/ remains the no-dependency default; this file is a
+# convenience for users who already have lefthook on their path.
+
+pre-commit:
+  commands:
+    conventions:
+      run: npm run test:conventions
+
+pre-push:
+  commands:
+    check:
+      run: npm run check

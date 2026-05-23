@@ -24,7 +24,7 @@ const FORBIDDEN_RE = /tenant_id\.eq\.[^,]+,tenant_id\.is\.null/;
 
 const ALLOWED = new Set<string>([
   "src/lib/audit-log/build-query-filter.ts",
-  "src/__tests__/no-inline-tenant-or-filter.test.ts",
+  "src/__tests__/conventions/no-inline-tenant-or-filter.test.ts",
 ]);
 
 describe("no inline tenant_id .or() filter literals", () => {

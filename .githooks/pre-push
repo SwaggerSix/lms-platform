@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+# Pre-push hook: run lint + the convention guardrails. Catches issues
+# that slipped past pre-commit (forgotten install, bypassed with
+# --no-verify, multiple commits accumulating before push).
+#
+# Bypass via `git push --no-verify` when intentionally pushing a
+# branch that needs the snapshot updated upstream.
+
+set -e
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "[pre-push] npm not on PATH; skipping check." >&2
+  exit 0
+fi
+
+npm run check --silent

@@ -31,7 +31,7 @@ describe("compliance_requirements table is no longer queried", () => {
     const offenders: Array<{ file: string; line: number; snippet: string }> = [];
     // The guardrail test itself naturally contains the patterns it's
     // looking for. Skip self-reference.
-    const SELF = "src/__tests__/no-compliance-requirements-queries.test.ts";
+    const SELF = "src/__tests__/conventions/no-compliance-requirements-queries.test.ts";
 
     for (const file of files) {
       if (file.endsWith(SELF)) continue;
