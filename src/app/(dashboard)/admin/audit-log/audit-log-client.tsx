@@ -41,6 +41,8 @@ export interface AuditLogClientProps {
   rowLimit?: number;
   /** Exact row count from the audit_logs query (with the same tenant filter applied). May exceed rowLimit. */
   totalRowCount?: number;
+  /** Resolved tenant scope for the current view (from resolveAuditLogTenant). Forwarded as x-tenant-id on the namespaces fetch so its counts match the visible rows. */
+  scopedTenantId?: string | null;
 }
 
 const actionColors: Record<string, string> = {
@@ -74,6 +76,7 @@ export default function AuditLogClient({
   initialActionFilter = "All",
   rowLimit,
   totalRowCount,
+  scopedTenantId,
 }: AuditLogClientProps) {
   const truncated =
     rowLimit != null && totalRowCount != null && totalRowCount > rowLimit;
@@ -95,7 +98,12 @@ export default function AuditLogClient({
   // counts reflect only tenant-scoped activity — accurate either way.
   useEffect(() => {
     const qs = initialHidePlatform || hidePlatform ? "?hide_platform=true" : "";
-    fetch(`/api/admin/audit-log-namespaces${qs}`)
+    // Forward the page's resolved tenant via x-tenant-id so the
+    // namespaces endpoint scopes its counts to the same rows the
+    // table renders. Endpoint silently ignores a malformed header,
+    // so we don't have to guard here.
+    const headers: HeadersInit = scopedTenantId ? { "x-tenant-id": scopedTenantId } : {};
+    fetch(`/api/admin/audit-log-namespaces${qs}`, { headers })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (json?.namespaces) setRemoteNamespaces(json.namespaces);

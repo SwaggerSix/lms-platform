@@ -78,6 +78,26 @@ describe("logAudit tenantId passthrough", () => {
     expect(inserted[0].tenant_id).toBeNull();
   });
 
+  it("drops a malformed tenantId and falls back to null", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const { logAudit } = await import("@/lib/audit");
+      await logAudit({
+        action: "created",
+        entityType: "course",
+        entityId: "c1",
+        tenantId: "not-a-uuid",
+      });
+      expect(inserted).toHaveLength(1);
+      expect(inserted[0].tenant_id).toBeNull();
+      expect(warnSpy).toHaveBeenCalled();
+      const msg = warnSpy.mock.calls[0]?.[0] as string;
+      expect(msg).toContain("not-a-uuid");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
   it("forwards every standard field to the insert payload", async () => {
     const { logAudit } = await import("@/lib/audit");
     await logAudit({

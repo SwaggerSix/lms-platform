@@ -26,6 +26,9 @@ jobs:
           node-version: "20"
           cache: "npm"
       - name: Install dependencies
+        # `npm ci` fails if package.json and package-lock.json disagree,
+        # which catches half-committed dependency changes (someone ran
+        # `npm install <pkg>` but only committed package.json).
         run: npm ci
       - name: Run convention guardrails
         run: npm run test:conventions

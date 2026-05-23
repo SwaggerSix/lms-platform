@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { isValidAuditAction } from "@/lib/audit-log/action-convention";
+import { isUuid } from "@/lib/validate-uuid";
 
 export interface AuditLogParams {
   userId?: string;
@@ -49,6 +50,19 @@ export async function logAudit(params: AuditLogParams): Promise<void> {
       `[audit] non-conformant action "${params.action}" for entity_type ${params.entityType}. Convention: legacy verb or dotted namespace.`
     );
   }
+  // Reject a malformed explicit tenantId outright — passing e.g. a
+  // column expression instead of a UUID would otherwise hit Postgres
+  // and fail the insert (or, worse, succeed with garbage attribution).
+  // Treat as if no tenantId was passed so the DB trigger fills it.
+  let safeTenantId: string | null = params.tenantId ?? null;
+  if (safeTenantId !== null && !isUuid(safeTenantId)) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[audit] malformed tenantId "${safeTenantId}" — dropping; falling back to the DB trigger's actor→org lookup.`
+      );
+    }
+    safeTenantId = null;
+  }
   try {
     const service = createServiceClient();
     const { error } = await service.from("audit_logs").insert({
@@ -59,7 +73,7 @@ export async function logAudit(params: AuditLogParams): Promise<void> {
       old_values: params.oldValues ?? null,
       new_values: params.newValues ?? null,
       ip_address: params.ipAddress ?? null,
-      tenant_id: params.tenantId ?? null,
+      tenant_id: safeTenantId,
     });
     if (error) console.error("Audit log failed:", error.message);
   } catch (err) {

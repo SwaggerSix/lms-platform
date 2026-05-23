@@ -139,6 +139,7 @@ export default async function AuditLogPage() {
       initialActionFilter={initialActionFilter}
       rowLimit={ROW_LIMIT}
       totalRowCount={totalRowCount ?? entries.length}
+      scopedTenantId={tenantId}
     />
   );
 }

@@ -23,6 +23,7 @@ jobs:
           node-version: "20"
           cache: "npm"
       - name: Install dependencies
+        # `npm ci` errors when the lockfile disagrees with package.json.
         run: npm ci
       - name: Type check
         run: npx tsc --noEmit
