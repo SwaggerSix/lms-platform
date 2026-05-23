@@ -1,0 +1,31 @@
+name: Conventions
+
+# Fast guardrail check that runs on every PR. The convention tests
+# (cache-control audit, mutation no-store, audit-action naming,
+# compliance-requirements ban, supabase/pending emptiness, scanner /
+# runtime-guard unit tests) take under 5s to execute and catch
+# regressions that would otherwise hide in the full Vitest run.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # Cancel superseded runs on the same branch; nothing here mutates state.
+  group: conventions-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conventions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run convention guardrails
+        run: npm run test:conventions
