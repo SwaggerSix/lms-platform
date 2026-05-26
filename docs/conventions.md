@@ -23,7 +23,9 @@ glob auto-picks up new files in that directory.
 | `testing-helpers-scope` | Production code must not import from `src/lib/testing/`. |
 | `docs-footprint` | Top-level `.md`, `docs/`, and `docs/archived/` listings are snapshotted; active and archived sets must be disjoint. |
 | `scripts-footprint` | `scripts/` directory listing is snapshotted so ad-hoc helpers surface in PR review. |
+| `scripts-headers` | Every script under `scripts/` opens with a JSDoc header containing a `Run:` / `Run with:` / `Usage:` invocation. |
 | `env-example` | Snapshots variable names declared in `.env.local.example`; a new env read should ship with an example entry. |
+| `setup-contents` | Snapshots `src/__tests__/setup.ts`; changes affect every test so they surface in PR review. |
 | `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |

@@ -40,6 +40,8 @@ describe("conventions directory", () => {
         "pre-push-branch-skip.test.ts",
         "prod-gate-warnings.test.ts",
         "scripts-footprint.test.ts",
+        "scripts-headers.test.ts",
+        "setup-contents.test.ts",
         "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",
         "supabase-tree.test.ts",

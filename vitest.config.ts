@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
-    globals: true,
+    // No globals — every test file imports describe/it/expect/vi
+    // from "vitest" explicitly. Keeps the test surface explicit
+    // and matches what the convention-suite scanner tests assume.
     setupFiles: ["./src/__tests__/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {

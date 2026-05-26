@@ -26,7 +26,6 @@ describe("supabase/ tree", () => {
     expect(entries).toMatchInlineSnapshot(`
       [
         "TENANT_SCHEMA_AUDIT.md",
-        "combined_migrations.sql",
         "migrations/",
         "pending/",
       ]
