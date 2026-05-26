@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateTenantSchema } from "@/lib/validations";
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const service = createServiceClient();
 
   // Admin or tenant member can view
-  if (auth.user.role !== "admin") {
+  if (!isAdmin(auth.user.role)) {
     const access = await verifyTenantAccess(auth.user.id, id);
     if (!access) return NextResponse.json({ error: "Not a member of this tenant" }, { status: 403 });
   }
@@ -59,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!auth.authorized) return jsonNoStore({ error: auth.error }, { status: auth.status });
 
   // Only admin or tenant owner/admin can update
-  if (auth.user.role !== "admin") {
+  if (!isAdmin(auth.user.role)) {
     const access = await verifyTenantAccess(auth.user.id, id, ["owner", "admin"]);
     if (!access) return jsonNoStore({ error: "Insufficient permissions" }, { status: 403 });
   }

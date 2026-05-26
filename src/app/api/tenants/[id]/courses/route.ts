@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const service = createServiceClient();
 
   // Verify membership
-  if (auth.user.role !== "admin") {
+  if (!isAdmin(auth.user.role)) {
     const { data: membership } = await service
       .from("tenant_memberships")
       .select("id")

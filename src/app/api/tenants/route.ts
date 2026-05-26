@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   const offset = (page - 1) * limit;
 
   // Admins see all tenants; others see only their memberships
-  if (auth.user.role === "admin") {
+  if (isAdmin(auth.user.role)) {
     const search = searchParams.get("search");
     const status = searchParams.get("status");
     let query = service

@@ -39,6 +39,7 @@ glob auto-picks up new files in that directory.
 | `super-admin-omission-audit` | Enforces no `["admin", "manager"].includes(role)` sites that silently exclude super_admin. (Retired ratchet — hit zero 2026-05-29; now a hard assertion.) |
 | `admin-array-form-audit` | Enforces no `["admin", "super_admin"].includes(role)` array-form admin gates; use `isAdmin(role)`. Hard assertion (single offender migrated 2026-05-29). |
 | `manager-equality-omission-audit` | Enforces no equality-form manager-or-above gates (`role === "admin" \|\| role === "manager"`) that omit super_admin; use `isManagerOrAbove(role)`. Hard assertion (7 offenders migrated 2026-05-29). |
+| `admin-equality-omission-audit` | Advisory ratchet: bare single-role `.role === "admin"` gates that omit super_admin. Caps the count; migrate to `isAdmin(role)` where super_admin should pass (some sites differentiate admin/super_admin on purpose). |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |

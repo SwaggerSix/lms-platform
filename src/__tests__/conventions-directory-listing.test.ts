@@ -22,6 +22,7 @@ describe("conventions directory", () => {
     expect(files).toMatchInlineSnapshot(`
       [
         "admin-array-form-audit.test.ts",
+        "admin-equality-omission-audit.test.ts",
         "audit-action-conventions.test.ts",
         "audit-tenant-id-coverage.test.ts",
         "badge-urls.test.ts",

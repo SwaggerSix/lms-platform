@@ -18,6 +18,13 @@
  *   or `role !== "admin" && role !== "manager"`. Same super_admin
  *   omission as the array form; should use `isManagerOrAbove(role)`.
  *   Drives manager-equality-omission-audit.
+ * - ADMIN_EQUALITY_OMISSION_RE: matches a bare single-role
+ *   `.role === "admin"` / `.role !== "admin"` admin gate. Often a
+ *   super_admin lockout (super_admin should pass an admin gate),
+ *   but NOT always — some sites differentiate admin from
+ *   super_admin deliberately (e.g. tenant-scope resolution).
+ *   Advisory only; drives admin-equality-omission-audit (a
+ *   shrinking ratchet, not a hard assertion).
  *
  * Both are intentionally narrow: false negatives are acceptable
  * (the helpers `isAdmin` / `isManagerOrAbove` are the migration
@@ -33,6 +40,8 @@
  *     (ADMIN_SUPER_ADMIN_INCLUDES_RE)
  *   - src/__tests__/lib/manager-equality-omission-smoke.test.ts
  *     (MANAGER_EQUALITY_OMISSION_RE)
+ *   - src/__tests__/lib/admin-equality-omission-smoke.test.ts
+ *     (ADMIN_EQUALITY_OMISSION_RE)
  */
 
 export const INEQUALITY_ROLE_RE =
@@ -45,3 +54,5 @@ export const ADMIN_SUPER_ADMIN_INCLUDES_RE =
 
 export const MANAGER_EQUALITY_OMISSION_RE =
   /role\s*===\s*"admin"\s*\|\|\s*[A-Za-z_.\s]*role\s*===\s*"manager"|role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"manager"/;
+
+export const ADMIN_EQUALITY_OMISSION_RE = /\.role\s*(?:===|!==)\s*"admin"/;

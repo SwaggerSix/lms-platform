@@ -6,6 +6,20 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Tenant-management super_admin lockouts fixed; bare-admin
+  surface put under an advisory ratchet.** The `/api/tenants`
+  cluster (`route`, `[id]`, `[id]/branding`, `[id]/courses`,
+  `[id]/members`, `[id]/invite`) used bare `auth.user.role !==
+  "admin"` checks that forced a platform super_admin through the
+  per-tenant membership path — migrated to `isAdmin(role)`. The
+  remaining bare `.role === "admin"` sites (mentorship, assessments,
+  xapi, analytics/alerts, etc.) are now snapshotted by the advisory
+  `admin-equality-omission-audit` (ceiling 11); some differentiate
+  admin from super_admin on purpose (`audit-log/resolve-tenant.ts`
+  is whitelisted), so migration is per-site. Added
+  `ADMIN_EQUALITY_OMISSION_RE` + smoke test. The auth README now
+  carries a bug-class table covering all five inline role-gate
+  shapes.
 - **Two more super_admin-omission shapes closed + guardrailed.**
   The array form `["admin", "super_admin"].includes(role)` (1 site,
   `/admin/evaluations`) and the equality form
