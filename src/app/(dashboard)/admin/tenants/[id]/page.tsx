@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import TenantDetailClient from "./tenant-detail-client";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+  if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");
 
   const { data: tenant, error } = await service
     .from("tenants")

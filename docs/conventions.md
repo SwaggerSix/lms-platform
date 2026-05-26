@@ -35,7 +35,7 @@ glob auto-picks up new files in that directory.
 | `vercel-config` | Snapshots non-cron `vercel.json` keys; pins `framework=nextjs` and `regions=["iad1"]`. |
 | `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
-| `isadmin-adoption-ratchet` | Caps remaining `role !== "admin"` inequality-form checks; monotonically decreasing as touched code migrates to `isAdmin()`. |
+| `isadmin-adoption-ratchet` | Enforces no `role !== "admin"` inequality-form checks. (Retired ratchet — was a shrinking cap, hit zero 2026-05-29.) |
 | `super-admin-omission-audit` | Advisory snapshot of `["admin", "manager"].includes(role)` sites that silently exclude super_admin (likely permissions bug). |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
@@ -105,14 +105,14 @@ pattern lets the rule land incrementally without backsliding:
 
 Two live examples:
 
-- **`isadmin-adoption-ratchet`** — caps remaining
-  `role !== "admin" && (...)role !== "super_admin"` inequality
-  checks at 5. Each migration to `isAdmin()` lowers it.
 - **`super-admin-omission-audit`** — caps remaining
-  `["admin", "manager"].includes(role)` sites at 18 (super_admin
+  `["admin", "manager"].includes(role)` sites at 16 (super_admin
   silently excluded). Migration shifts semantics so each is a
   review conversation; ratchet pairs the snapshot with a hard
   ceiling.
+- **`isadmin-adoption`** — was a ratchet from 24 down to zero;
+  flipped to `toEqual([])` on 2026-05-29. The convention
+  `!isAdmin(role)` is now enforced.
 - **`get-cache-control-audit`** — was a ratchet from 87 down to
   zero; flipped to `toEqual([])` on 2026-05-23.
 
@@ -120,29 +120,22 @@ The pattern works because the ceiling is in code (not a separate
 TODO doc) and changes show up in PR diffs, so the count can't
 silently grow.
 
-## Migrating role checks to `isAdmin()`
+## Role-check helpers
 
 `src/lib/auth/roles.ts` is the canonical home for role-membership
 checks: `isAdmin(role)` (admin / super_admin) and
-`isManagerOrAbove(role)` (admin / super_admin / manager).
+`isManagerOrAbove(role)` (admin / super_admin / manager). Always
+prefer them over inline inequality / array-includes literals.
 
-About 20 pages still use the inequality form
-`role !== "admin" && role !== "super_admin"`. The
-`isadmin-adoption-ratchet` test caps the remaining count and
-forces it to decrease as PRs touch the surrounding code.
+The `isadmin-adoption-ratchet` test enforces zero remaining
+`role !== "admin" && (...)role !== "super_admin"` sites; the
+ratchet that got it there hit zero on 2026-05-29.
 
-**Rule of thumb for when to migrate a site:**
-
-- **Yes**, migrate when your PR is already editing the function
-  containing the check. The helper is a one-line swap.
-- **Yes**, migrate when adding a NEW role check — never write the
-  inequality form for new code.
-- **No, leave it alone** if your PR doesn't otherwise touch the
-  surrounding code. Mass-rewriting all 20 sites in one go would
-  produce a huge diff that's mostly noise; incremental migration
-  pairs each change with a code-review pass.
-- **Lower the ratchet ceiling** in the same PR as the migration so
-  the count is monotonically decreasing.
+The `super-admin-omission-audit` ratchet is still active and
+caps `["admin", "manager"].includes(role)` sites — those omit
+`super_admin` and shift semantics on migration to
+`isManagerOrAbove(role)`, so each migration is a per-site
+review conversation.
 
 ## Related playbooks
 

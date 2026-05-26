@@ -1,0 +1,64 @@
+# `src/lib/auth/`
+
+Auth helpers. Two layers:
+
+- **Identity** — who is the request from?
+- **Authorization** — what shape of role check are we doing?
+
+## Modules
+
+### `get-user.ts`
+
+`getAuthUser()` — server-side helper that resolves the Supabase auth
+user plus the `users` row (with organization joined). Uses the
+service client to bypass the `users_select` RLS policy (which
+references the `users` table itself and would otherwise recurse).
+Returns `{ authUser, dbUser, supabase }`; both are nullable for the
+unauthenticated case.
+
+### `authorize.ts`
+
+`authorize(...allowedRoles)` — gate helper for API routes. Resolves
+the user, short-circuits with `super_admin` always allowed, then
+checks the supplied role list. Returns a discriminated union
+(`{ authorized: true, user, supabase }` or `{ authorized: false,
+error, status }`) so callers can early-return the failure shape
+directly.
+
+Exports the `Role` type union as the canonical list of role
+literals.
+
+### `roles.ts`
+
+Canonical role-membership predicates. Prefer these over inline
+inequality / array-includes checks:
+
+- `isAdmin(role)` — admin or super_admin.
+- `isManagerOrAbove(role)` — admin, super_admin, or manager.
+
+The docstring documents the three historical inline shapes the
+helpers replace, plus the `super_admin` omission bug pattern the
+audit catches.
+
+### `role-check-patterns.ts`
+
+Shared regex constants used by the role-check guardrails and their
+smoke tests. Co-located so the live ratchets and the smoke tests
+can't drift.
+
+- `INEQUALITY_ROLE_RE` — matches the two-role
+  `role !== "admin" && role !== "super_admin"` inequality.
+  Banned: hard-failed by `isadmin-adoption-ratchet`.
+- `ADMIN_MANAGER_INCLUDES_RE` — matches
+  `["admin", "manager"].includes(...)`. Surfaced by
+  `super-admin-omission-audit` (still a shrinking ratchet).
+
+Both convention walks whitelist this file so the regex source
+doesn't self-match.
+
+## Related
+
+- `docs/conventions.md` — role-check helpers section + ratchet
+  idiom that drove the migrations.
+- `src/middleware.ts` — the `/admin` and `/manager` route gates
+  built on these helpers.

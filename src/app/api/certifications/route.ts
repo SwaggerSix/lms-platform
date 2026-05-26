@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createCertificationSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("user_id");
-  if (userId && userId !== profile.id && !["admin", "manager"].includes(profile.role)) {
+  if (userId && userId !== profile.id && !isManagerOrAbove(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

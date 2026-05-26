@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import WorkflowRunsClient from "./workflow-runs-client";
 
@@ -26,7 +27,7 @@ export default async function WorkflowRunsPage({
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+  if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");
 
   const { data: workflow } = await service
     .from("workflows")

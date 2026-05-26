@@ -5,21 +5,21 @@ import { walkFiles } from "@/lib/testing/walk";
 import { INEQUALITY_ROLE_RE } from "@/lib/auth/role-check-patterns";
 
 /**
- * Adoption ratchet for the isAdmin() helper. Counts the
- * remaining `role !== "admin" && (...)role !== "super_admin"`
- * inequality-form sites under src/. The number can only go down
- * — every PR that adds or modifies a page is invited to migrate
- * touched call sites to `!isAdmin(role)`.
+ * Convention: every two-role admin gate uses `isAdmin(role)` from
+ * `@/lib/auth/roles` rather than the
+ * `role !== "admin" && role !== "super_admin"` inequality form.
  *
- * Forces incremental progress without requiring a single-PR mass
- * rewrite. Once the count hits zero, this test can flip to a hard
- * `expect(matches).toEqual([])` like the GET cache-control ratchet
- * did.
+ * This was originally a shrinking-ratchet (capped at N, decreased
+ * with each migration). Backlog hit zero on 2026-05-29, so the
+ * test now hard-fails on any reintroduction.
+ *
+ * Keep the file naming around `-adoption-ratchet` for historical
+ * grep; the ratchet language stays in the doc since the pattern
+ * is reusable for future conventions.
  */
 
-
-describe("isAdmin adoption ratchet", () => {
-  it("inequality-form role checks only go down (current ceiling: 5)", () => {
+describe("isAdmin adoption", () => {
+  it("no inequality-form role checks remain under src/", () => {
     const files = walkFiles(join(process.cwd(), "src"), {
       extensions: [".ts", ".tsx"],
     });
@@ -27,7 +27,7 @@ describe("isAdmin adoption ratchet", () => {
     for (const file of files) {
       const rel = file.replace(process.cwd() + "/", "");
       if (rel.startsWith("src/__tests__/")) continue;
-      if (rel === "src/lib/auth/roles.ts") continue; // the helper itself defines the role names
+      if (rel === "src/lib/auth/roles.ts") continue;
       if (rel === "src/lib/auth/role-check-patterns.ts") continue;
       const lines = readFileSync(file, "utf8").split("\n");
       for (let i = 0; i < lines.length; i++) {
@@ -37,14 +37,9 @@ describe("isAdmin adoption ratchet", () => {
       }
     }
 
-    // Ratchet ceiling. Lower when migrations land; once it's 0,
-    // flip the assertion to `toEqual([])`.
-    const MAX = 5;
     expect(
-      matches.length,
-      `Inequality-form role checks: ${matches.length}. Ceiling is ${MAX}. ` +
-        `Migrate touched sites to isAdmin() / isManagerOrAbove() and lower MAX.\n` +
-        JSON.stringify(matches, null, 2)
-    ).toBeLessThanOrEqual(MAX);
+      matches,
+      `Inequality-form role checks should use isAdmin() instead: ${JSON.stringify(matches, null, 2)}`
+    ).toEqual([]);
   });
 });

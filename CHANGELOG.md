@@ -4,6 +4,24 @@ Notable changes worth surfacing during PR review. Not every commit
 needs an entry — focus on conventions, infrastructure choices, and
 removals that affect future work.
 
+## 2026-05-29
+
+- **`isadmin-adoption-ratchet` retired at zero.** The final 5
+  inequality-form sites (`/admin/workflows/[id]/runs`,
+  `/admin/settings/integrations`, `/admin/settings/sso`,
+  `/admin/settings/integrations/hris`, `/admin/tenants/[id]`)
+  migrated to `!isAdmin(dbUser.role)`. Ratchet flipped from a
+  shrinking ceiling to a hard `toEqual([])` assertion;
+  `role !== "admin" && role !== "super_admin"` is now banned.
+- **`src/lib/auth/role-check-patterns.ts` extracted.** The
+  `INEQUALITY_ROLE_RE` and `ADMIN_MANAGER_INCLUDES_RE` constants
+  live in a shared module so the live ratchets, the migration
+  smoke test, and the ratchet smoke test all import the same
+  regex. Both ratchet walks whitelist the module so the regex
+  source doesn't self-match.
+- **super_admin-omission ratchet 18 → 16.** `/api/certifications`
+  and `/api/gamification` migrated to `!isManagerOrAbove(role)`.
+
 ## 2026-05-28
 
 - **Latent `super_admin` permissions bug surfaced.** ~17 sites in
