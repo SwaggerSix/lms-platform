@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import TeamClient, { type TeamMember } from "./team-client";
+import TeamClient, { type TeamMember, type CourseOption } from "./team-client";
 
 export const metadata: Metadata = {
   title: "Team | LMS Platform",
@@ -97,5 +97,19 @@ export default async function TeamPage() {
     };
   });
 
-  return <TeamClient members={members} />;
+  // Fetch published courses for the "Assign Course" picker.
+  const { data: courseRows } = await service
+    .from("courses")
+    .select("id, title, estimated_duration, category:categories(name)")
+    .eq("status", "published")
+    .order("title", { ascending: true });
+
+  const courses: CourseOption[] = (courseRows ?? []).map((c: any) => ({
+    id: c.id,
+    name: c.title,
+    duration: c.estimated_duration ? `${c.estimated_duration} min` : "Self-paced",
+    category: c.category?.name ?? "Uncategorized",
+  }));
+
+  return <TeamClient members={members} courses={courses} />;
 }
