@@ -1,4 +1,6 @@
 -- Drop compliance_requirements after the retirement work has landed.
+-- Follows the seven-phase playbook in docs/migrations.md — the next
+-- big-table retirement should pattern-match against this one.
 --
 -- Successor: courses.metadata.required_for (JSONB column on the
 -- courses table). All readers source from getRequiredCourseSources()

@@ -88,6 +88,20 @@ describe("AuditLogClient truncation banner", () => {
     expect(AUDIT_LOG_ROW_LIMIT).toBe(500);
   });
 
+  it("AUDIT_LOG_ROW_LIMIT bump shows up as a named diff line in PRs (inline snapshot)", async () => {
+    // Snapshot the literal value rather than just asserting `=== 500`.
+    // A bump produces a one-line snapshot diff with the helpful
+    // identifier name attached (`AUDIT_LOG_ROW_LIMIT: 500` → `:
+    // 1000`), which reads more clearly during PR review than the
+    // bare assertion above.
+    const { AUDIT_LOG_ROW_LIMIT } = await import("@/lib/audit-log/resolve-tenant");
+    expect({ AUDIT_LOG_ROW_LIMIT }).toMatchInlineSnapshot(`
+      {
+        "AUDIT_LOG_ROW_LIMIT": 500,
+      }
+    `);
+  });
+
   it("audit-log page.tsx threads AUDIT_LOG_ROW_LIMIT through .limit() and rowLimit prop", async () => {
     // Catches a drift where someone hardcodes `500` back into the
     // page (or any other literal). Page source must reference the
