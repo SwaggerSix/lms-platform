@@ -33,6 +33,7 @@ describe("conventions directory", () => {
         "get-cache-control-audit.test.ts",
         "git-hooks.test.ts",
         "gitignore.test.ts",
+        "header-parity.test.ts",
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
         "mutation-no-store-convention.test.ts",
@@ -49,6 +50,7 @@ describe("conventions directory", () => {
         "supabase-tree.test.ts",
         "testing-helpers-scope.test.ts",
         "tsconfig.test.ts",
+        "vercel-config.test.ts",
         "vercel-crons.test.ts",
       ]
     `);

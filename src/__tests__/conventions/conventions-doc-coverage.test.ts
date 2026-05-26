@@ -101,6 +101,8 @@ describe("docs/conventions.md coverage", () => {
       "tsconfig",
       "next-config",
       "vercel-crons",
+      "vercel-config",
+      "header-parity",
       "prod-gate-warnings",
       "check-script",
     ]);

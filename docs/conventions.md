@@ -32,6 +32,8 @@ glob auto-picks up new files in that directory.
 | `tsconfig` | Snapshots `compilerOptions` keys; strict flags (`strict`, `noEmit`, `isolatedModules`) pinned by value. |
 | `next-config` | Pins the security header set + CSP `object-src 'none'`; image remote hostnames locked to `*.supabase.{co,in}`. |
 | `vercel-crons` | Snapshots the cron path → schedule map in `vercel.json`; schedule changes land as a deliberate diff. |
+| `vercel-config` | Snapshots non-cron `vercel.json` keys; pins `framework=nextjs` and `regions=["iad1"]`. |
+| `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 
