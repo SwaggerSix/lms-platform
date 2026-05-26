@@ -19,6 +19,13 @@ import { walkFiles } from "@/lib/testing/walk";
  * and the set that omits it. New call sites are flagged to choose —
  * either commit to the omission (in-tenant action) or pass tenantId.
  *
+ * Snapshot maintenance: both snapshots will diff frequently as new
+ * audit calls land or line numbers shift after unrelated edits.
+ * Running `vitest -u` to refresh them is a routine PR step. The
+ * signal worth reviewing is *which set the call landed in* — adding
+ * a new line to the "no tenantId" set silently is the regression
+ * this test guards against, not the line-number churn.
+ *
  * Implementation note: the scanner matches the `tenantId:` token
  * literally inside the logAudit() argument object. Multi-line
  * argument objects are handled by walking matching braces.

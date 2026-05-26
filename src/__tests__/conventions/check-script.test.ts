@@ -3,11 +3,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * The `check` script chains `lint` and `test:conventions` for a
- * pre-push sanity sweep. The order matters: lint is faster and
- * surfaces obvious mistakes first; conventions runs only if lint
- * passes. These tests pin both the wiring and the order so a future
- * refactor can't silently swap them or drop one.
+ * The `check` script chains `lint`, `tsc --noEmit`, and
+ * `test:conventions` for a pre-push sanity sweep. The order matters:
+ * lint is fastest and surfaces obvious mistakes; typecheck catches
+ * TS-specific shape errors; conventions runs last because it's the
+ * slowest of the three. Fail-fast on each step.
  */
 
 const pkg = JSON.parse(
@@ -19,12 +19,15 @@ describe("npm run check", () => {
     expect(pkg.scripts?.check).toBeTruthy();
   });
 
-  it("runs lint then test:conventions in order", () => {
+  it("runs lint, then tsc --noEmit, then test:conventions, in order", () => {
     const cmd = pkg.scripts!.check;
-    // Order check: lint appears before test:conventions, joined by &&
-    // so a failing lint short-circuits the conventions run.
-    expect(cmd).toMatch(/lint.*&&.*test:conventions/);
-    expect(cmd.indexOf("lint")).toBeLessThan(cmd.indexOf("test:conventions"));
+    expect(cmd).toMatch(/lint.*&&.*tsc.*&&.*test:conventions/);
+    expect(cmd.indexOf("lint")).toBeLessThan(cmd.indexOf("tsc"));
+    expect(cmd.indexOf("tsc")).toBeLessThan(cmd.indexOf("test:conventions"));
+  });
+
+  it("typechecks with --noEmit (no build artifacts produced by `check`)", () => {
+    expect(pkg.scripts!.check).toMatch(/tsc\s+--noEmit/);
   });
 
   it("uses && (fail-fast) rather than ; or |", () => {

@@ -3,15 +3,17 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * Guardrails against accidental dependency creep.
+ * Policy guardrails on the dependency tree. Complementary to
+ * dependencies-ratchet.test.ts:
  *
- * - Hard cap on the total dependency count, set ~10% above current. Forces
- *   intentional review when a new dep gets added.
- * - Allowlist of "policy-relevant" packages we want to keep an eye on (date
- *   libraries, http clients, supabase ecosystem). The list isn't strict
- *   pinning — it just makes drift visible in PR review.
- * - Bans known-bad replacements that occasionally sneak in via auto-fix
- *   tooling (e.g. `request`, which is deprecated).
+ *   - dependencies-ratchet snapshots the full set of package names
+ *     so any addition / removal shows up in the PR diff.
+ *   - this file enforces softer policies (soft cap on count,
+ *     required-packages allowlist, banned-packages denylist,
+ *     no-second-date-library rule).
+ *
+ * Both intentional. The ratchet catches *unknown* changes; the
+ * footprint catches *unwanted* changes.
  */
 const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
   dependencies?: Record<string, string>;

@@ -11,6 +11,10 @@ import { join } from "node:path";
  * The snapshot only tracks names, not versions — version bumps don't
  * need a triage commit. A bumped lockfile via `npm update <pkg>`
  * leaves this test green.
+ *
+ * Complementary to dependency-footprint.test.ts: this catches unknown
+ * changes (any new name surfaces); footprint catches unwanted
+ * changes (banned packages, second date lib, count past the cap).
  */
 
 const pkg = JSON.parse(

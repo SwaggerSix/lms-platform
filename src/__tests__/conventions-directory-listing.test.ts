@@ -28,6 +28,7 @@ describe("conventions directory", () => {
         "dependency-footprint.test.ts",
         "get-cache-control-audit.test.ts",
         "install-hooks.test.ts",
+        "lefthook-parity.test.ts",
         "mutation-no-store-convention.test.ts",
         "no-compliance-requirements-queries.test.ts",
         "no-inline-tenant-or-filter.test.ts",
