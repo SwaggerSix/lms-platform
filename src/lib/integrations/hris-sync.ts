@@ -329,7 +329,11 @@ const ADAPTERS: Record<string, () => HRISAdapter> = {
 };
 
 export class HRISSync {
-  private supabase = createServiceClient();
+  private _supabase: ReturnType<typeof createServiceClient> | null = null;
+  private get supabase() {
+    if (!this._supabase) this._supabase = createServiceClient();
+    return this._supabase;
+  }
 
   getAdapter(provider: string): HRISAdapter {
     const factory = ADAPTERS[provider];

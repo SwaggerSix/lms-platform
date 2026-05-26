@@ -306,7 +306,11 @@ const CRM_ADAPTERS: Record<string, () => CRMAdapter> = {
 };
 
 export class CRMSync {
-  private supabase = createServiceClient();
+  private _supabase: ReturnType<typeof createServiceClient> | null = null;
+  private get supabase() {
+    if (!this._supabase) this._supabase = createServiceClient();
+    return this._supabase;
+  }
 
   getAdapter(provider: string): CRMAdapter {
     const factory = CRM_ADAPTERS[provider];
