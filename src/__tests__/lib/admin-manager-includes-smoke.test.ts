@@ -76,4 +76,42 @@ describe("admin-manager array-includes detector", () => {
       ADMIN_MANAGER_INCLUDES_RE.test('["admin", "super_admin"].includes(role)')
     ).toBe(false);
   });
+
+  // Mirrors the super-admin-omission-audit walk: scan a source line
+  // by line and collect offending line numbers. Proves the guardrail
+  // would fire on a reintroduced site, not just that the regex
+  // matches an isolated string. (Three-layer model: the codebase
+  // walk only proves today's tree is clean.)
+  it("flags a reintroduced site inside a synthetic multi-line source", () => {
+    const synthetic = `
+      export async function GET(req) {
+        const userId = req.query.user_id;
+        if (userId !== auth.user.id && !["admin", "manager"].includes(auth.user.role)) {
+          return forbidden();
+        }
+        return ok();
+      }
+    `;
+    const hits: number[] = [];
+    synthetic.split("\n").forEach((line, i) => {
+      if (ADMIN_MANAGER_INCLUDES_RE.test(line)) hits.push(i + 1);
+    });
+    expect(hits).toHaveLength(1);
+  });
+
+  it("does not flag a synthetic source already on the helper", () => {
+    const synthetic = `
+      export async function GET(req) {
+        const userId = req.query.user_id;
+        if (userId !== auth.user.id && !isManagerOrAbove(auth.user.role)) {
+          return forbidden();
+        }
+        return ok();
+      }
+    `;
+    const hits = synthetic
+      .split("\n")
+      .filter((line) => ADMIN_MANAGER_INCLUDES_RE.test(line));
+    expect(hits).toEqual([]);
+  });
 });

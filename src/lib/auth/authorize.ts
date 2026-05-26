@@ -3,6 +3,19 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 export type Role = "super_admin" | "admin" | "manager" | "instructor" | "learner";
 
+/**
+ * API-route gate. Resolves the caller's `users` row and checks it
+ * against `allowedRoles`.
+ *
+ * `super_admin` short-circuits to authorized regardless of the
+ * allowlist (it has access to everything), so callers do NOT need
+ * to spell it out — `authorize("admin", "manager")` already lets a
+ * super_admin through. This is why the super_admin-omission bug
+ * class (see roles.ts) does not apply to `authorize()` call sites;
+ * it only bites the inline array-includes shape (an admin/manager
+ * literal list with no super_admin entry), which has no such
+ * short-circuit.
+ */
 export async function authorize(...allowedRoles: Role[]) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

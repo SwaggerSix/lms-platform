@@ -42,4 +42,13 @@ describe("isManagerOrAbove", () => {
     expect(isManagerOrAbove(null)).toBe(false);
     expect(isManagerOrAbove(undefined)).toBe(false);
   });
+
+  it("admits every role isAdmin does (manager-or-above is a superset)", () => {
+    for (const role of ["admin", "super_admin", "manager", "instructor", "learner"]) {
+      if (isAdmin(role)) expect(isManagerOrAbove(role)).toBe(true);
+    }
+    // manager widens the gate beyond isAdmin
+    expect(isAdmin("manager")).toBe(false);
+    expect(isManagerOrAbove("manager")).toBe(true);
+  });
 });

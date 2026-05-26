@@ -28,6 +28,11 @@ directly.
 Exports the `Role` type union as the canonical list of role
 literals.
 
+Because of the super_admin short-circuit, `authorize("admin",
+"manager")` already admits super_admin — the omission bug that
+bites inline `["admin", "manager"].includes(role)` checks does
+not apply here. No need to add `"super_admin"` to the allowlist.
+
 ### `roles.ts`
 
 Canonical role-membership predicates. Prefer these over inline

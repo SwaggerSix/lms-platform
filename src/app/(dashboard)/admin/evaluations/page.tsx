@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import EvaluationsAdminClient from "./evaluations-admin-client";
 
@@ -21,7 +22,7 @@ export default async function EvaluationsAdminPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || !["admin", "super_admin"].includes(dbUser.role)) {
+  if (!dbUser || !isAdmin(dbUser.role)) {
     redirect("/learn/dashboard");
   }
 
