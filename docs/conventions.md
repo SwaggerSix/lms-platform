@@ -35,7 +35,8 @@ glob auto-picks up new files in that directory.
 | `vercel-config` | Snapshots non-cron `vercel.json` keys; pins `framework=nextjs` and `regions=["iad1"]`. |
 | `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
-| `badge-urls` | README workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
+| `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
+| `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 

@@ -133,7 +133,7 @@ export async function middleware(request: NextRequest) {
 
     const role = profile?.role;
 
-    if (pathname.startsWith("/admin") && role !== "admin" && role !== "super_admin") {
+    if (pathname.startsWith("/admin") && !["admin", "super_admin"].includes(role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

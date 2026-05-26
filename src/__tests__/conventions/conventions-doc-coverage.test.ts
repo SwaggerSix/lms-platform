@@ -18,6 +18,12 @@ const DOC_PATH = join(process.cwd(), "docs/conventions.md");
 // Tests that wire infrastructure (the hooks themselves, install
 // path, lefthook parity, etc.) — the doc covers them under "Local
 // install paths" instead of listing each separately in the table.
+//
+// Note this overlaps the conventions-directory listing in spirit
+// (both enumerate convention test files) but serves a distinct
+// purpose: the directory listing tracks "what tests exist", while
+// this set tracks "which tests skip the doc-table per-row entry".
+// Both snapshots stay; the divergence is intentional.
 const INFRA_TESTS = new Set<string>([
   "check-script.test.ts",
   "check-script-runs.test.ts",
@@ -123,6 +129,7 @@ describe("docs/conventions.md coverage", () => {
       "header-parity",
       "middleware",
       "badge-urls",
+      "workflows",
       "prod-gate-warnings",
       "check-script",
     ]);

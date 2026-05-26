@@ -1,41 +1,64 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { walkFiles } from "@/lib/testing/walk";
 
 /**
- * README.md and CHANGELOG.md carry GitHub Actions status badges
- * pointing at workflow files. A bad URL (typo, wrong workflow
- * name) silently renders as a broken image — the CI status looks
- * "unknown" to a reader without anyone noticing.
+ * GitHub Actions status badges in markdown point at workflow
+ * files. A typo silently renders as a broken image — CI status
+ * looks "unknown" to readers without anyone noticing.
  *
- * This guard parses badge URLs from the markdown and asserts each
- * workflow file actually exists in .github/workflows/.
+ * Scan every markdown file under the repo and assert:
+ *   - Each referenced workflow file actually exists in
+ *     .github/workflows/.
+ *   - Every repo path anchors to swaggersix/lms-platform (catches
+ *     copy-paste from a fork or template).
+ *
+ * Walks all .md files rather than hard-coding README so a new doc
+ * (CHANGELOG, docs/README, etc.) picking up badges is covered
+ * without a test update.
  */
 
-const README = readFileSync(join(process.cwd(), "README.md"), "utf8");
+function readAllMarkdown(): { file: string; source: string }[] {
+  const root = process.cwd();
+  return walkFiles(root, { extensions: [".md"] })
+    .filter((p) => !p.includes("/node_modules/") && !p.includes("/.next/"))
+    .map((p) => ({ file: p.replace(root + "/", ""), source: readFileSync(p, "utf8") }));
+}
 
-describe("README badges", () => {
-  it("every workflow referenced exists at .github/workflows/<name>.yml", () => {
-    // Match `actions/workflows/<name>.yml` inside badge URLs.
-    const refs = Array.from(
-      README.matchAll(/actions\/workflows\/([A-Za-z0-9_-]+)\.yml/g)
-    ).map((m) => m[1]);
-    // Dedupe (each workflow shows up in both the badge URL and the
-    // link-to-Actions URL).
-    const unique = Array.from(new Set(refs)).sort();
-
-    expect(unique.length, "README references at least one workflow").toBeGreaterThan(0);
-    for (const name of unique) {
-      const path = join(process.cwd(), `.github/workflows/${name}.yml`);
-      expect(existsSync(path), `.github/workflows/${name}.yml exists`).toBe(true);
+describe("workflow badges across all markdown", () => {
+  it("every referenced workflow exists at .github/workflows/<name>.yml", () => {
+    const missing: Array<{ file: string; workflow: string }> = [];
+    for (const { file, source } of readAllMarkdown()) {
+      const refs = Array.from(
+        source.matchAll(/actions\/workflows\/([A-Za-z0-9_-]+)\.yml/g)
+      ).map((m) => m[1]);
+      for (const name of new Set(refs)) {
+        const path = join(process.cwd(), `.github/workflows/${name}.yml`);
+        if (!existsSync(path)) missing.push({ file, workflow: name });
+      }
     }
+    expect(
+      missing,
+      `Markdown files reference workflow files that don't exist: ${JSON.stringify(missing, null, 2)}`
+    ).toEqual([]);
   });
 
-  it("badge URLs all point at the same swaggersix/lms-platform repo", () => {
-    const repos = Array.from(
-      README.matchAll(/github\.com\/([^/]+\/[^/]+)\/actions/g)
-    ).map((m) => m[1]);
-    const unique = Array.from(new Set(repos));
-    expect(unique).toEqual(["swaggersix/lms-platform"]);
+  it("repo paths in workflow links anchor to swaggersix/lms-platform", () => {
+    const offenders: Array<{ file: string; repo: string }> = [];
+    for (const { file, source } of readAllMarkdown()) {
+      const repos = Array.from(
+        source.matchAll(/github\.com\/([^/\s]+\/[^/\s]+)\/actions/g)
+      ).map((m) => m[1]);
+      for (const repo of new Set(repos)) {
+        if (repo !== "swaggersix/lms-platform") {
+          offenders.push({ file, repo });
+        }
+      }
+    }
+    expect(
+      offenders,
+      `Workflow badges/links point at a non-swaggersix repo: ${JSON.stringify(offenders, null, 2)}`
+    ).toEqual([]);
   });
 });

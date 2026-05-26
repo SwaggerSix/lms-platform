@@ -54,6 +54,7 @@ describe("conventions directory", () => {
         "tsconfig.test.ts",
         "vercel-config.test.ts",
         "vercel-crons.test.ts",
+        "workflows.test.ts",
       ]
     `);
   });

@@ -32,18 +32,12 @@ describe("src/middleware.ts", () => {
   });
 
   it("gates /admin behind admin or super_admin role", () => {
-    // The admin branch currently uses inequality checks
-    // (role !== "admin" && role !== "super_admin").
     expect(source).toMatch(
-      /pathname\.startsWith\("\/admin"\)[\s\S]{0,200}role\s*!==\s*"admin"[\s\S]{0,80}role\s*!==\s*"super_admin"/
+      /pathname\.startsWith\("\/admin"\)[\s\S]{0,200}\["admin",\s*"super_admin"\]\.includes\(role\)/
     );
   });
 
   it("gates /manager behind admin / super_admin / manager", () => {
-    // The manager branch uses an array includes
-    // (![…].includes(role)). Both shapes are legitimate; pinning
-    // each one's actual form means a future "make them
-    // consistent" refactor is intentional rather than silent.
     expect(source).toMatch(
       /pathname\.startsWith\("\/manager"\)[\s\S]{0,200}\["admin",\s*"super_admin",\s*"manager"\]\.includes\(role\)/
     );
