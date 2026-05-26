@@ -142,6 +142,7 @@ describe("docs/conventions.md coverage", () => {
       "admin-array-form-audit",
       "manager-equality-omission-audit",
       "admin-equality-omission-audit",
+      "as-any-audit",
       "badge-urls",
       "workflows",
       "prod-gate-warnings",

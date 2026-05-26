@@ -41,6 +41,7 @@ glob auto-picks up new files in that directory.
 | `admin-array-form-audit` | Enforces no `["admin", "super_admin"].includes(role)` array-form admin gates; use `isAdmin(role)`. Hard assertion (single offender migrated 2026-05-29). |
 | `manager-equality-omission-audit` | Enforces no equality-form manager-or-above gates (`role === "admin" \|\| role === "manager"`) that omit super_admin; use `isManagerOrAbove(role)`. Hard assertion (7 offenders migrated 2026-05-29). |
 | `admin-equality-omission-audit` | Enforces no bare single-role `.role === "admin"` gates that omit super_admin; use `isAdmin(role)`. Hard assertion (ratchet hit zero 2026-05-29; `audit-log/resolve-tenant.ts` whitelisted as a deliberate admin/super_admin split). |
+| `as-any-audit` | Advisory ratchet over `as any` casts (the type escape hatch). Caps the count; migrate to `as unknown as T` or real types and lower MAX. `as unknown as` double-casts aren't counted. |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |

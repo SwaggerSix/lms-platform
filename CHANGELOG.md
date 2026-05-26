@@ -6,6 +6,21 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any-audit` advisory ratchet added.** Snapshots the 199
+  `as any` casts (74 files) and caps the count so the type escape
+  hatch can only shrink. `as unknown as T` double-casts aren't
+  counted — they're the migration target. (Generating real Supabase
+  `Database` types — the proper fix — isn't feasible here: the repo
+  uses hand-written `types/database.ts` and there's no project ref
+  to run the generator against.)
+- **CI lint step guarded.** `eslint-config` now also asserts
+  `conventions.yml` runs `npm run lint`, so the gate restored after
+  the Next 16 upgrade can't be silently dropped.
+- **Instructor ownership gates confirmed correct (no change).** The
+  7 `role === "instructor"` checks (modules, courses, xr/content,
+  microlearning) narrow behavior *for instructors* (own-content
+  ownership); super_admin/admin/manager correctly bypass them, so
+  they are not super_admin-omission bugs and stay as-is.
 - **Cleared the 11 `exhaustive-deps` warnings; lint is now 0/0.**
   Memoized `useToast`'s return (stable `addToast`) so callers can
   list `toast` in deps without churn; hoisted a static map to

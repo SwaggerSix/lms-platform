@@ -36,6 +36,11 @@ describe("eslint config wiring", () => {
     expect(check).toContain("test:conventions");
   });
 
+  it("CI runs `npm run lint` (the restored gate can't be silently dropped)", () => {
+    const wf = readFileSync(join(ROOT, ".github/workflows/conventions.yml"), "utf8");
+    expect(wf).toContain("npm run lint");
+  });
+
   it("eslint.config.mjs registers the parser + plugins the tree relies on", () => {
     const source = readFileSync(join(ROOT, "eslint.config.mjs"), "utf8");
     for (const dep of [
