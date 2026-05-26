@@ -34,81 +34,16 @@ can withhold them.
 - `npm test` — full Vitest suite.
 - `npm run test:conventions` — convention bundle (~5s). Used by the
   pre-commit hook and the `conventions.yml` CI workflow.
-- `npm run check` — `lint && test:conventions`. Quick pre-push gate
-  that covers both ESLint and the convention suite.
+- `npm run check` — `lint && tsc --noEmit && test:conventions`.
+  Quick pre-push gate covering ESLint, types, and the convention
+  suite. Matches what the `pre-push` hook runs locally and what CI
+  runs on every PR.
 
-## Guardrails to maintain
+## Guardrails and conventions
 
-Each new convention follows the playbook in `CHANGELOG.md`'s
-"Convention playbook" section. The active guardrail tests live under
-`src/__tests__/` and bundle via `npm run test:conventions`:
-
-- `get-cache-control-audit` — every GET handler classified.
-- `mutation-no-store-convention` — every POST/PATCH/DELETE/PUT
-  branch uses `jsonNoStore`.
-- `audit-action-conventions` — every `logAudit({ action: ... })`
-  literal matches the legacy or dotted-namespace shape.
-- `no-compliance-requirements-queries` — the dropped table stays
-  unreferenced.
-- `supabase-pending-empty` — destructive migrations don't sit
-  parked indefinitely.
-- `audit-tenant-id-coverage` — every `logAudit` call site has
-  consciously opted in or out of explicit `tenantId`.
-- `dependencies-ratchet` — package additions/removals are visible
-  in the diff.
-
-When adding a new "every call site must do X" rule, follow the
-playbook (scanner unit test → codebase-walk advisory → ratchet →
-enforce). See `src/lib/audit-log/scan-action-literals.ts` and
-`src/__tests__/lib/scan-action-literals.test.ts` for the template.
-
-Convention tests that walk the source tree use `walkFiles` from
-`@/lib/testing/walk`:
-
-```ts
-import { walkFiles } from "@/lib/testing/walk";
-const files = walkFiles(join(process.cwd(), "src/app/api"));
-```
-
-Don't roll a new recursive walker inside an individual test — the
-shared helper standardizes the exclusion semantics (skip
-`node_modules` + dotfiles by default) and accepts an `extensions`
-override for `.tsx`-inclusive scans. New convention tests should
-land their file under `src/__tests__/conventions/` so they pick up
-the test:conventions glob automatically.
-
-## Optional local hooks
-
-Two install paths, pick whichever you prefer; both invoke the same
-underlying commands.
-
-- **Native git hooks (no devDep)**: `npm run install-hooks` points
-  `core.hooksPath` at `.githooks/`. `pre-commit` runs
-  `npm run test:conventions` (~5s); `pre-push` runs `npm run check`
-  (lint + conventions).
-- **Lefthook**: `npx lefthook install` reads `lefthook.yml`. Same
-  pair of commands wired up; useful if you already have lefthook on
-  your path.
-
-The CI workflow runs the same guardrails on every PR, so the local
-hooks are purely for fast feedback.
-
-### Bypass policy
-
-`git commit --no-verify` skips the hook. Use it when:
-
-- A snapshot test is failing because the change is the new
-  intentional snapshot. Bypass, then run `vitest -u` in the same
-  commit (or the next one) and ship both edits together.
-- The hook itself is broken (transient npm cache issue, system
-  Node version mismatch). File a follow-up to fix the hook; don't
-  leave the bypass habit lingering.
-
-Don't bypass to silence a genuine guardrail failure. The guardrails
-are the contract; if a convention no longer fits, change the
-guardrail in the same PR. The CI check on the PR catches anything
-the local bypass let through, so the worst case is a wasted CI run,
-not a regression landing on main.
+See [docs/conventions.md](docs/conventions.md) for the full list of
+guardrails, how to add a new one, install paths for local hooks,
+bypass policy, and the `walkFiles` convention for new tests.
 
 ## Coding style
 
@@ -117,7 +52,6 @@ not a regression landing on main.
   `src/lib/api/`.
 - Audit-log scoping flows through `resolveAuditLogTenant` +
   `buildAuditLogTenantFilter`. Don't inline `tenant_id.eq.X,tenant_id.is.null`.
-- Required-training reads source from `getRequiredCourseSources`
-  (canonical) or `getTenantScopedRequiredCourseSources` (with a
-  tenant scope). The legacy `compliance_requirements` table is
-  retired — runtime queries against it fail `npm run test:conventions`.
+- Required-training reads source from `getRequiredCourseSources`.
+  The legacy `compliance_requirements` table is retired — runtime
+  queries against it fail `npm run test:conventions`.

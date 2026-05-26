@@ -1,0 +1,99 @@
+# Conventions
+
+How the repo enforces its "every call site must do X" rules, and
+how to add a new one.
+
+## Active guardrails
+
+All bundled into `npm run test:conventions` (~5s) and `npm run check`.
+They live under `src/__tests__/conventions/`; the `test:conventions`
+glob auto-picks up new files in that directory.
+
+| Guardrail | What it pins |
+|-----------|--------------|
+| `get-cache-control-audit` | Every GET handler in `src/app/api/` is classified via `jsonCached`, `jsonNoStore`, or an explicit `Cache-Control` header. |
+| `mutation-no-store-convention` | Every `POST/PATCH/DELETE/PUT` branch uses `jsonNoStore` (carve-outs documented in the test). |
+| `audit-action-conventions` | Every `logAudit({ action: ... })` literal matches the legacy or dotted-namespace shape. |
+| `audit-tenant-id-coverage` | Every `logAudit` call site has consciously opted in or out of explicit `tenantId:`. |
+| `no-compliance-requirements-queries` | The dropped `compliance_requirements` table stays unreferenced. |
+| `no-inline-tenant-or-filter` | The `tenant_id.eq.X,tenant_id.is.null` filter goes through `buildAuditLogTenantFilter` — no inline literals. |
+| `supabase-pending-empty` | Destructive migrations don't park in `supabase/pending/` indefinitely. |
+| `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
+| `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
+| `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
+
+## Adding a new convention
+
+Established pattern, three layers from inside out:
+
+1. **Scanner unit test.** Extract the detection logic (regex + brace
+   walker) into a small `src/lib/...` module and unit-test it
+   against crafted in-memory sources. Template:
+   `src/lib/audit-log/scan-action-literals.ts` +
+   `src/__tests__/lib/scan-action-literals.test.ts`.
+
+2. **Codebase walker.** Land the codebase-walking test under
+   `src/__tests__/conventions/`. Start in advisory mode:
+   `toMatchInlineSnapshot` of the current offender set. New
+   offenders land in the diff first.
+
+3. **Ratchet → enforce.** When the backlog is too large to fix in
+   one PR, add a numeric ceiling (see the retired
+   `audit-ratchet.json` for the pattern). Decrement on each
+   cleanup; once the count hits zero, flip the test to
+   `toEqual([])` and delete the ratchet.
+
+Three-layer reasoning:
+
+- Scanner test pins the detection.
+- Codebase walk pins the live tree is clean.
+- Smoke test (`src/__tests__/lib/convention-smoke.test.ts`) proves
+  the guardrail actually fires on synthetic broken sources — the
+  codebase walk alone can only prove the current tree, not that a
+  regression would be caught.
+
+## Shared helpers
+
+Convention tests that walk the source tree use `walkFiles` from
+`@/lib/testing/walk`:
+
+```ts
+import { walkFiles } from "@/lib/testing/walk";
+const files = walkFiles(join(process.cwd(), "src/app/api"));
+```
+
+Don't roll a new recursive walker inside an individual test — the
+shared helper standardizes the exclusion semantics (skip
+`node_modules` + dotfiles by default) and accepts an `extensions`
+override for `.tsx`-inclusive scans.
+
+## Local install paths
+
+Two equivalent ways to wire the hooks; both invoke the same
+underlying `npm run` commands.
+
+- **Native (no devDep)**: `npm run install-hooks` points
+  `core.hooksPath` at `.githooks/`. `pre-commit` runs
+  `npm run test:conventions`; `pre-push` runs `npm run check`
+  (lint + tsc + conventions).
+- **Lefthook**: `npx lefthook install` reads `lefthook.yml`. Same
+  two hooks wired up. Useful if lefthook is already on your path.
+
+CI runs the same guardrails on every PR via
+`.github/workflows/conventions.yml`, so the local hooks are purely
+for fast feedback.
+
+## Bypass policy
+
+`git commit --no-verify` skips the local hook. Legit uses:
+
+- A snapshot test is failing because the change is the new
+  intentional snapshot. Bypass, then run `vitest -u` in the same
+  commit (or the next one) and ship both edits together.
+- The hook itself is broken (transient npm cache issue, system
+  Node version mismatch). File a follow-up to fix the hook.
+
+Don't bypass to silence a genuine guardrail failure. The CI check
+on the PR catches anything the local bypass let through — worst
+case is a wasted CI run, not a regression landing on main. If a
+convention no longer fits, change the guardrail in the same PR.

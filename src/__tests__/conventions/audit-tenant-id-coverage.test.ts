@@ -19,12 +19,12 @@ import { walkFiles } from "@/lib/testing/walk";
  * and the set that omits it. New call sites are flagged to choose —
  * either commit to the omission (in-tenant action) or pass tenantId.
  *
- * Snapshot maintenance: both snapshots will diff frequently as new
- * audit calls land or line numbers shift after unrelated edits.
- * Running `vitest -u` to refresh them is a routine PR step. The
- * signal worth reviewing is *which set the call landed in* — adding
- * a new line to the "no tenantId" set silently is the regression
- * this test guards against, not the line-number churn.
+ * Snapshot maintenance: line numbers used to live in these snapshots
+ * and churned on every unrelated edit. Now we collapse to file-level
+ * entries with a count when a file holds more than one call (e.g.
+ * "users/[id]/route.ts ×2"), so the diff surfaces only when a file
+ * crosses sides or a new call lands. Refreshing with `vitest -u`
+ * stays routine.
  *
  * Implementation note: the scanner matches the `tenantId:` token
  * literally inside the logAudit() argument object. Multi-line
@@ -78,23 +78,18 @@ describe("logAudit tenantId coverage (advisory)", () => {
       const rel = file.replace(process.cwd() + "/", "");
       sites.push(...findLogAuditCalls(source, rel));
     }
-    const withTenantId = sites
-      .filter((s) => s.hasTenantId)
-      .map((s) => `${s.file}:${s.line}`)
-      .sort();
+    const withTenantId = collapseByFile(sites.filter((s) => s.hasTenantId));
 
     // Snapshot tracks the call sites that explicitly attribute to the
     // entity's tenant (cross-tenant / service-role inserts).
     expect(withTenantId).toMatchInlineSnapshot(`
       [
-        "src/app/api/automation/rules/[id]/route.ts:115",
-        "src/app/api/enrollments/route.ts:307",
-        "src/app/api/enrollments/route.ts:372",
-        "src/app/api/paths/enroll/route.ts:126",
-        "src/app/api/users/[id]/route.ts:124",
-        "src/app/api/users/[id]/route.ts:45",
-        "src/app/api/users/route.ts:135",
-        "src/app/api/workflows/[id]/run/route.ts:58",
+        "src/app/api/automation/rules/[id]/route.ts",
+        "src/app/api/enrollments/route.ts ×2",
+        "src/app/api/paths/enroll/route.ts",
+        "src/app/api/users/[id]/route.ts ×2",
+        "src/app/api/users/route.ts",
+        "src/app/api/workflows/[id]/run/route.ts",
       ]
     `);
   });
@@ -108,32 +103,37 @@ describe("logAudit tenantId coverage (advisory)", () => {
       const rel = file.replace(process.cwd() + "/", "");
       sites.push(...findLogAuditCalls(source, rel));
     }
-    const withoutTenantId = sites
-      .filter((s) => !s.hasTenantId)
-      .map((s) => `${s.file}:${s.line}`)
-      .sort();
+    const withoutTenantId = collapseByFile(sites.filter((s) => !s.hasTenantId));
 
     // The "trigger fills tenant_id" set. Anything new landing here
     // forces a triage commit: either confirm it's in-tenant (and
     // update the snapshot in the same PR), or pass tenantId.
     expect(withoutTenantId).toMatchInlineSnapshot(`
       [
-        "src/app/api/admin/cron-alert-replay/route.ts:196",
-        "src/app/api/admin/notification-audit/refresh-view/route.ts:45",
-        "src/app/api/admin/notification-audit/route.ts:123",
-        "src/app/api/automation/rules/route.ts:103",
-        "src/app/api/automation/rules/route.ts:154",
-        "src/app/api/automation/rules/route.ts:188",
-        "src/app/api/courses/route.ts:151",
-        "src/app/api/courses/route.ts:243",
-        "src/app/api/courses/route.ts:291",
-        "src/app/api/profile/route.ts:116",
-        "src/app/api/settings/route.ts:78",
-        "src/app/api/users/bulk/route.ts:211",
-        "src/app/api/workflows/[id]/route.ts:103",
-        "src/app/api/workflows/[id]/route.ts:75",
-        "src/app/api/workflows/route.ts:79",
+        "src/app/api/admin/cron-alert-replay/route.ts",
+        "src/app/api/admin/notification-audit/refresh-view/route.ts",
+        "src/app/api/admin/notification-audit/route.ts",
+        "src/app/api/automation/rules/route.ts ×3",
+        "src/app/api/courses/route.ts ×3",
+        "src/app/api/profile/route.ts",
+        "src/app/api/settings/route.ts",
+        "src/app/api/users/bulk/route.ts",
+        "src/app/api/workflows/[id]/route.ts ×2",
+        "src/app/api/workflows/route.ts",
       ]
     `);
   });
 });
+
+/**
+ * Collapse `CallSite[]` to a sorted, dedup-by-file list. Files with
+ * more than one matching call get a `" ×N"` suffix so the snapshot
+ * still surfaces multi-site fanout without exposing line numbers.
+ */
+function collapseByFile(sites: CallSite[]): string[] {
+  const counts = new Map<string, number>();
+  for (const s of sites) counts.set(s.file, (counts.get(s.file) ?? 0) + 1);
+  return Array.from(counts.entries())
+    .map(([file, n]) => (n === 1 ? file : `${file} ×${n}`))
+    .sort();
+}

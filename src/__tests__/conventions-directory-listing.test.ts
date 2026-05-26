@@ -23,16 +23,17 @@ describe("conventions directory", () => {
       [
         "audit-action-conventions.test.ts",
         "audit-tenant-id-coverage.test.ts",
+        "check-script-runs.test.ts",
         "check-script.test.ts",
         "dependencies-ratchet.test.ts",
         "dependency-footprint.test.ts",
         "get-cache-control-audit.test.ts",
+        "git-hooks.test.ts",
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
         "mutation-no-store-convention.test.ts",
         "no-compliance-requirements-queries.test.ts",
         "no-inline-tenant-or-filter.test.ts",
-        "pre-commit-hook.test.ts",
         "supabase-pending-empty.test.ts",
       ]
     `);
