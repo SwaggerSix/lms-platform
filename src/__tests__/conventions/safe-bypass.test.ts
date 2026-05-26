@@ -1,35 +1,26 @@
 import { describe, it, expect } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
-import { writeFileSync, readFileSync, copyFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, readFileSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { withTempDir } from "@/lib/testing/temp-dir";
-import { initGitRepo } from "@/lib/testing/git-fixture";
+import { initGitRepo, installHook } from "@/lib/testing/git-fixture";
 
 /**
  * End-to-end test for scripts/safe-bypass.sh. Spawns it inside a
  * temp git repo with staged + unstaged changes and asserts:
  *   - The staged tree gets committed.
  *   - The unstaged changes survive (stash → pop).
- *   - The hooks don't run (since we passed --no-verify under the
- *     hood, install a pre-commit that would otherwise fail).
+ *   - The hooks don't run (we install a deliberately failing
+ *     pre-commit; --no-verify under the hood bypasses it).
  *
  * @infra
  */
-
-function installFailingHook(dir: string): void {
-  mkdirSync(join(dir, ".git/hooks"), { recursive: true });
-  writeFileSync(
-    join(dir, ".git/hooks/pre-commit"),
-    "#!/usr/bin/env sh\necho HOOK_RAN\nexit 1\n"
-  );
-  execSync(`chmod +x ${join(dir, ".git/hooks/pre-commit")}`);
-}
 
 describe("safe-bypass.sh", () => {
   it("commits staged tree, restores unstaged changes, skips hooks", () => {
     withTempDir("safe-bypass-", (dir) => {
       initGitRepo(dir);
-      installFailingHook(dir);
+      installHook(dir, "pre-commit", "echo HOOK_RAN\nexit 1");
       copyFileSync(
         join(process.cwd(), "scripts/safe-bypass.sh"),
         join(dir, "safe-bypass.sh")

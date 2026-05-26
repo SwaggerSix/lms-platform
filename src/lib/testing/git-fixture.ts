@@ -2,7 +2,7 @@
 // scope rules (production code must not import from this directory).
 
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, chmodSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 interface InitGitRepoOptions {
@@ -41,4 +41,25 @@ export function initGitRepo(dir: string, options: InitGitRepoOptions = {}): void
   if (branch) {
     execSync(`git checkout -q -b ${branch}`, { cwd: dir });
   }
+}
+
+/**
+ * Drop an executable hook into the repo's `.git/hooks/` (so `git
+ * commit` will run it). Useful for tests that want to verify
+ * bypass behavior — e.g. `installHook(dir, "pre-commit", "exit 1")`
+ * fails any commit that doesn't pass `--no-verify`.
+ *
+ * Writes a shebang automatically; the `body` is the script body
+ * minus the shebang.
+ */
+export function installHook(
+  dir: string,
+  hook: "pre-commit" | "pre-push" | "commit-msg" | "prepare-commit-msg",
+  body: string
+): void {
+  const hooksDir = join(dir, ".git/hooks");
+  mkdirSync(hooksDir, { recursive: true });
+  const path = join(hooksDir, hook);
+  writeFileSync(path, `#!/usr/bin/env sh\n${body}\n`);
+  chmodSync(path, 0o755);
 }

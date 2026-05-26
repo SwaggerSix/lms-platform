@@ -36,6 +36,7 @@ describe("conventions directory", () => {
         "gitignore.test.ts",
         "header-parity.test.ts",
         "install-hooks.test.ts",
+        "isadmin-adoption-ratchet.test.ts",
         "lefthook-parity.test.ts",
         "middleware.test.ts",
         "mutation-no-store-convention.test.ts",

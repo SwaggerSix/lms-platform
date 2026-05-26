@@ -35,6 +35,7 @@ glob auto-picks up new files in that directory.
 | `vercel-config` | Snapshots non-cron `vercel.json` keys; pins `framework=nextjs` and `regions=["iad1"]`. |
 | `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
+| `isadmin-adoption-ratchet` | Caps remaining `role !== "admin"` inequality-form checks; monotonically decreasing as touched code migrates to `isAdmin()`. |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
@@ -85,6 +86,30 @@ thumb for choosing whether to gate:
 
 A new gate lands as a +1 entry in the snapshot; removing a gate
 lands as a -1. Both diffs are deliberate signals during review.
+
+## Migrating role checks to `isAdmin()`
+
+`src/lib/auth/roles.ts` is the canonical home for role-membership
+checks: `isAdmin(role)` (admin / super_admin) and
+`isManagerOrAbove(role)` (admin / super_admin / manager).
+
+About 20 pages still use the inequality form
+`role !== "admin" && role !== "super_admin"`. The
+`isadmin-adoption-ratchet` test caps the remaining count and
+forces it to decrease as PRs touch the surrounding code.
+
+**Rule of thumb for when to migrate a site:**
+
+- **Yes**, migrate when your PR is already editing the function
+  containing the check. The helper is a one-line swap.
+- **Yes**, migrate when adding a NEW role check — never write the
+  inequality form for new code.
+- **No, leave it alone** if your PR doesn't otherwise touch the
+  surrounding code. Mass-rewriting all 20 sites in one go would
+  produce a huge diff that's mostly noise; incremental migration
+  pairs each change with a code-review pass.
+- **Lower the ratchet ceiling** in the same PR as the migration so
+  the count is monotonically decreasing.
 
 ## Related playbooks
 

@@ -136,6 +136,7 @@ describe("docs/conventions.md coverage", () => {
       "vercel-config",
       "header-parity",
       "middleware",
+      "isadmin-adoption-ratchet",
       "badge-urls",
       "workflows",
       "prod-gate-warnings",
