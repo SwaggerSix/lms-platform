@@ -27,7 +27,6 @@ describe("docs footprint", () => {
         "CHANGELOG.md",
         "CLAUDE.md",
         "DEPLOYMENT.md",
-        "IMPLEMENTATION_PLAN.md",
         "README.md",
       ]
     `);
@@ -39,6 +38,18 @@ describe("docs footprint", () => {
       [
         "conventions.md",
         "migrations.md",
+      ]
+    `);
+  });
+
+  it("docs/archived/ — historical reference docs", () => {
+    // Anything that lands here is intentionally not part of the
+    // active doc surface. Snapshotting catches accidental archives
+    // (someone moving a current doc) and accidental un-archives.
+    const files = listMarkdown(join(process.cwd(), "docs/archived"));
+    expect(files).toMatchInlineSnapshot(`
+      [
+        "IMPLEMENTATION_PLAN.md",
       ]
     `);
   });

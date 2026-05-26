@@ -1,9 +1,9 @@
 // Test-only helper. See src/lib/testing/walk.ts for the module's
 // scope rules (production code must not import from this directory).
 
-import { execSync } from "node:child_process";
 import { readFileSync, mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import { join } from "node:path";
+import { initGitRepo } from "./git-fixture";
 
 /**
  * Build a minimal project layout inside `dir` that mimics this repo
@@ -20,7 +20,9 @@ import { join } from "node:path";
  * reuse it.
  */
 export function buildInstallHooksFixture(dir: string): void {
-  execSync("git init -q", { cwd: dir });
+  // initialCommit:false — the install-hooks test only inspects
+  // config, not commit history, so no need to spend time committing.
+  initGitRepo(dir, { initialCommit: false });
   const pkg = JSON.parse(
     readFileSync(join(process.cwd(), "package.json"), "utf8")
   ) as { scripts?: Record<string, string> };

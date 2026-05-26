@@ -3,9 +3,9 @@
 > ⚠️ **Historical.** This doc captures the original implementation
 > plan and is preserved for context. Parts of it have since shipped
 > and evolved (e.g. the `compliance_requirements` table was retired
-> — see `docs/migrations.md`). Treat this as a reference snapshot,
+> — see `../migrations.md`). Treat this as a reference snapshot,
 > not a current spec. For active conventions and infrastructure,
-> see `docs/conventions.md` and `CHANGELOG.md`.
+> see `../conventions.md` and `../../CHANGELOG.md`.
 
 ## Executive Summary
 

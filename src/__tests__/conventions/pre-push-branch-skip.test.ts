@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { execSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, chmodSync } from "node:fs";
 import { join } from "node:path";
 import { withTempDir } from "@/lib/testing/temp-dir";
+import { initGitRepo } from "@/lib/testing/git-fixture";
 
 /**
  * End-to-end test for the .githooks/pre-push branch-name skip.
@@ -16,16 +17,7 @@ import { withTempDir } from "@/lib/testing/temp-dir";
  */
 
 function buildRepo(dir: string, branch: string): void {
-  execSync("git init -q", { cwd: dir });
-  execSync("git config user.email t@t", { cwd: dir });
-  execSync("git config user.name t", { cwd: dir });
-  // Disable any inherited commit-signing config so the test isn't
-  // blocked by signing infrastructure.
-  execSync("git config commit.gpgsign false", { cwd: dir });
-  // Need a commit so the branch can be created.
-  writeFileSync(join(dir, "x"), "");
-  execSync("git add x && git commit --no-gpg-sign -q -m init", { cwd: dir });
-  execSync(`git checkout -q -b ${branch}`, { cwd: dir });
+  initGitRepo(dir, { branch });
   mkdirSync(join(dir, ".githooks"));
   const real = readFileSync(join(process.cwd(), ".githooks/pre-push"), "utf8");
   writeFileSync(join(dir, ".githooks/pre-push"), real);

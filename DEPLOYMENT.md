@@ -145,3 +145,12 @@ View cron execution logs in the Vercel dashboard under **Settings > Cron Jobs**.
 - Verify `NEXT_PUBLIC_SUPABASE_URL` and keys are correct.
 - Check Supabase project status (not paused).
 - Ensure RLS policies allow the required operations.
+
+## See also
+
+- [docs/conventions.md](docs/conventions.md) — code-level
+  conventions enforced by `npm run test:conventions`.
+- [docs/migrations.md](docs/migrations.md) — playbook for
+  retiring a database table or column.
+- [CHANGELOG.md](CHANGELOG.md) — notable changes worth surfacing
+  during PR review.

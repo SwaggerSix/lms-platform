@@ -8,6 +8,7 @@
 // Module map:
 //   - walk.ts                  — recursive file walker for codebase scans
 //   - temp-dir.ts              — withTempDir / withTempDirAsync
+//   - git-fixture.ts           — initGitRepo (gpgsign-disabled init + optional branch)
 //   - install-hooks-fixture.ts — temp git+package fixture for hook tests
 //   - check-script-fixture.ts  — temp package.json + tsc stub for check-chain tests
 
