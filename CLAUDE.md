@@ -45,6 +45,16 @@ See [docs/conventions.md](docs/conventions.md) for the full list of
 guardrails, how to add a new one, install paths for local hooks,
 bypass policy, and the `walkFiles` convention for new tests.
 
+## Further reading
+
+- [README.md](README.md) — project description, badges, local
+  commands table, repo layout.
+- [docs/conventions.md](docs/conventions.md) — guardrail catalog,
+  how to add a new convention, install paths for local hooks,
+  bypass policy.
+- [CHANGELOG.md](CHANGELOG.md) — notable convention / infrastructure
+  changes worth surfacing during PR review.
+
 ## Coding style
 
 - Prefer `jsonCached` / `jsonNoStore` over hand-rolled `NextResponse.json`
