@@ -29,6 +29,7 @@ describe("conventions directory", () => {
         "dependencies-ratchet.test.ts",
         "dependency-footprint.test.ts",
         "docs-footprint.test.ts",
+        "env-example.test.ts",
         "get-cache-control-audit.test.ts",
         "git-hooks.test.ts",
         "install-hooks.test.ts",
@@ -41,6 +42,7 @@ describe("conventions directory", () => {
         "scripts-footprint.test.ts",
         "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",
+        "supabase-tree.test.ts",
         "testing-helpers-scope.test.ts",
       ]
     `);

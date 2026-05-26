@@ -19,6 +19,11 @@ export default defineConfig({
         "src/__tests__/**",
         "src/types/**",
         "src/app/**/layout.tsx",
+        // Test-only helpers — covered by their own unit tests, but
+        // they're test infrastructure rather than production code,
+        // so the production coverage report shouldn't be skewed by
+        // them.
+        "src/lib/testing/**",
       ],
     },
   },

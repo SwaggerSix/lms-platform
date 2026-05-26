@@ -20,6 +20,7 @@ describe("scripts footprint", () => {
       .sort();
     expect(files).toMatchInlineSnapshot(`
       [
+        "README.md",
         "seed-data.mjs",
         "seed-database-fix.mjs",
         "seed-database.mjs",
