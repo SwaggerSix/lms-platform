@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import AdminMarketplaceClient from "./admin-marketplace-client";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default async function AdminMarketplacePage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+  if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");
 
   // Fetch providers with course counts
   const { data: providers } = await service

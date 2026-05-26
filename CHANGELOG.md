@@ -4,6 +4,26 @@ Notable changes worth surfacing during PR review. Not every commit
 needs an entry — focus on conventions, infrastructure choices, and
 removals that affect future work.
 
+## 2026-05-27
+
+- **Role-membership helpers introduced.** Added `isAdmin(role)` and
+  `isManagerOrAbove(role)` in `src/lib/auth/roles.ts` as the
+  canonical shape for role checks. Middleware adopted both; four
+  admin pages (`/admin/users`, `/admin/audit-log`,
+  `/admin/marketplace`, `/admin/cron-health`) migrated from
+  `role !== "admin" && role !== "super_admin"` inequality to
+  `!isAdmin(role)`. The remaining ~20 inequality-form sites stay
+  untouched; they migrate when their surrounding code is touched
+  again. Convention documented in `CLAUDE.md`.
+- **`@infra` marker convention** replaces the central
+  `INFRA_TESTS` allowlist in `conventions-doc-coverage`. Tests
+  opting out of the doc-table per-row check now carry `@infra`
+  in their docstring; keeps coupling localized to each test file.
+- **`scripts/safe-bypass.sh`** wraps `git commit --no-verify` with
+  a stash → commit → pop dance, preserving the stash on commit
+  failure for easy recovery. For the snapshot-update bypass flow
+  the conventions doc allows.
+
 ## 2026-05-26
 
 - **Fixed silent Cache-Control override at the Vercel edge.**

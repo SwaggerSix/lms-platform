@@ -44,6 +44,7 @@ describe("conventions directory", () => {
         "no-inline-tenant-or-filter.test.ts",
         "pre-push-branch-skip.test.ts",
         "prod-gate-warnings.test.ts",
+        "safe-bypass.test.ts",
         "scripts-footprint.test.ts",
         "scripts-headers.test.ts",
         "setup-contents.test.ts",

@@ -57,6 +57,7 @@ describe("docs/conventions.md coverage", () => {
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
         "pre-push-branch-skip.test.ts",
+        "safe-bypass.test.ts",
       ]
     `);
   });
