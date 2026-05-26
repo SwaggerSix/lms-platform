@@ -83,7 +83,13 @@ const TOP_BADGES = [
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export default function ProfileClient({ data }: { data: ProfileData }) {
+export default function ProfileClient({
+  data,
+  readOnly = false,
+}: {
+  data: ProfileData;
+  readOnly?: boolean;
+}) {
   const [editMode, setEditMode] = useState(false);
   const [bio, setBio] = useState(data.bio);
   const [saving, setSaving] = useState(false);
@@ -136,19 +142,21 @@ export default function ProfileClient({ data }: { data: ProfileData }) {
             </div>
 
             {/* Edit button */}
-            <button
-              onClick={handleToggleEdit}
-              disabled={saving}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                editMode
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              )}
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
-              {editMode ? "Save Profile" : "Edit Profile"}
-            </button>
+            {!readOnly && (
+              <button
+                onClick={handleToggleEdit}
+                disabled={saving}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                  editMode
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                )}
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+                {editMode ? "Save Profile" : "Edit Profile"}
+              </button>
+            )}
           </div>
         </div>
 
