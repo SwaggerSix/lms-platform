@@ -26,7 +26,6 @@ describe("pre-commit hook", () => {
   it("is executable", () => {
     // POSIX mode bits: 0o111 = any execute bit set.
     const mode = statSync(HOOK_PATH).mode;
-    // eslint-disable-next-line no-bitwise
     expect((mode & 0o111) !== 0).toBe(true);
   });
 
@@ -62,7 +61,6 @@ describe("pre-push hook", () => {
 
   it("is executable", () => {
     const mode = statSync(PRE_PUSH_PATH).mode;
-    // eslint-disable-next-line no-bitwise
     expect((mode & 0o111) !== 0).toBe(true);
   });
 

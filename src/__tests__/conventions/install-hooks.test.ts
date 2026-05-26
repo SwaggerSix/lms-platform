@@ -40,7 +40,6 @@ describe("install-hooks", () => {
         .trim();
       const hookFile = join(workdir, hooksPath, "pre-commit");
       const mode = statSync(hookFile).mode;
-      // eslint-disable-next-line no-bitwise
       expect((mode & 0o111) !== 0).toBe(true);
       expect(readFileSync(hookFile, "utf8")).toContain("npm run test:conventions");
     });

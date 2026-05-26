@@ -33,6 +33,5 @@ export default async function EvaluationsLearnerPage() {
     .eq("user_id", dbUser.id)
     .order("created_at", { ascending: false });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <EvaluationsLearnerClient assignments={(assignments ?? []) as any} />;
 }

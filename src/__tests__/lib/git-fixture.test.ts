@@ -61,7 +61,6 @@ describe("installHook", () => {
       const source = readFileSync(path, "utf8");
       expect(source.startsWith("#!")).toBe(true);
       expect(source).toContain("exit 1");
-      // eslint-disable-next-line no-bitwise
       expect((statSync(path).mode & 0o111) !== 0).toBe(true);
     });
   });

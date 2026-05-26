@@ -43,7 +43,6 @@ export default async function EvaluationReportPage({ params }: { params: Promise
 
   if (!course) redirect("/admin/evaluations");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const asAny = (v: unknown) => v as any;
   return (
     <EvaluationReportClient

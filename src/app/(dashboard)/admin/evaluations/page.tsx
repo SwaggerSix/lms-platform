@@ -46,7 +46,6 @@ export default async function EvaluationsAdminPage() {
       .order("title", { ascending: true }),
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const asAny = (v: unknown) => v as any;
   return (
     <EvaluationsAdminClient

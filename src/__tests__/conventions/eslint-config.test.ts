@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ESLint } from "eslint";
 
 /**
  * Next 16 removed the `next lint` subcommand, which silently broke
@@ -51,5 +52,32 @@ describe("eslint config wiring", () => {
     const source = readFileSync(join(ROOT, "eslint.config.mjs"), "utf8");
     expect(source).toContain("core-web-vitals");
     expect(source).toContain("recommended");
+  });
+
+  // Regression guard: the bare config (before the TS parser was
+  // wired in) threw "Parsing error: Unexpected token" on every TS
+  // file. Lint a representative .tsx fixture through the real
+  // config and assert no fatal parse error — a parser
+  // misconfiguration would surface here instead of failing the
+  // whole `npm run lint` run cryptically.
+  it("parses TS/TSX without a fatal parser error", async () => {
+    const eslint = new ESLint({
+      cwd: ROOT,
+      overrideConfigFile: join(ROOT, "eslint.config.mjs"),
+    });
+    const tsx = [
+      "type Props = { role: string };",
+      "export function Gate({ role }: Props) {",
+      "  const ok = role === 'admin';",
+      "  return ok ? <span>ok</span> : null;",
+      "}",
+      "",
+    ].join("\n");
+    const results = await eslint.lintText(tsx, { filePath: "src/__fixture__/gate.tsx" });
+    const fatal = results.flatMap((r) => r.messages).filter((m) => m.fatal);
+    expect(
+      fatal,
+      `parser produced fatal errors: ${JSON.stringify(fatal, null, 2)}`
+    ).toEqual([]);
   });
 });

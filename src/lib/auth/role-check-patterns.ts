@@ -45,7 +45,7 @@
  */
 
 export const INEQUALITY_ROLE_RE =
-  /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"super_admin"/;
+  /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.?\s]*role\s*!==\s*"super_admin"|role\s*!==\s*"super_admin"\s*&&\s*[A-Za-z_.?\s]*role\s*!==\s*"admin"/;
 
 export const ADMIN_MANAGER_INCLUDES_RE =
   /\[(?:"admin",\s*"manager"|"manager",\s*"admin")\]\.includes\(/;

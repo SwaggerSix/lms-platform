@@ -80,7 +80,9 @@ export interface PlayerProps {
 }
 
 function sanitizeHTML(html: string): string {
-  // Use DOMPurify for robust XSS protection
+  // Use DOMPurify for robust XSS protection (lazy require: it's a
+  // browser-only lib pulled in at call time, not module load).
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const DOMPurify = require("dompurify");
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ["h1","h2","h3","h4","h5","h6","p","br","hr","ul","ol","li","a","strong","em","b","i","u","s","blockquote","pre","code","img","table","thead","tbody","tr","th","td","div","span","figure","figcaption","video","source","audio"],

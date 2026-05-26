@@ -54,15 +54,13 @@ describe("inequality-form role-check detector", () => {
     expect(INEQUALITY_ROLE_RE.test('role !== "admin"')).toBe(false);
   });
 
-  it("does NOT match a reversed-order inequality (super_admin first)", () => {
-    // The regex looks for "admin" first then "super_admin"; a
-    // reversed form would slip through. Documents the limitation —
-    // if someone writes the reversed form we miss it until the
-    // regex is widened.
+  it("matches a reversed-order inequality (super_admin first)", () => {
+    // The regex matches both orderings, mirroring the array-form
+    // guardrails — a reordered literal can't slip past.
     expect(
       INEQUALITY_ROLE_RE.test(
         'role !== "super_admin" && role !== "admin"'
       )
-    ).toBe(false);
+    ).toBe(true);
   });
 });

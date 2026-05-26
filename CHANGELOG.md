@@ -6,6 +6,25 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`no-img-element` promoted to error with a documented keeper
+  list.** Audited all `<img>` sites: none convert cleanly (DB/
+  external/user-content URLs the `next-config` allowlist doesn't
+  cover, plus local SVGs). The 12 known files are listed in
+  `IMG_KEEPERS` in `eslint.config.mjs`; everywhere else a stray
+  `<img>` now fails the gate.
+- **Stale eslint-disable directives reconciled.** Enabled the
+  rules the tree's inline disables actually depend on
+  (`react-hooks/*`, `@typescript-eslint/no-require-imports`) and
+  removed the ones for rules left intentionally off
+  (`no-explicit-any` ×3, `no-bitwise` ×5). Added a scoped disable
+  to the one lazy `require` (dompurify) that lacked one. Lint is
+  down to 11 genuine `exhaustive-deps` warnings, 0 errors.
+- **eslint-config guardrail gained a parser smoke test** — lints a
+  `.tsx` fixture through the real config and asserts no fatal parse
+  error, so a parser misconfiguration fails loudly.
+- **`INEQUALITY_ROLE_RE` widened for reversed order** — now matches
+  `role !== "super_admin" && role !== "admin"` too, closing the
+  last documented reorder gap across the role-check regexes.
 - **`no-html-link-for-pages` cleared and promoted to error.**
   Converted the 6 `<a href="/...">` page links (reports, dashboard,
   course-detail, mentorship detail, my-courses) to `next/link`; the

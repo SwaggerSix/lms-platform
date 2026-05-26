@@ -40,7 +40,6 @@ describe("buildInstallHooksFixture", () => {
       buildInstallHooksFixture(dir);
       const hook = join(dir, ".githooks/pre-commit");
       expect(existsSync(hook)).toBe(true);
-      // eslint-disable-next-line no-bitwise
       expect((statSync(hook).mode & 0o111) !== 0).toBe(true);
       const fixtureSrc = readFileSync(hook, "utf8");
       const liveSrc = readFileSync(join(process.cwd(), ".githooks/pre-commit"), "utf8");
