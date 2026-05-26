@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { jsonCached } from "@/lib/api/cached";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
@@ -27,7 +28,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // Only admins/managers can view other people's reports
   if (subjectId !== auth.user.id) {
     const { data: dbUser } = await service.from("users").select("role").eq("id", auth.user.id).single();
-    if (!dbUser || !["admin", "manager"].includes(dbUser.role)) {
+    // Semantic shift from the old array-includes form: super_admin
+    // now also passes, which is the intended behavior.
+    if (!dbUser || !isManagerOrAbove(dbUser.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

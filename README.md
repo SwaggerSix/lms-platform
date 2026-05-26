@@ -22,7 +22,8 @@ mentorship, observations, evaluations, …).
 - `src/app/api/` — route handlers (every GET classified per the
   cache-control convention; mutations use `jsonNoStore`).
 - `src/lib/` — domain helpers (audit-log scoping, required-training,
-  validation, response shorthands).
+  validation, response shorthands, role-membership checks via
+  `auth/roles.ts`).
 - `src/__tests__/` — Vitest suite. `conventions/` holds the
   guardrails that run via `npm run test:conventions`.
 - `supabase/migrations/` — database migrations.

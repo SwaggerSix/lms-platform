@@ -32,6 +32,17 @@ describe("super_admin omission audit (advisory)", () => {
         if (PATTERN.test(lines[i])) sites.push({ file: rel, line: i + 1 });
       }
     }
+
+    // Ratchet: site count is monotonically decreasing. Each PR
+    // that migrates a site to isManagerOrAbove() lowers MAX by
+    // the number it removed. When MAX hits 0, flip the snapshot
+    // to `toEqual([])` and retire the ratchet.
+    const MAX = 19;
+    expect(
+      sites.length,
+      `["admin", "manager"].includes(role) sites: ${sites.length}. Ceiling ${MAX}. Migrate touched sites to isManagerOrAbove() and lower MAX.`
+    ).toBeLessThanOrEqual(MAX);
+
     // Collapse to file-level with ×N suffix when multiple sites
     // share a file. Mirrors audit-tenant-id-coverage's approach.
     const counts = new Map<string, number>();
@@ -55,7 +66,6 @@ describe("super_admin omission audit (advisory)", () => {
         "src/app/api/certificates/generate/route.ts",
         "src/app/api/certifications/route.ts",
         "src/app/api/enrollments/route.ts ×4",
-        "src/app/api/feedback/cycles/[id]/report/route.ts",
         "src/app/api/gamification/route.ts",
         "src/app/api/skills/route.ts",
       ]
