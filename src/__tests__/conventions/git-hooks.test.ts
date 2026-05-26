@@ -78,4 +78,12 @@ describe("pre-push hook", () => {
     const source = readFileSync(PRE_PUSH_PATH, "utf8");
     expect(source).toMatch(/^set -e/m);
   });
+
+  it("skips on scratch/* and wip/* branches", () => {
+    const source = readFileSync(PRE_PUSH_PATH, "utf8");
+    expect(source).toMatch(/scratch\/\*/);
+    expect(source).toMatch(/wip\/\*/);
+    // Skip branch implies an early exit 0 before the check runs.
+    expect(source).toMatch(/exit 0/);
+  });
 });

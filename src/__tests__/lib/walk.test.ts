@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { walkFiles } from "@/lib/testing/walk";
+import { withTempDir } from "@/lib/testing/temp-dir";
 
 /**
  * walkFiles is used by every codebase-walking convention test. Pin
@@ -83,11 +84,8 @@ describe("walkFiles", () => {
   });
 
   it("empty directory returns empty array", () => {
-    const empty = mkdtempSync(join(tmpdir(), "walk-empty-"));
-    try {
+    withTempDir("walk-empty-", (empty) => {
       expect(walkFiles(empty)).toEqual([]);
-    } finally {
-      rmSync(empty, { recursive: true, force: true });
-    }
+    });
   });
 });

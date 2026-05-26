@@ -83,6 +83,11 @@ CI runs the same guardrails on every PR via
 `.github/workflows/conventions.yml`, so the local hooks are purely
 for fast feedback.
 
+The pre-push hook skips when the local branch matches `scratch/*`
+or `wip/*` — scratch experiments don't need to clear the gate.
+Push to any other branch (including the standard `claude/...` /
+feature branches) still runs `npm run check`.
+
 ## Bypass policy
 
 `git commit --no-verify` skips the local hook. Legit uses:

@@ -59,4 +59,36 @@ describe("docs/conventions.md coverage", () => {
       expect(doc).toContain(name);
     }
   });
+
+  it("guardrail table rows are snapshotted (catches reorders / removed entries)", () => {
+    const doc = readFileSync(DOC_PATH, "utf8");
+    // Pull every row of the markdown table under "Active guardrails".
+    // The table's first column carries one or more backticked names;
+    // multi-name rows (the wiring-tests grouping) are flattened to
+    // their first name so the snapshot stays parseable as a plain
+    // array of strings. The grouping itself is asserted by the
+    // sibling test above ("documents the wiring tests under one
+    // heading").
+    const lines = doc.split("\n");
+    const start = lines.findIndex((l) => l.startsWith("## Active guardrails"));
+    expect(start, "## Active guardrails heading present").toBeGreaterThan(-1);
+    const rows: string[] = [];
+    for (let i = start; i < lines.length; i++) {
+      const m = lines[i].match(/^\|\s*`([^`]+)`/);
+      if (m) rows.push(m[1]);
+      if (i > start && lines[i].startsWith("## ")) break;
+    }
+    expect(rows).toEqual([
+      "get-cache-control-audit",
+      "mutation-no-store-convention",
+      "audit-action-conventions",
+      "audit-tenant-id-coverage",
+      "no-compliance-requirements-queries",
+      "no-inline-tenant-or-filter",
+      "supabase-pending-empty",
+      "dependencies-ratchet",
+      "dependency-footprint",
+      "check-script",
+    ]);
+  });
 });

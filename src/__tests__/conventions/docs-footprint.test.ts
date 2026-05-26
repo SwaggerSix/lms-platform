@@ -28,6 +28,7 @@ describe("docs footprint", () => {
         "CLAUDE.md",
         "DEPLOYMENT.md",
         "IMPLEMENTATION_PLAN.md",
+        "README.md",
       ]
     `);
   });

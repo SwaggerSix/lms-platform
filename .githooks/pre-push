@@ -3,10 +3,23 @@
 # that slipped past pre-commit (forgotten install, bypassed with
 # --no-verify, multiple commits accumulating before push).
 #
+# Skipped when the local branch matches a personal scratch prefix
+# (`scratch/...`, `wip/...`) — those branches are typically for
+# experiments that don't need to clear the gate. Push to any
+# main-tracking branch (or feature branches) still runs the check.
+#
 # Bypass via `git push --no-verify` when intentionally pushing a
 # branch that needs the snapshot updated upstream.
 
 set -e
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+case "$branch" in
+  scratch/*|wip/*)
+    echo "[pre-push] skipping check on $branch" >&2
+    exit 0
+    ;;
+esac
 
 if ! command -v npm >/dev/null 2>&1; then
   echo "[pre-push] npm not on PATH; skipping check." >&2
