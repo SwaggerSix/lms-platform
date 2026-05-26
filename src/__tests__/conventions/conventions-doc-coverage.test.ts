@@ -137,6 +137,7 @@ describe("docs/conventions.md coverage", () => {
       "header-parity",
       "middleware",
       "isadmin-adoption-ratchet",
+      "super-admin-omission-audit",
       "badge-urls",
       "workflows",
       "prod-gate-warnings",

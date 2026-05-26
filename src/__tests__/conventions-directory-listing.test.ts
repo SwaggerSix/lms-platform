@@ -52,6 +52,7 @@ describe("conventions directory", () => {
         "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",
         "supabase-tree.test.ts",
+        "super-admin-omission-audit.test.ts",
         "testing-helpers-scope.test.ts",
         "tsconfig.test.ts",
         "vercel-config.test.ts",

@@ -20,7 +20,7 @@ const INEQUALITY_RE =
   /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"super_admin"/;
 
 describe("isAdmin adoption ratchet", () => {
-  it("inequality-form role checks only go down (current ceiling: 12)", () => {
+  it("inequality-form role checks only go down (current ceiling: 10)", () => {
     const files = walkFiles(join(process.cwd(), "src"), {
       extensions: [".ts", ".tsx"],
     });
@@ -39,7 +39,7 @@ describe("isAdmin adoption ratchet", () => {
 
     // Ratchet ceiling. Lower when migrations land; once it's 0,
     // flip the assertion to `toEqual([])`.
-    const MAX = 12;
+    const MAX = 10;
     expect(
       matches.length,
       `Inequality-form role checks: ${matches.length}. Ceiling is ${MAX}. ` +

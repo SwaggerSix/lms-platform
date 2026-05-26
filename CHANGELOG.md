@@ -4,6 +4,24 @@ Notable changes worth surfacing during PR review. Not every commit
 needs an entry — focus on conventions, infrastructure choices, and
 removals that affect future work.
 
+## 2026-05-28
+
+- **Latent `super_admin` permissions bug surfaced.** ~17 sites in
+  `src/` use `!["admin", "manager"].includes(role)` to gate
+  manager-or-above access. The form omits `super_admin`, which
+  almost certainly should pass any admin-or-manager check.
+  `super-admin-omission-audit` snapshots the offender set;
+  migrations to `isManagerOrAbove()` (which includes super_admin)
+  are per-site code-review conversations since they shift
+  semantics. The bug isn't actively exploitable — super_admins
+  in practice also carry the `admin` role today — but a future
+  super_admin-only operator would silently lose access.
+- **isAdmin adoption ratchet 14 → 10.** Four more admin pages
+  (`/admin/settings`, `/admin/settings/xapi`, `/admin/tenants`,
+  `/admin/tenants/new`) migrated to `isAdmin(role)` /
+  `isManagerOrAbove(role)`. 12 pages on the canonical shape;
+  ~10 inequality-form sites remain.
+
 ## 2026-05-27
 
 - **Role-membership helpers introduced.** Added `isAdmin(role)` and

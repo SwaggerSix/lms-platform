@@ -36,6 +36,7 @@ glob auto-picks up new files in that directory.
 | `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
 | `isadmin-adoption-ratchet` | Caps remaining `role !== "admin"` inequality-form checks; monotonically decreasing as touched code migrates to `isAdmin()`. |
+| `super-admin-omission-audit` | Advisory snapshot of `["admin", "manager"].includes(role)` sites that silently exclude super_admin (likely permissions bug). |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
@@ -106,7 +107,7 @@ Two live examples:
 
 - **`isadmin-adoption-ratchet`** — caps remaining
   `role !== "admin" && (...)role !== "super_admin"` inequality
-  checks at 12. Each migration to `isAdmin()` lowers it.
+  checks at 10. Each migration to `isAdmin()` lowers it.
 - **`get-cache-control-audit`** — was a ratchet from 87 down to
   zero; flipped to `toEqual([])` on 2026-05-23.
 
