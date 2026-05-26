@@ -6,6 +6,24 @@ import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonCached } from "@/lib/api/cached";
 import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 
+// Row shapes for the loosely-typed service-client queries below
+// (no generated Database type — see src/types/database.ts).
+type RuleLogRow = {
+  id: string;
+  rule_id: string;
+  user_id: string;
+  error_message: string | null;
+  created_at: string;
+};
+type WorkflowLogRow = {
+  id: string;
+  run_id: string;
+  step_id: string;
+  error_message: string | null;
+  created_at: string;
+};
+type RuleAggRow = { rule_id: string; failures: number; latest: string };
+
 /**
  * GET /api/admin/notification-audit?limit=100&offset=0
  *
@@ -52,7 +70,7 @@ export async function GET(request: NextRequest) {
   const tenantFilter = buildAuditLogTenantFilter(tenantId);
   const applyTenantFilter = <T>(q: T): T => {
     if (!tenantFilter) return q;
-    return (q as any).or(tenantFilter) as T;
+    return (q as { or: (filter: string) => T }).or(tenantFilter);
   };
 
   // CSV export path: stream up to 5000 rule failures + 5000 workflow CHECK
@@ -65,7 +83,7 @@ export async function GET(request: NextRequest) {
         .eq("action_type", "send_notification")
         .eq("status", "error")
         .order("created_at", { ascending: false })
-        .limit(5000) as any
+        .limit(5000)
     );
     const workflowCsvQuery = applyTenantFilter(
       service
@@ -73,7 +91,7 @@ export async function GET(request: NextRequest) {
         .select("id, run_id, step_id, error_message, created_at")
         .eq("status", "failed")
         .order("created_at", { ascending: false })
-        .limit(5000) as any
+        .limit(5000)
     );
     const [
       { data: ruleAll, error: ruleAllErr },
@@ -92,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     lines.push("# Rule send_notification failures");
     lines.push(["id", "rule_id", "user_id", "error_message", "created_at"].map(escape).join(","));
-    for (const r of (ruleAll ?? []) as any[]) {
+    for (const r of (ruleAll ?? []) as RuleLogRow[]) {
       lines.push(
         [r.id, r.rule_id, r.user_id, r.error_message ?? "", r.created_at].map(escape).join(",")
       );
@@ -109,7 +127,7 @@ export async function GET(request: NextRequest) {
         (m.includes("violates") && m.includes("type"))
       );
     };
-    for (const w of (workflowAll ?? []) as any[]) {
+    for (const w of (workflowAll ?? []) as WorkflowLogRow[]) {
       if (!checkLike(w.error_message)) continue;
       lines.push(
         [w.id, w.run_id, w.step_id, w.error_message ?? "", w.created_at].map(escape).join(",")
@@ -119,7 +137,7 @@ export async function GET(request: NextRequest) {
     const csv = lines.join("\n");
 
     // Log the export so we have an audit trail of who pulled the data.
-    const workflowCheckCount = (workflowAll ?? []).filter((w: any) => checkLike(w.error_message)).length;
+    const workflowCheckCount = ((workflowAll ?? []) as WorkflowLogRow[]).filter((w) => checkLike(w.error_message)).length;
     logAudit({
       userId: auth.user?.id,
       action: "export.notification_audit_csv",
@@ -156,7 +174,7 @@ export async function GET(request: NextRequest) {
       .eq("action_type", "send_notification")
       .eq("status", "error")
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1) as any
+      .range(offset, offset + limit - 1)
   );
   const workflowPageQuery = applyTenantFilter(
     service
@@ -164,7 +182,7 @@ export async function GET(request: NextRequest) {
       .select("id, run_id, step_id, status, error_message, created_at", { count: "exact" })
       .eq("status", "failed")
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1) as any
+      .range(offset, offset + limit - 1)
   );
   const [
     { data: ruleFailures, error: ruleErr, count: ruleCount },
@@ -193,20 +211,20 @@ export async function GET(request: NextRequest) {
     );
   };
 
-  const workflowCheckFailures = (workflowFailures ?? []).filter((r: any) => checkLike(r.error_message));
+  const workflowCheckFailures = ((workflowFailures ?? []) as WorkflowLogRow[]).filter((r) => checkLike(r.error_message));
 
   // Group rule failures by rule_id within this page so the UI can show a
   // quick rule-level breakdown.
   const ruleSummary: Record<string, { rule_id: string; failures: number; latest: string }> = {};
-  for (const row of ruleFailures ?? []) {
-    const slot = ruleSummary[(row as any).rule_id] ?? {
-      rule_id: (row as any).rule_id,
+  for (const row of (ruleFailures ?? []) as RuleLogRow[]) {
+    const slot = ruleSummary[row.rule_id] ?? {
+      rule_id: row.rule_id,
       failures: 0,
-      latest: (row as any).created_at,
+      latest: row.created_at,
     };
     slot.failures += 1;
-    if ((row as any).created_at > slot.latest) slot.latest = (row as any).created_at;
-    ruleSummary[(row as any).rule_id] = slot;
+    if (row.created_at > slot.latest) slot.latest = row.created_at;
+    ruleSummary[row.rule_id] = slot;
   }
 
   // All-time rule aggregation. The materialized view returns
@@ -219,7 +237,7 @@ export async function GET(request: NextRequest) {
     !!ruleAggErr?.message && /relation .*notification_audit_rule_summary.* does not exist/i.test(ruleAggErr.message);
 
   if (!tenantId && !viewMissing && ruleAggRows && Array.isArray(ruleAggRows)) {
-    topAffectedRules = (ruleAggRows as any[]).map((r) => ({
+    topAffectedRules = (ruleAggRows as RuleAggRow[]).map((r) => ({
       rule_id: r.rule_id,
       failures: Number(r.failures) || 0,
       latest: r.latest,
@@ -235,19 +253,19 @@ export async function GET(request: NextRequest) {
         .eq("action_type", "send_notification")
         .eq("status", "error")
         .order("created_at", { ascending: false })
-        .limit(5000) as any
+        .limit(5000)
     );
     const { data: fallback } = await fbQuery;
     const allTimeMap: Record<string, { rule_id: string; failures: number; latest: string }> = {};
     for (const row of fallback ?? []) {
-      const slot = allTimeMap[(row as any).rule_id] ?? {
-        rule_id: (row as any).rule_id,
+      const slot = allTimeMap[row.rule_id] ?? {
+        rule_id: row.rule_id,
         failures: 0,
-        latest: (row as any).created_at,
+        latest: row.created_at,
       };
       slot.failures += 1;
-      if ((row as any).created_at > slot.latest) slot.latest = (row as any).created_at;
-      allTimeMap[(row as any).rule_id] = slot;
+      if (row.created_at > slot.latest) slot.latest = row.created_at;
+      allTimeMap[row.rule_id] = slot;
     }
     topAffectedRules = Object.values(allTimeMap)
       .sort((a, b) => b.failures - a.failures)

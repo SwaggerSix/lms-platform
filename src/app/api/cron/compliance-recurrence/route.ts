@@ -98,13 +98,13 @@ async function runComplianceRecurrence(): Promise<{
   const pendingEmails: PendingEmail[] = [];
 
   for (const course of courses ?? []) {
-    const required = readRequiredFor((course as any).metadata);
+    const required = readRequiredFor(course.metadata);
     if (!required || !required.frequency_months) continue;
     scanned++;
 
-    const courseId = (course as any).id as string;
-    const courseTitle = (course as any).title as string;
-    const courseSlug = (course as any).slug as string;
+    const courseId = course.id as string;
+    const courseTitle = course.title as string;
+    const courseSlug = course.slug as string;
     const courseLink = `/learn/catalog/${courseSlug}?recert=${courseId}`;
 
     // Latest completion per user for this course.
@@ -118,7 +118,7 @@ async function runComplianceRecurrence(): Promise<{
     if (!completions || completions.length === 0) continue;
 
     const latestByUser = new Map<string, string>();
-    for (const e of completions as any[]) {
+    for (const e of completions) {
       const current = latestByUser.get(e.user_id);
       if (!current || new Date(e.completed_at) > new Date(current)) {
         latestByUser.set(e.user_id, e.completed_at);
@@ -187,13 +187,13 @@ async function runComplianceRecurrence(): Promise<{
         .in("id", allCandidateIds);
       const prefsByUser = await fetchNotificationPrefs(service, allCandidateIds);
       for (const u of userRows ?? []) {
-        const completedAt = latestByUser.get((u as any).id) ?? "";
-        managerByUser.set((u as any).id, (u as any).manager_id ?? null);
-        const prefs = prefsByUser.get((u as any).id);
-        userInfoById.set((u as any).id, {
-          email: (u as any).email ?? null,
-          firstName: (u as any).first_name ?? null,
-          lastName: (u as any).last_name ?? null,
+        const completedAt = latestByUser.get(u.id) ?? "";
+        managerByUser.set(u.id, u.manager_id ?? null);
+        const prefs = prefsByUser.get(u.id);
+        userInfoById.set(u.id, {
+          email: u.email ?? null,
+          firstName: u.first_name ?? null,
+          lastName: u.last_name ?? null,
           completedAt,
           emailRecertOptOut: !userMaySend(prefs, "recertification", "email"),
           inAppRecertOptOut: !userMaySend(prefs, "recertification", "inApp"),
@@ -322,7 +322,7 @@ async function runComplianceRecurrence(): Promise<{
         .select("link, user_id")
         .in("link", managerLinks);
       for (const d of dups ?? []) {
-        existingManagerLinks.add(`${(d as any).user_id}|${(d as any).link}`);
+        existingManagerLinks.add(`${d.user_id}|${d.link}`);
       }
     }
     const finalNotifs = pendingNotifications.filter(

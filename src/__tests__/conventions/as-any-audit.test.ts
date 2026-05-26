@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { walkFiles } from "@/lib/testing/walk";
+import { isAsAnyLine } from "@/lib/testing/scan-casts";
 
 /**
  * Advisory ratchet over `as any` casts — the type-safety escape
@@ -19,8 +20,6 @@ import { walkFiles } from "@/lib/testing/walk";
  * name a target type, which is the migration target here.
  */
 
-const AS_ANY_RE = /\bas any\b/;
-
 describe("as-any cast audit (advisory)", () => {
   it("snapshot of `as any` casts under src/", () => {
     const files = walkFiles(join(process.cwd(), "src"), {
@@ -30,16 +29,16 @@ describe("as-any cast audit (advisory)", () => {
     for (const file of files) {
       const rel = file.replace(process.cwd() + "/", "");
       if (rel.startsWith("src/__tests__/")) continue;
+      // The detector module defines the pattern, so its own source
+      // self-matches — exclude it (mirrors role-check-patterns).
+      if (rel === "src/lib/testing/scan-casts.ts") continue;
       const lines = readFileSync(file, "utf8").split("\n");
       for (let i = 0; i < lines.length; i++) {
-        // Skip `as unknown as` (the named-shape double-cast) — only
-        // the bare `as any` escape hatch is tracked.
-        if (lines[i].includes("as unknown as")) continue;
-        if (AS_ANY_RE.test(lines[i])) sites.push({ file: rel, line: i + 1 });
+        if (isAsAnyLine(lines[i])) sites.push({ file: rel, line: i + 1 });
       }
     }
 
-    const MAX = 199;
+    const MAX = 167;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -94,13 +93,11 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/api/admin/audit-log-namespaces/route.ts",
         "src/app/api/admin/cron-alert-replay/route.ts ×3",
         "src/app/api/admin/lrs/[id]/sync/route.ts ×3",
-        "src/app/api/admin/notification-audit/route.ts ×19",
         "src/app/api/certificates/generate/route.ts",
         "src/app/api/certificates/verify/[code]/route.ts",
         "src/app/api/chat/sessions/[id]/messages/route.ts",
         "src/app/api/courses/[slug]/route.ts",
         "src/app/api/courses/route.ts",
-        "src/app/api/cron/compliance-recurrence/route.ts ×13",
         "src/app/api/cron/history/route.ts ×2",
         "src/app/api/discussions/route.ts",
         "src/app/api/embed/[token]/route.ts ×6",

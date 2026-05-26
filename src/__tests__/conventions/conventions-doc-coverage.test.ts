@@ -143,6 +143,7 @@ describe("docs/conventions.md coverage", () => {
       "manager-equality-omission-audit",
       "admin-equality-omission-audit",
       "as-any-audit",
+      "suppression-directives-audit",
       "badge-urls",
       "workflows",
       "prod-gate-warnings",

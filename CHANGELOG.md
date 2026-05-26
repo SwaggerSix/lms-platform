@@ -6,6 +6,19 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 199 → 167.** Removed 32 `as any` casts by
+  defining row types in `notification-audit/route.ts` (19) and
+  dropping now-unnecessary casts in `cron/compliance-recurrence`
+  (13) — both had explicit selects that supabase-js already types.
+  Detector extracted to `src/lib/testing/scan-casts.ts` with a
+  unit/smoke test (three-layer pattern); module self-match
+  whitelisted.
+- **`suppression-directives-audit` added.** Hard zero on
+  `@ts-ignore` / `@ts-expect-error` (the codebase has none) plus an
+  advisory snapshot of the 7 `eslint-disable` sites.
+- **`src/types/README.md`** documents the hand-written-types
+  strategy (no generated `Database` type) and the
+  real-type → `as unknown as T` → `as any` boundary-cast preference.
 - **`as-any-audit` advisory ratchet added.** Snapshots the 199
   `as any` casts (74 files) and caps the count so the type escape
   hatch can only shrink. `as unknown as T` double-casts aren't

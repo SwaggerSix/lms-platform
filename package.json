@@ -11,7 +11,7 @@
     "test:watch": "vitest --exclude 'src/__tests__/conventions/**'",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:conventions": "vitest run src/__tests__/conventions/ src/__tests__/lib/audit-action-convention.test.ts src/__tests__/lib/scan-action-literals.test.ts src/__tests__/lib/get-cache-control-scanner.test.ts src/__tests__/lib/audit-log-runtime-guard.test.ts src/__tests__/lib/convention-smoke.test.ts",
+    "test:conventions": "vitest run src/__tests__/conventions/ src/__tests__/lib/audit-action-convention.test.ts src/__tests__/lib/scan-action-literals.test.ts src/__tests__/lib/get-cache-control-scanner.test.ts src/__tests__/lib/audit-log-runtime-guard.test.ts src/__tests__/lib/convention-smoke.test.ts src/__tests__/lib/scan-casts.test.ts",
     "install-hooks": "git config core.hooksPath .githooks && echo 'Installed git hooks from .githooks/ (run with --no-verify to bypass).'",
     "check": "npm run lint && tsc --noEmit && npm run test:conventions"
   },
