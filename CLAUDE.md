@@ -68,3 +68,9 @@ bypass policy, and the `walkFiles` convention for new tests.
 - Required-training reads source from `getRequiredCourseSources`.
   The legacy `compliance_requirements` table is retired — runtime
   queries against it fail `npm run test:conventions`.
+- Role-membership checks for new code: prefer `isAdmin(role)` /
+  `isManagerOrAbove(role)` from `@/lib/auth/roles` over inline
+  inequality (`role !== "admin" && role !== "super_admin"`) or
+  array-includes literals. Existing inequality-form sites (~24
+  pages) are fine — leave them unless touching the surrounding
+  code.

@@ -11,6 +11,8 @@ import { join } from "node:path";
  * more "overview" or "getting started"). Forcing the addition to
  * show up in the diff makes it easy to ask "is this material new,
  * or should it merge into CHANGELOG / docs/conventions.md?".
+ *
+ * @infra
  */
 
 function listMarkdown(dir: string): string[] {

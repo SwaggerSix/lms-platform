@@ -14,6 +14,8 @@ import { initGitRepo } from "@/lib/testing/git-fixture";
  * The hook itself is copied from the live .githooks/pre-push so a
  * regression in the case-statement (e.g. dropping the wip/* branch)
  * surfaces here.
+ *
+ * @infra
  */
 
 function buildRepo(dir: string, branch: string): void {

@@ -8,6 +8,8 @@ import { join } from "node:path";
  * lint is fastest and surfaces obvious mistakes; typecheck catches
  * TS-specific shape errors; conventions runs last because it's the
  * slowest of the three. Fail-fast on each step.
+ *
+ * @infra
  */
 
 const pkg = JSON.parse(

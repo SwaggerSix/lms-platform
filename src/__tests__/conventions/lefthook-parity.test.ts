@@ -11,6 +11,8 @@ import { join } from "node:path";
  * This test diffs the two by matching the npm run targets each
  * configures — keeps them in lockstep without prescribing exact YAML
  * formatting.
+ *
+ * @infra
  */
 
 const ROOT = process.cwd();

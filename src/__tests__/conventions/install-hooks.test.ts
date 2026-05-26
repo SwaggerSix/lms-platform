@@ -15,6 +15,8 @@ import { buildInstallHooksFixture } from "@/lib/testing/install-hooks-fixture";
  * Reads the actual script command from package.json so a refactor
  * to the install command (e.g. swapping `git config` for a helper
  * binary) keeps the test honest.
+ *
+ * @infra
  */
 
 describe("install-hooks", () => {

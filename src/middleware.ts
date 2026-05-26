@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { isAdmin, isManagerOrAbove } from "@/lib/auth/roles";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -133,13 +134,13 @@ export async function middleware(request: NextRequest) {
 
     const role = profile?.role;
 
-    if (pathname.startsWith("/admin") && !["admin", "super_admin"].includes(role)) {
+    if (pathname.startsWith("/admin") && !isAdmin(role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
 
-    if (pathname.startsWith("/manager") && !["admin", "super_admin", "manager"].includes(role)) {
+    if (pathname.startsWith("/manager") && !isManagerOrAbove(role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

@@ -8,6 +8,8 @@ import { buildCheckScriptFixture } from "@/lib/testing/check-script-fixture";
  * `lint && tsc && test:conventions`). This file goes further:
  * spawns each step against a deliberately broken fixture and
  * asserts the chain fails-fast at the right link.
+ *
+ * @infra
  */
 
 describe("npm run check fail-fast behavior (fixture)", () => {

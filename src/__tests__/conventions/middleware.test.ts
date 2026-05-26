@@ -31,19 +31,23 @@ describe("src/middleware.ts", () => {
     }
   });
 
-  it("gates /admin behind admin or super_admin role", () => {
+  it("gates /admin via the isAdmin helper", () => {
     expect(source).toMatch(
-      /pathname\.startsWith\("\/admin"\)[\s\S]{0,200}\["admin",\s*"super_admin"\]\.includes\(role\)/
+      /pathname\.startsWith\("\/admin"\)[\s\S]{0,100}!isAdmin\(role\)/
     );
   });
 
-  it("gates /manager behind admin / super_admin / manager", () => {
+  it("gates /manager via the isManagerOrAbove helper", () => {
     expect(source).toMatch(
-      /pathname\.startsWith\("\/manager"\)[\s\S]{0,200}\["admin",\s*"super_admin",\s*"manager"\]\.includes\(role\)/
+      /pathname\.startsWith\("\/manager"\)[\s\S]{0,100}!isManagerOrAbove\(role\)/
     );
   });
 
   it("redirects unauthorized role to /dashboard", () => {
-    expect(source).toMatch(/url\.pathname\s*=\s*"\/dashboard"/);
+    // Two branches (admin + manager) each set url.pathname =
+    // "/dashboard". A future change that routes to a different
+    // path (e.g. /login or /unauthorized) shows up here.
+    const matches = source.match(/url\.pathname\s*=\s*"\/dashboard"/g) ?? [];
+    expect(matches.length).toBeGreaterThanOrEqual(2);
   });
 });

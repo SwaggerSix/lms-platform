@@ -11,6 +11,8 @@ import { join } from "node:path";
  * NOTE: We don't actually spawn the hook to run test:conventions —
  * that would recurse the bundle we're already inside of. Instead
  * we assert the wiring the install would put in place.
+ *
+ * @infra
  */
 
 const HOOK_PATH = join(process.cwd(), ".githooks", "pre-commit");

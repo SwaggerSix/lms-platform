@@ -11,36 +11,41 @@ import { join } from "node:path";
  * Self-referential files (this one, plus the directory-listing /
  * wiring tests) are skipped since they don't represent code-level
  * conventions worth surfacing in the index.
+ *
+ * @infra
  */
 
 const DOC_PATH = join(process.cwd(), "docs/conventions.md");
 
-// Tests that wire infrastructure (the hooks themselves, install
-// path, lefthook parity, etc.) — the doc covers them under "Local
-// install paths" instead of listing each separately in the table.
+// Tests that opt out of the per-row doc-table entry mark themselves
+// with `// @infra` in the file header (typically near the top
+// docstring). The marker convention keeps the opt-out localized to
+// each file rather than enumerated in a central allowlist that
+// drifts.
 //
-// Note this overlaps the conventions-directory listing in spirit
-// (both enumerate convention test files) but serves a distinct
-// purpose: the directory listing tracks "what tests exist", while
-// this set tracks "which tests skip the doc-table per-row entry".
-// Both snapshots stay; the divergence is intentional.
-const INFRA_TESTS = new Set<string>([
-  "check-script.test.ts",
-  "check-script-runs.test.ts",
-  "conventions-doc-coverage.test.ts",
-  "docs-footprint.test.ts",
-  "git-hooks.test.ts",
-  "install-hooks.test.ts",
-  "lefthook-parity.test.ts",
-  "pre-push-branch-skip.test.ts",
-]);
+// Discovery: walk the conventions/ directory and read the first
+// 40 lines of each test for the marker. Tests carrying the marker
+// are excluded from the doc-coverage check.
+const INFRA_MARKER = "@infra";
+
+function isInfraTest(filename: string): boolean {
+  const path = join(process.cwd(), "src/__tests__/conventions", filename);
+  const head = readFileSync(path, "utf8").split("\n").slice(0, 40).join("\n");
+  return head.includes(INFRA_MARKER);
+}
 
 describe("docs/conventions.md coverage", () => {
-  it("INFRA_TESTS allowlist is snapshotted (changes need explicit review)", () => {
-    // Pin the wiring-tests allowlist so adding a new infra test
-    // requires updating it deliberately. Reads as a single
-    // pre-sorted list rather than a Set — easier to diff.
-    expect(Array.from(INFRA_TESTS).sort()).toMatchInlineSnapshot(`
+  it("infra-marked test set is snapshotted (additions/removals are explicit)", () => {
+    // Walk and collect every test that opts out via the `@infra`
+    // marker. The list reads like the old INFRA_TESTS allowlist
+    // did, but the opt-out lives in each test's docstring instead
+    // of a central enum.
+    const dir = join(process.cwd(), "src/__tests__/conventions");
+    const marked = readdirSync(dir)
+      .filter((n) => n.endsWith(".test.ts") || n.endsWith(".test.tsx"))
+      .filter(isInfraTest)
+      .sort();
+    expect(marked).toMatchInlineSnapshot(`
       [
         "check-script-runs.test.ts",
         "check-script.test.ts",
@@ -58,7 +63,7 @@ describe("docs/conventions.md coverage", () => {
     const dir = join(process.cwd(), "src/__tests__/conventions");
     const tests = readdirSync(dir)
       .filter((name) => name.endsWith(".test.ts") || name.endsWith(".test.tsx"))
-      .filter((name) => !INFRA_TESTS.has(name));
+      .filter((name) => !isInfraTest(name));
 
     const doc = readFileSync(DOC_PATH, "utf8");
     const missing: string[] = [];
