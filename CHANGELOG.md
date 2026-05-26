@@ -2,6 +2,10 @@
 
 [![Conventions](https://github.com/swaggersix/lms-platform/actions/workflows/conventions.yml/badge.svg)](https://github.com/swaggersix/lms-platform/actions/workflows/conventions.yml) [![Tests](https://github.com/swaggersix/lms-platform/actions/workflows/tests.yml/badge.svg)](https://github.com/swaggersix/lms-platform/actions/workflows/tests.yml) [![Build](https://github.com/swaggersix/lms-platform/actions/workflows/build.yml/badge.svg)](https://github.com/swaggersix/lms-platform/actions/workflows/build.yml)
 
+<!-- Badges live here because CHANGELOG.md is the most-visible
+top-level doc; no README exists yet. If a README lands, move them
+there and link CHANGELOG from it. -->
+
 Notable changes worth surfacing during PR review. Not every commit
 needs an entry — focus on conventions, infrastructure choices, and
 removals that affect future work.
