@@ -62,13 +62,10 @@ describe("admin-manager array-includes detector", () => {
     ).toBe(false);
   });
 
-  it("does NOT match the reversed order (manager first)", () => {
-    // Documents the limitation: a reversed-order array would slip
-    // through. If someone writes the reversed form we miss it
-    // until the regex is widened.
+  it("matches the reversed order (manager first)", () => {
     expect(
       ADMIN_MANAGER_INCLUDES_RE.test('["manager", "admin"].includes(role)')
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("does NOT match the two-role admin/super_admin array", () => {

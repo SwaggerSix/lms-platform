@@ -71,11 +71,16 @@ describe("dependency ratchet", () => {
     const names = Object.keys(pkg.devDependencies ?? {}).sort();
     expect(names).toMatchInlineSnapshot(`
       [
+        "@next/eslint-plugin-next",
         "@testing-library/jest-dom",
         "@testing-library/react",
         "@testing-library/user-event",
         "@types/dompurify",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
         "@vitejs/plugin-react",
+        "eslint",
+        "eslint-plugin-react-hooks",
         "jsdom",
         "pg",
         "postgres",

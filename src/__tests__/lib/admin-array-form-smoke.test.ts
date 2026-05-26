@@ -41,10 +41,10 @@ describe("admin array-form detector", () => {
     ).toBe(false);
   });
 
-  it("does NOT match the reversed order (super_admin first)", () => {
+  it("matches the reversed order (super_admin first)", () => {
     expect(
       ADMIN_SUPER_ADMIN_INCLUDES_RE.test('["super_admin", "admin"].includes(role)')
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("flags a reintroduced site inside a synthetic multi-line source", () => {

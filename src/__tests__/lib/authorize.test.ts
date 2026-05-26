@@ -154,3 +154,38 @@ describe("authorize", () => {
     }
   });
 });
+
+describe("authorize: super_admin short-circuit (happy path)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Invariant behind the whole super_admin-omission guardrail
+  // family: super_admin must pass every gate, including allowlists
+  // that don't name it. authorize() encodes this directly; the
+  // inline-role-gate audits enforce the same shape at call sites.
+  const allowlists: string[][] = [
+    [],
+    ["admin"],
+    ["admin", "manager"],
+    ["manager"],
+    ["instructor"],
+    ["learner"],
+    ["manager", "instructor", "learner"],
+  ];
+
+  it.each(allowlists.map((a) => [a]))(
+    "authorizes super_admin regardless of allowlist %j",
+    async (allowed) => {
+      setupMockSupabase({
+        authUser: { id: "auth-sa" },
+        dbUser: { id: "user-sa", role: "super_admin" },
+      });
+      const result = await authorize(...(allowed as Parameters<typeof authorize>));
+      expect(result.authorized).toBe(true);
+      if (result.authorized) {
+        expect(result.user).toEqual({ id: "user-sa", role: "super_admin" });
+      }
+    }
+  );
+});

@@ -6,6 +6,25 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **ESLint restored after the Next 16 upgrade dropped `next lint`.**
+  Added a flat `eslint.config.mjs` (next/core-web-vitals rules +
+  `@typescript-eslint` parser/plugin + `react-hooks`), repointed the
+  `lint` script at `eslint .`, and added the four devDeps. So
+  `npm run check` / the pre-push hook run end-to-end again.
+  `no-html-link-for-pages` and `no-img-element` are set to `warn`
+  for now (real backlog that predates the gate being runnable);
+  tighten to `error` once cleared.
+- **Role-check regexes hardened against reordering + optional
+  chaining.** `ADMIN_MANAGER_INCLUDES_RE` and
+  `ADMIN_SUPER_ADMIN_INCLUDES_RE` now also match the reversed array
+  order; `MANAGER_EQUALITY_OMISSION_RE` now matches the
+  optional-chaining form (`user?.role === "admin" || ...`). Migrated
+  the one client-side site (`global-search.tsx`) to
+  `isManagerOrAbove`. Smoke tests updated.
+- **super_admin short-circuit invariant pinned.** `authorize.test.ts`
+  now asserts super_admin is authorized across a matrix of
+  allowlists that don't name it — the behavior the whole
+  omission-guardrail family depends on.
 - **Bare-admin super_admin omission fully closed.** Migrated the
   remaining 11 `.role === "admin"` gates to `isAdmin(role)` —
   mentorship (sessions, sessions/[id], requests/[id] ×2, learn

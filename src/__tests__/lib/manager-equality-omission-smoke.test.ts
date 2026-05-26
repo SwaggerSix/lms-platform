@@ -37,6 +37,14 @@ describe("manager equality-omission detector", () => {
     ).toBe(true);
   });
 
+  it("matches the optional-chaining form used in client components", () => {
+    expect(
+      MANAGER_EQUALITY_OMISSION_RE.test(
+        'const isAdmin = user?.role === "admin" || user?.role === "manager";'
+      )
+    ).toBe(true);
+  });
+
   it("does NOT match the canonical helper call", () => {
     expect(MANAGER_EQUALITY_OMISSION_RE.test("!isManagerOrAbove(role)")).toBe(false);
     expect(MANAGER_EQUALITY_OMISSION_RE.test("isManagerOrAbove(auth.user.role)")).toBe(false);

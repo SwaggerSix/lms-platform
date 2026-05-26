@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Search, X, BookOpen, FileText, Users, File, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 
 interface SearchResults {
   courses: Array<{
@@ -54,7 +55,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.role === "manager";
+  const isAdmin = isManagerOrAbove(user?.role);
 
   // Focus input when opened
   useEffect(() => {

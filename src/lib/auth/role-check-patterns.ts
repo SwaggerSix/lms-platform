@@ -47,12 +47,13 @@
 export const INEQUALITY_ROLE_RE =
   /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"super_admin"/;
 
-export const ADMIN_MANAGER_INCLUDES_RE = /\["admin",\s*"manager"\]\.includes\(/;
+export const ADMIN_MANAGER_INCLUDES_RE =
+  /\[(?:"admin",\s*"manager"|"manager",\s*"admin")\]\.includes\(/;
 
 export const ADMIN_SUPER_ADMIN_INCLUDES_RE =
-  /\["admin",\s*"super_admin"\]\.includes\(/;
+  /\[(?:"admin",\s*"super_admin"|"super_admin",\s*"admin")\]\.includes\(/;
 
 export const MANAGER_EQUALITY_OMISSION_RE =
-  /role\s*===\s*"admin"\s*\|\|\s*[A-Za-z_.\s]*role\s*===\s*"manager"|role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"manager"/;
+  /role\s*===\s*"admin"\s*\|\|\s*[A-Za-z_.?\s]*role\s*===\s*"manager"|role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.?\s]*role\s*!==\s*"manager"/;
 
 export const ADMIN_EQUALITY_OMISSION_RE = /\.role\s*(?:===|!==)\s*"admin"/;
