@@ -21,6 +21,7 @@ describe("conventions directory", () => {
       .sort();
     expect(files).toMatchInlineSnapshot(`
       [
+        "admin-array-form-audit.test.ts",
         "audit-action-conventions.test.ts",
         "audit-tenant-id-coverage.test.ts",
         "badge-urls.test.ts",
@@ -38,6 +39,7 @@ describe("conventions directory", () => {
         "install-hooks.test.ts",
         "isadmin-adoption-ratchet.test.ts",
         "lefthook-parity.test.ts",
+        "manager-equality-omission-audit.test.ts",
         "middleware.test.ts",
         "mutation-no-store-convention.test.ts",
         "next-config.test.ts",

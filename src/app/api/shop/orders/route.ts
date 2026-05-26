@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { jsonNoStore } from "@/lib/api/no-store";
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "20");
   const offset = (page - 1) * limit;
 
-  const isAdmin = auth.user.role === "admin" || auth.user.role === "manager";
+  const canManage = isManagerOrAbove(auth.user.role);
 
   let query = service
     .from("orders")
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (!isAdmin) {
+  if (!canManage) {
     query = query.eq("user_id", auth.user.id);
   }
 

@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateOrderSchema } from "@/lib/validations";
@@ -25,8 +26,8 @@ export async function GET(
   }
 
   // Non-admin can only see their own orders
-  const isAdmin = auth.user.role === "admin" || auth.user.role === "manager";
-  if (!isAdmin && order.user_id !== auth.user.id) {
+  const canManage = isManagerOrAbove(auth.user.role);
+  if (!canManage && order.user_id !== auth.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

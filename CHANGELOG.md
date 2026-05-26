@@ -6,6 +6,18 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Two more super_admin-omission shapes closed + guardrailed.**
+  The array form `["admin", "super_admin"].includes(role)` (1 site,
+  `/admin/evaluations`) and the equality form
+  `role === "admin" || role === "manager"` / the negated
+  `role !== "admin" && role !== "manager"` (7 sites: observations
+  ×3, shop/orders ×2, transcript, learn/observations) migrated to
+  `isAdmin()` / `isManagerOrAbove()`. Two new hard-assertion
+  guardrails — `admin-array-form-audit` and
+  `manager-equality-omission-audit` — plus their regexes
+  (`ADMIN_SUPER_ADMIN_INCLUDES_RE`, `MANAGER_EQUALITY_OMISSION_RE`)
+  and smoke tests lock the shapes out. The equality form carried
+  the same latent super_admin lockout the array form did.
 - **`isadmin-adoption-ratchet` retired at zero.** The final 5
   inequality-form sites (`/admin/workflows/[id]/runs`,
   `/admin/settings/integrations`, `/admin/settings/sso`,

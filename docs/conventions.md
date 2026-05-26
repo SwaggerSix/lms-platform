@@ -37,6 +37,8 @@ glob auto-picks up new files in that directory.
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
 | `isadmin-adoption-ratchet` | Enforces no `role !== "admin"` inequality-form checks. (Retired ratchet — was a shrinking cap, hit zero 2026-05-29.) |
 | `super-admin-omission-audit` | Enforces no `["admin", "manager"].includes(role)` sites that silently exclude super_admin. (Retired ratchet — hit zero 2026-05-29; now a hard assertion.) |
+| `admin-array-form-audit` | Enforces no `["admin", "super_admin"].includes(role)` array-form admin gates; use `isAdmin(role)`. Hard assertion (single offender migrated 2026-05-29). |
+| `manager-equality-omission-audit` | Enforces no equality-form manager-or-above gates (`role === "admin" \|\| role === "manager"`) that omit super_admin; use `isManagerOrAbove(role)`. Hard assertion (7 offenders migrated 2026-05-29). |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |

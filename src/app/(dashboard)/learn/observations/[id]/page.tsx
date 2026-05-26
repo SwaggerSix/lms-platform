@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import ObservationDetailClient from "./observation-detail-client";
 
 export const metadata: Metadata = {
@@ -44,11 +45,11 @@ export default async function ObservationDetailPage({ params }: { params: Promis
   }
 
   // Check access
-  const isAdmin = dbUser.role === "admin" || dbUser.role === "manager";
+  const canManage = isManagerOrAbove(dbUser.role);
   const isObserver = observation.observer_id === dbUser.id;
   const isSubject = observation.subject_id === dbUser.id;
 
-  if (!isAdmin && !isObserver && !isSubject) {
+  if (!canManage && !isObserver && !isSubject) {
     redirect("/learn/observations");
   }
 

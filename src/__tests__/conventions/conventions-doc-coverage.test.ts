@@ -138,6 +138,8 @@ describe("docs/conventions.md coverage", () => {
       "middleware",
       "isadmin-adoption-ratchet",
       "super-admin-omission-audit",
+      "admin-array-form-audit",
+      "manager-equality-omission-audit",
       "badge-urls",
       "workflows",
       "prod-gate-warnings",

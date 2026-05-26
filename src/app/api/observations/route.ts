@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     query = query.eq("subject_id", auth.user.id);
   } else {
     // Admin/manager sees all; others see their own
-    if (auth.user.role !== "admin" && auth.user.role !== "manager") {
+    if (!isManagerOrAbove(auth.user.role)) {
       query = query.or(`observer_id.eq.${auth.user.id},subject_id.eq.${auth.user.id}`);
     }
   }

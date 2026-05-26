@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import type { EnrollmentStatus, CourseType } from "@/types/database";
 import { jsonCached } from "@/lib/api/cached";
 
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
   let targetUserId: string | null = profile.id;
   if (userId && userId !== profile.id) {
     // Viewing another user's transcript requires admin or manager role
-    if (profile.role !== "admin" && profile.role !== "manager") {
+    if (!isManagerOrAbove(profile.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     targetUserId = userId;

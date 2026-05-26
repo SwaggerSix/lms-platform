@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateObservationSchema } from "@/lib/validations";
@@ -30,9 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   // Check access: observer, subject, admin, or manager
-  const isAdmin = auth.user.role === "admin" || auth.user.role === "manager";
+  const canManage = isManagerOrAbove(auth.user.role);
   const isParticipant = data.observer_id === auth.user.id || data.subject_id === auth.user.id;
-  if (!isAdmin && !isParticipant) {
+  if (!canManage && !isParticipant) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -61,13 +62,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return jsonNoStore({ error: "Observation not found" }, { status: 404 });
   }
 
-  const isAdmin = auth.user.role === "admin" || auth.user.role === "manager";
-  if (!isAdmin && existing.observer_id !== auth.user.id) {
+  const canManage = isManagerOrAbove(auth.user.role);
+  if (!canManage && existing.observer_id !== auth.user.id) {
     return jsonNoStore({ error: "Only the observer can update this observation" }, { status: 403 });
   }
 
   // Cannot edit signed-off observations
-  if (existing.status === "signed_off" && !isAdmin) {
+  if (existing.status === "signed_off" && !canManage) {
     return jsonNoStore({ error: "Cannot modify a signed-off observation" }, { status: 400 });
   }
 
