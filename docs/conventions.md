@@ -174,3 +174,9 @@ Don't bypass to silence a genuine guardrail failure. The CI check
 on the PR catches anything the local bypass let through — worst
 case is a wasted CI run, not a regression landing on main. If a
 convention no longer fits, change the guardrail in the same PR.
+
+For the snapshot-update flow specifically,
+`scripts/safe-bypass.sh "commit message"` stashes unstaged
+changes, runs `git commit --no-verify` on the staged tree, then
+restores the stash on success (preserves the stash on commit
+failure so recovery is one `git stash pop` away).

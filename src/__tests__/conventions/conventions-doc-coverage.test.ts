@@ -37,9 +37,11 @@ function isInfraTest(filename: string): boolean {
 describe("docs/conventions.md coverage", () => {
   it("infra-marked test set is snapshotted (additions/removals are explicit)", () => {
     // Walk and collect every test that opts out via the `@infra`
-    // marker. The list reads like the old INFRA_TESTS allowlist
-    // did, but the opt-out lives in each test's docstring instead
-    // of a central enum.
+    // marker. Not redundant with conventions-directory-listing:
+    // that snapshot tracks the universe of convention tests; this
+    // one tracks the opt-out subset. A misplaced marker (e.g.
+    // `@infra` on a code-level guardrail) surfaces here as the
+    // test moving across the boundary.
     const dir = join(process.cwd(), "src/__tests__/conventions");
     const marked = readdirSync(dir)
       .filter((n) => n.endsWith(".test.ts") || n.endsWith(".test.tsx"))

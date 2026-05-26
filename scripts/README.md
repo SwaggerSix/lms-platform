@@ -24,3 +24,8 @@ backfills, environment setup. Nothing here is imported by
 - `seed-portal-data.mjs` — populate portal-specific tenant data.
 - `seed-users.sh` — wrapper that creates auth users via the
   Supabase admin API before running the user-row seed.
+- `safe-bypass.sh "msg"` — convenience wrapper around
+  `git commit --no-verify`. Stashes unstaged changes, commits
+  the staged tree, restores the stash on success (preserves
+  the stash on failure). See `docs/conventions.md` Bypass
+  policy for when this is the right move.

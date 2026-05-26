@@ -21,6 +21,7 @@ describe("scripts footprint", () => {
     expect(files).toMatchInlineSnapshot(`
       [
         "README.md",
+        "safe-bypass.sh",
         "seed-data.mjs",
         "seed-database-fix.mjs",
         "seed-database.mjs",

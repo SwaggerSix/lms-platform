@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { resolveAuditLogTenant, AUDIT_LOG_ROW_LIMIT } from "@/lib/audit-log/resolve-tenant";
 import { buildAuditLogTenantFilter } from "@/lib/audit-log/build-query-filter";
 import { formatAction, formatTimestamp } from "@/lib/audit-log/format";
+import { isAdmin } from "@/lib/auth/roles";
 import AuditLogClient from "./audit-log-client";
 import type { AuditEntry } from "./audit-log-client";
 
@@ -39,7 +40,7 @@ export default async function AuditLogPage() {
     redirect("/login");
   }
 
-  if (dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+  if (!isAdmin(dbUser.role)) {
     redirect("/dashboard");
   }
 
