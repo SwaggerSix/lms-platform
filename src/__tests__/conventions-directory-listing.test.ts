@@ -23,6 +23,7 @@ describe("conventions directory", () => {
       [
         "audit-action-conventions.test.ts",
         "audit-tenant-id-coverage.test.ts",
+        "badge-urls.test.ts",
         "check-script-runs.test.ts",
         "check-script.test.ts",
         "conventions-doc-coverage.test.ts",
@@ -36,6 +37,7 @@ describe("conventions directory", () => {
         "header-parity.test.ts",
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
+        "middleware.test.ts",
         "mutation-no-store-convention.test.ts",
         "next-config.test.ts",
         "no-compliance-requirements-queries.test.ts",

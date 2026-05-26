@@ -30,6 +30,24 @@ const INFRA_TESTS = new Set<string>([
 ]);
 
 describe("docs/conventions.md coverage", () => {
+  it("INFRA_TESTS allowlist is snapshotted (changes need explicit review)", () => {
+    // Pin the wiring-tests allowlist so adding a new infra test
+    // requires updating it deliberately. Reads as a single
+    // pre-sorted list rather than a Set — easier to diff.
+    expect(Array.from(INFRA_TESTS).sort()).toMatchInlineSnapshot(`
+      [
+        "check-script-runs.test.ts",
+        "check-script.test.ts",
+        "conventions-doc-coverage.test.ts",
+        "docs-footprint.test.ts",
+        "git-hooks.test.ts",
+        "install-hooks.test.ts",
+        "lefthook-parity.test.ts",
+        "pre-push-branch-skip.test.ts",
+      ]
+    `);
+  });
+
   it("references every code-level guardrail test by basename", () => {
     const dir = join(process.cwd(), "src/__tests__/conventions");
     const tests = readdirSync(dir)
@@ -103,6 +121,8 @@ describe("docs/conventions.md coverage", () => {
       "vercel-crons",
       "vercel-config",
       "header-parity",
+      "middleware",
+      "badge-urls",
       "prod-gate-warnings",
       "check-script",
     ]);
