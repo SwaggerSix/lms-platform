@@ -1,3 +1,16 @@
+// src/lib/testing/ — utilities used exclusively by the Vitest suite.
+// Production code paths must not import from here. The module exists
+// so multiple tests can share fs / fixture / walk helpers without
+// each rolling its own copy. New helpers belong here only when at
+// least two tests would benefit; one-off helpers stay inside their
+// test file.
+//
+// Module map:
+//   - walk.ts                  — recursive file walker for codebase scans
+//   - temp-dir.ts              — withTempDir / withTempDirAsync
+//   - install-hooks-fixture.ts — temp git+package fixture for hook tests
+//   - check-script-fixture.ts  — temp package.json + tsc stub for check-chain tests
+
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 

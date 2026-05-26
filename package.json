@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest",
+    "test:watch": "vitest --exclude 'src/__tests__/conventions/**'",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:conventions": "vitest run src/__tests__/conventions/ src/__tests__/lib/audit-action-convention.test.ts src/__tests__/lib/scan-action-literals.test.ts src/__tests__/lib/get-cache-control-scanner.test.ts src/__tests__/lib/audit-log-runtime-guard.test.ts src/__tests__/lib/convention-smoke.test.ts",

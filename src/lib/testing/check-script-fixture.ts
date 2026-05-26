@@ -1,3 +1,6 @@
+// Test-only helper. See src/lib/testing/walk.ts for the module's
+// scope rules (production code must not import from this directory).
+
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 

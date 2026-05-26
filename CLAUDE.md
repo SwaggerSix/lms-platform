@@ -32,6 +32,9 @@ can withhold them.
 ## Local check commands
 
 - `npm test` — full Vitest suite.
+- `npm run test:watch` — watch mode. Excludes
+  `src/__tests__/conventions/` since those tests spin up temp
+  directories / spawn npm; they only need to run pre-commit / CI.
 - `npm run test:conventions` — convention bundle (~5s). Used by the
   pre-commit hook and the `conventions.yml` CI workflow.
 - `npm run check` — `lint && tsc --noEmit && test:conventions`.

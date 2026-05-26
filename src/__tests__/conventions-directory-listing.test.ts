@@ -37,7 +37,9 @@ describe("conventions directory", () => {
         "no-compliance-requirements-queries.test.ts",
         "no-inline-tenant-or-filter.test.ts",
         "prod-gate-warnings.test.ts",
+        "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",
+        "testing-helpers-scope.test.ts",
       ]
     `);
   });

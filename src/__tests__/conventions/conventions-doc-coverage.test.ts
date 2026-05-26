@@ -86,6 +86,8 @@ describe("docs/conventions.md coverage", () => {
       "no-compliance-requirements-queries",
       "no-inline-tenant-or-filter",
       "supabase-pending-empty",
+      "supabase-migrations",
+      "testing-helpers-scope",
       "dependencies-ratchet",
       "dependency-footprint",
       "prod-gate-warnings",
