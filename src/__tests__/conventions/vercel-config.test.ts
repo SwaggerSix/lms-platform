@@ -45,4 +45,13 @@ describe("vercel.json config (non-cron)", () => {
   it("regions is a single-region list", () => {
     expect(vercel.regions).toEqual(["iad1"]);
   });
+
+  it("does not carry a `headers` field (next.config.ts owns them)", () => {
+    // Regression guard for the Cache-Control override bug found
+    // 2026-05-26. Adding a `headers` array here would re-introduce
+    // the silent edge-level override that neutralized per-handler
+    // jsonCached responses. header-parity also catches this; the
+    // direct check stays as belt-and-suspenders.
+    expect(vercel.headers).toBeUndefined();
+  });
 });

@@ -4,6 +4,21 @@ Notable changes worth surfacing during PR review. Not every commit
 needs an entry — focus on conventions, infrastructure choices, and
 removals that affect future work.
 
+## 2026-05-26
+
+- **Fixed silent Cache-Control override at the Vercel edge.**
+  `vercel.json` was setting `Cache-Control: no-store, max-age=0` on
+  `/api/(.*)`, which would override every `jsonCached(...)` response
+  emitted by route handlers. Per-handler cache headers (the whole
+  point of the cache-control convention work) were being neutralized
+  in production. Removed the blanket rule plus the duplicate
+  security headers that `next.config.ts` already emits. New
+  `header-parity` convention test guards against re-introduction.
+- **`next.config.ts` is the single source of truth for response
+  headers.** `vercel.json` no longer carries `headers`; security and
+  cache directives all flow from the Next config (plus per-handler
+  `jsonCached` / `jsonNoStore`).
+
 ## 2026-05-23
 
 - **Retired the GET cache-control audit ratchet.** Every GET handler

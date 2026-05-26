@@ -37,6 +37,32 @@ glob auto-picks up new files in that directory.
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 
+## Snapshot-gating candidates
+
+The repo's "snapshot the file, force a diff" pattern works well
+for configuration that affects many things at once. Active
+snapshot-gated files:
+
+- `package.json` scripts + dependencies
+- `tsconfig.json` (compilerOptions keys + strict flag values)
+- `next.config.ts` (security headers + image hostnames)
+- `vercel.json` (crons, framework, regions; rejects `headers`)
+- `.gitignore` (non-comment entries)
+- `.env.local.example` (variable names)
+- `src/__tests__/setup.ts` (full contents)
+- `supabase/migrations/` (filename set)
+- top-level + `docs/` + `docs/archived/` + `scripts/` listings
+
+Candidates not yet gated (open them with the same pattern if
+they start churning):
+
+- `postcss.config.*`, `tailwind.config.*` — UI-affecting config
+  that ships globally.
+- `eslint.config.*` / `.eslintrc.*` — rule changes affect every
+  file's diagnostics.
+- `middleware.ts` — runs on every request; behavior changes
+  worth surfacing.
+
 ## When to add a NODE_ENV gate
 
 The `prod-gate-warnings` snapshot tracks the small set of
