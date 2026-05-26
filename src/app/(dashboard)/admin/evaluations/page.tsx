@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isAdmin } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
-import EvaluationsAdminClient from "./evaluations-admin-client";
+import EvaluationsAdminClient, {
+  type Template,
+  type Trigger,
+  type Course,
+} from "./evaluations-admin-client";
 
 export const metadata: Metadata = {
   title: "Training Evaluations | LMS Platform",
@@ -46,12 +50,15 @@ export default async function EvaluationsAdminPage() {
       .order("title", { ascending: true }),
   ]);
 
-  const asAny = (v: unknown) => v as any;
+  // Supabase service client returns loosely-typed rows (no generated
+  // Database types), and the trigger query's nested joins don't line
+  // up structurally with the flat client types — assert the shapes
+  // explicitly at the boundary rather than laundering through `any`.
   return (
     <EvaluationsAdminClient
-      templates={asAny(templates ?? [])}
-      triggers={asAny(triggers ?? [])}
-      courses={asAny(courses ?? [])}
+      templates={(templates ?? []) as unknown as Template[]}
+      triggers={(triggers ?? []) as unknown as Trigger[]}
+      courses={(courses ?? []) as unknown as Course[]}
     />
   );
 }

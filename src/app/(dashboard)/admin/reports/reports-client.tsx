@@ -113,6 +113,15 @@ const exportExcel = (data: Record<string, unknown>[], filename: string) => {
   exportCSV(data, filename.replace(/\.\w+$/, "") + ".csv");
 };
 
+const templateToReportType: Record<string, string> = {
+  "Completion Report": "completion",
+  "Compliance Report": "compliance",
+  "Skills Gap Report": "skills_gap",
+  "Engagement Report": "engagement",
+  "Course Effectiveness": "course_effectiveness",
+  "Learner Progress": "learner_progress",
+};
+
 export default function ReportsClient({ reportData: initialReportData, recentReports, summary }: ReportsClientProps) {
   const [selectedFields, setSelectedFields] = useState<Set<string>>(new Set(reportFields));
   const [dateFrom, setDateFrom] = useState("2026-03-01");
@@ -134,15 +143,6 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       return filtered;
     });
   }, [reportData, selectedFields]);
-
-  const templateToReportType: Record<string, string> = {
-    "Completion Report": "completion",
-    "Compliance Report": "compliance",
-    "Skills Gap Report": "skills_gap",
-    "Engagement Report": "engagement",
-    "Course Effectiveness": "course_effectiveness",
-    "Learner Progress": "learner_progress",
-  };
 
   const fetchReport = useCallback(async (templateName?: string) => {
     setLoadingReport(templateName || "__custom__");
@@ -188,7 +188,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     } finally {
       setLoadingReport(null);
     }
-  }, [dateFrom, dateTo, department, role]);
+  }, [dateFrom, dateTo, department]);
 
   const handleDownloadRecentReport = (report: RecentReport) => {
     // Generate a CSV from the current report data as a proxy for stored reports

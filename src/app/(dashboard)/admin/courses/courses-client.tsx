@@ -219,7 +219,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     } finally {
       setLoadingAction(null);
     }
-  }, [editModal, editForm]);
+  }, [editModal, editForm, toast]);
 
   const handleDuplicate = useCallback(async (course: CourseItem) => {
     setOpenMenu(null);
@@ -263,7 +263,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     } finally {
       setLoadingAction(null);
     }
-  }, []);
+  }, [toast]);
 
   const handleArchive = useCallback((course: CourseItem) => {
     setOpenMenu(null);
@@ -288,7 +288,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     } finally {
       setLoadingAction(null);
     }
-  }, [archiveConfirm]);
+  }, [archiveConfirm, toast]);
 
   const isLoading = (id: string, action: string) => loadingAction?.id === id && loadingAction?.action === action;
 

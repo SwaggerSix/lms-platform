@@ -202,7 +202,7 @@ export function SCORMPlayer({
     };
 
     return api;
-  }, [scormData, learnerName, learnerId, onComplete, onDataChange, onCommit]);
+  }, [scormData, onComplete, onDataChange, onCommit]);
 
   // Inject SCORM API into iframe
   useEffect(() => {

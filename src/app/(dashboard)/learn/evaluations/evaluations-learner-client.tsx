@@ -34,7 +34,7 @@ type Question = {
   scale_max_label?: string;
 };
 
-type Assignment = {
+export type Assignment = {
   id: string;
   status: "pending" | "completed" | "expired";
   due_at: string | null;

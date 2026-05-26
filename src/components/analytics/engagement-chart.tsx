@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface DataPoint {
   snapshotDate: string;
@@ -25,15 +25,7 @@ export default function EngagementChart({
   const [loading, setLoading] = useState(!externalData);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (externalData) {
-      setData(externalData);
-      return;
-    }
-    fetchData();
-  }, [userId, days, externalData]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ days: String(days) });
@@ -48,7 +40,15 @@ export default function EngagementChart({
     } finally {
       setLoading(false);
     }
-  }
+  }, [days, userId]);
+
+  useEffect(() => {
+    if (externalData) {
+      setData(externalData);
+      return;
+    }
+    fetchData();
+  }, [externalData, fetchData]);
 
   if (loading) {
     return (

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import { isManagerOrAbove } from "@/lib/auth/roles";
-import EvaluationReportClient from "./evaluation-report-client";
+import EvaluationReportClient, { type Assignment } from "./evaluation-report-client";
 
 export const metadata: Metadata = {
   title: "Evaluation Report | LMS Platform",
@@ -43,11 +43,12 @@ export default async function EvaluationReportPage({ params }: { params: Promise
 
   if (!course) redirect("/admin/evaluations");
 
-  const asAny = (v: unknown) => v as any;
+  // Supabase service client returns loosely-typed rows; assert the
+  // client-owned shapes explicitly at the boundary.
   return (
     <EvaluationReportClient
-      course={asAny(course)}
-      assignments={asAny(assignments ?? [])}
+      course={course as unknown as { id: string; title: string }}
+      assignments={(assignments ?? []) as unknown as Assignment[]}
     />
   );
 }

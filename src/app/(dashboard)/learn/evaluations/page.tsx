@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
-import EvaluationsLearnerClient from "./evaluations-learner-client";
+import EvaluationsLearnerClient, { type Assignment } from "./evaluations-learner-client";
 
 export const metadata: Metadata = {
   title: "My Evaluations | LMS Platform",
@@ -33,5 +33,9 @@ export default async function EvaluationsLearnerPage() {
     .eq("user_id", dbUser.id)
     .order("created_at", { ascending: false });
 
-  return <EvaluationsLearnerClient assignments={(assignments ?? []) as any} />;
+  return (
+    <EvaluationsLearnerClient
+      assignments={(assignments ?? []) as unknown as Assignment[]}
+    />
+  );
 }

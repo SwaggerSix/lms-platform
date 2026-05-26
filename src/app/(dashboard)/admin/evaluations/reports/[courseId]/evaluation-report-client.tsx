@@ -27,7 +27,7 @@ type Question = {
   options?: string[];
 };
 
-type Assignment = {
+export type Assignment = {
   id: string;
   status: string;
   completed_at: string | null;

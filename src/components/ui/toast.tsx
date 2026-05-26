@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { create } from "zustand";
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { cn } from "@/utils/cn";
@@ -40,13 +40,20 @@ const useToastStore = create<ToastState>((set) => ({
 function useToast() {
   const { addToast } = useToastStore();
 
-  return {
-    toast: (opts: Omit<Toast, "id">) => addToast(opts),
-    success: (message: string) => addToast({ type: "success", message }),
-    error: (message: string) => addToast({ type: "error", message }),
-    warning: (message: string) => addToast({ type: "warning", message }),
-    info: (message: string) => addToast({ type: "info", message }),
-  };
+  // Memoized so the returned object is stable across renders;
+  // lets callers safely list `toast` in hook dependency arrays
+  // without re-creating their callbacks every render. `addToast`
+  // is a stable zustand action.
+  return useMemo(
+    () => ({
+      toast: (opts: Omit<Toast, "id">) => addToast(opts),
+      success: (message: string) => addToast({ type: "success", message }),
+      error: (message: string) => addToast({ type: "error", message }),
+      warning: (message: string) => addToast({ type: "warning", message }),
+      info: (message: string) => addToast({ type: "info", message }),
+    }),
+    [addToast]
+  );
 }
 
 const iconMap: Record<ToastType, React.ReactNode> = {

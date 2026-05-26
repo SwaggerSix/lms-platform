@@ -39,17 +39,8 @@ export default function ContentEditor({
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
 
-  // Auto-save with 2 second debounce
-  const scheduleSave = useCallback(() => {
-    setSaveStatus("unsaved");
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      saveToDB(blocksRef.current);
-    }, 2000);
-  }, []);
-
   // Save all blocks to the database
-  const saveToDB = async (currentBlocks: ContentBlock[]) => {
+  const saveToDB = useCallback(async (currentBlocks: ContentBlock[]) => {
     setSaveStatus("saving");
     try {
       // Fetch existing blocks
@@ -99,7 +90,16 @@ export default function ContentEditor({
       console.error("Save error:", err);
       setSaveStatus("error");
     }
-  };
+  }, [lessonId]);
+
+  // Auto-save with 2 second debounce
+  const scheduleSave = useCallback(() => {
+    setSaveStatus("unsaved");
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      saveToDB(blocksRef.current);
+    }, 2000);
+  }, [saveToDB]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

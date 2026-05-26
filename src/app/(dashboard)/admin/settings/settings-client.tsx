@@ -186,7 +186,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       return;
     }
     setApiKeys((prev) => [...prev, newApiKey]);
-  }, [apiKeys.length]);
+  }, [apiKeys.length, toast]);
 
   const handleRevokeKey = useCallback(async (keyId: string, keyName: string) => {
     if (!confirm(`Are you sure you want to revoke the API key "${keyName}"? This action cannot be undone.`)) {
@@ -208,7 +208,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       return;
     }
     setApiKeys((prev) => prev.map((k) => (k.id === keyId ? { ...k, status: "Revoked" as const } : k)));
-  }, []);
+  }, [toast]);
 
   const saveSetting = async (key: string, value: unknown) => {
     setSaving(key);

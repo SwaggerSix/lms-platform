@@ -274,7 +274,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
     } finally {
       setLoadingAction(null);
     }
-  }, [deleteConfirm, router]);
+  }, [deleteConfirm, router, toast]);
 
   const handlePreview = useCallback((assessment: Assessment) => {
     setOpenMenu(null);

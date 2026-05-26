@@ -54,6 +54,41 @@ describe("eslint config wiring", () => {
     expect(source).toContain("recommended");
   });
 
+  it("no-img-element is an error globally", () => {
+    const source = readFileSync(join(ROOT, "eslint.config.mjs"), "utf8");
+    expect(source).toMatch(/"@next\/next\/no-img-element":\s*"error"/);
+  });
+
+  // Snapshot the `<img>` keeper list so adding a file to dodge the
+  // now-`error` rule lands as a deliberate diff (mirrors the other
+  // config snapshots). Each keeper renders dynamic / external /
+  // user-content images or local SVGs that can't use next/image
+  // without loosening the locked image allowlist.
+  it("IMG_KEEPERS list is snapshotted", () => {
+    const source = readFileSync(join(ROOT, "eslint.config.mjs"), "utf8");
+    const block = source.match(/const IMG_KEEPERS = \[([\s\S]*?)\];/);
+    expect(block, "IMG_KEEPERS array present").not.toBeNull();
+    const files = Array.from(block![1].matchAll(/"([^"]+)"/g))
+      .map((m) => m[1].replace(/\\/g, ""))
+      .sort();
+    expect(files).toMatchInlineSnapshot(`
+      [
+        "src/app/(dashboard)/admin/settings/settings-client.tsx",
+        "src/app/(dashboard)/shop/[productId]/product-detail-client.tsx",
+        "src/app/(dashboard)/shop/cart/cart-client.tsx",
+        "src/app/(dashboard)/shop/orders/orders-client.tsx",
+        "src/components/content-editor/block-renderer.tsx",
+        "src/components/layout/sidebar.tsx",
+        "src/components/marketplace/external-course-card.tsx",
+        "src/components/marketplace/unified-catalog.tsx",
+        "src/components/microlearning/nugget-card.tsx",
+        "src/components/shop/product-card.tsx",
+        "src/components/tenants/branding-editor.tsx",
+        "src/components/tenants/tenant-switcher.tsx",
+      ]
+    `);
+  });
+
   // Regression guard: the bare config (before the TS parser was
   // wired in) threw "Parsing error: Unexpected token" on every TS
   // file. Lint a representative .tsx fixture through the real
@@ -79,5 +114,33 @@ describe("eslint config wiring", () => {
       fatal,
       `parser produced fatal errors: ${JSON.stringify(fatal, null, 2)}`
     ).toEqual([]);
+  });
+
+  // rules-of-hooks catches real runtime bugs (conditional hook
+  // calls). Assert the config actually flags one as an error, so a
+  // future config edit that drops the react-hooks plugin regresses
+  // loudly rather than silently.
+  it("flags a rules-of-hooks violation as an error", async () => {
+    const eslint = new ESLint({
+      cwd: ROOT,
+      overrideConfigFile: join(ROOT, "eslint.config.mjs"),
+    });
+    const tsx = [
+      "import { useState } from 'react';",
+      "export function Bad({ cond }: { cond: boolean }) {",
+      "  if (cond) {",
+      "    const [x] = useState(0);",
+      "    return <span>{x}</span>;",
+      "  }",
+      "  return null;",
+      "}",
+      "",
+    ].join("\n");
+    const results = await eslint.lintText(tsx, { filePath: "src/__fixture__/bad.tsx" });
+    const ruleViolations = results
+      .flatMap((r) => r.messages)
+      .filter((m) => m.ruleId === "react-hooks/rules-of-hooks");
+    expect(ruleViolations.length).toBeGreaterThan(0);
+    expect(ruleViolations.every((m) => m.severity === 2)).toBe(true);
   });
 });

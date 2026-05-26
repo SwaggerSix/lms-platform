@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { StepNode } from "./step-node";
 
 export interface CanvasStep {
@@ -58,7 +58,7 @@ export function WorkflowCanvas({
     }
   }
 
-  const stepMap = new Map(steps.map((s) => [s.id, s]));
+  const stepMap = useMemo(() => new Map(steps.map((s) => [s.id, s])), [steps]);
 
   // Node dimensions
   const NODE_WIDTH = 220;

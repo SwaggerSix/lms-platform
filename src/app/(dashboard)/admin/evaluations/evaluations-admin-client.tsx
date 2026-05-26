@@ -26,7 +26,7 @@ const LEVEL_COLORS: Record<number, string> = {
   4: "bg-purple-100 text-purple-800",
 };
 
-type Template = {
+export type Template = {
   id: string;
   name: string;
   description?: string;
@@ -35,7 +35,7 @@ type Template = {
   created_at: string;
 };
 
-type Trigger = {
+export type Trigger = {
   id: string;
   delay_days: number;
   is_active: boolean;
@@ -44,7 +44,7 @@ type Trigger = {
   template: { id: string; name: string; level: number } | null;
 };
 
-type Course = { id: string; title: string };
+export type Course = { id: string; title: string };
 
 interface Props {
   templates: Template[];

@@ -6,6 +6,21 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Cleared the 11 `exhaustive-deps` warnings; lint is now 0/0.**
+  Memoized `useToast`'s return (stable `addToast`) so callers can
+  list `toast` in deps without churn; hoisted a static map to
+  module scope; wrapped `fetchData` / `saveToDB` / `stepMap` in
+  `useCallback`/`useMemo`; dropped genuinely-unnecessary deps
+  (`learnerName`/`learnerId` in scorm-player, `role` in reports).
+- **`IMG_KEEPERS` snapshotted + `rules-of-hooks` smoke added.** The
+  `eslint-config` guardrail now pins the `<img>` keeper list (so
+  adding a file to dodge the `error` rule is a deliberate diff) and
+  asserts a conditional-hook call is flagged as an error.
+- **Tightened the evaluations `as any` casts.** Replaced the opaque
+  `asAny` `any`-laundering helper in the three evaluations pages
+  with explicit `as unknown as T[]` casts against the now-exported
+  client prop types — the shape assertion is named at the boundary
+  (Supabase's service client returns untyped rows).
 - **`no-img-element` promoted to error with a documented keeper
   list.** Audited all `<img>` sites: none convert cleanly (DB/
   external/user-content URLs the `next-config` allowlist doesn't
