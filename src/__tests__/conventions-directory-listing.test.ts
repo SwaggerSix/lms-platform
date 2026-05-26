@@ -36,6 +36,7 @@ describe("conventions directory", () => {
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
         "mutation-no-store-convention.test.ts",
+        "next-config.test.ts",
         "no-compliance-requirements-queries.test.ts",
         "no-inline-tenant-or-filter.test.ts",
         "pre-push-branch-skip.test.ts",

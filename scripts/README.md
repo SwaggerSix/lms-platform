@@ -11,8 +11,8 @@ backfills, environment setup. Nothing here is imported by
   in the PR — make the case for it in the description.
 - Justify a new script with a short comment header (what it does,
   who runs it, when). Bonus points if it's idempotent.
-- One-off scripts that did their job and are now historical move
-  to `docs/archived/scripts/` (create if needed) — keep `scripts/`
+- One-off scripts that did their job and are now historical:
+  delete them (the git history is the archive). Keep `scripts/`
   reserved for things still in active use.
 
 ## What's here

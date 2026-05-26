@@ -1,5 +1,17 @@
 # Tenant-scope schema audit
 
+> ⚠️ **Partially historical.** Several rows in the table below have
+> since landed:
+>
+> - `audit_logs.tenant_id` — `20260318100039`
+> - `enrollment_rules.tenant_id` — `20260318100040`
+> - `compliance_requirements` — retired entirely (see
+>   `migrations.md`)
+>
+> The doc is preserved for context. The remaining open items
+> (`scheduled_reports`, `certificate_templates`, `ilt_sessions`,
+> `evaluation_assignments`) are still the live backlog.
+
 Tables that hold admin-scoped data and don't yet have a direct `tenant_id`
 column. Each row notes whether the gap matters and the cheapest path to
 plug it.

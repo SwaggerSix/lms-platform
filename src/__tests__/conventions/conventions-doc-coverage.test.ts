@@ -99,6 +99,7 @@ describe("docs/conventions.md coverage", () => {
       "dependency-footprint",
       "gitignore",
       "tsconfig",
+      "next-config",
       "prod-gate-warnings",
       "check-script",
     ]);

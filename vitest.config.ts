@@ -20,6 +20,10 @@ export default defineConfig({
         "src/**/*.spec.{ts,tsx}",
         "src/__tests__/**",
         "src/types/**",
+        // Layout components (4 across (auth), (dashboard), embed,
+        // and root) wrap children with shell markup; production
+        // paths through them are exercised by their children's
+        // tests, so direct coverage would dilute the signal.
         "src/app/**/layout.tsx",
         // Test-only helpers — covered by their own unit tests, but
         // they're test infrastructure rather than production code,

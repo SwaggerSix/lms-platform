@@ -30,6 +30,7 @@ glob auto-picks up new files in that directory.
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
 | `gitignore` | Snapshots non-comment entries; catches silent removal of `.env.local` or new entries that hide files from review. |
 | `tsconfig` | Snapshots `compilerOptions` keys; strict flags (`strict`, `noEmit`, `isolatedModules`) pinned by value. |
+| `next-config` | Pins the security header set + CSP `object-src 'none'`; image remote hostnames locked to `*.supabase.{co,in}`. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 
