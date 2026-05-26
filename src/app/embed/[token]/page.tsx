@@ -178,6 +178,9 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
           )}
 
           <div className="powered">
+            {/* Standalone embed document rendered outside the Next app
+                shell (full <html>/<body>); next/link does not apply. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             Powered by <a href="/">LMS Platform</a>
           </div>
         </div>

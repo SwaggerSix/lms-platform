@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Star,
@@ -230,12 +231,12 @@ export default function CourseDetailClient({
       {/* Hero */}
       <div className={cn("bg-gradient-to-r px-6 py-12 text-white", course.gradient)}>
         <div className="mx-auto max-w-7xl">
-          <a
+          <Link
             href="/learn/catalog"
             className="mb-4 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Catalog
-          </a>
+          </Link>
           <div className="flex flex-wrap items-start gap-3">
             <DifficultyBadge difficulty={course.difficulty} />
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">{course.type}</span>

@@ -6,10 +6,16 @@ import reactHooks from "eslint-plugin-react-hooks";
 // Flat-config replacement for the removed `next lint` subcommand
 // (Next 16 dropped it). Mirrors the next/core-web-vitals rule set
 // plus the plugins its inline eslint-disable directives reference
-// (react-hooks, @typescript-eslint). `no-html-link-for-pages` and
-// `no-img-element` are kept at `warn` to establish a green, runnable
-// baseline — they flag real improvements but predate this gate
-// being restored; tighten to `error` once the backlog is cleared.
+// (react-hooks, @typescript-eslint).
+//
+// `no-img-element` is intentionally a warning, not an error: the
+// remaining `<img>` sites render dynamic / external / user-content
+// images (tenant logos from uploads or data URLs, user-authored
+// content blocks, external marketplace thumbnails). `next/image`
+// would require those hostnames in `images.remotePatterns`, which
+// the `next-config` guardrail deliberately locks to `*.supabase`.
+// Loosening that allowlist to satisfy a lint rule would be a net
+// regression, so these stay as `<img>`.
 export default [
   {
     ignores: [
@@ -38,7 +44,6 @@ export default [
     rules: {
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs["core-web-vitals"].rules,
-      "@next/next/no-html-link-for-pages": "warn",
       "@next/next/no-img-element": "warn",
     },
   },

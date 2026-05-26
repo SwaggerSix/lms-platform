@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useCallback } from "react";
 import {
   CheckCircle,
@@ -232,7 +233,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Specialized Reports</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-          <a
+          <Link
             href="/admin/reports/cpe"
             className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
           >
@@ -246,7 +247,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
             <span className="mt-4 inline-flex w-full justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 group-hover:bg-emerald-100">
               Open Report
             </span>
-          </a>
+          </Link>
         </div>
 
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Templates</h2>

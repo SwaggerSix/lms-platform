@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Clock, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/utils/cn";
@@ -263,13 +264,13 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                 ? "You haven't completed any courses yet. Keep learning!"
                 : "No courses found."}
             </p>
-            <a
+            <Link
               href="/learn/catalog"
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
             >
               Browse Catalog
               <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </div>
         )}
       </div>

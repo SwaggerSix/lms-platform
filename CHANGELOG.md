@@ -6,6 +6,23 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`no-html-link-for-pages` cleared and promoted to error.**
+  Converted the 6 `<a href="/...">` page links (reports, dashboard,
+  course-detail, mentorship detail, my-courses) to `next/link`; the
+  embed page keeps a plain `<a>` (standalone HTML doc outside the
+  app shell) with a scoped disable. Rule is now `error`.
+- **`no-img-element` kept at `warn` by design.** Remaining `<img>`
+  sites render dynamic / external / user-content images (tenant
+  logos, content blocks, marketplace thumbnails); `next/image`
+  would need hostnames the `next-config` guardrail deliberately
+  locks to `*.supabase`, so they stay as `<img>`. Rationale recorded
+  in `eslint.config.mjs`.
+- **`eslint-config` guardrail added.** Pins the `lint` script to the
+  `eslint` CLI (not the removed `next lint`) and asserts
+  `eslint.config.mjs` registers the parser + plugins the tree's
+  disable directives need — so a future Next bump can't silently
+  re-break the gate. CI's lint step (`conventions.yml`) was the
+  thing broken by the Next 16 upgrade; it now runs again unchanged.
 - **ESLint restored after the Next 16 upgrade dropped `next lint`.**
   Added a flat `eslint.config.mjs` (next/core-web-vitals rules +
   `@typescript-eslint` parser/plugin + `react-hooks`), repointed the

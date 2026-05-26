@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
 
@@ -127,7 +128,7 @@ export default function MentorshipDetailClient({
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Back link */}
-      <a
+      <Link
         href="/learn/mentorship"
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
       >
@@ -135,7 +136,7 @@ export default function MentorshipDetailClient({
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Back to Mentorship
-      </a>
+      </Link>
 
       {/* Header */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">

@@ -33,6 +33,7 @@ describe("conventions directory", () => {
         "dependency-footprint.test.ts",
         "docs-footprint.test.ts",
         "env-example.test.ts",
+        "eslint-config.test.ts",
         "get-cache-control-audit.test.ts",
         "git-hooks.test.ts",
         "gitignore.test.ts",

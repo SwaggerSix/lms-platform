@@ -132,6 +132,7 @@ describe("docs/conventions.md coverage", () => {
       "gitignore",
       "tsconfig",
       "next-config",
+      "eslint-config",
       "vercel-crons",
       "vercel-config",
       "header-parity",
