@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import FeedbackCyclesClient from "./feedback-cycles-client";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default async function AdminFeedbackPage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || !["admin", "manager"].includes(dbUser.role)) redirect("/dashboard");
+  if (!dbUser || !isManagerOrAbove(dbUser.role)) redirect("/dashboard");
 
   const { data: cycles } = await service
     .from("feedback_cycles")

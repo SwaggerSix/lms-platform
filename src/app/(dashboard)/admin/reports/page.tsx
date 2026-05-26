@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getRequiredCourseSources } from "@/lib/courses/required-training";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import ReportsClient from "./reports-client";
 import type { ReportRow, RecentReport, ReportSummary } from "./reports-client";
 
@@ -50,7 +51,7 @@ export default async function ReportsPage() {
     redirect("/login");
   }
 
-  if (!["admin", "manager"].includes(dbUser.role)) {
+  if (!isManagerOrAbove(dbUser.role)) {
     redirect("/dashboard");
   }
 

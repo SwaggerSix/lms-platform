@@ -19,8 +19,19 @@ removals that affect future work.
   smoke test, and the ratchet smoke test all import the same
   regex. Both ratchet walks whitelist the module so the regex
   source doesn't self-match.
-- **super_admin-omission ratchet 18 → 16.** `/api/certifications`
-  and `/api/gamification` migrated to `!isManagerOrAbove(role)`.
+- **`super-admin-omission-audit` retired at zero.** The remaining
+  `["admin", "manager"].includes(role)` sites all migrated to
+  `isManagerOrAbove(role)` (which includes super_admin): 5 admin
+  pages (`analytics/predictive`, `feedback`, `feedback/[id]`,
+  `mentorship`, `reports`), 2 manager pages (`team`, `analytics`),
+  and the `/api/{certifications,gamification,certificates/generate}`
+  + `/api/analytics/{alerts,engagement,predictions,snapshots}` +
+  `/api/enrollments` (×4) routes. Ratchet flipped from a shrinking
+  ceiling to a hard `toEqual([])`; the latent super_admin lockout
+  is now closed and can't be reintroduced.
+- **`ADMIN_MANAGER_INCLUDES_RE` smoke test** added to pin the
+  array-includes detector behavior, mirroring the existing
+  inequality-form smoke test.
 
 ## 2026-05-28
 

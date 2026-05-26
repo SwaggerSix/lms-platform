@@ -50,8 +50,8 @@ can't drift.
   `role !== "admin" && role !== "super_admin"` inequality.
   Banned: hard-failed by `isadmin-adoption-ratchet`.
 - `ADMIN_MANAGER_INCLUDES_RE` — matches
-  `["admin", "manager"].includes(...)`. Surfaced by
-  `super-admin-omission-audit` (still a shrinking ratchet).
+  `["admin", "manager"].includes(...)`. Banned: hard-failed by
+  `super-admin-omission-audit` (the super_admin-omitting form).
 
 Both convention walks whitelist this file so the regex source
 doesn't self-match.

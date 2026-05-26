@@ -13,6 +13,13 @@
  * Both are intentionally narrow: false negatives are acceptable
  * (the helpers `isAdmin` / `isManagerOrAbove` are the migration
  * target either way), false positives are not.
+ *
+ * Matching behavior is pinned by two smoke tests that import these
+ * same constants, so the regexes and their tests can't drift:
+ *   - src/__tests__/lib/isadmin-ratchet-smoke.test.ts
+ *     (INEQUALITY_ROLE_RE)
+ *   - src/__tests__/lib/admin-manager-includes-smoke.test.ts
+ *     (ADMIN_MANAGER_INCLUDES_RE)
  */
 
 export const INEQUALITY_ROLE_RE =

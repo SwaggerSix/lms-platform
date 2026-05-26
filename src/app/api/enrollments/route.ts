@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createEnrollmentSchema } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   const tenantScope = await getTenantScope(profile.id, profile.role, request);
 
   const userId = searchParams.get("user_id");
-  if (userId && userId !== profile.id && !["admin", "manager"].includes(profile.role)) {
+  if (userId && userId !== profile.id && !isManagerOrAbove(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const status = searchParams.get("status");
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     .order("enrolled_at", { ascending: false });
 
   // Default to own enrollments for non-admin/manager
-  if (!userId && !["admin", "manager"].includes(profile.role)) {
+  if (!userId && !isManagerOrAbove(profile.role)) {
     query = query.eq("user_id", profile.id);
   } else if (userId) {
     query = query.eq("user_id", userId);
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
   let targetUserId = profile.id;
   let assignedBy = null;
   if (validation.data.user_id && validation.data.user_id !== profile.id) {
-    if (!["admin", "manager"].includes(profile.role)) {
+    if (!isManagerOrAbove(profile.role)) {
       return jsonNoStore({ error: "Forbidden: cannot enroll other users" }, { status: 403 });
     }
     targetUserId = validation.data.user_id;
@@ -192,7 +193,7 @@ export async function POST(request: NextRequest) {
     .eq("id", validation.data.course_id)
     .single();
 
-  if (course?.enrollment_type === "approval" && !["admin", "manager"].includes(profile.role)) {
+  if (course?.enrollment_type === "approval" && !isManagerOrAbove(profile.role)) {
     // Check for an existing pending request
     const { data: existingRequest } = await service
       .from("enrollment_approvals")

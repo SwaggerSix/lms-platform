@@ -36,7 +36,7 @@ glob auto-picks up new files in that directory.
 | `header-parity` | `next.config.ts` is the sole owner of security + cache headers; `vercel.json` must not duplicate them or set a blanket `Cache-Control` on `/api/(.*)`. |
 | `middleware` | Pins `src/middleware.ts` matcher exclusions and the `/admin` + `/manager` role-gate lists. |
 | `isadmin-adoption-ratchet` | Enforces no `role !== "admin"` inequality-form checks. (Retired ratchet — was a shrinking cap, hit zero 2026-05-29.) |
-| `super-admin-omission-audit` | Advisory snapshot of `["admin", "manager"].includes(role)` sites that silently exclude super_admin (likely permissions bug). |
+| `super-admin-omission-audit` | Enforces no `["admin", "manager"].includes(role)` sites that silently exclude super_admin. (Retired ratchet — hit zero 2026-05-29; now a hard assertion.) |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
@@ -103,13 +103,13 @@ pattern lets the rule land incrementally without backsliding:
 4. When the count hits zero, **flip to a hard assertion**
    (`toEqual([])`) and delete the ceiling.
 
-Two live examples:
+Retired examples (all flipped to `toEqual([])`):
 
-- **`super-admin-omission-audit`** — caps remaining
-  `["admin", "manager"].includes(role)` sites at 10 (super_admin
-  silently excluded). Migration shifts semantics so each is a
-  review conversation; ratchet pairs the snapshot with a hard
-  ceiling.
+- **`super-admin-omission-audit`** — capped
+  `["admin", "manager"].includes(role)` sites (super_admin
+  silently excluded). Migration to `isManagerOrAbove(role)` shifts
+  semantics so each was a review conversation; ran from 19 down to
+  zero and flipped on 2026-05-29.
 - **`isadmin-adoption`** — was a ratchet from 24 down to zero;
   flipped to `toEqual([])` on 2026-05-29. The convention
   `!isAdmin(role)` is now enforced.
@@ -131,11 +131,11 @@ The `isadmin-adoption-ratchet` test enforces zero remaining
 `role !== "admin" && (...)role !== "super_admin"` sites; the
 ratchet that got it there hit zero on 2026-05-29.
 
-The `super-admin-omission-audit` ratchet is still active and
-caps `["admin", "manager"].includes(role)` sites — those omit
-`super_admin` and shift semantics on migration to
-`isManagerOrAbove(role)`, so each migration is a per-site
-review conversation.
+The `super-admin-omission-audit` test enforces zero remaining
+`["admin", "manager"].includes(role)` sites — those omit
+`super_admin` and shifted semantics on migration to
+`isManagerOrAbove(role)`. The ratchet that got it there hit zero
+on 2026-05-29; it's now a hard `toEqual([])` assertion.
 
 ## Related playbooks
 

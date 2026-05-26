@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Check permissions: admins can generate for anyone, others only for themselves
-  if (!["admin", "manager"].includes(auth.user.role) && userCert.user_id !== auth.user.id) {
+  if (!isManagerOrAbove(auth.user.role) && userCert.user_id !== auth.user.id) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 

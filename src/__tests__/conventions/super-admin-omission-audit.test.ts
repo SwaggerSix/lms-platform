@@ -11,16 +11,17 @@ import { ADMIN_MANAGER_INCLUDES_RE } from "@/lib/auth/role-check-patterns";
  * super_admin should pass any admin-or-manager gate. The
  * src/lib/auth/roles.ts docstring calls this out.
  *
- * This guardrail snapshots the live offender set. PR review sees
- * the list; migration to `isManagerOrAbove(role)` (which includes
- * super_admin) is a deliberate per-site code-review conversation,
- * not a global rewrite. Once the set is empty, flip the assertion
- * to `toEqual([])` and retire the snapshot.
+ * This guardrail snapshotted the live offender set while the
+ * migration was in flight. The backlog hit zero on 2026-05-29, so
+ * the ratchet flipped to a hard `toEqual([])` assertion: any
+ * reintroduced `["admin", "manager"].includes(role)` site now
+ * hard-fails. Migrate to `isManagerOrAbove(role)` (which includes
+ * super_admin) instead.
  */
 
 
-describe("super_admin omission audit (advisory)", () => {
-  it("snapshot of array-includes role checks missing super_admin", () => {
+describe("super_admin omission audit", () => {
+  it("no array-includes role checks omitting super_admin remain under src/", () => {
     const files = walkFiles(join(process.cwd(), "src"));
     const sites: Array<{ file: string; line: number }> = [];
     for (const file of files) {
@@ -34,33 +35,9 @@ describe("super_admin omission audit (advisory)", () => {
       }
     }
 
-    // Ratchet: site count is monotonically decreasing. Each PR
-    // that migrates a site to isManagerOrAbove() lowers MAX by
-    // the number it removed. When MAX hits 0, flip the snapshot
-    // to `toEqual([])` and retire the ratchet.
-    const MAX = 10;
     expect(
-      sites.length,
-      `["admin", "manager"].includes(role) sites: ${sites.length}. Ceiling ${MAX}. Migrate touched sites to isManagerOrAbove() and lower MAX.`
-    ).toBeLessThanOrEqual(MAX);
-
-    // Collapse to file-level with ×N suffix when multiple sites
-    // share a file. Mirrors audit-tenant-id-coverage's approach.
-    const counts = new Map<string, number>();
-    for (const s of sites) counts.set(s.file, (counts.get(s.file) ?? 0) + 1);
-    const collapsed = Array.from(counts.entries())
-      .map(([file, n]) => (n === 1 ? file : `${file} ×${n}`))
-      .sort();
-    expect(collapsed).toMatchInlineSnapshot(`
-      [
-        "src/app/(dashboard)/admin/analytics/predictive/page.tsx",
-        "src/app/(dashboard)/admin/feedback/[id]/page.tsx",
-        "src/app/(dashboard)/admin/feedback/page.tsx",
-        "src/app/(dashboard)/admin/mentorship/page.tsx",
-        "src/app/(dashboard)/admin/reports/page.tsx",
-        "src/app/api/certificates/generate/route.ts",
-        "src/app/api/enrollments/route.ts ×4",
-      ]
-    `);
+      sites,
+      `["admin", "manager"].includes(role) sites omit super_admin — use isManagerOrAbove(): ${JSON.stringify(sites, null, 2)}`
+    ).toEqual([]);
   });
 });
