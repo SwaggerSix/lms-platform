@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateMentorshipRequestSchema } from "@/lib/validations";
@@ -41,9 +42,8 @@ export async function PUT(
   // Only mentee, mentor, or admin can update
   const isParticipant =
     existing.mentee_id === auth.user.id || existing.mentor_id === auth.user.id;
-  const isAdmin = auth.user.role === "admin";
 
-  if (!isParticipant && !isAdmin) {
+  if (!isParticipant && !isAdmin(auth.user.role)) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -137,7 +137,7 @@ export async function DELETE(
     return jsonNoStore({ error: "Request not found" }, { status: 404 });
   }
 
-  if (existing.mentee_id !== auth.user.id && auth.user.role !== "admin") {
+  if (existing.mentee_id !== auth.user.id && !isAdmin(auth.user.role)) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 

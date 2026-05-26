@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateMentorshipSessionSchema } from "@/lib/validations";
@@ -44,7 +45,7 @@ export async function PUT(
   if (
     req?.mentee_id !== auth.user.id &&
     req?.mentor_id !== auth.user.id &&
-    auth.user.role !== "admin"
+    !isAdmin(auth.user.role)
   ) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }

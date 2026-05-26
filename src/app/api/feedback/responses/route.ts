@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createFeedbackResponseSchema, updateFeedbackResponseSchema } from "@/lib/validations";
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (!nomination || nomination.reviewer_id !== auth.user.id) {
       // Allow admins to view any
       const { data: dbUser } = await service.from("users").select("role").eq("id", auth.user.id).single();
-      if (!dbUser || dbUser.role !== "admin") {
+      if (!dbUser || !isAdmin(dbUser.role)) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }

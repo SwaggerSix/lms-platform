@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import MentorshipDetailClient from "./detail-client";
 
 export const metadata: Metadata = {
@@ -42,8 +43,7 @@ export default async function MentorshipDetailPage({
   // Verify access
   const isParticipant =
     request.mentee_id === dbUser.id || request.mentor_id === dbUser.id;
-  const isAdmin = dbUser.role === "admin";
-  if (!isParticipant && !isAdmin) notFound();
+  if (!isParticipant && !isAdmin(dbUser.role)) notFound();
 
   // Fetch sessions
   const { data: sessions } = await service

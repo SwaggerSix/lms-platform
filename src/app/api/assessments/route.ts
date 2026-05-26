@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createAssessmentSchema } from "@/lib/validations";
 import { jsonNoStore } from "@/lib/api/no-store";
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
   const auth = await authorize();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const isAdmin = auth.user.role === "admin";
+  const canSeeAnswerKey = isAdmin(auth.user.role);
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const courseId = searchParams.get("course_id");
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-    if (!isAdmin && data) {
+    if (!canSeeAnswerKey && data) {
       data.questions = (data.questions ?? []).map((q: Record<string, unknown>) => ({
         ...q,
         options: Array.isArray(q.options)

@@ -1,5 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
-import { isManagerOrAbove } from "@/lib/auth/roles";
+import { isAdmin, isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateAlertSchema } from "@/lib/validations";
@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
     return jsonNoStore({ error: "Alert not found" }, { status: 404 });
   }
 
-  if (alert.user_id !== auth.user.id && auth.user.role !== "admin") {
+  if (alert.user_id !== auth.user.id && !isAdmin(auth.user.role)) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 

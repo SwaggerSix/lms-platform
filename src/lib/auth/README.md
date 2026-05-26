@@ -64,7 +64,8 @@ can't drift.
   `role === "admin" || role === "manager"` (and the negated form).
   Banned by `manager-equality-omission-audit`.
 - `ADMIN_EQUALITY_OMISSION_RE` — matches bare `.role === "admin"`.
-  Advisory only (`admin-equality-omission-audit` ratchet).
+  Banned by `admin-equality-omission-audit` (hard; one whitelisted
+  deliberate admin/super_admin split).
 
 Both convention walks whitelist this file so the regex source
 doesn't self-match.
@@ -79,17 +80,16 @@ guarded; one is advisory. Canonical replacement is always
 |-------|--------|--------------|-----------|
 | `role !== "admin" && role !== "super_admin"` | admin gate | included | `isadmin-adoption-ratchet` (hard) |
 | `["admin", "super_admin"].includes(role)` | admin gate | included | `admin-array-form-audit` (hard) |
-| `.role === "admin"` (bare) | admin gate | **omitted** | `admin-equality-omission-audit` (advisory) |
+| `.role === "admin"` (bare) | admin gate | **omitted** | `admin-equality-omission-audit` (hard) |
 | `["admin", "manager"].includes(role)` | manager-or-above | **omitted** | `super-admin-omission-audit` (hard) |
 | `role === "admin" \|\| role === "manager"` | manager-or-above | **omitted** | `manager-equality-omission-audit` (hard) |
 
 The **omitted** rows are the latent bug: super_admin should pass
 any admin-or-manager gate, so these shapes silently lock it out.
-The bare `.role === "admin"` form is advisory rather than hard
-because a few sites differentiate admin from super_admin on
-purpose (e.g. tenant-scope resolution returns a global scope for
-super_admin and the org id for admin) — each migration is a
-per-site review.
+All five are now hard assertions. The bare `.role === "admin"`
+form has a single whitelisted exception — `audit-log/
+resolve-tenant.ts` differentiates admin (org scope) from
+super_admin (global scope) on purpose.
 
 Note: `authorize(...)` call sites are exempt from all of these —
 the helper short-circuits super_admin before the allowlist check

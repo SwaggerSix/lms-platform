@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createEnrollmentSchema } from "@/lib/validations";
 import { logAudit } from "@/lib/audit";
-import { isManagerOrAbove } from "@/lib/auth/roles";
+import { isAdmin, isManagerOrAbove } from "@/lib/auth/roles";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
@@ -356,7 +356,7 @@ export async function DELETE(request: NextRequest) {
     return jsonNoStore({ error: "Enrollment not found" }, { status: 404 });
   }
 
-  if (enrollment.user_id !== profile.id && profile.role !== "admin") {
+  if (enrollment.user_id !== profile.id && !isAdmin(profile.role)) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -6,6 +6,16 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Bare-admin super_admin omission fully closed.** Migrated the
+  remaining 11 `.role === "admin"` gates to `isAdmin(role)` —
+  mentorship (sessions, sessions/[id], requests/[id] ×2, learn
+  detail page), assessments (route + [id], where the flag gates
+  the answer key), enrollments delete, feedback/responses,
+  xapi/statements, analytics/alerts. `admin-equality-omission-audit`
+  flipped from advisory ratchet to a hard `toEqual([])`;
+  `audit-log/resolve-tenant.ts` stays whitelisted (deliberate
+  admin/super_admin scope split). All five inline role-gate bug
+  classes are now hard-enforced.
 - **Tenant-management super_admin lockouts fixed; bare-admin
   surface put under an advisory ratchet.** The `/api/tenants`
   cluster (`route`, `[id]`, `[id]/branding`, `[id]/courses`,

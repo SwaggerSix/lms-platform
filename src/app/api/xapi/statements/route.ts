@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
+import { isAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, xapiStatementSchema } from "@/lib/validations";
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     .eq("voided", false);
 
   // Non-admin users can only see their own statements
-  if (auth.user.role !== "admin") {
+  if (!isAdmin(auth.user.role)) {
     query = query.eq("actor_id", auth.user.id);
   }
 
