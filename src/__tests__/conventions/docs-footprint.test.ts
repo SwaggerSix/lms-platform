@@ -36,6 +36,7 @@ describe("docs footprint", () => {
     const files = listMarkdown(join(process.cwd(), "docs"));
     expect(files).toMatchInlineSnapshot(`
       [
+        "README.md",
         "conventions.md",
         "migrations.md",
         "tenant-schema-audit.md",

@@ -49,6 +49,7 @@ describe("conventions directory", () => {
         "supabase-tree.test.ts",
         "testing-helpers-scope.test.ts",
         "tsconfig.test.ts",
+        "vercel-crons.test.ts",
       ]
     `);
   });

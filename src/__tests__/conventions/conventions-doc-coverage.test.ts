@@ -100,6 +100,7 @@ describe("docs/conventions.md coverage", () => {
       "gitignore",
       "tsconfig",
       "next-config",
+      "vercel-crons",
       "prod-gate-warnings",
       "check-script",
     ]);
