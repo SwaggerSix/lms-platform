@@ -106,7 +106,7 @@ Two live examples:
 
 - **`isadmin-adoption-ratchet`** — caps remaining
   `role !== "admin" && (...)role !== "super_admin"` inequality
-  checks at 14. Each migration to `isAdmin()` lowers it.
+  checks at 12. Each migration to `isAdmin()` lowers it.
 - **`get-cache-control-audit`** — was a ratchet from 87 down to
   zero; flipped to `toEqual([])` on 2026-05-23.
 

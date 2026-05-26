@@ -1,14 +1,17 @@
 /**
- * Role-membership helpers. The codebase has historically used two
+ * Role-membership helpers. The codebase has historically used three
  * shapes for "is this user admin-or-higher":
  *
  *   role !== "admin" && role !== "super_admin"     // inequality form
  *   !["admin", "super_admin"].includes(role)       // array form
+ *   !["admin", "manager"].includes(role)           // missing super_admin (likely a bug — super_admin should pass)
  *
- * Both work; the difference is style. Reaching for these helpers
- * standardizes on one shape and shortens call sites that already
- * branch on three roles. Existing inequality-form sites are
- * fine — leave them alone unless touching the surrounding code.
+ * All three work locally; the difference is style and (in the
+ * third form) a latent permissions bug. Reaching for these helpers
+ * standardizes on one shape and quietly fixes the super_admin
+ * omission. Existing call sites are fine — leave them alone
+ * unless touching the surrounding code (semantic shift for
+ * `["admin", "manager"]` sites: super_admin starts passing).
  *
  * Pass any value; non-string inputs return false rather than
  * throwing.
