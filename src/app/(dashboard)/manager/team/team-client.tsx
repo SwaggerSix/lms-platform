@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -17,9 +17,11 @@ import {
   Send,
   BookOpen,
   Eye,
-  ChevronDown,
   X,
   Loader2,
+  UserPlus,
+  Upload,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatRelativeTime, formatPercent } from "@/utils/format";
@@ -82,6 +84,24 @@ export default function TeamClient({
 
   // Reminder loading state
   const [reminderLoading, setReminderLoading] = useState<string | null>(null);
+
+  // Add / edit member modal state
+  const emptyForm = { firstName: "", lastName: "", email: "", jobTitle: "" };
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [editMember, setEditMember] = useState<TeamMember | null>(null);
+  const [memberForm, setMemberForm] = useState(emptyForm);
+  const [memberStatus, setMemberStatus] =
+    useState<TeamMember["status"]>("active");
+  const [savingMember, setSavingMember] = useState(false);
+
+  // CSV import modal state
+  const [showImport, setShowImport] = useState(false);
+  const [importRows, setImportRows] = useState<
+    { first_name: string; last_name: string; email: string; job_title: string }[]
+  >([]);
+  const [importError, setImportError] = useState("");
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredMembers = members.filter((member) => {
     const matchesSearch =
@@ -202,20 +222,207 @@ export default function TeamClient({
     }
   };
 
+  const openAddMember = () => {
+    setMemberForm(emptyForm);
+    setMemberStatus("active");
+    setEditMember(null);
+    setShowAddMember(true);
+  };
+
+  const openEditMember = (member: TeamMember) => {
+    setMemberForm({
+      firstName: member.firstName,
+      lastName: member.lastName,
+      email: member.email,
+      jobTitle: member.jobTitle === "Employee" ? "" : member.jobTitle,
+    });
+    setMemberStatus(member.status);
+    setShowAddMember(false);
+    setEditMember(member);
+    setOpenActionMenu(null);
+  };
+
+  // UI status ("on-leave") maps to the DB "suspended" value.
+  const toDbStatus = (s: TeamMember["status"]) =>
+    s === "on-leave" ? "suspended" : s;
+
+  const handleSaveMember = async () => {
+    const { firstName, lastName, email, jobTitle } = memberForm;
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      toast.error("First name, last name, and email are required.");
+      return;
+    }
+    setSavingMember(true);
+    try {
+      const isEdit = Boolean(editMember);
+      const url = isEdit
+        ? `/api/team/members/${editMember!.id}`
+        : "/api/team/members";
+      const res = await fetch(url, {
+        method: isEdit ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email: email.trim(),
+          job_title: jobTitle.trim() || null,
+          status: toDbStatus(memberStatus),
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to save team member");
+      }
+      toast.success(
+        isEdit
+          ? "Team member updated."
+          : `${firstName} ${lastName} added to your team.`
+      );
+      setShowAddMember(false);
+      setEditMember(null);
+      router.refresh();
+    } catch (error) {
+      console.error("Save member failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save team member"
+      );
+    } finally {
+      setSavingMember(false);
+    }
+  };
+
+  const parseCsv = (text: string) => {
+    const lines = text
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lines.length === 0) return [];
+    const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+    const idx = {
+      first_name: header.findIndex((h) =>
+        ["first_name", "first name", "firstname"].includes(h)
+      ),
+      last_name: header.findIndex((h) =>
+        ["last_name", "last name", "lastname"].includes(h)
+      ),
+      email: header.findIndex((h) => h === "email"),
+      job_title: header.findIndex((h) =>
+        ["job_title", "job title", "title"].includes(h)
+      ),
+    };
+    if (idx.first_name === -1 || idx.last_name === -1 || idx.email === -1) {
+      throw new Error(
+        "CSV must include first_name, last_name, and email columns."
+      );
+    }
+    return lines.slice(1).map((line) => {
+      const cols = line.split(",").map((c) => c.trim());
+      return {
+        first_name: cols[idx.first_name] ?? "",
+        last_name: cols[idx.last_name] ?? "",
+        email: cols[idx.email] ?? "",
+        job_title: idx.job_title === -1 ? "" : cols[idx.job_title] ?? "",
+      };
+    });
+  };
+
+  const handleFileSelected = async (file: File | undefined) => {
+    if (!file) return;
+    setImportError("");
+    try {
+      const text = await file.text();
+      const rows = parseCsv(text).filter(
+        (r) => r.first_name && r.last_name && r.email
+      );
+      if (rows.length === 0) {
+        throw new Error("No valid rows found in the file.");
+      }
+      setImportRows(rows);
+    } catch (error) {
+      setImportRows([]);
+      setImportError(
+        error instanceof Error ? error.message : "Failed to read file"
+      );
+    }
+  };
+
+  const openImport = () => {
+    setImportRows([]);
+    setImportError("");
+    setShowImport(true);
+  };
+
+  const handleImportSubmit = async () => {
+    if (importRows.length === 0) return;
+    setImporting(true);
+    try {
+      const res = await fetch("/api/team/members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          members: importRows.map((r) => ({
+            first_name: r.first_name,
+            last_name: r.last_name,
+            email: r.email,
+            job_title: r.job_title || null,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok && !data.created) {
+        throw new Error(data.error || "Import failed");
+      }
+      const failed = (data.failed ?? []).length;
+      if (failed > 0) {
+        toast.success(
+          `Imported ${data.created} member(s). ${failed} row(s) skipped.`
+        );
+      } else {
+        toast.success(`Imported ${data.created} team member(s).`);
+      }
+      setShowImport(false);
+      setImportRows([]);
+      router.refresh();
+    } catch (error) {
+      console.error("Import failed:", error);
+      toast.error(error instanceof Error ? error.message : "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <Users className="h-8 w-8 text-indigo-600" />
-          <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
-          <span className="ml-2 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
-            {stats.teamSize} members
-          </span>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Users className="h-8 w-8 text-indigo-600" />
+            <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+            <span className="ml-2 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
+              {stats.teamSize} members
+            </span>
+          </div>
+          <p className="text-gray-500 mt-1">
+            Monitor your team&apos;s learning progress and compliance status
+          </p>
         </div>
-        <p className="text-gray-500 mt-1">
-          Monitor your team&apos;s learning progress and compliance status
-        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openImport}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </button>
+          <button
+            onClick={openAddMember}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          >
+            <UserPlus className="h-4 w-4" />
+            Add Member
+          </button>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -472,6 +679,13 @@ export default function TeamClient({
                               View Profile
                             </button>
                             <button
+                              onClick={() => openEditMember(member)}
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Edit Member
+                            </button>
+                            <button
                               onClick={() => handleAssignCourse(member)}
                               className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                             >
@@ -603,6 +817,13 @@ export default function TeamClient({
                 >
                   <Eye className="mr-1 inline h-3 w-3" />
                   Profile
+                </button>
+                <button
+                  onClick={() => openEditMember(member)}
+                  className="rounded-lg border border-gray-300 px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+                  title="Edit member"
+                >
+                  <Pencil className="h-3 w-3" />
                 </button>
                 <button
                   onClick={() => handleAssignCourse(member)}
@@ -889,6 +1110,250 @@ export default function TeamClient({
                   </span>
                 ) : (
                   "Assign Course"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit Member Modal */}
+      {(showAddMember || editMember) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editMember ? "Edit Team Member" : "Add Team Member"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowAddMember(false);
+                  setEditMember(null);
+                }}
+                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={memberForm.firstName}
+                    onChange={(e) =>
+                      setMemberForm({ ...memberForm, firstName: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={memberForm.lastName}
+                    onChange={(e) =>
+                      setMemberForm({ ...memberForm, lastName: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={memberForm.email}
+                  onChange={(e) =>
+                    setMemberForm({ ...memberForm, email: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  value={memberForm.jobTitle}
+                  onChange={(e) =>
+                    setMemberForm({ ...memberForm, jobTitle: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select
+                  value={memberStatus}
+                  onChange={(e) =>
+                    setMemberStatus(e.target.value as TeamMember["status"])
+                  }
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="on-leave">On Leave</option>
+                </select>
+              </div>
+              {!editMember && (
+                <p className="text-xs text-gray-400">
+                  A login will be created and the member will be prompted to set
+                  a password on first sign-in.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={() => {
+                  setShowAddMember(false);
+                  setEditMember(null);
+                }}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveMember}
+                disabled={savingMember}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+              >
+                {savingMember ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : editMember ? (
+                  "Save Changes"
+                ) : (
+                  "Add Member"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import CSV Modal */}
+      {showImport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Import Team Members
+              </h2>
+              <button
+                onClick={() => setShowImport(false)}
+                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-sm text-gray-600">
+                Upload a CSV file with columns:{" "}
+                <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-700">
+                  first_name, last_name, email, job_title
+                </code>
+                . The first row should be the header.
+              </p>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(e) => handleFileSelected(e.target.files?.[0])}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/50"
+              >
+                <Upload className="h-6 w-6 text-gray-400" />
+                <span className="text-sm font-medium text-gray-700">
+                  Click to choose a CSV file
+                </span>
+              </button>
+
+              {importError && (
+                <p className="text-sm text-red-600">{importError}</p>
+              )}
+
+              {importRows.length > 0 && (
+                <div>
+                  <p className="mb-2 text-sm font-medium text-gray-700">
+                    {importRows.length} member(s) ready to import
+                  </p>
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-gray-200">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left font-medium text-gray-500">
+                            Name
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-500">
+                            Email
+                          </th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-500">
+                            Job Title
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {importRows.map((row, i) => (
+                          <tr key={i}>
+                            <td className="px-3 py-2 text-gray-900">
+                              {row.first_name} {row.last_name}
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {row.email}
+                            </td>
+                            <td className="px-3 py-2 text-gray-600">
+                              {row.job_title || "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={() => setShowImport(false)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImportSubmit}
+                disabled={importRows.length === 0 || importing}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+              >
+                {importing ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Importing...
+                  </span>
+                ) : (
+                  `Import ${importRows.length || ""} Member${
+                    importRows.length === 1 ? "" : "s"
+                  }`.trim()
                 )}
               </button>
             </div>
