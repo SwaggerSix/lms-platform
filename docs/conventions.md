@@ -28,6 +28,8 @@ glob auto-picks up new files in that directory.
 | `setup-contents` | Snapshots `src/__tests__/setup.ts`; changes affect every test so they surface in PR review. |
 | `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
+| `gitignore` | Snapshots non-comment entries; catches silent removal of `.env.local` or new entries that hide files from review. |
+| `tsconfig` | Snapshots `compilerOptions` keys; strict flags (`strict`, `noEmit`, `isolatedModules`) pinned by value. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 

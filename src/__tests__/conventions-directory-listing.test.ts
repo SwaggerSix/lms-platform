@@ -32,6 +32,7 @@ describe("conventions directory", () => {
         "env-example.test.ts",
         "get-cache-control-audit.test.ts",
         "git-hooks.test.ts",
+        "gitignore.test.ts",
         "install-hooks.test.ts",
         "lefthook-parity.test.ts",
         "mutation-no-store-convention.test.ts",
@@ -46,6 +47,7 @@ describe("conventions directory", () => {
         "supabase-pending-empty.test.ts",
         "supabase-tree.test.ts",
         "testing-helpers-scope.test.ts",
+        "tsconfig.test.ts",
       ]
     `);
   });

@@ -97,6 +97,8 @@ describe("docs/conventions.md coverage", () => {
       "setup-contents",
       "dependencies-ratchet",
       "dependency-footprint",
+      "gitignore",
+      "tsconfig",
       "prod-gate-warnings",
       "check-script",
     ]);

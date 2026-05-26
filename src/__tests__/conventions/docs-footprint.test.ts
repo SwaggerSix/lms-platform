@@ -38,6 +38,7 @@ describe("docs footprint", () => {
       [
         "conventions.md",
         "migrations.md",
+        "tenant-schema-audit.md",
       ]
     `);
   });

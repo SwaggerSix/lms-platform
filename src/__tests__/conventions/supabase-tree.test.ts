@@ -25,7 +25,6 @@ describe("supabase/ tree", () => {
       .sort();
     expect(entries).toMatchInlineSnapshot(`
       [
-        "TENANT_SCHEMA_AUDIT.md",
         "migrations/",
         "pending/",
       ]
