@@ -89,6 +89,7 @@ describe("docs/conventions.md coverage", () => {
       "supabase-pending-empty",
       "supabase-migrations",
       "testing-helpers-scope",
+      "docs-footprint",
       "dependencies-ratchet",
       "dependency-footprint",
       "prod-gate-warnings",

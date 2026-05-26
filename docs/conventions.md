@@ -20,6 +20,7 @@ glob auto-picks up new files in that directory.
 | `supabase-pending-empty` | Destructive migrations don't park in `supabase/pending/` indefinitely. |
 | `supabase-migrations` | Snapshots the migration filename set so a rebase can't silently re-number or drop a migration. |
 | `testing-helpers-scope` | Production code must not import from `src/lib/testing/`. |
+| `docs-footprint` | Top-level `.md`, `docs/`, and `docs/archived/` listings are snapshotted; active and archived sets must be disjoint. |
 | `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |

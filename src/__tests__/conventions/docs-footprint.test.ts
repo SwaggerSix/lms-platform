@@ -50,7 +50,25 @@ describe("docs footprint", () => {
     expect(files).toMatchInlineSnapshot(`
       [
         "IMPLEMENTATION_PLAN.md",
+        "README.md",
       ]
     `);
+  });
+
+  it("top-level and docs/archived/ sets are disjoint (no double-listed file)", () => {
+    // Catches the move-to-archive that forgets to update one of the
+    // snapshots: if a file appears in both, the active list still
+    // sees it. README.md is excluded — it's conventionally
+    // per-directory, so the top-level project README and the
+    // archive's index README can coexist.
+    const top = new Set(listMarkdown(process.cwd()));
+    const archived = listMarkdown(join(process.cwd(), "docs/archived"));
+    const both = archived.filter(
+      (name) => name !== "README.md" && top.has(name)
+    );
+    expect(
+      both,
+      "These files exist in both the top-level and docs/archived/. Move-to-archive should be a `git mv`, not a copy."
+    ).toEqual([]);
   });
 });
