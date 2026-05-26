@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/auth/roles";
 import WorkflowListClient from "./workflow-list-client";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default async function WorkflowsPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+  if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");
 
   const { data: workflows } = await service
     .from("workflows")

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import CpeReportClient from "./cpe-report-client";
 import type { CpeRow } from "./cpe-report-client";
 
@@ -26,7 +27,7 @@ export default async function CpeReportPage({ searchParams }: PageProps) {
     .eq("auth_id", user.id)
     .single();
   if (!dbUser) redirect("/login");
-  if (!["admin", "super_admin", "manager"].includes(dbUser.role)) redirect("/dashboard");
+  if (!isManagerOrAbove(dbUser.role)) redirect("/dashboard");
 
   const params = await searchParams;
   const defaultFrom = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

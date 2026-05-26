@@ -87,6 +87,33 @@ thumb for choosing whether to gate:
 A new gate lands as a +1 entry in the snapshot; removing a gate
 lands as a -1. Both diffs are deliberate signals during review.
 
+## The ratchet idiom
+
+When a convention can't be applied across the whole codebase in
+one PR (too many touch sites, scattered owners), the **ratchet**
+pattern lets the rule land incrementally without backsliding:
+
+1. **Snapshot the offender count** today. Add a convention test
+   asserting `count <= CURRENT_MAX`.
+2. Each PR that touches an offender migrates it AND drops the
+   ceiling by 1 (or more). The number is monotonically decreasing.
+3. **Failure message tells the contributor what to do** — list the
+   offenders, the ceiling, and the migration path.
+4. When the count hits zero, **flip to a hard assertion**
+   (`toEqual([])`) and delete the ceiling.
+
+Two live examples:
+
+- **`isadmin-adoption-ratchet`** — caps remaining
+  `role !== "admin" && (...)role !== "super_admin"` inequality
+  checks at 14. Each migration to `isAdmin()` lowers it.
+- **`get-cache-control-audit`** — was a ratchet from 87 down to
+  zero; flipped to `toEqual([])` on 2026-05-23.
+
+The pattern works because the ceiling is in code (not a separate
+TODO doc) and changes show up in PR diffs, so the count can't
+silently grow.
+
 ## Migrating role checks to `isAdmin()`
 
 `src/lib/auth/roles.ts` is the canonical home for role-membership

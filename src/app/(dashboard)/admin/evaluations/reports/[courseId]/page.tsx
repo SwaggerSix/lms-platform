@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import EvaluationReportClient from "./evaluation-report-client";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default async function EvaluationReportPage({ params }: { params: Promise
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || !["admin", "super_admin", "manager"].includes(dbUser.role)) {
+  if (!dbUser || !isManagerOrAbove(dbUser.role)) {
     redirect("/learn/dashboard");
   }
 

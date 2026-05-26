@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, Award } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 
 export const metadata: Metadata = {
   title: "Learner CPE detail | LMS Platform",
@@ -37,7 +38,7 @@ export default async function LearnerCpeDetailPage({ params }: Params) {
     .eq("auth_id", user.id)
     .single();
   if (!caller) redirect("/login");
-  if (!["admin", "super_admin", "manager"].includes(caller.role)) redirect("/dashboard");
+  if (!isManagerOrAbove(caller.role)) redirect("/dashboard");
 
   const { userId } = await params;
 

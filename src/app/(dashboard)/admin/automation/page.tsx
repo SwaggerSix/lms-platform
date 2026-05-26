@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/auth/roles";
 import AutomationClient from "./automation-client";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default async function AutomationPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+  if (!dbUser || !isAdmin(dbUser.role)) {
     redirect("/dashboard");
   }
 
