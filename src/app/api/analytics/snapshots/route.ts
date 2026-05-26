@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { getTrendData } from "@/lib/analytics/snapshots";
 import { jsonCached } from "@/lib/api/cached";
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
   const days = parseInt(searchParams.get("days") || "30");
 
   // Non-admins/managers can only see their own snapshots
-  if (userId !== auth.user.id && !["admin", "manager"].includes(auth.user.role as string)) {
+  if (userId !== auth.user.id && !isManagerOrAbove(auth.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -106,7 +106,7 @@ pattern lets the rule land incrementally without backsliding:
 Two live examples:
 
 - **`super-admin-omission-audit`** — caps remaining
-  `["admin", "manager"].includes(role)` sites at 16 (super_admin
+  `["admin", "manager"].includes(role)` sites at 10 (super_admin
   silently excluded). Migration shifts semantics so each is a
   review conversation; ratchet pairs the snapshot with a hard
   ceiling.

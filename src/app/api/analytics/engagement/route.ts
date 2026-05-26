@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { computeEngagementScore } from "@/lib/analytics/predictive";
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("user_id") || auth.user.id;
 
   // Non-admins/managers can only see their own engagement
-  if (userId !== auth.user.id && !["admin", "manager"].includes(auth.user.role as string)) {
+  if (userId !== auth.user.id && !isManagerOrAbove(auth.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

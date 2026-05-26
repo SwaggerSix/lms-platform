@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateAlertSchema } from "@/lib/validations";
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   const unreadOnly = searchParams.get("unread") === "true";
 
   // Admins/managers can view alerts for any user
-  if (userId !== auth.user.id && !["admin", "manager"].includes(auth.user.role as string)) {
+  if (userId !== auth.user.id && !isManagerOrAbove(auth.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

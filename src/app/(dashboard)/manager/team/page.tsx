@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import TeamClient, { type TeamMember } from "./team-client";
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default async function TeamPage() {
     .single();
   if (!dbUser) redirect("/login");
 
-  if (!["admin", "manager"].includes(dbUser.role)) {
+  if (!isManagerOrAbove(dbUser.role)) {
     redirect("/dashboard");
   }
 

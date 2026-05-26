@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 import ManagerAnalyticsClient from "./manager-analytics-client";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default async function ManagerAnalyticsPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || !["admin", "manager"].includes(dbUser.role)) {
+  if (!dbUser || !isManagerOrAbove(dbUser.role)) {
     redirect("/dashboard");
   }
 

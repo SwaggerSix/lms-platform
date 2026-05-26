@@ -38,7 +38,7 @@ describe("super_admin omission audit (advisory)", () => {
     // that migrates a site to isManagerOrAbove() lowers MAX by
     // the number it removed. When MAX hits 0, flip the snapshot
     // to `toEqual([])` and retire the ratchet.
-    const MAX = 16;
+    const MAX = 10;
     expect(
       sites.length,
       `["admin", "manager"].includes(role) sites: ${sites.length}. Ceiling ${MAX}. Migrate touched sites to isManagerOrAbove() and lower MAX.`
@@ -58,12 +58,6 @@ describe("super_admin omission audit (advisory)", () => {
         "src/app/(dashboard)/admin/feedback/page.tsx",
         "src/app/(dashboard)/admin/mentorship/page.tsx",
         "src/app/(dashboard)/admin/reports/page.tsx",
-        "src/app/(dashboard)/manager/analytics/page.tsx",
-        "src/app/(dashboard)/manager/team/page.tsx",
-        "src/app/api/analytics/alerts/route.ts",
-        "src/app/api/analytics/engagement/route.ts",
-        "src/app/api/analytics/predictions/route.ts",
-        "src/app/api/analytics/snapshots/route.ts",
         "src/app/api/certificates/generate/route.ts",
         "src/app/api/enrollments/route.ts ×4",
       ]

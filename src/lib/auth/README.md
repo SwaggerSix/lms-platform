@@ -56,6 +56,20 @@ can't drift.
 Both convention walks whitelist this file so the regex source
 doesn't self-match.
 
+## Route gates (`src/middleware.ts`)
+
+Two role-gated path prefixes today:
+
+- `/admin/*` — gated by `isAdmin(role)`. Non-admin/super_admin
+  users are redirected to `/dashboard`.
+- `/manager/*` — gated by `isManagerOrAbove(role)`. Non-manager
+  users redirected to `/dashboard`.
+
+Both gates pulled from the same helpers as the page-level / API
+route checks, so policy is owned in one place. The
+`middleware` convention test pins the matcher exclusions and the
+gate-list to surface drift.
+
 ## Related
 
 - `docs/conventions.md` — role-check helpers section + ratchet
