@@ -26,6 +26,7 @@ const INFRA_TESTS = new Set<string>([
   "git-hooks.test.ts",
   "install-hooks.test.ts",
   "lefthook-parity.test.ts",
+  "pre-push-branch-skip.test.ts",
 ]);
 
 describe("docs/conventions.md coverage", () => {

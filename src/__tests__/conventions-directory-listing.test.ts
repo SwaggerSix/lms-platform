@@ -36,6 +36,7 @@ describe("conventions directory", () => {
         "mutation-no-store-convention.test.ts",
         "no-compliance-requirements-queries.test.ts",
         "no-inline-tenant-or-filter.test.ts",
+        "pre-push-branch-skip.test.ts",
         "prod-gate-warnings.test.ts",
         "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",

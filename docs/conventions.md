@@ -25,6 +25,14 @@ glob auto-picks up new files in that directory.
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 
+## Related playbooks
+
+- [docs/migrations.md](migrations.md) — seven-phase retirement
+  playbook for dropping a database table or column (successor →
+  backfill → retire → flip readers → 410 API → park drop →
+  drop + clean). Captures the lessons from the
+  `compliance_requirements` retirement.
+
 ## Adding a new convention
 
 Established pattern, three layers from inside out:

@@ -103,4 +103,13 @@ describe("dependency ratchet", () => {
       ]
     `);
   });
+
+  it("test:watch excludes the conventions directory", () => {
+    // Renaming src/__tests__/conventions/ would silently re-enable
+    // the heavy fixture tests in watch mode unless this script is
+    // updated too. Lock the exclude path.
+    const cmd = pkg.scripts?.["test:watch"] ?? "";
+    expect(cmd).toContain("--exclude");
+    expect(cmd).toContain("src/__tests__/conventions/**");
+  });
 });

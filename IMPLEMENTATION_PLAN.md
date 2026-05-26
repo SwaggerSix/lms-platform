@@ -1,5 +1,12 @@
 # Learning Management System (LMS) — Implementation Plan
 
+> ⚠️ **Historical.** This doc captures the original implementation
+> plan and is preserved for context. Parts of it have since shipped
+> and evolved (e.g. the `compliance_requirements` table was retired
+> — see `docs/migrations.md`). Treat this as a reference snapshot,
+> not a current spec. For active conventions and infrastructure,
+> see `docs/conventions.md` and `CHANGELOG.md`.
+
 ## Executive Summary
 
 Build an enterprise-grade Learning Management System modeled after Cornerstone OnDemand, supporting course management, learning paths, compliance tracking, skills intelligence, gamification, and analytics. Designed for internal company use with extensibility for external audiences.
