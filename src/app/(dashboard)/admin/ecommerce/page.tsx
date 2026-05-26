@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import EcommerceAdminClient from "./ecommerce-admin-client";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default async function EcommerceAdminPage() {
     .select("id, role")
     .eq("auth_id", user.id)
     .single();
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
+  if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");
 
   // Fetch recent orders
   const { data: orders } = await service

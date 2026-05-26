@@ -6,6 +6,7 @@ import { validateBody, createSkillSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { jsonCached } from "@/lib/api/cached";
 import { jsonNoStore } from "@/lib/api/no-store";
+import { isManagerOrAbove } from "@/lib/auth/roles";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -22,7 +23,8 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("user_id");
-  if (userId && userId !== profile.id && !["admin", "manager"].includes(profile.role)) {
+  // Semantic shift: super_admin now also passes (intended behavior).
+  if (userId && userId !== profile.id && !isManagerOrAbove(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

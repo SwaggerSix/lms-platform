@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { INEQUALITY_ROLE_RE } from "@/lib/auth/role-check-patterns";
 
 /**
  * Smoke test for the post-migration shape. Verifies that:
@@ -8,12 +9,11 @@ import { describe, it, expect } from "vitest";
  *     caught by the ratchet regex (defensive — confirms one of
  *     the migration paths doesn't accidentally skip the gate).
  *
- * Same regex as the live isadmin-adoption-ratchet to stay in
- * lockstep.
+ * Imports INEQUALITY_ROLE_RE from src/lib/auth/role-check-patterns
+ * so the live ratchet and this test can't drift.
  */
 
-const INEQUALITY_RE =
-  /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"super_admin"/;
+
 
 const MIGRATED_SHAPE = /!isAdmin\([a-zA-Z_.]+\.role\)/;
 
@@ -25,7 +25,7 @@ describe("post-migration page shape", () => {
 
   it("the migrated form does NOT trigger the inequality regex", () => {
     const synthetic = `if (!dbUser || !isAdmin(dbUser.role)) redirect("/dashboard");`;
-    expect(INEQUALITY_RE.test(synthetic)).toBe(false);
+    expect(INEQUALITY_ROLE_RE.test(synthetic)).toBe(false);
   });
 
   it("a half-migrated page (both forms in the same expression) is caught by the inequality regex", () => {
@@ -33,7 +33,7 @@ describe("post-migration page shape", () => {
     // role !== "admin" && role !== "super_admin"`, the inequality
     // half is still flagged.
     const half = `if (!isAdmin(role) || (role !== "admin" && role !== "super_admin")) redirect("/dashboard");`;
-    expect(INEQUALITY_RE.test(half)).toBe(true);
+    expect(INEQUALITY_ROLE_RE.test(half)).toBe(true);
   });
 
   it("a properly migrated `redirect()` site has only the helper call, no leftover string literals", () => {

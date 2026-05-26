@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdmin } from "@/lib/auth/roles";
 import DesignerClient from "./designer-client";
 
 export default async function CertificateDesignerPage() {
@@ -15,7 +16,7 @@ export default async function CertificateDesignerPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+  if (!dbUser || !isAdmin(dbUser.role)) {
     redirect("/dashboard");
   }
 

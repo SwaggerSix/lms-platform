@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { walkFiles } from "@/lib/testing/walk";
+import { ADMIN_MANAGER_INCLUDES_RE } from "@/lib/auth/role-check-patterns";
 
 /**
  * Latent bug surface: any `["admin", "manager"].includes(...)` /
@@ -17,7 +18,6 @@ import { walkFiles } from "@/lib/testing/walk";
  * to `toEqual([])` and retire the snapshot.
  */
 
-const PATTERN = /\["admin",\s*"manager"\]\.includes\(/;
 
 describe("super_admin omission audit (advisory)", () => {
   it("snapshot of array-includes role checks missing super_admin", () => {
@@ -27,9 +27,10 @@ describe("super_admin omission audit (advisory)", () => {
       const rel = file.replace(process.cwd() + "/", "");
       if (rel.startsWith("src/__tests__/")) continue;
       if (rel === "src/lib/auth/roles.ts") continue;
+      if (rel === "src/lib/auth/role-check-patterns.ts") continue;
       const lines = readFileSync(file, "utf8").split("\n");
       for (let i = 0; i < lines.length; i++) {
-        if (PATTERN.test(lines[i])) sites.push({ file: rel, line: i + 1 });
+        if (ADMIN_MANAGER_INCLUDES_RE.test(lines[i])) sites.push({ file: rel, line: i + 1 });
       }
     }
 
@@ -37,7 +38,7 @@ describe("super_admin omission audit (advisory)", () => {
     // that migrates a site to isManagerOrAbove() lowers MAX by
     // the number it removed. When MAX hits 0, flip the snapshot
     // to `toEqual([])` and retire the ratchet.
-    const MAX = 19;
+    const MAX = 18;
     expect(
       sites.length,
       `["admin", "manager"].includes(role) sites: ${sites.length}. Ceiling ${MAX}. Migrate touched sites to isManagerOrAbove() and lower MAX.`
@@ -67,7 +68,6 @@ describe("super_admin omission audit (advisory)", () => {
         "src/app/api/certifications/route.ts",
         "src/app/api/enrollments/route.ts ×4",
         "src/app/api/gamification/route.ts",
-        "src/app/api/skills/route.ts",
       ]
     `);
   });

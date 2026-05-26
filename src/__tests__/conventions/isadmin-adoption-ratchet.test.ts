@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { walkFiles } from "@/lib/testing/walk";
+import { INEQUALITY_ROLE_RE } from "@/lib/auth/role-check-patterns";
 
 /**
  * Adoption ratchet for the isAdmin() helper. Counts the
@@ -16,11 +17,9 @@ import { walkFiles } from "@/lib/testing/walk";
  * did.
  */
 
-const INEQUALITY_RE =
-  /role\s*!==\s*"admin"\s*&&\s*[A-Za-z_.\s]*role\s*!==\s*"super_admin"/;
 
 describe("isAdmin adoption ratchet", () => {
-  it("inequality-form role checks only go down (current ceiling: 8)", () => {
+  it("inequality-form role checks only go down (current ceiling: 5)", () => {
     const files = walkFiles(join(process.cwd(), "src"), {
       extensions: [".ts", ".tsx"],
     });
@@ -29,9 +28,10 @@ describe("isAdmin adoption ratchet", () => {
       const rel = file.replace(process.cwd() + "/", "");
       if (rel.startsWith("src/__tests__/")) continue;
       if (rel === "src/lib/auth/roles.ts") continue; // the helper itself defines the role names
+      if (rel === "src/lib/auth/role-check-patterns.ts") continue;
       const lines = readFileSync(file, "utf8").split("\n");
       for (let i = 0; i < lines.length; i++) {
-        if (INEQUALITY_RE.test(lines[i])) {
+        if (INEQUALITY_ROLE_RE.test(lines[i])) {
           matches.push({ file: rel, line: i + 1 });
         }
       }
@@ -39,7 +39,7 @@ describe("isAdmin adoption ratchet", () => {
 
     // Ratchet ceiling. Lower when migrations land; once it's 0,
     // flip the assertion to `toEqual([])`.
-    const MAX = 8;
+    const MAX = 5;
     expect(
       matches.length,
       `Inequality-form role checks: ${matches.length}. Ceiling is ${MAX}. ` +

@@ -107,9 +107,9 @@ Two live examples:
 
 - **`isadmin-adoption-ratchet`** — caps remaining
   `role !== "admin" && (...)role !== "super_admin"` inequality
-  checks at 8. Each migration to `isAdmin()` lowers it.
+  checks at 5. Each migration to `isAdmin()` lowers it.
 - **`super-admin-omission-audit`** — caps remaining
-  `["admin", "manager"].includes(role)` sites at 19 (super_admin
+  `["admin", "manager"].includes(role)` sites at 18 (super_admin
   silently excluded). Migration shifts semantics so each is a
   review conversation; ratchet pairs the snapshot with a hard
   ceiling.
