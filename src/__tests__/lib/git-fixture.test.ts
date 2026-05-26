@@ -34,4 +34,19 @@ describe("initGitRepo", () => {
       expect(branch).toBe("feature/x");
     });
   });
+
+  it("stays on git's default initial branch when none is requested", () => {
+    withTempDir("gitfix-", (dir) => {
+      initGitRepo(dir);
+      const branch = execSync("git symbolic-ref --short HEAD", { cwd: dir })
+        .toString()
+        .trim();
+      // Default branch name varies (`master` historically, `main`
+      // on newer git installs, or whatever init.defaultBranch is
+      // set to). Just assert something came back and it isn't one
+      // of our scratch/wip patterns by accident.
+      expect(branch).toBeTruthy();
+      expect(branch).not.toMatch(/^(scratch|wip)\//);
+    });
+  });
 });

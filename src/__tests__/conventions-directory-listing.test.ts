@@ -38,6 +38,7 @@ describe("conventions directory", () => {
         "no-inline-tenant-or-filter.test.ts",
         "pre-push-branch-skip.test.ts",
         "prod-gate-warnings.test.ts",
+        "scripts-footprint.test.ts",
         "supabase-migrations.test.ts",
         "supabase-pending-empty.test.ts",
         "testing-helpers-scope.test.ts",

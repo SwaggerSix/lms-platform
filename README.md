@@ -31,7 +31,13 @@ mentorship, observations, evaluations, …).
 
 - [docs/conventions.md](docs/conventions.md) — guardrails, how to
   add a new one, install paths for local hooks, bypass policy.
+- [docs/migrations.md](docs/migrations.md) — playbook for retiring
+  a database table or column.
+- [DEPLOYMENT.md](DEPLOYMENT.md) — production deploy + env vars +
+  cron + Supabase setup.
 - [CHANGELOG.md](CHANGELOG.md) — notable convention / infrastructure
   changes worth surfacing during PR review.
 - [CLAUDE.md](CLAUDE.md) — guidance for AI assistants working on
   this branch.
+- [docs/archived/](docs/archived/README.md) — historical reference
+  material that's been superseded.

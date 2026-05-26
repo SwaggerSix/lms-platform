@@ -21,10 +21,31 @@ glob auto-picks up new files in that directory.
 | `supabase-migrations` | Snapshots the migration filename set so a rebase can't silently re-number or drop a migration. |
 | `testing-helpers-scope` | Production code must not import from `src/lib/testing/`. |
 | `docs-footprint` | Top-level `.md`, `docs/`, and `docs/archived/` listings are snapshotted; active and archived sets must be disjoint. |
+| `scripts-footprint` | `scripts/` directory listing is snapshotted so ad-hoc helpers surface in PR review. |
 | `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
 | `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
+
+## When to add a NODE_ENV gate
+
+The `prod-gate-warnings` snapshot tracks the small set of
+`console.warn` / `console.error` calls wrapped in
+`if (process.env.NODE_ENV !== "production") { ... }`. Rule of
+thumb for choosing whether to gate:
+
+- **Diagnostic warning** (a contract violation that doesn't break
+  the request) → gate. Example: `logAudit` warns when an action
+  string doesn't match the convention; the insert still happens.
+  Prod logs shouldn't drown if the regression hits at scale.
+- **Real error** (something went wrong, operators need to see it)
+  → leave ungated. Example: cron failures, email send errors,
+  integration timeouts. Prod observability depends on these.
+- **Stub / TODO** (intentional dev-time placeholder) → gate.
+  No reason to spam prod with "not yet implemented" lines.
+
+A new gate lands as a +1 entry in the snapshot; removing a gate
+lands as a -1. Both diffs are deliberate signals during review.
 
 ## Related playbooks
 

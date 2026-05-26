@@ -90,6 +90,7 @@ describe("docs/conventions.md coverage", () => {
       "supabase-migrations",
       "testing-helpers-scope",
       "docs-footprint",
+      "scripts-footprint",
       "dependencies-ratchet",
       "dependency-footprint",
       "prod-gate-warnings",
