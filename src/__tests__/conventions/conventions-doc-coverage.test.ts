@@ -88,6 +88,7 @@ describe("docs/conventions.md coverage", () => {
       "supabase-pending-empty",
       "dependencies-ratchet",
       "dependency-footprint",
+      "prod-gate-warnings",
       "check-script",
     ]);
   });

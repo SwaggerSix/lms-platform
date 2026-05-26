@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
-import { readFileSync, mkdirSync, writeFileSync, chmodSync, statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { withTempDir } from "@/lib/testing/temp-dir";
+import { buildInstallHooksFixture } from "@/lib/testing/install-hooks-fixture";
 
 /**
  * End-to-end test for the install-hooks script. Spawns it inside a
@@ -14,31 +15,12 @@ import { withTempDir } from "@/lib/testing/temp-dir";
  * Reads the actual script command from package.json so a refactor
  * to the install command (e.g. swapping `git config` for a helper
  * binary) keeps the test honest.
- *
- * Uses withTempDir per-test rather than beforeEach. Each `it` block
- * is self-contained: build the fixture, run the assertion, cleanup
- * via the helper. No mutable shared state between tests.
  */
-
-function buildFixture(dir: string): void {
-  execSync("git init -q", { cwd: dir });
-  const pkg = JSON.parse(
-    readFileSync(join(process.cwd(), "package.json"), "utf8")
-  ) as { scripts?: Record<string, string> };
-  writeFileSync(
-    join(dir, "package.json"),
-    JSON.stringify({ name: "fixture", scripts: { "install-hooks": pkg.scripts?.["install-hooks"] } })
-  );
-  mkdirSync(join(dir, ".githooks"));
-  const realHook = readFileSync(join(process.cwd(), ".githooks/pre-commit"), "utf8");
-  writeFileSync(join(dir, ".githooks/pre-commit"), realHook);
-  chmodSync(join(dir, ".githooks/pre-commit"), 0o755);
-}
 
 describe("install-hooks", () => {
   it("sets git's core.hooksPath to .githooks", () => {
     withTempDir("install-hooks-", (workdir) => {
-      buildFixture(workdir);
+      buildInstallHooksFixture(workdir);
       execSync("git config core.hooksPath .githooks", { cwd: workdir });
       const hooksPath = execSync("git config --get core.hooksPath", { cwd: workdir })
         .toString()
@@ -49,7 +31,7 @@ describe("install-hooks", () => {
 
   it("after install, .githooks/pre-commit is the hook git will run", () => {
     withTempDir("install-hooks-", (workdir) => {
-      buildFixture(workdir);
+      buildInstallHooksFixture(workdir);
       execSync("git config core.hooksPath .githooks", { cwd: workdir });
       const hooksPath = execSync("git config --get core.hooksPath", { cwd: workdir })
         .toString()

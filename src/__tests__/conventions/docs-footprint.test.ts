@@ -38,6 +38,7 @@ describe("docs footprint", () => {
     expect(files).toMatchInlineSnapshot(`
       [
         "conventions.md",
+        "migrations.md",
       ]
     `);
   });

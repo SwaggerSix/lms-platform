@@ -1,0 +1,35 @@
+import { execSync } from "node:child_process";
+import { readFileSync, mkdirSync, writeFileSync, chmodSync } from "node:fs";
+import { join } from "node:path";
+
+/**
+ * Build a minimal project layout inside `dir` that mimics this repo
+ * enough to exercise `npm run install-hooks` and the resulting
+ * .githooks behavior. Drops:
+ *
+ *   - a fresh git repo (so `git config` writes somewhere)
+ *   - a package.json whose `install-hooks` script copies the live
+ *     value from this repo's package.json
+ *   - a copy of the real .githooks/pre-commit at the same path
+ *
+ * Lives outside the test file so any future test that needs the
+ * same fixture (e.g. coverage for a new git-hook surface) can
+ * reuse it.
+ */
+export function buildInstallHooksFixture(dir: string): void {
+  execSync("git init -q", { cwd: dir });
+  const pkg = JSON.parse(
+    readFileSync(join(process.cwd(), "package.json"), "utf8")
+  ) as { scripts?: Record<string, string> };
+  writeFileSync(
+    join(dir, "package.json"),
+    JSON.stringify({
+      name: "fixture",
+      scripts: { "install-hooks": pkg.scripts?.["install-hooks"] },
+    })
+  );
+  mkdirSync(join(dir, ".githooks"));
+  const realHook = readFileSync(join(process.cwd(), ".githooks/pre-commit"), "utf8");
+  writeFileSync(join(dir, ".githooks/pre-commit"), realHook);
+  chmodSync(join(dir, ".githooks/pre-commit"), 0o755);
+}

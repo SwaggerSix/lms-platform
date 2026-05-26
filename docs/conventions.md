@@ -20,6 +20,7 @@ glob auto-picks up new files in that directory.
 | `supabase-pending-empty` | Destructive migrations don't park in `supabase/pending/` indefinitely. |
 | `dependencies-ratchet` | Package + script additions/removals are visible in the diff. |
 | `dependency-footprint` | Soft cap on dep count + banned-package denylist + no-second-date-lib rule. |
+| `prod-gate-warnings` | Snapshot of `console.warn/error` calls under `src/lib/` gated behind `NODE_ENV !== "production"`. Surfaces both new gates and removed ones. |
 | `check-script`, `git-hooks`, `install-hooks`, `lefthook-parity` | Wiring of the local pre-commit / pre-push hooks. |
 
 ## Adding a new convention
