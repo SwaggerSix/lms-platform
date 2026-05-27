@@ -34,6 +34,40 @@ export interface MessageUser {
   email: string;
 }
 
+const RECIPIENT_AVATAR_COLORS = [
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-pink-500",
+  "bg-teal-500",
+  "bg-orange-500",
+  "bg-cyan-500",
+  "bg-fuchsia-500",
+];
+
+function toRecipientUser(u: {
+  id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+}, index: number): MessageUser {
+  const first = u.first_name ?? "";
+  const last = u.last_name ?? "";
+  const name = `${first} ${last}`.trim() || (u.email ?? "Unknown");
+  const initials =
+    `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "??";
+  return {
+    id: u.id,
+    name,
+    email: u.email ?? "",
+    initials,
+    avatarColor: RECIPIENT_AVATAR_COLORS[index % RECIPIENT_AVATAR_COLORS.length],
+    online: true,
+  };
+}
+
 export interface MessageData {
   id: string;
   conversationId: string;
@@ -168,29 +202,55 @@ function FileAttachment({ name, type }: { name: string; type: "file" | "image" }
 /* ------------------------------------------------------------------ */
 
 function NewMessageModal({
-  users,
   currentUserId,
   onClose,
   onSend,
 }: {
-  users: Record<string, MessageUser>;
   currentUserId: string;
   onClose: () => void;
-  onSend: (recipientIds: string[], message: string) => void;
+  onSend: (recipients: MessageUser[], message: string) => void;
 }) {
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [results, setResults] = useState<MessageUser[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<MessageUser[]>([]);
   const [message, setMessage] = useState("");
 
-  const allUsersList = Object.values(users).filter(
-    (u) => u.id !== currentUserId
-  );
+  const selectedIds = selectedUsers.map((u) => u.id);
 
-  const filtered = allUsersList.filter(
-    (u) =>
-      (u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.email.toLowerCase().includes(search.toLowerCase())) &&
-      !selected.includes(u.id)
+  useEffect(() => {
+    const query = search.trim();
+    if (!query) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    let active = true;
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/messages/recipients?search=${encodeURIComponent(query)}`
+        );
+        const data = await res.json();
+        if (!active) return;
+        setResults(
+          (data.users ?? []).map((u: any, i: number) => toRecipientUser(u, i))
+        );
+      } catch {
+        if (active) setResults([]);
+      } finally {
+        if (active) setSearching(false);
+      }
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [search]);
+
+  const filtered = results.filter(
+    (u) => u.id !== currentUserId && !selectedIds.includes(u.id)
   );
 
   return (
@@ -209,27 +269,26 @@ function NewMessageModal({
 
         <div className="p-6">
           {/* Selected recipients */}
-          {selected.length > 0 && (
+          {selectedUsers.length > 0 && (
             <div className="mb-3 flex flex-wrap gap-2">
-              {selected.map((id) => {
-                const user = users[id];
-                return (
-                  <span
-                    key={id}
-                    className="flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700"
+              {selectedUsers.map((user) => (
+                <span
+                  key={user.id}
+                  className="flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700"
+                >
+                  {user.name}
+                  <button
+                    onClick={() =>
+                      setSelectedUsers((prev) =>
+                        prev.filter((s) => s.id !== user.id)
+                      )
+                    }
+                    aria-label={`Remove ${user.name}`}
                   >
-                    {user.name}
-                    <button
-                      onClick={() =>
-                        setSelected((prev) => prev.filter((s) => s !== id))
-                      }
-                      aria-label={`Remove ${user.name}`}
-                    >
-                      <X className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  </span>
-                );
-              })}
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </span>
+              ))}
             </div>
           )}
 
@@ -250,7 +309,7 @@ function NewMessageModal({
             {filtered.map((user) => (
               <button
                 key={user.id}
-                onClick={() => setSelected((prev) => [...prev, user.id])}
+                onClick={() => setSelectedUsers((prev) => [...prev, user])}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-gray-50"
               >
                 <Avatar user={user} size="sm" showOnline />
@@ -262,7 +321,17 @@ function NewMessageModal({
                 </div>
               </button>
             ))}
-            {filtered.length === 0 && (
+            {searching && (
+              <p className="py-4 text-center text-sm text-gray-500">
+                Searching...
+              </p>
+            )}
+            {!searching && search.trim() === "" && (
+              <p className="py-4 text-center text-sm text-gray-500">
+                Start typing a name or email to find people.
+              </p>
+            )}
+            {!searching && search.trim() !== "" && filtered.length === 0 && (
               <p className="py-4 text-center text-sm text-gray-500">
                 No users found
               </p>
@@ -288,11 +357,11 @@ function NewMessageModal({
           </button>
           <button
             onClick={() => {
-              if (selected.length > 0 && message.trim()) {
-                onSend(selected, message.trim());
+              if (selectedUsers.length > 0 && message.trim()) {
+                onSend(selectedUsers, message.trim());
               }
             }}
-            disabled={selected.length === 0 || !message.trim()}
+            disabled={selectedUsers.length === 0 || !message.trim()}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Send Message
@@ -309,10 +378,11 @@ function NewMessageModal({
 
 export default function MessagesClient({
   currentUserId,
-  users,
+  users: initialUsers,
   conversations: initialConversations,
   messages: initialMessages,
 }: MessagesClientProps) {
+  const [users, setUsers] = useState(initialUsers);
   const [conversations, setConversations] = useState(initialConversations);
   const [messages, setMessages] = useState(initialMessages);
   const [activeConvId, setActiveConvId] = useState<string>(
@@ -553,7 +623,15 @@ export default function MessagesClient({
     }
   }
 
-  async function handleNewMessageSend(recipientIds: string[], message: string) {
+  async function handleNewMessageSend(recipients: MessageUser[], message: string) {
+    const recipientIds = recipients.map((r) => r.id);
+    // Merge newly-found recipients into the user map so their names/avatars render.
+    setUsers((prev) => {
+      const next = { ...prev };
+      for (const r of recipients) next[r.id] = r;
+      return next;
+    });
+
     const existing = conversations.find(
       (c) =>
         c.type === "direct" &&
@@ -1039,7 +1117,6 @@ export default function MessagesClient({
       {/* New Message Modal */}
       {showNewMessage && (
         <NewMessageModal
-          users={users}
           currentUserId={currentUserId}
           onClose={() => setShowNewMessage(false)}
           onSend={handleNewMessageSend}
