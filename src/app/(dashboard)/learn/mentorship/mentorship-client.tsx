@@ -165,7 +165,7 @@ export default function MentorshipClient({
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
               className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "border-indigo-600 text-indigo-600"
@@ -313,8 +313,8 @@ export default function MentorshipClient({
             </div>
           ) : (
             myRequests.map((req: any) => {
-              const mentee = req.mentee as any;
-              const mentor = req.mentor as any;
+              const mentee = req.mentee as unknown as { first_name?: string; last_name?: string } | null;
+              const mentor = req.mentor as unknown as { first_name?: string; last_name?: string } | null;
               const isMentor = req.mentor_id === userId;
               const partner = isMentor ? mentee : mentor;
               const partnerName = partner

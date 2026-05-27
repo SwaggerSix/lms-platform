@@ -6,6 +6,20 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 71 → 56.** Cleared the nested-join clusters
+  (mentorship-client, mentorship detail, predictive-client,
+  approvals — corrected relation types + tab-state `typeof activeTab`
+  casts + redundant drops) and the flat `assessments/[id]/results`
+  page. The remaining 56 are increasingly justified-floor (embed
+  polymorphic ×9, feedback loose-prop ×4, scattered Json/nested/
+  external singles) — the audit docstring now points at the floor.
+- **`any-annotation` ratchet 322 → 312** — converted the
+  `(sum: number, x: any)` reducer params across mentorship/analytics/
+  reports/snapshots/predictive (kept `admin/skills` whose array
+  isn't typed).
+- **Drift guards extended** to assessments, audit-log, ilt-sessions,
+  and catalog — every corrected-relation boundary cast is now
+  protected against `.select()` drift.
 - **`as-any` ratchet 95 → 71.** Cleared the mid-size clusters
   (assessments, tenant branding, audit-log, knowledge-base,
   certifications, ilt-sessions — drops + corrected relation types)

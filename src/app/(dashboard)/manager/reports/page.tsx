@@ -143,7 +143,7 @@ export default async function ReportsPage() {
         const refDate = e.completed_at ? new Date(e.completed_at) : new Date(e.enrolled_at);
         return refDate.getMonth() === d.getMonth() && refDate.getFullYear() === d.getFullYear();
       })
-      .reduce((sum: number, e: any) => sum + (e.time_spent ?? 0), 0);
+      .reduce((sum: number, e) => sum + (e.time_spent ?? 0), 0);
     const hours = Math.round(totalSeconds / 3600);
 
     monthlyActivity.push({

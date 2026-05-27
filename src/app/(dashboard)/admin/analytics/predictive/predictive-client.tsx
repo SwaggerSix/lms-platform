@@ -98,7 +98,7 @@ export default function PredictiveAnalyticsClient({
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
               className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "border-indigo-600 text-indigo-600"
@@ -232,8 +232,8 @@ export default function PredictiveAnalyticsClient({
             </div>
           ) : (
             alerts.map((alert: any) => {
-              const u = alert.user as any;
-              const c = alert.course as any;
+              const u = alert.user as unknown as { first_name?: string; last_name?: string; email?: string } | null;
+              const c = alert.course as unknown as { title?: string } | null;
               return (
                 <div
                   key={alert.id}

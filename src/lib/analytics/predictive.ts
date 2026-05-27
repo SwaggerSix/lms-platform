@@ -135,7 +135,7 @@ export async function calculateRiskScore(
   // Factor 4: Assessment scores (0-20 risk points)
   if (assessments.length > 0) {
     const avgScore =
-      assessments.reduce((sum: number, a: any) => sum + (a.score ?? 0), 0) /
+      assessments.reduce((sum: number, a) => sum + (a.score ?? 0), 0) /
       assessments.length;
     factors.avg_assessment_score = Math.round(avgScore * 100) / 100;
 
@@ -325,7 +325,7 @@ export async function computeEngagementScore(
   const avgProgress =
     enrollments.length > 0
       ? enrollments.reduce(
-          (sum: number, e: any) => sum + (e.progress ?? 0),
+          (sum: number, e) => sum + (e.progress ?? 0),
           0
         ) / enrollments.length
       : 0;

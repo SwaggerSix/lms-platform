@@ -33,7 +33,7 @@ export async function createDailySnapshot(userId: string): Promise<void> {
   const avgProgress =
     coursesEnrolled > 0
       ? allEnrollments.reduce(
-          (sum: number, e: any) => sum + (e.progress ?? 0),
+          (sum: number, e) => sum + (e.progress ?? 0),
           0
         ) / coursesEnrolled
       : 0;
@@ -49,7 +49,7 @@ export async function createDailySnapshot(userId: string): Promise<void> {
   const avgScore =
     allAssessments.length > 0
       ? allAssessments.reduce(
-          (sum: number, a: any) => sum + (a.score ?? 0),
+          (sum: number, a) => sum + (a.score ?? 0),
           0
         ) / allAssessments.length
       : 0;
@@ -82,7 +82,7 @@ export async function createDailySnapshot(userId: string): Promise<void> {
 
   const totalTimeMinutes = Math.round(
     (lessonProgress ?? []).reduce(
-      (sum: number, l: any) => sum + (l.time_spent_seconds ?? 0),
+      (sum: number, l) => sum + (l.time_spent_seconds ?? 0),
       0
     ) / 60
   );

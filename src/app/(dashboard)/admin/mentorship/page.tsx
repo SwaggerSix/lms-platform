@@ -51,9 +51,9 @@ export default async function AdminMentorshipPage() {
     completedSessions: sessions.filter((s: any) => s.status === "completed").length,
     avgRating:
       reviewsList.length > 0
-        ? (reviewsList.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewsList.length).toFixed(1)
+        ? (reviewsList.reduce((sum: number, r) => sum + r.rating, 0) / reviewsList.length).toFixed(1)
         : "N/A",
-    totalActiveMentees: mentors.reduce((sum: number, m: any) => sum + (m.current_mentee_count ?? 0), 0),
+    totalActiveMentees: mentors.reduce((sum: number, m) => sum + (m.current_mentee_count ?? 0), 0),
   };
 
   // Recent requests

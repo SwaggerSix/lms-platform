@@ -19,6 +19,10 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), "utf8");
 const SOURCE = read("src/lib/reports/generate.ts");
 const NOTIF_AUDIT = read("src/app/api/admin/notification-audit/route.ts");
 const AI_RECS = read("src/lib/ai/recommendations.ts");
+const ASSESSMENTS = read("src/app/(dashboard)/admin/assessments/page.tsx");
+const AUDIT_LOG = read("src/app/(dashboard)/admin/audit-log/page.tsx");
+const ILT = read("src/app/(dashboard)/learn/ilt-sessions/page.tsx");
+const CATALOG = read("src/app/(dashboard)/learn/catalog/[slug]/page.tsx");
 
 describe("reports/generate.ts select coverage", () => {
   it("completion report select names every consumed field", () => {
@@ -85,5 +89,26 @@ describe("lib/ai/recommendations enrollment select coverage", () => {
     ]) {
       expect(AI_RECS, `enrollment course select missing ${col}`).toContain(col);
     }
+  });
+});
+
+describe("corrected-relation select coverage (admin/learn pages)", () => {
+  it("assessments names the course:courses(title) join", () => {
+    expect(ASSESSMENTS).toContain("course:courses(title)");
+  });
+
+  it("audit-log names the user join fields it reads", () => {
+    for (const col of ["first_name", "last_name", "email", "organization:organizations"]) {
+      expect(AUDIT_LOG, `audit-log user select missing ${col}`).toContain(col);
+    }
+  });
+
+  it("ilt-sessions names the course + instructor joins", () => {
+    expect(ILT).toContain("course:courses(title)");
+    expect(ILT).toContain("instructor:users");
+  });
+
+  it("catalog names the categories join (id, name, slug)", () => {
+    expect(CATALOG).toContain("categories(id, name, slug)");
   });
 });

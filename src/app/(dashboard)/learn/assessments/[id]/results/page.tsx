@@ -63,9 +63,9 @@ export default async function AssessmentResultsPage({
         .eq("assessment_id", id),
     ]);
 
-  const assessment = assessmentResult.data as any;
-  const attempt = latestAttemptResult.data as any;
-  const questions = (questionsResult.data ?? []) as any[];
+  const assessment = assessmentResult.data;
+  const attempt = latestAttemptResult.data;
+  const questions = questionsResult.data ?? [];
   const totalAttempts = totalAttemptsResult.count ?? 0;
 
   const score = Math.round(attempt?.score ?? 0);

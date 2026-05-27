@@ -40,7 +40,7 @@ export default async function AdminApprovalsPage() {
   // Build a set of manager IDs so we can look up their names
   const managerIds = new Set<string>();
   for (const row of rows ?? []) {
-    const learner = (row as any).learner;
+    const learner = row.learner as unknown as { manager_id?: string } | null;
     if (learner?.manager_id) {
       managerIds.add(learner.manager_id);
     }
@@ -60,8 +60,8 @@ export default async function AdminApprovalsPage() {
   }
 
   const approvals: ApprovalRequest[] = (rows ?? []).map((row: any) => {
-    const learner = row.learner as any;
-    const course = row.course as any;
+    const learner = row.learner;
+    const course = row.course;
 
     const firstName = learner?.first_name ?? "";
     const lastName = learner?.last_name ?? "";

@@ -65,7 +65,7 @@ export default async function PredictiveAnalyticsPage() {
     allPredictions && allPredictions.length > 0
       ? (
           allPredictions.reduce(
-            (sum: number, p: any) => sum + parseFloat(p.risk_score),
+            (sum: number, p) => sum + parseFloat(p.risk_score),
             0
           ) / allPredictions.length
         ).toFixed(1)

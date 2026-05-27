@@ -18,6 +18,12 @@ import { isAsAnyLine } from "@/lib/testing/scan-casts";
  *
  * `as unknown as` double-casts are deliberately NOT counted — they
  * name a target type, which is the migration target here.
+ *
+ * The count is well down from its peak; the remainder is
+ * increasingly the justified-floor categories documented in
+ * src/types/README.md (polymorphic values, intentionally-loose
+ * props, external-lib boundaries, varying Json). Expect decrements
+ * to slow — chase "every survivor is justified," not zero.
  */
 
 describe("as-any cast audit (advisory)", () => {
@@ -38,7 +44,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 71;
+    const MAX = 56;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -52,8 +58,6 @@ describe("as-any cast audit (advisory)", () => {
     expect(collapsed).toMatchInlineSnapshot(`
       [
         "src/app/(dashboard)/admin/analytics/predictive/page.tsx ×2",
-        "src/app/(dashboard)/admin/analytics/predictive/predictive-client.tsx ×3",
-        "src/app/(dashboard)/admin/approvals/page.tsx ×3",
         "src/app/(dashboard)/admin/compliance/page.tsx",
         "src/app/(dashboard)/admin/feedback/[id]/cycle-detail-client.tsx",
         "src/app/(dashboard)/admin/ilt-sessions/page.tsx",
@@ -61,12 +65,9 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/(dashboard)/admin/mentorship/admin-mentorship-client.tsx ×2",
         "src/app/(dashboard)/admin/reports/page.tsx",
         "src/app/(dashboard)/learn/assessments/[id]/page.tsx ×2",
-        "src/app/(dashboard)/learn/assessments/[id]/results/page.tsx ×3",
         "src/app/(dashboard)/learn/discussions/page.tsx",
         "src/app/(dashboard)/learn/feedback/[nominationId]/page.tsx ×4",
         "src/app/(dashboard)/learn/knowledge-base/[slug]/page.tsx",
-        "src/app/(dashboard)/learn/mentorship/[requestId]/detail-client.tsx ×3",
-        "src/app/(dashboard)/learn/mentorship/mentorship-client.tsx ×3",
         "src/app/(dashboard)/learn/observations/[id]/observation-detail-client.tsx",
         "src/app/(dashboard)/learn/paths/[slug]/page.tsx ×2",
         "src/app/(dashboard)/learn/paths/page.tsx ×2",

@@ -28,8 +28,8 @@ export default function MentorshipDetailClient({
   const [reviewText, setReviewText] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
-  const mentee = request.mentee as any;
-  const mentor = request.mentor as any;
+  const mentee = request.mentee as unknown as { first_name?: string; last_name?: string; job_title?: string; email?: string } | null;
+  const mentor = request.mentor as unknown as { first_name?: string; last_name?: string; job_title?: string; email?: string } | null;
   const partner = isMentor ? mentee : mentor;
   const partnerName = partner
     ? `${partner.first_name} ${partner.last_name}`
@@ -397,7 +397,7 @@ export default function MentorshipDetailClient({
           </div>
           <div className="divide-y divide-gray-50">
             {reviews.map((review: any) => {
-              const reviewer = review.reviewer as any;
+              const reviewer = review.reviewer as unknown as { first_name?: string; last_name?: string } | null;
               return (
                 <div key={review.id} className="px-5 py-4">
                   <div className="flex items-center gap-2">

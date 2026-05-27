@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (allReviews && allReviews.length > 0) {
       const avgRating =
-        allReviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+        allReviews.reduce((sum: number, r) => sum + r.rating, 0) /
         allReviews.length;
 
       await service
