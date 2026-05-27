@@ -2,7 +2,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
-import { validateBody, createNotificationSchema } from "@/lib/validations";
+import { validateBody, createNotificationSchema, directNotificationSchema } from "@/lib/validations";
+
+// Allowed values for the notifications.type CHECK constraint.
+const ALLOWED_NOTIFICATION_TYPES = [
+  "enrollment",
+  "reminder",
+  "completion",
+  "certification",
+  "announcement",
+  "mention",
+];
 
 export async function GET() {
   const supabase = await createClient();
@@ -40,7 +50,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("admin", "manager");
   const service = createServiceClient();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -51,6 +61,57 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
+
+  // Targeted path: a reminder/notification sent to a single user.
+  if (body && typeof body === "object" && "user_id" in body) {
+    const direct = validateBody(directNotificationSchema, body);
+    if (!direct.success) {
+      return NextResponse.json({ error: direct.error }, { status: 400 });
+    }
+
+    const isAdmin = ["admin", "super_admin"].includes(auth.user.role);
+    if (!isAdmin) {
+      // Managers may only notify members of their own team.
+      const { data: target } = await service
+        .from("users")
+        .select("manager_id")
+        .eq("id", direct.data.user_id)
+        .single();
+      if (!target || target.manager_id !== auth.user.id) {
+        return NextResponse.json(
+          { error: "You can only notify members of your own team" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const type =
+      direct.data.type && ALLOWED_NOTIFICATION_TYPES.includes(direct.data.type)
+        ? direct.data.type
+        : "reminder";
+
+    const { error } = await service.from("notifications").insert({
+      user_id: direct.data.user_id,
+      type,
+      title: direct.data.title ?? "Reminder",
+      body: direct.data.message,
+      link: direct.data.link ?? null,
+      channel: "in_app",
+      is_read: false,
+    });
+
+    if (error) {
+      console.error("Notification operation failed:", error.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+    return NextResponse.json({ sent: 1 }, { status: 201 });
+  }
+
+  // Broadcast/announcement path is admin-only.
+  if (!["admin", "super_admin"].includes(auth.user.role)) {
+    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  }
+
   const validation = validateBody(createNotificationSchema, body);
   if (!validation.success) {
     return NextResponse.json({ error: validation.error }, { status: 400 });

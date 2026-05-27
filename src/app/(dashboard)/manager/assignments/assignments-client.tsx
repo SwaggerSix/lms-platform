@@ -25,6 +25,7 @@ export interface Assignment {
   id: string;
   courseName: string;
   assignedTo: string;
+  assignedToUserId: string;
   assignedToAvatar: string;
   assignedDate: string;
   dueDate: string;
@@ -144,8 +145,9 @@ export default function AssignmentsClient({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              user_name: a.assignedTo,
+              user_id: a.assignedToUserId,
               type: "reminder",
+              title: `Reminder: ${a.courseName}`,
               message: `Reminder: "${a.courseName}" is due ${a.dueDate}.`,
             }),
           }).then(async (res) => {
@@ -291,6 +293,7 @@ export default function AssignmentsClient({
           id: results[idx]?.id || crypto.randomUUID(),
           courseName,
           assignedTo: member?.name || userId,
+          assignedToUserId: userId,
           assignedToAvatar: (member?.name || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
           assignedDate: new Date().toISOString().split("T")[0],
           dueDate,
