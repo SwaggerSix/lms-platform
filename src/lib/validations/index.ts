@@ -696,6 +696,78 @@ export const submitEvaluationResponseSchema = z.object({
   answers: z.record(z.string(), z.unknown()),
 });
 
+// Nudges
+const timeString = z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:MM format");
+
+export const createNudgeActionSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).default(""),
+  category: z.string().min(1).max(60).default("General"),
+  estimated_minutes: z.number().int().min(1).max(120).default(2),
+  image_url: z.string().max(1000).optional().default(""),
+  quote: z.string().max(500).optional().default(""),
+  quote_author: z.string().max(120).optional().default(""),
+  is_active: z.boolean().default(true),
+});
+
+export const updateNudgeActionSchema = createNudgeActionSchema.partial();
+
+export const createNudgeAssignmentSchema = z.object({
+  nudge_action_id: z.string().uuid(),
+  assignee_id: z.string().uuid().optional().nullable(),
+  assignee_name: z.string().min(1).max(200),
+  assignee_email: z.string().email(),
+  assignee_phone: z.string().max(40).optional().default(""),
+  send_morning_email: z.boolean().default(true),
+  send_morning_sms: z.boolean().default(false),
+  send_evening_email: z.boolean().default(true),
+  send_evening_sms: z.boolean().default(false),
+  morning_send_time: timeString.default("08:00"),
+  evening_send_time: timeString.default("18:00"),
+  timezone: z.string().max(64).default("America/New_York"),
+  starts_on: z.string().optional().nullable(),
+  ends_on: z.string().optional().nullable(),
+});
+
+export const updateNudgeAssignmentSchema = z.object({
+  status: z.enum(["active", "paused", "completed"]).optional(),
+  send_morning_email: z.boolean().optional(),
+  send_morning_sms: z.boolean().optional(),
+  send_evening_email: z.boolean().optional(),
+  send_evening_sms: z.boolean().optional(),
+  morning_send_time: timeString.optional(),
+  evening_send_time: timeString.optional(),
+  timezone: z.string().max(64).optional(),
+  ends_on: z.string().optional().nullable(),
+});
+
+export const createNudgeCampaignSchema = z.object({
+  name: z.string().min(1).max(200),
+  category: z.string().min(1).max(60).default("General"),
+  frequency: z.enum(["daily", "every_other_day", "weekdays", "custom"]).default("daily"),
+  frequency_days: z.number().int().min(1).max(90).optional().nullable(),
+  action_ids: z.array(z.string().uuid()).min(1, "Select at least one action"),
+  send_morning_email: z.boolean().default(true),
+  send_morning_sms: z.boolean().default(false),
+  send_evening_email: z.boolean().default(true),
+  send_evening_sms: z.boolean().default(false),
+  morning_send_time: timeString.default("08:00"),
+  evening_send_time: timeString.default("18:00"),
+  timezone: z.string().max(64).default("America/New_York"),
+});
+
+export const enrollNudgeCampaignSchema = z.object({
+  assignee_id: z.string().uuid().optional().nullable(),
+  assignee_name: z.string().min(1).max(200),
+  assignee_email: z.string().email(),
+  assignee_phone: z.string().max(40).optional().default(""),
+});
+
+export const nudgeRespondSchema = z.object({
+  action: z.enum(["commit", "complete", "skip"]),
+  reflection: z.string().max(5000).optional(),
+});
+
 // Generic helper
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): { success: true; data: T } | { success: false; error: string } {
   const result = schema.safeParse(body);
