@@ -6,6 +6,14 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **More correctness coverage for analytics/integrations.** Added
+  unit tests for `computeEngagementScore` (`lib/analytics/predictive`
+  — scoring math via a chainable Supabase mock: empty→0, factor caps,
+  recency tiers, 100 clamp), the HRIS provider registry
+  (`getHRISProvider`/`listHRISProviders` — lookup + unknown-type
+  error), and `getTrendData` (`lib/analytics/snapshots` — snake→camel
+  mapping + `parseFloat || 0` coercion). 15 tests; introduced a
+  reusable Proxy/thenable query-builder mock pattern.
 - **Pivot to correctness: tests for two untested lib modules.**
   Added unit tests for `generateRecommendedActions`
   (`lib/analytics/predictive`) and `calculateMatchScore`
