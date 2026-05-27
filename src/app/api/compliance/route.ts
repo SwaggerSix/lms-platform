@@ -31,6 +31,28 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(data);
 }
 
+// Maps a frequency label (or raw number) from the form to a month count.
+// "One-time" has no recurrence, so it maps to null.
+function parseFrequencyMonths(frequency: unknown): number | null {
+  if (typeof frequency === "number") return frequency;
+  switch (frequency) {
+    case "One-time":
+      return null;
+    case "Quarterly":
+      return 3;
+    case "Semi-Annual":
+      return 6;
+    case "Annual":
+      return 12;
+    case "Bi-Annual":
+      return 24;
+    default: {
+      const n = Number(frequency);
+      return Number.isFinite(n) && n > 0 ? n : 12;
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -49,6 +71,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Requirement name is required" }, { status: 400 });
   }
 
+  const frequencyMonths = parseFrequencyMonths(frequency);
+
   const { data, error } = await service
     .from("compliance_requirements")
     .insert({
@@ -56,7 +80,7 @@ export async function POST(request: NextRequest) {
       description: regulation || '',
       regulation: regulation || '',
       course_id: linked_course || null,
-      frequency_months: frequency || 12,
+      frequency_months: frequencyMonths,
       is_mandatory: mandatory !== undefined ? mandatory : true,
     })
     .select()
@@ -87,6 +111,12 @@ export async function PATCH(request: NextRequest) {
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
+
+  // Translate UI field names from the requirement form to DB columns.
+  if (body.regulation !== undefined) updates.regulation = body.regulation || '';
+  if (body.linked_course !== undefined) updates.course_id = body.linked_course || null;
+  if (body.mandatory !== undefined) updates.is_mandatory = body.mandatory;
+  if (body.frequency !== undefined) updates.frequency_months = parseFrequencyMonths(body.frequency);
 
   const { data, error } = await service
     .from("compliance_requirements")
