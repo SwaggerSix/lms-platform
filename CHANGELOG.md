@@ -6,6 +6,21 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Pivot to correctness: tests for two untested lib modules.**
+  Added unit tests for `generateRecommendedActions`
+  (`lib/analytics/predictive`) and `calculateMatchScore`
+  (`lib/mentorship/matching`) — both pure, branchy, and previously
+  uncovered. Pins the factor→action mapping and the match-score
+  component weights (overlap 40 / availability 20 / capacity 10 /
+  experience 15 / rating 15) + clamping/rounding.
+- **`compliance_requirements` retirement verified complete** — no
+  runtime refs in `src/`, `/api/compliance` returns 410 with RFC
+  8594 headers, `getRequiredCourseSources` is the successor,
+  `supabase/pending/` empty. No loose ends.
+- **`authorize()` adoption audit** — ~89% of API routes (132) use
+  the helper; the 16 hand-rolled ones mostly need user columns
+  `authorize()` doesn't return (it selects only `id, role`) or are
+  auth flows, so they're justified — not a productive migration.
 - **`as-any` ratchet 56 → 46.** Final sweep of the scattered
   singles (assessments/[id], transcript, admin-mentorship,
   predictive page, paths list) via drops + corrected relation /
