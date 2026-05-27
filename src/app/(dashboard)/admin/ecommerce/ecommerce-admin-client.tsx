@@ -36,9 +36,13 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
     discount_price: "",
     is_featured: false,
     status: "active",
+    name: "",
+    description: "",
+    image_url: "",
   });
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Revenue stats
   const totalRevenue = orders
@@ -62,6 +66,9 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
           discount_price: newProduct.discount_price ? parseFloat(newProduct.discount_price) : null,
           is_featured: newProduct.is_featured,
           status: newProduct.status,
+          name: newProduct.name.trim() || null,
+          description: newProduct.description.trim() || null,
+          image_url: newProduct.image_url || null,
         }),
       });
       const data = await res.json();
@@ -70,12 +77,37 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
       } else {
         setProducts((prev) => [data, ...prev]);
         setShowCreateProduct(false);
-        setNewProduct({ course_id: "", price: "", discount_price: "", is_featured: false, status: "active" });
+        setNewProduct({ course_id: "", price: "", discount_price: "", is_featured: false, status: "active", name: "", description: "", image_url: "" });
       }
     } catch {
       setCreateError("An error occurred");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setCreateError("");
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("bucket", "branding");
+      fd.append("folder", "products");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(data.error || "Failed to upload image");
+      } else {
+        setNewProduct((p) => ({ ...p, image_url: data.url }));
+      }
+    } catch {
+      setCreateError("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
     }
   }
 
@@ -143,6 +175,62 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
                   ))}
                 </select>
               </div>
+
+              {/* Optional shop display overrides */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Display Name <span className="font-normal text-gray-400">(optional — defaults to course title)</span>
+                </label>
+                <input
+                  type="text"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  placeholder="Shown in the shop instead of the course title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description <span className="font-normal text-gray-400">(optional — defaults to course description)</span>
+                </label>
+                <textarea
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  rows={3}
+                  placeholder="Marketing copy shown on the shop listing"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Image <span className="font-normal text-gray-400">(optional — defaults to course thumbnail)</span>
+                </label>
+                {newProduct.image_url ? (
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={newProduct.image_url} alt="Product preview" className="h-16 w-24 rounded-lg object-cover border border-gray-200" />
+                    <button
+                      type="button"
+                      onClick={() => setNewProduct({ ...newProduct, image_url: "" })}
+                      className="text-sm font-medium text-red-600 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:bg-indigo-50/50">
+                    {uploadingImage ? "Uploading..." : "Upload an image (PNG, JPG, WebP — max 5MB)"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
                 <input
@@ -254,7 +342,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
                 <div key={product.id} className="px-5 py-3 flex items-center justify-between">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {product.course?.title || "Unknown"}
+                      {product.name || product.course?.title || "Unknown"}
                     </p>
                     <p className="text-xs text-gray-500">{product.sales_count} sales</p>
                   </div>

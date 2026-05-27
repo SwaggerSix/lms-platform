@@ -26,6 +26,11 @@ export default function ProductDetailClient({ product, instructor, relatedProduc
     new Date(product.discount_ends_at) > now;
   const effectivePrice = hasDiscount ? product.discount_price : product.price;
 
+  // Prefer product-level overrides, falling back to the linked course.
+  const displayTitle = product.name || product.course.title;
+  const displayImage = product.image_url || product.course.thumbnail_url;
+  const displayDescription = product.description || product.course.description;
+
   async function handleAddToCart() {
     setAdding(true);
     setError("");
@@ -61,7 +66,7 @@ export default function ProductDetailClient({ product, instructor, relatedProduc
       <nav className="text-sm text-gray-500 mb-6">
         <Link href="/shop" className="hover:text-indigo-600">Marketplace</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-900">{product.course.title}</span>
+        <span className="text-gray-900">{displayTitle}</span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -69,10 +74,10 @@ export default function ProductDetailClient({ product, instructor, relatedProduc
         <div className="lg:col-span-2 space-y-6">
           {/* Hero Image */}
           <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden">
-            {product.course.thumbnail_url ? (
+            {displayImage ? (
               <img
-                src={product.course.thumbnail_url}
-                alt={product.course.title}
+                src={displayImage}
+                alt={displayTitle}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -111,14 +116,14 @@ export default function ProductDetailClient({ product, instructor, relatedProduc
           {/* Title & Description */}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              {product.course.title}
+              {displayTitle}
             </h1>
             {product.course.short_description && (
               <p className="text-lg text-gray-600 mb-4">{product.course.short_description}</p>
             )}
-            {product.course.description && (
+            {displayDescription && (
               <div className="prose prose-gray max-w-none">
-                <p className="text-gray-600 whitespace-pre-line">{product.course.description}</p>
+                <p className="text-gray-600 whitespace-pre-line">{displayDescription}</p>
               </div>
             )}
           </div>

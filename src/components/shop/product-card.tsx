@@ -11,6 +11,9 @@ interface Product {
   is_featured: boolean;
   sales_count: number;
   status: string;
+  name?: string | null;
+  description?: string | null;
+  image_url?: string | null;
   course: {
     id: string;
     title: string;
@@ -43,6 +46,11 @@ export default function ProductCard({ product }: { product: Product }) {
     new Date(product.discount_ends_at) > now;
 
   const effectivePrice = hasDiscount ? product.discount_price! : product.price;
+
+  // Shop display prefers product-level overrides, falling back to the course.
+  const displayTitle = product.name || product.course.title;
+  const displayImage = product.image_url || product.course.thumbnail_url;
+  const displayDescription = product.description || product.course.short_description;
 
   async function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
@@ -96,10 +104,10 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Thumbnail */}
         <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
-          {product.course.thumbnail_url ? (
+          {displayImage ? (
             <img
-              src={product.course.thumbnail_url}
-              alt={product.course.title}
+              src={displayImage}
+              alt={displayTitle}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
@@ -129,13 +137,13 @@ export default function ProductCard({ product }: { product: Product }) {
 
           {/* Title */}
           <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-            {product.course.title}
+            {displayTitle}
           </h3>
 
           {/* Description */}
-          {product.course.short_description && (
+          {displayDescription && (
             <p className="text-sm text-gray-500 line-clamp-2">
-              {product.course.short_description}
+              {displayDescription}
             </p>
           )}
 
