@@ -38,7 +38,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 135;
+    const MAX = 112;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -82,7 +82,6 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/(dashboard)/learn/paths/[slug]/page.tsx ×2",
         "src/app/(dashboard)/learn/paths/page.tsx ×2",
         "src/app/(dashboard)/learn/player/[courseId]/page.tsx ×2",
-        "src/app/(dashboard)/learn/recommendations/page.tsx ×9",
         "src/app/(dashboard)/learn/transcript/page.tsx ×2",
         "src/app/(dashboard)/manager/analytics/manager-analytics-client.tsx",
         "src/app/(dashboard)/manager/compliance/page.tsx ×2",
@@ -97,20 +96,16 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/api/chat/sessions/[id]/messages/route.ts",
         "src/app/api/courses/route.ts",
         "src/app/api/cron/history/route.ts ×2",
-        "src/app/api/embed/[token]/route.ts ×6",
         "src/app/api/ilt-sessions/[id]/calendar/route.ts",
         "src/app/api/integrations/external/test/route.ts",
         "src/app/api/marketplace/providers/route.ts",
         "src/app/api/mentorship/sessions/[id]/route.ts",
-        "src/app/api/recommendations/route.ts ×4",
         "src/app/api/teams/bot/route.ts",
         "src/app/embed/[token]/page.tsx ×11",
         "src/app/verify/[code]/page.tsx",
         "src/components/marketplace/unified-catalog.tsx",
-        "src/lib/analytics/predictive.ts ×2",
         "src/lib/integrations/crm-sync.ts",
         "src/lib/mentorship/matching.ts",
-        "src/lib/notifications/preferences.ts ×2",
       ]
     `);
   });

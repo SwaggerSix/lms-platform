@@ -44,9 +44,9 @@ export async function fetchNotificationPrefs(
     .in("id", userIds);
 
   for (const row of data ?? []) {
-    const prefs = ((row as any).preferences ?? {}) as Record<string, unknown>;
+    const prefs = (row.preferences ?? {}) as Record<string, unknown>;
     const raw = (prefs.notifications ?? {}) as Record<string, CategoryPref>;
-    result.set((row as any).id, raw as NotificationPrefs);
+    result.set(row.id, raw as NotificationPrefs);
   }
   return result;
 }

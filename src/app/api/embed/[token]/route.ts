@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   switch (widget.widget_type) {
     case "nugget_feed": {
-      const limit = (widget.config as any)?.limit || 5;
+      const limit = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.limit || 5;
       const { data: nuggets } = await service
         .from("microlearning_nuggets")
         .select("id, title, content_type, content, difficulty, estimated_seconds")
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       break;
     }
     case "leaderboard": {
-      const limit = (widget.config as any)?.limit || 10;
+      const limit = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.limit || 10;
       const { data: leaders } = await service
         .from("microlearning_progress")
         .select("user_id, status")
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       break;
     }
     case "course_card": {
-      const courseId = (widget.config as any)?.course_id;
+      const courseId = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.course_id;
       if (courseId) {
         const { data: course } = await service
           .from("courses")
@@ -98,8 +98,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       break;
     }
     case "progress_bar": {
-      const userId = (widget.config as any)?.user_id;
-      const courseId = (widget.config as any)?.course_id;
+      const userId = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.user_id;
+      const courseId = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.course_id;
       if (userId && courseId) {
         const { data: enrollment } = await service
           .from("enrollments")
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       break;
     }
     case "skill_radar": {
-      const userId = (widget.config as any)?.user_id;
+      const userId = (widget.config as { limit?: number; course_id?: string; user_id?: string } | null)?.user_id;
       if (userId) {
         const { data: skills } = await service
           .from("user_skills")

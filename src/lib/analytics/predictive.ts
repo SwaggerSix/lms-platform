@@ -381,8 +381,8 @@ export async function identifyAtRiskLearners(
   const { data } = await query;
 
   return (data ?? []).map((r: any) => {
-    const user = r.user as any;
-    const course = r.course as any;
+    const user = r.user;
+    const course = r.course;
     return {
       userId: r.user_id,
       userName:

@@ -45,7 +45,7 @@ function pickGradient(index: number): string {
 /* ------------------------------------------------------------------ */
 
 function toCourse(row: any, index: number, reason: string): RecommendedCourse {
-  const creator = row.creator as any;
+  const creator = row.creator;
   const instructorName =
     creator?.first_name && creator?.last_name
       ? `${creator.first_name} ${creator.last_name}`
@@ -135,7 +135,7 @@ export default async function RecommendationsPage() {
   const completedTags = new Set<string>();
   for (const e of enrollments ?? []) {
     if (e.status === "completed") {
-      const course = e.course as any;
+      const course = e.course as unknown as { category_id?: string; tags?: string[] } | null;
       if (course?.category_id) completedCategoryIds.add(course.category_id);
       if (Array.isArray(course?.tags)) {
         for (const t of course.tags) completedTags.add(t);
@@ -154,7 +154,7 @@ export default async function RecommendationsPage() {
 
   const userSkillMap = new Map<string, { level: number; name: string }>();
   for (const row of userSkillRows ?? []) {
-    const skill = row.skill as any;
+    const skill = row.skill as unknown as { name: string } | null;
     if (skill) {
       userSkillMap.set(row.skill_id, {
         level: row.proficiency_level,
@@ -173,7 +173,7 @@ export default async function RecommendationsPage() {
   // Build a map: courseId -> array of { skillId, skillName, proficiencyGained }
   const courseToSkills = new Map<string, Array<{ skillId: string; skillName: string; proficiencyGained: number }>>();
   for (const row of courseSkillRows ?? []) {
-    const skill = row.skill as any;
+    const skill = row.skill as unknown as { name: string } | null;
     if (!skill) continue;
     const arr = courseToSkills.get(row.course_id) ?? [];
     arr.push({
@@ -196,7 +196,7 @@ export default async function RecommendationsPage() {
       .contains("applicable_roles", [jobTitle]);
 
     for (const fw of frameworks ?? []) {
-      const fwSkills = fw.skills as any[];
+      const fwSkills = fw.skills as unknown as Array<{ skill_id?: string }>;
       if (Array.isArray(fwSkills)) {
         for (const s of fwSkills) {
           if (s.skill_id) requiredSkillIds.add(s.skill_id);
@@ -220,7 +220,7 @@ export default async function RecommendationsPage() {
   }
 
   const { data: courses } = await query;
-  const allCourses = (courses ?? []) as any[];
+  const allCourses = courses ?? [];
 
   // Quick lookup by ID
   const courseById = new Map<string, any>();
@@ -248,7 +248,7 @@ export default async function RecommendationsPage() {
   for (const pick of aiScoredPicks) {
     const course = courseById.get(pick.courseId);
     if (!course) continue;
-    const creator = course.creator as any;
+    const creator = course.creator;
     aiRecommendations.push({
       id: course.id,
       slug: course.slug ?? course.id,
@@ -310,7 +310,7 @@ export default async function RecommendationsPage() {
               .filter((pc) => pathCourseMap.has(pc.courseId))
               .map((pc, idx) => {
                 const c = pathCourseMap.get(pc.courseId);
-                const creator = c.creator as any;
+                const creator = c.creator;
                 return {
                   id: c.id,
                   slug: c.slug ?? c.id,
@@ -339,7 +339,7 @@ export default async function RecommendationsPage() {
   // Build "Because You Completed X" similar courses
   const similarBuckets: SimilarCourseBucket[] = [];
   for (const enrollment of completedEnrollments.data ?? []) {
-    const completedCourse = enrollment.course as any;
+    const completedCourse = enrollment.course as unknown as { id: string; title?: string; slug?: string } | null;
     if (!completedCourse) continue;
 
     try {
@@ -359,8 +359,8 @@ export default async function RecommendationsPage() {
       if (hydratedSim.length > 0) {
         similarBuckets.push({
           completedCourseId: enrollment.course_id,
-          completedCourseTitle: completedCourse.title,
-          completedCourseSlug: completedCourse.slug,
+          completedCourseTitle: completedCourse.title ?? "",
+          completedCourseSlug: completedCourse.slug ?? "",
           courses: hydratedSim,
         });
       }
@@ -597,7 +597,7 @@ export default async function RecommendationsPage() {
 
     for (const c of sameCategoryCourses) {
       if (continueLearningCourses.length >= 6) break;
-      const catName = c.category?.name ?? "this topic";
+      const catName = (c.category as unknown as { name?: string } | null)?.name ?? "this topic";
       const rec = take(c, `Continue your ${catName} learning journey`);
       if (rec) continueLearningCourses.push(rec);
     }
@@ -630,7 +630,7 @@ export default async function RecommendationsPage() {
   for (const c of recentCourses) {
     if (trendingCourses.length >= 6) break;
     const count = Number(c.enrolled_count?.[0]?.count ?? 0);
-    const catName = c.category?.name;
+    const catName = (c.category as unknown as { name?: string } | null)?.name;
     const reason = catName
       ? `New in ${catName} — ${count.toLocaleString()} enrolled`
       : `Recently added — ${count.toLocaleString()} enrolled`;
@@ -695,7 +695,7 @@ export default async function RecommendationsPage() {
         if (usedIds.has(c.id)) continue;
         const courseTags = Array.isArray(c.tags) ? (c.tags as string[]) : [];
         const courseTitle = (c.title ?? "").toLowerCase();
-        const catName = (c.category?.name ?? "").toLowerCase();
+        const catName = ((c.category as unknown as { name?: string } | null)?.name ?? "").toLowerCase();
 
         const matched = titleWords.some(
           (w: string) =>

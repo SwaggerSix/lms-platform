@@ -6,6 +6,17 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 135 → 112.** Converted `recommendations/
+  page.tsx` (9, the biggest cluster — corrected to-one relation
+  types + dropping casts on `Map<string, any>` values), `embed/
+  [token]/route.ts` (6, typed widget-config shape), `recommendations/
+  route.ts` (4), and `analytics/predictive` + `notifications/
+  preferences` (2 each, redundant casts on already-typed rows).
+- **`any-annotation` ratchet 330 → 328** by typing the
+  `availableSkills` filter/map params in `recommendations/route.ts`.
+- **`reports-select-coverage` extended** to `notification-audit/
+  route.ts` and `lib/ai/recommendations.ts` — all the corrected-
+  relation boundary casts are now guarded against select drift.
 - **`as-any` ratchet 147 → 135.** Cleared API-route casts
   (discussions, feedback/responses, courses/[slug], enrollments
   prereq, marketplace/enroll, mentorship/profiles) and

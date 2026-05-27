@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     .filter((p) => courseMap.has(p.courseId))
     .map((p) => {
       const course = courseMap.get(p.courseId);
-      const creator = course.creator as any;
+      const creator = course.creator;
       return {
         id: course.id,
         slug: course.slug ?? course.id,
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
   const completedCourses = recentCompleted.data ?? [];
 
   for (const enrollment of completedCourses) {
-    const course = enrollment.course as any;
+    const course = enrollment.course as unknown as { id: string; title?: string; slug?: string } | null;
     if (!course) continue;
 
     const simCourses = await getSimilarCourses(enrollment.course_id, 4);
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
       .filter((s) => simMap.has(s.courseId))
       .map((s) => {
         const c = simMap.get(s.courseId);
-        const creator = c.creator as any;
+        const creator = c.creator;
         return {
           id: c.id,
           slug: c.slug ?? c.id,
@@ -163,11 +163,15 @@ export async function GET(request: NextRequest) {
     .select("skill_id, proficiency_level, skill:skills!user_skills_skill_id_fkey ( id, name )")
     .eq("user_id", profile.id);
 
-  const availableSkills = (userSkills ?? [])
-    .filter((s: any) => s.proficiency_level < 5)
-    .map((s: any) => ({
+  const availableSkills = ((userSkills ?? []) as unknown as Array<{
+    proficiency_level: number;
+    skill_id: string;
+    skill: { name?: string } | null;
+  }>)
+    .filter((s) => s.proficiency_level < 5)
+    .map((s) => ({
       id: s.skill_id,
-      name: (s.skill as any)?.name ?? "Unknown",
+      name: s.skill?.name ?? "Unknown",
       currentLevel: s.proficiency_level,
     }));
 

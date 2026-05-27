@@ -4,20 +4,21 @@ import { join } from "node:path";
 
 /**
  * Confidence guard for the `as unknown as RowType[]` boundary casts
- * in src/lib/reports/generate.ts. Those casts assert a shape the
- * type checker can't verify against the loosely-typed query, so if
- * someone drops a column from a `.select(...)` the consuming map
- * would silently read `undefined` at runtime.
+ * across the files that hand loosely-typed query rows to a typed
+ * consumer. Those casts assert a shape the type checker can't verify
+ * against the query, so if someone drops a column from a
+ * `.select(...)` the consumer would silently read `undefined` at
+ * runtime.
  *
- * This test pins that every column/relation the report maps consume
- * is still named in the query's select string — catching select
- * drift that the cast would otherwise hide.
+ * Each block pins that every column/relation a consumer reads is
+ * still named in the query's select string — catching select drift
+ * that the cast would otherwise hide.
  */
 
-const SOURCE = readFileSync(
-  join(process.cwd(), "src/lib/reports/generate.ts"),
-  "utf8"
-);
+const read = (rel: string) => readFileSync(join(process.cwd(), rel), "utf8");
+const SOURCE = read("src/lib/reports/generate.ts");
+const NOTIF_AUDIT = read("src/app/api/admin/notification-audit/route.ts");
+const AI_RECS = read("src/lib/ai/recommendations.ts");
 
 describe("reports/generate.ts select coverage", () => {
   it("completion report select names every consumed field", () => {
@@ -51,6 +52,38 @@ describe("reports/generate.ts select coverage", () => {
       "skill:skills(name, category)",
     ]) {
       expect(SOURCE, `skills-gap select missing ${col}`).toContain(col);
+    }
+  });
+});
+
+describe("notification-audit row-type select coverage", () => {
+  it("rule-log select names the RuleLogRow fields", () => {
+    // RuleLogRow: id, rule_id, user_id, error_message, created_at.
+    for (const col of ["id", "rule_id", "user_id", "error_message", "created_at"]) {
+      expect(NOTIF_AUDIT, `rule-log select missing ${col}`).toContain(col);
+    }
+  });
+
+  it("workflow-log select names the WorkflowLogRow fields", () => {
+    // WorkflowLogRow: id, run_id, step_id, error_message, created_at.
+    for (const col of ["run_id", "step_id"]) {
+      expect(NOTIF_AUDIT, `workflow-log select missing ${col}`).toContain(col);
+    }
+  });
+});
+
+describe("lib/ai/recommendations enrollment select coverage", () => {
+  it("enrollment join names the EnrollCourseRel fields the prefs reader uses", () => {
+    // EnrollCourseRel: id, category_id, difficulty_level,
+    // estimated_duration, course_type, tags.
+    for (const col of [
+      "category_id",
+      "difficulty_level",
+      "estimated_duration",
+      "course_type",
+      "tags",
+    ]) {
+      expect(AI_RECS, `enrollment course select missing ${col}`).toContain(col);
     }
   });
 });
