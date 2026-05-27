@@ -584,6 +584,20 @@ export interface ScheduledReport {
   updated_at: string;
 }
 
+export interface EvaluationTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  level: 1 | 2 | 3 | 4;
+  questions: Record<string, unknown>[];
+  is_active: boolean;
+  external_provider: string | null;
+  surveycraft_slug: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface TranscriptEntry {
   course_title: string;
   course_type: CourseType;

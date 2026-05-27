@@ -45,6 +45,7 @@ export async function middleware(request: NextRequest) {
       "/api/xapi/statements",
       "/api/cron/",
       "/api/push/subscribe",
+      "/api/evaluations/webhook",
     ];
     const isExempt = csrfExemptPaths.some((p) => pathname.startsWith(p));
 
@@ -89,6 +90,7 @@ export async function middleware(request: NextRequest) {
     "/api/sso/check-domain",
     "/api/embed",
     "/api/push/subscribe",
+    "/api/evaluations/webhook",
   ];
   const isPublicPath = publicPaths.some((path) =>
     pathname.startsWith(path)
