@@ -67,6 +67,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Token-authenticated nudge routes: reachable by anyone (logged in or not)
+  // straight from an email link, with no redirect either way.
+  const nudgeTokenPaths = ["/nudge/", "/api/nudge-respond", "/api/nudge-swap-link"];
+  if (nudgeTokenPaths.some((p) => pathname.startsWith(p))) {
+    return supabaseResponse;
+  }
+
   const publicPaths = [
     "/login",
     "/register",
