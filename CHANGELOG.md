@@ -6,6 +6,16 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Coverage for the remaining analytics/recs/HRIS logic.**
+  `identifyAtRiskLearners` (prediction-row mapping + missing-join
+  defaults), `createDailySnapshot` (aggregate computation + the
+  login-streak continue/reset rule, via an upsert-payload-capturing
+  mock), `computeUserPreferences` (`lib/ai/recommendations` — mode
+  difficulty/category, learning-pace bands, avg-score rounding,
+  best-time bucketing), and `BambooHRProvider.fetchEmployees`
+  (workEmail/homeEmail + supervisor fallbacks, status normalization,
+  no-email filter). 18 tests.
+
 - **Deeper correctness coverage: risk scoring, mentor selection, HRIS
   ingest.** `calculateRiskScore` (`analytics/predictive`) — the
   five-factor risk model and band thresholds, validated via the
