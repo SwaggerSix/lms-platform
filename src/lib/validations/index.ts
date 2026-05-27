@@ -97,6 +97,15 @@ export const createNotificationSchema = z.object({
   status: z.enum(["draft", "sent", "scheduled"]).optional(),
 });
 
+// Targeted notification sent to a single user (e.g. course/compliance reminders)
+export const directNotificationSchema = z.object({
+  user_id: z.string().uuid(),
+  message: z.string().min(1).max(5000),
+  title: z.string().min(1).max(200).optional(),
+  type: z.string().optional(),
+  link: z.string().max(2000).optional().nullable(),
+});
+
 // Knowledge Base
 export const createArticleSchema = z.object({
   title: z.string().min(1).max(200),

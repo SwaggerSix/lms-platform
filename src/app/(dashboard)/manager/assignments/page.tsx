@@ -125,6 +125,7 @@ export default async function AssignmentsPage() {
       id: row.id,
       courseName: course?.title ?? "Untitled Course",
       assignedTo: fullName,
+      assignedToUserId: assignedUser?.id ?? "",
       assignedToAvatar: avatar,
       assignedDate: row.enrolled_at,
       dueDate: row.due_date ?? "",
