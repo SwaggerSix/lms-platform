@@ -6,6 +6,15 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Coverage for the recommendation engines.**
+  `getContentBasedRecommendations` (`lib/ai/recommendations`) —
+  category/difficulty/content-type/duration matching, skill-gap
+  boost, enrolled-course exclusion, zero-score omission, sort +
+  limit (per-table mock). `getCollaborativeRecommendations` — the
+  Jaccard-similarity weighting and already-taken exclusion, via a
+  queue-based mock that serves the three sequential `enrollments`
+  queries distinct result-sets. 9 tests.
+
 - **Coverage for the remaining analytics/recs/HRIS logic.**
   `identifyAtRiskLearners` (prediction-row mapping + missing-join
   defaults), `createDailySnapshot` (aggregate computation + the
