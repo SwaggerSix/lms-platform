@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import { gemsAdapter, type GemsConfig, type GemsEvent } from "./adapter";
+import { gemsAdapter } from "./adapter";
+import type { GemsConfig, GemsEvent } from "./types";
 
 const EXTERNAL_SOURCE = "gems";
 
