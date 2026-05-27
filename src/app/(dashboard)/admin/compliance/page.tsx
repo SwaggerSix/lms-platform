@@ -158,6 +158,7 @@ export default async function CompliancePage() {
       mandatory: row.is_mandatory ?? true,
       applicableTo,
       linkedCourse: courseName,
+      linkedCourseId: courseId ?? '',
       frequency: formatFrequency(row.frequency_months),
       complianceRate,
       totalUsers,
