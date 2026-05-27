@@ -37,6 +37,7 @@ export interface ComplianceRequirement {
   mandatory: boolean;
   applicableTo: string;
   linkedCourse: string;
+  linkedCourseId: string;
   frequency: string;
   complianceRate: number;
   totalUsers: number;
@@ -60,7 +61,7 @@ interface ComplianceFormData {
   regulation: string;
   mandatory: boolean;
   applicableTo: string;
-  linkedCourse: string;
+  linkedCourseId: string;
   frequency: string;
 }
 
@@ -91,11 +92,14 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
     regulation: '',
     mandatory: false,
     applicableTo: '',
-    linkedCourse: '',
+    linkedCourseId: '',
     frequency: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const courseTitleById = (id: string) =>
+    courses.find((c) => c.id === id)?.title ?? 'No linked course';
 
   const filtered = requirements.filter(
     (r) => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.regulation.toLowerCase().includes(search.toLowerCase())
@@ -109,7 +113,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       regulation: req.regulation,
       mandatory: req.mandatory,
       applicableTo: req.applicableTo,
-      linkedCourse: req.linkedCourse,
+      linkedCourseId: req.linkedCourseId,
       frequency: req.frequency,
     });
     setError(null);
@@ -124,7 +128,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       regulation: req.regulation,
       mandatory: req.mandatory,
       applicableTo: req.applicableTo,
-      linkedCourse: req.linkedCourse,
+      linkedCourseId: req.linkedCourseId,
       frequency: req.frequency,
     });
     setError(null);
@@ -139,7 +143,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       regulation: '',
       mandatory: true,
       applicableTo: 'All Employees',
-      linkedCourse: '',
+      linkedCourseId: '',
       frequency: 'Annual',
     });
     setError(null);
@@ -165,7 +169,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           regulation: formData.regulation,
           mandatory: formData.mandatory,
           applicable_to: formData.applicableTo,
-          linked_course: formData.linkedCourse,
+          linked_course: formData.linkedCourseId,
           frequency: formData.frequency,
         }),
       });
@@ -181,7 +185,8 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           regulation: formData.regulation,
           mandatory: formData.mandatory,
           applicableTo: formData.applicableTo,
-          linkedCourse: formData.linkedCourse,
+          linkedCourse: courseTitleById(formData.linkedCourseId),
+          linkedCourseId: formData.linkedCourseId,
           frequency: formData.frequency,
           complianceRate: 0,
           totalUsers: 0,
@@ -215,7 +220,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           regulation: formData.regulation,
           mandatory: formData.mandatory,
           applicable_to: formData.applicableTo,
-          linked_course: formData.linkedCourse,
+          linked_course: formData.linkedCourseId,
           frequency: formData.frequency,
         }),
       });
@@ -232,7 +237,8 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                 regulation: formData.regulation,
                 mandatory: formData.mandatory,
                 applicableTo: formData.applicableTo,
-                linkedCourse: formData.linkedCourse,
+                linkedCourse: courseTitleById(formData.linkedCourseId),
+                linkedCourseId: formData.linkedCourseId,
                 frequency: formData.frequency,
               }
             : r
@@ -569,13 +575,13 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Linked Course</label>
                   <select
-                    value={formData.linkedCourse}
-                    onChange={(e) => setFormData((f) => ({ ...f, linkedCourse: e.target.value }))}
+                    value={formData.linkedCourseId}
+                    onChange={(e) => setFormData((f) => ({ ...f, linkedCourseId: e.target.value }))}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">— Select a course —</option>
                     {courses.map((c) => (
-                      <option key={c.id} value={c.title}>{c.title}</option>
+                      <option key={c.id} value={c.id}>{c.title}</option>
                     ))}
                   </select>
                 </div>
