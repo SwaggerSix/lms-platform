@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import AssessmentTakingClient from "./assessment-taking-client";
 import type { AssessmentData } from "./assessment-taking-client";
+import AssessmentEmbedClient from "./assessment-embed-client";
 
 export default async function AssessmentTakingPage({
   params,
@@ -44,6 +45,8 @@ export default async function AssessmentTakingPage({
         time_limit,
         max_attempts,
         question_count,
+        external_provider,
+        surveycraft_slug,
         course:courses ( title )
       `)
       .eq("id", id)
@@ -64,6 +67,21 @@ export default async function AssessmentTakingPage({
 
   const assessment = assessmentResult.data as any;
   const questions = (questionsResult.data ?? []) as any[];
+
+  // Externally-authored (SurveyCraft) assessments are taken in an embedded
+  // iframe; completion is recorded via the inbound webhook, not the native flow.
+  if (assessment?.external_provider === "surveycraft" && assessment?.surveycraft_slug) {
+    return (
+      <AssessmentEmbedClient
+        data={{
+          id: assessment.id,
+          title: assessment.title ?? "Assessment",
+          description: assessment.description ?? "",
+          course_title: assessment.course?.title ?? "Course",
+        }}
+      />
+    );
+  }
 
   const data: AssessmentData = {
     assessment: {

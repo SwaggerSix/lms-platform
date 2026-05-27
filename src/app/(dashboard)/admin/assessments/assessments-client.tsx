@@ -43,6 +43,8 @@ export interface Assessment {
   attempts: number;
   status: 'active' | 'draft';
   questions: Question[];
+  externalProvider: string | null;
+  surveycraftSlug: string | null;
 }
 
 export interface CourseOption {
@@ -69,6 +71,15 @@ const statusBadge: Record<string, string> = {
   draft: 'bg-amber-50 text-amber-700 ring-amber-600/20',
 };
 
+// Accept either a bare SurveyCraft slug or a full survey link; keep just the slug.
+function normalizeSlug(input: string): string {
+  const value = input.trim();
+  const marker = '/s/';
+  const idx = value.lastIndexOf(marker);
+  const slug = idx >= 0 ? value.slice(idx + marker.length) : value;
+  return slug.split('?')[0].replace(/\/+$/, '').trim();
+}
+
 interface AssessmentFormData {
   title: string;
   description: string;
@@ -76,6 +87,8 @@ interface AssessmentFormData {
   time_limit: number;
   passing_score: number;
   max_attempts: number;
+  source: 'native' | 'surveycraft';
+  surveycraft_slug: string;
 }
 
 const emptyForm: AssessmentFormData = {
@@ -85,6 +98,8 @@ const emptyForm: AssessmentFormData = {
   time_limit: 30,
   passing_score: 70,
   max_attempts: 3,
+  source: 'native',
+  surveycraft_slug: '',
 };
 
 interface AssessmentsClientProps {
@@ -157,6 +172,8 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       time_limit: 30,
       passing_score: assessment.passingScore,
       max_attempts: 3,
+      source: assessment.externalProvider === 'surveycraft' ? 'surveycraft' : 'native',
+      surveycraft_slug: assessment.surveycraftSlug ?? '',
     });
     setFormError(null);
     setFormOpen(true);
@@ -178,12 +195,18 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       setFormError('Please select a course.');
       return;
     }
+    if (form.source === 'surveycraft' && !form.surveycraft_slug.trim()) {
+      setFormError('Please enter the SurveyCraft survey link or ID.');
+      return;
+    }
 
     const actionType = editingId ? 'edit' : 'create';
     setLoadingAction({ id: editingId ?? undefined, action: actionType });
     setFormError(null);
 
     try {
+      const isExternal = form.source === 'surveycraft';
+      const slug = isExternal ? normalizeSlug(form.surveycraft_slug) : null;
       const payload: Record<string, unknown> = {
         title: form.title.trim(),
         description: form.description.trim(),
@@ -191,6 +214,8 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
         time_limit: form.time_limit,
         passing_score: form.passing_score,
         max_attempts: form.max_attempts,
+        external_provider: isExternal ? 'surveycraft' : null,
+        surveycraft_slug: slug,
       };
 
       if (editingId) {
@@ -209,7 +234,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
         setAssessments((prev) =>
           prev.map((a) =>
             a.id === editingId
-              ? { ...a, title: form.title.trim(), course: courseName, passingScore: form.passing_score }
+              ? { ...a, title: form.title.trim(), course: courseName, passingScore: form.passing_score, externalProvider: isExternal ? 'surveycraft' : null, surveycraftSlug: slug }
               : a
           )
         );
@@ -236,6 +261,8 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
             attempts: 0,
             status: 'draft',
             questions: [],
+            externalProvider: isExternal ? 'surveycraft' : null,
+            surveycraftSlug: slug,
           },
           ...prev,
         ]);
@@ -585,6 +612,34 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Survey source</label>
+                <select
+                  value={form.source}
+                  onChange={(e) => setForm((f) => ({ ...f, source: e.target.value as 'native' | 'surveycraft' }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="native">Build questions in this LMS</option>
+                  <option value="surveycraft">Use a SurveyCraft survey</option>
+                </select>
+              </div>
+
+              {form.source === 'surveycraft' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">SurveyCraft survey link or ID</label>
+                  <input
+                    type="text"
+                    value={form.surveycraft_slug}
+                    onChange={(e) => setForm((f) => ({ ...f, surveycraft_slug: e.target.value }))}
+                    placeholder="e.g. leadership-mosaic or https://…/s/leadership-mosaic"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Create the survey in SurveyCraft, then paste its link (the part after <span className="font-mono">/s/</span>) or its slug here. Learners take it embedded; completion is recorded automatically.
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
