@@ -28,7 +28,7 @@ export default async function EvaluationsAdminPage() {
   const [{ data: templates }, { data: triggers }, { data: courses }] = await Promise.all([
     service
       .from("evaluation_templates")
-      .select("id, name, description, level, is_active, created_at")
+      .select("id, name, description, level, is_active, external_provider, surveycraft_slug, created_at")
       .order("created_at", { ascending: false }),
     service
       .from("evaluation_triggers")

@@ -679,6 +679,11 @@ export const createEvaluationTemplateSchema = z.object({
   level: z.number().int().min(1).max(4).default(1),
   questions: z.array(evaluationQuestionSchema).default([]),
   is_active: z.boolean().default(true),
+  // When set to "surveycraft", the survey is authored/rendered in SurveyCraft
+  // and surveycraft_slug identifies which survey to embed. null/undefined =
+  // native LMS-built survey.
+  external_provider: z.enum(["surveycraft"]).nullish(),
+  surveycraft_slug: z.string().max(200).nullish(),
 });
 
 export const updateEvaluationTemplateSchema = createEvaluationTemplateSchema.partial();

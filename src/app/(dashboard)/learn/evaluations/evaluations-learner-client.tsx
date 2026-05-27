@@ -46,9 +46,15 @@ type Assignment = {
     description?: string;
     level: number;
     questions: Question[];
+    external_provider?: string | null;
+    surveycraft_slug?: string | null;
   } | null;
   course: { id: string; title: string; thumbnail_url?: string } | null;
 };
+
+function isExternal(a: Assignment | null): boolean {
+  return a?.template?.external_provider === "surveycraft";
+}
 
 interface Props {
   assignments: Assignment[];
@@ -60,14 +66,36 @@ export default function EvaluationsLearnerClient({ assignments: initialAssignmen
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // External (SurveyCraft) embed state. The survey is taken in an iframe and
+  // completion is recorded by SurveyCraft's webhook, so there's no local
+  // submit — we just load the embed URL.
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const [embedLoading, setEmbedLoading] = useState(false);
 
   const pending = assignments.filter(a => a.status === "pending");
   const completed = assignments.filter(a => a.status === "completed");
 
-  function openAssignment(assignment: Assignment) {
+  async function openAssignment(assignment: Assignment) {
     setActiveAssignment(assignment);
     setAnswers({});
     setSubmitError(null);
+    setEmbedUrl(null);
+    if (isExternal(assignment)) {
+      setEmbedLoading(true);
+      try {
+        const res = await fetch(`/api/evaluations/assignments/${assignment.id}/embed`);
+        const data = await res.json().catch(() => null);
+        if (res.ok && data?.embed_url) {
+          setEmbedUrl(data.embed_url);
+        } else {
+          setSubmitError(data?.error ?? "Couldn't load this survey. Please try again.");
+        }
+      } catch {
+        setSubmitError("Network error. Please try again.");
+      } finally {
+        setEmbedLoading(false);
+      }
+    }
   }
 
   function setAnswer(questionId: string, value: unknown) {
@@ -201,28 +229,59 @@ export default function EvaluationsLearnerClient({ assignments: initialAssignmen
           <p className="text-sm text-gray-500 mb-4 -mt-2">{activeAssignment.template.description}</p>
         )}
 
-        <div className="space-y-6">
-          {activeAssignment?.template?.questions.map((q, idx) => (
-            <div key={q.id} className="space-y-2">
-              <label className="block text-sm font-medium text-gray-900">
-                {idx + 1}. {q.text}
-                {q.required && <span className="text-red-500 ml-1">*</span>}
-              </label>
-              <QuestionInput question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />
+        {isExternal(activeAssignment) ? (
+          <div className="space-y-4">
+            {embedLoading ? (
+              <div className="py-16 text-center text-gray-500">Loading survey…</div>
+            ) : embedUrl ? (
+              <>
+                <iframe
+                  src={embedUrl}
+                  title={activeAssignment?.template?.name ?? "Survey"}
+                  className="w-full rounded-lg border border-gray-200"
+                  style={{ height: "70vh" }}
+                />
+                <p className="text-xs text-gray-500">
+                  Your response is recorded automatically when you finish the survey above.
+                  It may take a moment to show as completed here.
+                </p>
+                <div className="flex justify-end">
+                  <Button variant="outline" onClick={() => setActiveAssignment(null)}>Close</Button>
+                </div>
+              </>
+            ) : (
+              <div className="py-8 text-center space-y-3">
+                <p className="text-sm text-red-600">{submitError ?? "Couldn't load this survey."}</p>
+                <Button variant="outline" onClick={() => setActiveAssignment(null)}>Close</Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="space-y-6">
+              {activeAssignment?.template?.questions.map((q, idx) => (
+                <div key={q.id} className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-900">
+                    {idx + 1}. {q.text}
+                    {q.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                  <QuestionInput question={q} value={answers[q.id]} onChange={v => setAnswer(q.id, v)} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {submitError && (
-          <p className="text-sm text-red-600 mt-4">{submitError}</p>
+            {submitError && (
+              <p className="text-sm text-red-600 mt-4">{submitError}</p>
+            )}
+
+            <div className="flex justify-end gap-3 mt-6">
+              <Button variant="outline" onClick={() => setActiveAssignment(null)}>Cancel</Button>
+              <Button onClick={submitResponse} disabled={!isComplete() || submitting} loading={submitting}>
+                Submit Evaluation
+              </Button>
+            </div>
+          </>
         )}
-
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={() => setActiveAssignment(null)}>Cancel</Button>
-          <Button onClick={submitResponse} disabled={!isComplete() || submitting} loading={submitting}>
-            Submit Evaluation
-          </Button>
-        </div>
       </Modal>
     </div>
   );
