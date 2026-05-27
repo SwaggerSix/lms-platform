@@ -47,6 +47,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
   const { items, ...pathData } = validation.data;
+
+  // slug is NOT NULL UNIQUE; always generate a unique slug from the title
+  pathData.slug = pathData.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    + "-" + Date.now().toString(36);
+
   const service = createServiceClient();
 
   const { data: path, error } = await service
@@ -66,7 +74,12 @@ export async function POST(request: NextRequest) {
       path_id: path.id,
       sequence_order: i + 1,
     }));
-    await service.from("learning_path_items").insert(pathItems);
+    const { error: itemsError } = await service.from("learning_path_items").insert(pathItems);
+    if (itemsError) {
+      console.error("Paths API items error:", itemsError.message);
+      await service.from("learning_paths").delete().eq("id", path.id);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
   }
 
   return NextResponse.json(path, { status: 201 });
@@ -84,7 +97,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Learning path id is required" }, { status: 400 });
   }
 
-  const allowedFields = ["title", "description", "slug", "status", "difficulty", "estimated_duration", "thumbnail_url"] as const;
+  const allowedFields = ["title", "description", "slug", "status", "estimated_duration", "thumbnail_url"] as const;
   const updates: Record<string, unknown> = {};
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];

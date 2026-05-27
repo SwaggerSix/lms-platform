@@ -119,9 +119,9 @@ export const createArticleSchema = z.object({
 // Paths
 export const createPathSchema = z.object({
   title: z.string().min(1).max(200),
+  slug: z.string().min(1).max(200).optional(),
   description: z.string().max(5000).optional(),
-  difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
-  estimated_duration: z.number().int().positive().optional(),
+  estimated_duration: z.number().int().positive().optional().nullable(),
   status: z.enum(["draft", "published", "archived"]).optional(),
   items: z.array(z.object({
     course_id: z.string().uuid(),
