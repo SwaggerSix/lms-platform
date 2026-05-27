@@ -6,6 +6,17 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 56 → 46.** Final sweep of the scattered
+  singles (assessments/[id], transcript, admin-mentorship,
+  predictive page, paths list) via drops + corrected relation /
+  array-or-object types. The remainder (embed ×9, feedback ×4, and
+  a few entangled/Json singles like player, paths/[slug], the
+  compliance ternary) is the documented justified floor.
+- **`: any` annotation risk survey** — confirmed **no exported
+  function/const returns `any`** (no public contract leaks `any`);
+  the remaining surface is low-risk local accumulators + callback
+  params. Recorded in `src/types/README.md`: the cap prevents
+  growth, the current set isn't dangerous, so don't chase the count.
 - **`as-any` ratchet 71 → 56.** Cleared the nested-join clusters
   (mentorship-client, mentorship detail, predictive-client,
   approvals — corrected relation types + tab-state `typeof activeTab`

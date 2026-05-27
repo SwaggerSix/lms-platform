@@ -74,8 +74,8 @@ export default async function PredictiveAnalyticsPage() {
   return (
     <PredictiveAnalyticsClient
       atRiskLearners={(riskPredictions ?? []).map((r: any) => {
-        const u = r.user as any;
-        const c = r.course as any;
+        const u = r.user;
+        const c = r.course;
         return {
           userId: r.user_id,
           userName: u ? `${u.first_name} ${u.last_name}` : "Unknown",

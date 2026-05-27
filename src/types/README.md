@@ -62,3 +62,15 @@ Rule of thumb: drive the ratchets down by converting query-row and
 nested-join casts (the bulk), and **stop** at the categories above —
 each remaining cast should be defensible in review. Don't chase zero;
 chase "every survivor is justified."
+
+### `: any` annotation risk
+
+A survey of the remaining `: any` annotations found **no exported
+function or const that returns `any`** — i.e. no public contract
+leaks `any`. The surface is almost entirely low-risk local
+accumulators (`let rows: any[] = []`, later filled by a query) and
+`.map`/`.filter` callback params over loosely-typed query results.
+So the type-safety *risk* of the remaining `: any` is low; the
+`any-annotation-audit` cap exists to prevent growth, not because the
+current set is dangerous. Spend conversion effort where it buys real
+safety (a shared shape, a reused helper), not on chasing the count.

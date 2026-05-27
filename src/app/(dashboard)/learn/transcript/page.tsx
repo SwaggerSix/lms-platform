@@ -48,7 +48,7 @@ export default async function TranscriptPage() {
     }
   }
 
-  const org = profile.organization as any;
+  const org = profile.organization as unknown as { name?: string } | Array<{ name?: string }> | null;
   const orgName = Array.isArray(org) ? org[0]?.name : org?.name;
 
   const transcriptUser: TranscriptUser = {
@@ -74,7 +74,7 @@ export default async function TranscriptPage() {
 
   // Map enrollments to the TranscriptRecord interface
   const records: TranscriptRecord[] = (enrollments ?? []).map((e) => {
-    const rawCourse = e.course as any;
+    const rawCourse = e.course as unknown as { title?: string; course_type?: string; estimated_duration?: number } | Array<{ title?: string; course_type?: string; estimated_duration?: number }> | null;
     const course = Array.isArray(rawCourse) ? rawCourse[0] : rawCourse;
     return {
       id: e.id,

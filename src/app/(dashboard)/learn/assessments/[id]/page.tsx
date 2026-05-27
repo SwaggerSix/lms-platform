@@ -62,8 +62,8 @@ export default async function AssessmentTakingPage({
       .eq("assessment_id", id),
   ]);
 
-  const assessment = assessmentResult.data as any;
-  const questions = (questionsResult.data ?? []) as any[];
+  const assessment = assessmentResult.data as unknown as { id: string; title: string; description: string | null; passing_score: number | null; time_limit: number | null; max_attempts: number | null; question_count: number | null; course: { title: string } | null } | null;
+  const questions = questionsResult.data ?? [];
 
   const data: AssessmentData = {
     assessment: {
@@ -76,7 +76,7 @@ export default async function AssessmentTakingPage({
       question_count: assessment?.question_count ?? questions.length,
       course_title: assessment?.course?.title ?? "Course",
     },
-    questions: questions.map((q: any) => ({
+    questions: questions.map((q) => ({
       id: q.id,
       question_text: q.question_text,
       question_type: q.question_type ?? "multiple_choice",

@@ -44,7 +44,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 56;
+    const MAX = 46;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -57,22 +57,17 @@ describe("as-any cast audit (advisory)", () => {
       .sort();
     expect(collapsed).toMatchInlineSnapshot(`
       [
-        "src/app/(dashboard)/admin/analytics/predictive/page.tsx ×2",
         "src/app/(dashboard)/admin/compliance/page.tsx",
         "src/app/(dashboard)/admin/feedback/[id]/cycle-detail-client.tsx",
         "src/app/(dashboard)/admin/ilt-sessions/page.tsx",
         "src/app/(dashboard)/admin/marketplace/page.tsx",
-        "src/app/(dashboard)/admin/mentorship/admin-mentorship-client.tsx ×2",
         "src/app/(dashboard)/admin/reports/page.tsx",
-        "src/app/(dashboard)/learn/assessments/[id]/page.tsx ×2",
         "src/app/(dashboard)/learn/discussions/page.tsx",
         "src/app/(dashboard)/learn/feedback/[nominationId]/page.tsx ×4",
         "src/app/(dashboard)/learn/knowledge-base/[slug]/page.tsx",
         "src/app/(dashboard)/learn/observations/[id]/observation-detail-client.tsx",
         "src/app/(dashboard)/learn/paths/[slug]/page.tsx ×2",
-        "src/app/(dashboard)/learn/paths/page.tsx ×2",
         "src/app/(dashboard)/learn/player/[courseId]/page.tsx ×2",
-        "src/app/(dashboard)/learn/transcript/page.tsx ×2",
         "src/app/(dashboard)/manager/analytics/manager-analytics-client.tsx",
         "src/app/(dashboard)/manager/compliance/page.tsx ×2",
         "src/app/(dashboard)/profile/page.tsx",

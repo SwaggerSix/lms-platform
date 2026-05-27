@@ -108,8 +108,8 @@ export default function AdminMentorshipClient({
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map((req: any) => {
-                const mentee = req.mentee as any;
-                const mentor = req.mentor as any;
+                const mentee = req.mentee as unknown as { first_name?: string; last_name?: string; email?: string } | null;
+                const mentor = req.mentor as unknown as { first_name?: string; last_name?: string; email?: string } | null;
                 return (
                   <tr key={req.id} className="hover:bg-gray-50/50">
                     <td className="px-5 py-3">

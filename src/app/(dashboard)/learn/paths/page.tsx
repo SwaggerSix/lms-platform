@@ -77,11 +77,11 @@ export default async function LearningPathsPage() {
   const pathCourseMap = new Map<string, string[]>();
   if (rawPaths) {
     for (const rp of rawPaths) {
-      const items = (rp as any).learning_path_items as any[];
+      const items = (rp as unknown as { learning_path_items?: Array<{ course_id: string }> }).learning_path_items;
       if (items && items.length > 0) {
         pathCourseMap.set(
           rp.id,
-          items.map((i: any) => i.course_id)
+          items.map((i) => i.course_id)
         );
       }
     }
@@ -106,7 +106,7 @@ export default async function LearningPathsPage() {
 
   // Shape the data to match the client interface
   const paths: LearningPath[] = (rawPaths ?? []).map((rp, index) => {
-    const items = (rp as any).learning_path_items as any[];
+    const items = (rp as unknown as { learning_path_items?: Array<{ course_id: string }> }).learning_path_items;
     const courseCount = items ? items.length : 0;
     const courseIds = pathCourseMap.get(rp.id) ?? [];
     const enrollmentStatus = enrollmentMap.get(rp.id);
