@@ -114,7 +114,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Assessment id is required" }, { status: 400 });
   }
 
-  const allowedFields = ["title", "description", "course_id", "type", "passing_score", "time_limit", "max_attempts", "status"] as const;
+  const allowedFields = ["title", "description", "course_id", "type", "passing_score", "time_limit", "max_attempts", "status", "external_provider", "surveycraft_slug"] as const;
   const updates: Record<string, unknown> = {};
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];

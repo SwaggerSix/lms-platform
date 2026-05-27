@@ -87,6 +87,8 @@ export default async function AssessmentsPage() {
       attempts: attemptCount,
       status,
       questions,
+      externalProvider: row.external_provider ?? null,
+      surveycraftSlug: row.surveycraft_slug ?? null,
     };
   });
 

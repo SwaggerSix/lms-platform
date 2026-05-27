@@ -65,8 +65,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 
-  const assignmentId = payload.a;
   const service = createServiceClient();
+
+  // Assessments authored in SurveyCraft record an attempt rather than an
+  // evaluation response. The token carries the assessment id (a) and user (u).
+  if (payload.k === "assessment") {
+    return handleAssessmentCompletion(payload.a, payload.u, body, service);
+  }
+
+  const assignmentId = payload.a;
 
   const { data: assignment, error: assignmentError } = await service
     .from("evaluation_assignments")
@@ -126,6 +133,73 @@ export async function POST(request: NextRequest) {
   if (updateError) {
     console.error("Evaluation webhook assignment update error:", updateError.message);
     // Response was saved — don't fail the request, just log.
+  }
+
+  return NextResponse.json({ status: "ok" }, { status: 200 });
+}
+
+// Records a completed attempt for a SurveyCraft-authored assessment. These
+// surveys aren't auto-graded, so the attempt is stored without a score; the
+// raw SurveyCraft answers are kept for reference and webhook idempotency.
+async function handleAssessmentCompletion(
+  assessmentId: string,
+  userId: string,
+  body: { responseId?: string; surveyId?: string; slug?: string; completedAt?: string; answers?: Record<string, unknown>; questions?: unknown[] },
+  service: ReturnType<typeof createServiceClient>,
+) {
+  const { data: assessment, error: assessmentError } = await service
+    .from("assessments")
+    .select("id")
+    .eq("id", assessmentId)
+    .single();
+
+  if (assessmentError || !assessment) {
+    return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+  }
+
+  // Idempotency: SurveyCraft may retry. A response id uniquely identifies a
+  // submission, so skip if we've already recorded an attempt for it.
+  if (body.responseId) {
+    const { data: existing, error: existingError } = await service
+      .from("assessment_attempts")
+      .select("id")
+      .eq("assessment_id", assessmentId)
+      .eq("answers->>responseId", body.responseId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("Assessment webhook duplicate-check error:", existingError.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+    if (existing) {
+      return NextResponse.json({ status: "duplicate" }, { status: 200 });
+    }
+  }
+
+  const now = body.completedAt || new Date().toISOString();
+
+  const { error: attemptError } = await service
+    .from("assessment_attempts")
+    .insert({
+      assessment_id: assessmentId,
+      user_id: userId,
+      score: null,
+      passed: null,
+      answers: {
+        responseId: body.responseId ?? null,
+        surveyId: body.surveyId ?? null,
+        slug: body.slug ?? null,
+        answers: body.answers ?? {},
+        questions: body.questions ?? [],
+      },
+      started_at: now,
+      completed_at: now,
+    });
+
+  if (attemptError) {
+    console.error("Assessment webhook attempt insert error:", attemptError.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json({ status: "ok" }, { status: 200 });

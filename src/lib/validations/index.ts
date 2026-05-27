@@ -74,6 +74,10 @@ export const createAssessmentSchema = z.object({
   time_limit: z.number().int().positive().optional().nullable(),
   passing_score: z.number().min(0).max(100).optional(),
   max_attempts: z.number().int().positive().optional(),
+  // When set to "surveycraft", the assessment is authored/rendered in SurveyCraft
+  // and surveycraft_slug identifies which survey to embed. null/undefined = native.
+  external_provider: z.enum(["surveycraft"]).nullish(),
+  surveycraft_slug: z.string().max(200).nullish(),
 });
 
 export const updateAssessmentSchema = createAssessmentSchema.partial().extend({

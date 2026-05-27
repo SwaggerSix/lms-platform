@@ -178,6 +178,8 @@ export interface Assessment {
   randomize_questions: boolean;
   show_correct_answers: boolean;
   question_count: number | null;
+  external_provider: string | null;
+  surveycraft_slug: string | null;
   created_at: string;
   questions?: Question[];
 }

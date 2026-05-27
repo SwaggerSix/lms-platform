@@ -4,10 +4,11 @@ import crypto from "crypto";
 // the field names or encoding without updating both systems together.
 
 export interface EmbedTokenPayload {
-  a: string; // assignmentId
+  a: string; // assignmentId (evaluations) or assessmentId (assessments)
   u: string; // userId
   t: string; // tenant
-  tpl: string; // templateId
+  tpl: string; // templateId (evaluations) or assessmentId (assessments)
+  k?: string; // kind: "evaluation" (default when absent) or "assessment"
   iat: number; // issued-at (unix seconds)
   exp: number; // expiry (unix seconds)
 }
@@ -17,6 +18,7 @@ export interface MintEmbedTokenInput {
   userId: string;
   tenant: string;
   templateId: string;
+  kind?: "evaluation" | "assessment";
   ttlSeconds?: number;
 }
 
@@ -48,6 +50,7 @@ export function mintEmbedToken(input: MintEmbedTokenInput): string {
     u: input.userId,
     t: input.tenant,
     tpl: input.templateId,
+    ...(input.kind && input.kind !== "evaluation" ? { k: input.kind } : {}),
     iat,
     exp,
   };
