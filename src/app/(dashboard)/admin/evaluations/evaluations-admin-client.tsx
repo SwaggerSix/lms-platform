@@ -61,6 +61,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [templateForm, setTemplateForm] = useState({ name: "", description: "", level: "1" });
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   // Trigger dialog state
   const [showTriggerDialog, setShowTriggerDialog] = useState(false);
@@ -69,6 +70,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
 
   async function createTemplate() {
     setSavingTemplate(true);
+    setTemplateError(null);
     try {
       const res = await fetch("/api/evaluations/templates", {
         method: "POST",
@@ -86,7 +88,12 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         setTemplates(prev => [created, ...prev]);
         setShowTemplateDialog(false);
         setTemplateForm({ name: "", description: "", level: "1" });
+      } else {
+        const data = await res.json().catch(() => null);
+        setTemplateError(data?.error ?? "Failed to create template. Please try again.");
       }
+    } catch {
+      setTemplateError("Network error. Please try again.");
     } finally {
       setSavingTemplate(false);
     }
@@ -165,7 +172,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         <TabsContent value="templates">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => setShowTemplateDialog(true)}>
+              <Button onClick={() => { setTemplateError(null); setShowTemplateDialog(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Template
               </Button>
@@ -316,6 +323,9 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
             options={KIRKPATRICK_LEVELS}
             onChange={v => setTemplateForm(f => ({ ...f, level: v }))}
           />
+          {templateError && (
+            <p className="text-sm text-red-600">{templateError}</p>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
             <Button onClick={createTemplate} disabled={!templateForm.name || savingTemplate} loading={savingTemplate}>
