@@ -74,12 +74,11 @@ export async function buildProfileData(
     .from("user_certifications")
     .select(
       `
-      issued_date,
-      expiry_date,
+      issued_at,
+      expires_at,
       status,
       certifications (
-        name,
-        issuing_body
+        name
       )
     `
     )
@@ -87,8 +86,8 @@ export async function buildProfileData(
 
   const certifications: ProfileCertification[] = (userCertsRaw || []).map(
     (uc: any) => {
-      const issuedDate = uc.issued_date ? new Date(uc.issued_date) : null;
-      const expiryDate = uc.expiry_date ? new Date(uc.expiry_date) : null;
+      const issuedDate = uc.issued_at ? new Date(uc.issued_at) : null;
+      const expiryDate = uc.expires_at ? new Date(uc.expires_at) : null;
       const threeMonths = new Date();
       threeMonths.setMonth(threeMonths.getMonth() + 3);
 
@@ -99,7 +98,7 @@ export async function buildProfileData(
 
       return {
         name: uc.certifications?.name || "Unknown",
-        issuer: uc.certifications?.issuing_body || "Unknown",
+        issuer: "Internal",
         issued: issuedDate
           ? issuedDate.toLocaleDateString("en-US", {
               month: "short",
