@@ -677,7 +677,7 @@ export const createEvaluationTemplateSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   level: z.number().int().min(1).max(4).default(1),
-  questions: z.array(evaluationQuestionSchema).min(1),
+  questions: z.array(evaluationQuestionSchema).default([]),
   is_active: z.boolean().default(true),
 });
 
