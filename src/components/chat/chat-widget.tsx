@@ -27,6 +27,8 @@ interface ChatWidgetProps {
   /** Pre-set context for the chat session */
   contextType?: "general" | "course" | "assessment" | "career";
   contextCourseId?: string;
+  /** Courses the learner can pick for Course Help / Assessment Prep modes. */
+  courses?: { id: string; title: string }[];
 }
 
 const CONTEXT_META: Record<
@@ -87,6 +89,7 @@ export default function ChatWidget({
   inline = false,
   contextType = "general",
   contextCourseId,
+  courses = [],
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(inline);
   const [showSidebar, setShowSidebar] = useState(inline);
@@ -95,6 +98,7 @@ export default function ChatWidget({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const prevContextRef = useRef(contextType);
 
@@ -103,6 +107,10 @@ export default function ChatWidget({
     (s) => s.context_type === contextType
   );
 
+  // Course Help and Assessment Prep require the learner to pick a course first.
+  const requiresCourse = contextType === "course" || contextType === "assessment";
+  const needsCoursePick = requiresCourse && !selectedCourse && !activeSessionId;
+
   // Switching the assistant mode (top tabs) starts a fresh conversation in
   // that mode so the change is immediately visible.
   useEffect(() => {
@@ -110,6 +118,7 @@ export default function ChatWidget({
       prevContextRef.current = contextType;
       setActiveSessionId(null);
       setMessages([]);
+      setSelectedCourse(null);
     }
   }, [contextType]);
 
@@ -159,27 +168,14 @@ export default function ChatWidget({
     else setMessages([]);
   }, [activeSessionId, loadMessages]);
 
-  // Create new session
-  const createSession = useCallback(async () => {
-    try {
-      const res = await fetch("/api/chat/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context_type: contextType,
-          context_course_id: contextCourseId || null,
-        }),
-      });
-      if (res.ok) {
-        const session = await res.json();
-        setSessions((prev) => [session, ...prev]);
-        setActiveSessionId(session.id);
-        setMessages([]);
-      }
-    } catch (err) {
-      console.error("Failed to create session:", err);
-    }
-  }, [contextType, contextCourseId]);
+  // Start a fresh conversation. The session row is created lazily on the first
+  // message (see sendMessage). For course-scoped modes this returns to the
+  // course picker.
+  const startNewConversation = useCallback(() => {
+    setActiveSessionId(null);
+    setMessages([]);
+    if (requiresCourse) setSelectedCourse(null);
+  }, [requiresCourse]);
 
   // Delete session
   const deleteSession = useCallback(
@@ -205,13 +201,16 @@ export default function ChatWidget({
 
       // Auto-create session if none active
       if (!sessionId) {
+        const courseId = requiresCourse
+          ? selectedCourse?.id ?? null
+          : contextCourseId || null;
         try {
           const res = await fetch("/api/chat/sessions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               context_type: contextType,
-              context_course_id: contextCourseId || null,
+              context_course_id: courseId,
             }),
           });
           if (res.ok) {
@@ -274,7 +273,7 @@ export default function ChatWidget({
         setIsSending(false);
       }
     },
-    [activeSessionId, contextType, contextCourseId]
+    [activeSessionId, contextType, contextCourseId, requiresCourse, selectedCourse]
   );
 
   // Floating widget toggle
@@ -307,7 +306,7 @@ export default function ChatWidget({
             sessions={visibleSessions}
             activeSessionId={activeSessionId}
             onSelectSession={setActiveSessionId}
-            onNewSession={createSession}
+            onNewSession={startNewConversation}
             onDeleteSession={deleteSession}
           />
         </div>
@@ -332,6 +331,11 @@ export default function ChatWidget({
               <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
                 {meta.label}
               </span>
+              {selectedCourse && (
+                <span className="hidden max-w-[200px] truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 sm:inline">
+                  {selectedCourse.title}
+                </span>
+              )}
             </div>
           </div>
           {!inline && (
@@ -358,6 +362,44 @@ export default function ChatWidget({
                 Loading...
               </div>
             </div>
+          ) : needsCoursePick ? (
+            <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600">
+                <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h4 className="text-base font-semibold text-gray-900">
+                {contextType === "assessment"
+                  ? "Which course are you preparing for?"
+                  : "Which course do you need help with?"}
+              </h4>
+              <p className="mt-1 max-w-[320px] text-sm text-gray-500">
+                {contextType === "assessment"
+                  ? "Pick a course and I'll create practice questions with explanations to help you get ready."
+                  : "Pick a course and I'll help you understand and re-teach the parts you're struggling with."}
+              </p>
+              <div className="mt-5 w-full max-w-sm space-y-2">
+                {courses.length === 0 ? (
+                  <p className="text-sm text-gray-400">
+                    No courses available yet. Enroll in a course to use this.
+                  </p>
+                ) : (
+                  courses.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCourse(c)}
+                      className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-4 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:border-indigo-300 hover:bg-indigo-50"
+                    >
+                      <span className="truncate">{c.title}</span>
+                      <svg className="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
               <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
@@ -366,7 +408,7 @@ export default function ChatWidget({
                 </svg>
               </div>
               <h4 className="font-semibold text-gray-900 text-base">
-                {meta.greeting}
+                {selectedCourse ? selectedCourse.title : meta.greeting}
               </h4>
               <p className="text-sm text-gray-500 mt-1 max-w-[280px]">
                 {meta.description}
@@ -402,13 +444,15 @@ export default function ChatWidget({
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 px-4 py-3 bg-white">
-          <ChatInput
-            onSend={sendMessage}
-            disabled={isSending}
-            suggestedPrompts={messages.length === 0 ? meta.prompts : undefined}
-          />
-        </div>
+        {!needsCoursePick && (
+          <div className="border-t border-gray-200 px-4 py-3 bg-white">
+            <ChatInput
+              onSend={sendMessage}
+              disabled={isSending}
+              suggestedPrompts={messages.length === 0 ? meta.prompts : undefined}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

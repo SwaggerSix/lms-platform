@@ -42,11 +42,35 @@ to understand the underlying concepts so they can answer on their own.`,
 Be practical, encouraging, and realistic in your career guidance.`,
 };
 
-export function getSystemPrompt(contextType: string, courseTitle?: string): string {
+export function getSystemPrompt(
+  contextType: string,
+  courseTitle?: string,
+  courseOutline?: string
+): string {
   let prompt = SYSTEM_PROMPTS[contextType] || SYSTEM_PROMPTS.general;
-  if (contextType === "course" && courseTitle) {
-    prompt += `\n\nThe student is currently studying: "${courseTitle}". Tailor your responses to this course context.`;
+
+  if ((contextType === "course" || contextType === "assessment") && courseTitle) {
+    prompt += `\n\nThe student has selected the course: "${courseTitle}".`;
+
+    if (courseOutline) {
+      prompt += `\n\nUse the following course outline and content as the source of truth for what this course covers:\n${courseOutline}`;
+    }
+
+    if (contextType === "course") {
+      prompt += `\n\nYour job is to help the student with THIS specific course:
+- Explain and re-teach the lessons/sections above that they find difficult, in plain language.
+- Give worked examples and analogies tied to the course's actual topics.
+- Offer study guidance and check their understanding with quick questions.
+If the student hasn't said what they're struggling with, ask which lesson or topic from the outline they'd like help with before diving in.`;
+    } else {
+      prompt += `\n\nYour job is to help the student prepare for assessments in this course:
+- Generate ORIGINAL practice study questions drawn from the topics above (mix multiple-choice, short-answer, and scenario questions across difficulty levels).
+- Present a few questions at a time. After the student answers (or if they ask), give the correct answer with a clear explanation of the reasoning so they learn from it.
+- Point out the topics they should focus on based on how they do.
+Do not reproduce or reveal answers to the course's real graded assessment items; always create your own practice questions.`;
+    }
   }
+
   return prompt;
 }
 

@@ -22,5 +22,36 @@ export default async function ChatPage() {
     .single();
   if (!dbUser) redirect("/login");
 
-  return <ChatPageClient userName={`${dbUser.first_name} ${dbUser.last_name}`} />;
+  // Courses the learner is working on (for the Course Help / Assessment Prep
+  // pickers). Falls back to published courses if they have no enrollments yet.
+  const { data: enrollmentRows } = await service
+    .from("enrollments")
+    .select("course:courses(id, title, status)")
+    .eq("user_id", dbUser.id);
+
+  const courseMap = new Map<string, { id: string; title: string }>();
+  for (const row of (enrollmentRows ?? []) as any[]) {
+    const c = row.course;
+    if (c && c.status === "published") courseMap.set(c.id, { id: c.id, title: c.title });
+  }
+
+  if (courseMap.size === 0) {
+    const { data: published } = await service
+      .from("courses")
+      .select("id, title")
+      .eq("status", "published")
+      .order("title", { ascending: true });
+    for (const c of (published ?? []) as any[]) courseMap.set(c.id, { id: c.id, title: c.title });
+  }
+
+  const courses = Array.from(courseMap.values()).sort((a, b) =>
+    a.title.localeCompare(b.title)
+  );
+
+  return (
+    <ChatPageClient
+      userName={`${dbUser.first_name} ${dbUser.last_name}`}
+      courses={courses}
+    />
+  );
 }
