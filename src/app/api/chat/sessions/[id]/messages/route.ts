@@ -6,6 +6,45 @@ import { rateLimit } from "@/lib/rate-limit";
 import { getSystemPrompt, buildChatMessages, generateResponse, summarizeConversation } from "@/lib/ai/chatbot";
 import type { ChatMessage } from "@/lib/ai/chatbot";
 
+// Pulls a course's module/lesson structure (with short content excerpts) so
+// the assistant can re-teach and build practice questions from real material.
+async function buildCourseOutline(
+  service: ReturnType<typeof createServiceClient>,
+  courseId: string
+): Promise<string | undefined> {
+  const { data: modules } = await service
+    .from("modules")
+    .select("id, title, sequence_order, lessons(title, content_type, content_data, sequence_order)")
+    .eq("course_id", courseId)
+    .order("sequence_order", { ascending: true });
+
+  if (!modules || modules.length === 0) return undefined;
+
+  const extractText = (content_data: unknown): string => {
+    if (!content_data || typeof content_data !== "object") return "";
+    const d = content_data as Record<string, unknown>;
+    const raw = d.text ?? d.body ?? d.html ?? d.content ?? "";
+    if (typeof raw !== "string") return "";
+    return raw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 400);
+  };
+
+  const lines: string[] = [];
+  for (const [mi, m] of (modules as any[]).entries()) {
+    lines.push(`Module ${mi + 1}: ${m.title}`);
+    const lessons = ((m.lessons as any[]) || []).sort(
+      (a, b) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0)
+    );
+    for (const l of lessons) {
+      lines.push(`  - ${l.title} (${l.content_type})`);
+      const excerpt = extractText(l.content_data);
+      if (excerpt) lines.push(`      ${excerpt}`);
+    }
+  }
+
+  // Keep the prompt bounded.
+  return lines.join("\n").slice(0, 6000);
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -48,9 +87,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     content: m.content,
   }));
 
-  // Build messages for OpenAI
+  // Build messages for the model, grounding course/assessment help in the
+  // selected course's actual outline and content.
   const courseTitle = (session.course as any)?.title;
-  const systemPrompt = getSystemPrompt(session.context_type, courseTitle);
+  const courseId = (session.course as any)?.id ?? session.context_course_id;
+  let courseOutline: string | undefined;
+  if (
+    courseId &&
+    (session.context_type === "course" || session.context_type === "assessment")
+  ) {
+    courseOutline = await buildCourseOutline(service, courseId);
+  }
+  const systemPrompt = getSystemPrompt(session.context_type, courseTitle, courseOutline);
   const messages = buildChatMessages(systemPrompt, history, validation.data.content);
 
   // Save user message

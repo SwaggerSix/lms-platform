@@ -5,6 +5,7 @@ import ChatWidget from "@/components/chat/chat-widget";
 
 interface ChatPageClientProps {
   userName: string;
+  courses: { id: string; title: string }[];
 }
 
 const CONTEXT_OPTIONS = [
@@ -14,7 +15,7 @@ const CONTEXT_OPTIONS = [
   { value: "career", label: "Career Guidance", icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", color: "from-amber-500 to-orange-600" },
 ] as const;
 
-export default function ChatPageClient({ userName }: ChatPageClientProps) {
+export default function ChatPageClient({ courses }: ChatPageClientProps) {
   const [contextType, setContextType] = useState<"general" | "course" | "assessment" | "career">("general");
 
   return (
@@ -49,7 +50,7 @@ export default function ChatPageClient({ userName }: ChatPageClientProps) {
 
       {/* Full-page chat */}
       <div className="h-[calc(100%-80px)] rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-        <ChatWidget inline contextType={contextType} />
+        <ChatWidget inline contextType={contextType} courses={courses} />
       </div>
     </div>
   );
