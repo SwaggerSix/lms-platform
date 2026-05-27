@@ -27,7 +27,7 @@ export default async function EvaluationsLearnerPage() {
     .from("evaluation_assignments")
     .select(`
       id, status, due_at, completed_at, created_at,
-      template:evaluation_templates(id, name, description, level, questions),
+      template:evaluation_templates(id, name, description, level, questions, external_provider, surveycraft_slug),
       course:courses(id, title, thumbnail_url)
     `)
     .eq("user_id", dbUser.id)

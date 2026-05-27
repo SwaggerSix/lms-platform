@@ -32,8 +32,15 @@ type Template = {
   description?: string;
   level: number;
   is_active: boolean;
+  external_provider?: string | null;
+  surveycraft_slug?: string | null;
   created_at: string;
 };
+
+const SURVEY_SOURCES = [
+  { value: "native", label: "Build in the LMS" },
+  { value: "surveycraft", label: "Use a SurveyCraft survey" },
+];
 
 type Trigger = {
   id: string;
@@ -59,7 +66,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
 
   // Template dialog state
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
-  const [templateForm, setTemplateForm] = useState({ name: "", description: "", level: "1" });
+  const [templateForm, setTemplateForm] = useState({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateError, setTemplateError] = useState<string | null>(null);
 
@@ -81,13 +88,15 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
           level: parseInt(templateForm.level),
           questions: [],
           is_active: true,
+          external_provider: templateForm.source === "surveycraft" ? "surveycraft" : null,
+          surveycraft_slug: templateForm.source === "surveycraft" ? templateForm.surveycraft_slug.trim() : null,
         }),
       });
       if (res.ok) {
         const created = await res.json();
         setTemplates(prev => [created, ...prev]);
         setShowTemplateDialog(false);
-        setTemplateForm({ name: "", description: "", level: "1" });
+        setTemplateForm({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
       } else {
         const data = await res.json().catch(() => null);
         setTemplateError(data?.error ?? "Failed to create template. Please try again.");
@@ -194,7 +203,12 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
                           {KIRKPATRICK_LEVELS[template.level - 1]?.label}
                         </span>
                         <div className="min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{template.name}</p>
+                          <p className="font-medium text-gray-900 truncate flex items-center gap-2">
+                            {template.name}
+                            {template.external_provider === "surveycraft" && (
+                              <Badge variant="info" size="sm">SurveyCraft</Badge>
+                            )}
+                          </p>
                           {template.description && (
                             <p className="text-sm text-gray-500 truncate">{template.description}</p>
                           )}
@@ -323,12 +337,35 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
             options={KIRKPATRICK_LEVELS}
             onChange={v => setTemplateForm(f => ({ ...f, level: v }))}
           />
+          <Select
+            label="Survey source"
+            value={templateForm.source}
+            options={SURVEY_SOURCES}
+            onChange={v => setTemplateForm(f => ({ ...f, source: v }))}
+          />
+          {templateForm.source === "surveycraft" && (
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">SurveyCraft survey link or ID</label>
+              <Input
+                value={templateForm.surveycraft_slug}
+                onChange={e => setTemplateForm(f => ({ ...f, surveycraft_slug: e.target.value }))}
+                placeholder="e.g. post-training-feedback"
+              />
+              <p className="text-xs text-gray-500">
+                Paste the survey&apos;s link ending (the part after <span className="font-mono">/s/</span>) from SurveyCraft.
+              </p>
+            </div>
+          )}
           {templateError && (
             <p className="text-sm text-red-600">{templateError}</p>
           )}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
-            <Button onClick={createTemplate} disabled={!templateForm.name || savingTemplate} loading={savingTemplate}>
+            <Button
+              onClick={createTemplate}
+              disabled={!templateForm.name || (templateForm.source === "surveycraft" && !templateForm.surveycraft_slug.trim()) || savingTemplate}
+              loading={savingTemplate}
+            >
               Create Template
             </Button>
           </div>
