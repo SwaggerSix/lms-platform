@@ -159,12 +159,12 @@ export default function PredictiveAnalyticsClient({
                   const c = colors[level];
 
                   return (
-                    <div key={level} className="flex items-center gap-3">
+                    <div key={level} className="flex items-center gap-3 py-1">
                       <div className="w-20">
                         <RiskIndicator level={level} size="sm" />
                       </div>
                       <div className="flex-1">
-                        <div className={`h-6 rounded-full ${c.bg} overflow-hidden`}>
+                        <div className={`h-8 rounded-full ${c.bg} overflow-hidden`}>
                           <div
                             className={`h-full rounded-full ${c.bar} transition-all duration-500`}
                             style={{ width: `${Math.max(pct, 1)}%` }}
