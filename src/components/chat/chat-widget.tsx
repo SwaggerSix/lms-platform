@@ -29,12 +29,59 @@ interface ChatWidgetProps {
   contextCourseId?: string;
 }
 
-const DEFAULT_PROMPTS = [
-  "Help me create a study plan",
-  "Explain a concept to me",
-  "What should I learn next?",
-  "Help me prepare for an assessment",
-];
+const CONTEXT_META: Record<
+  "general" | "course" | "assessment" | "career",
+  { label: string; greeting: string; description: string; prompts: string[] }
+> = {
+  general: {
+    label: "General Learning",
+    greeting: "Hi! I'm your learning assistant",
+    description:
+      "Ask me anything about your courses, study strategies, or learning goals.",
+    prompts: [
+      "Help me create a study plan",
+      "Explain a concept to me",
+      "What should I learn next?",
+      "Share some effective study techniques",
+    ],
+  },
+  course: {
+    label: "Course Help",
+    greeting: "Course Help",
+    description:
+      "I'll help you understand lessons, concepts, and examples from your courses.",
+    prompts: [
+      "Summarize a topic for me",
+      "Give me an example of this concept",
+      "I'm stuck on a lesson — can you help?",
+      "Explain this in simpler terms",
+    ],
+  },
+  assessment: {
+    label: "Assessment Prep",
+    greeting: "Assessment Prep",
+    description:
+      "Let's get you exam-ready with practice questions and concept review.",
+    prompts: [
+      "Quiz me on a topic",
+      "Help me find my knowledge gaps",
+      "Give me practice questions",
+      "How should I study for this exam?",
+    ],
+  },
+  career: {
+    label: "Career Guidance",
+    greeting: "Career Guidance",
+    description:
+      "Let's plan your growth — skills, learning paths, and certifications.",
+    prompts: [
+      "What skills should I develop?",
+      "Recommend a learning path for me",
+      "Help me plan my career goals",
+      "Which certifications are worth pursuing?",
+    ],
+  },
+};
 
 export default function ChatWidget({
   inline = false,
@@ -49,6 +96,22 @@ export default function ChatWidget({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevContextRef = useRef(contextType);
+
+  const meta = CONTEXT_META[contextType];
+  const visibleSessions = sessions.filter(
+    (s) => s.context_type === contextType
+  );
+
+  // Switching the assistant mode (top tabs) starts a fresh conversation in
+  // that mode so the change is immediately visible.
+  useEffect(() => {
+    if (prevContextRef.current !== contextType) {
+      prevContextRef.current = contextType;
+      setActiveSessionId(null);
+      setMessages([]);
+    }
+  }, [contextType]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -241,7 +304,7 @@ export default function ChatWidget({
       {showSidebar && (
         <div className={inline ? "w-72 flex-shrink-0" : "w-56 flex-shrink-0"}>
           <ChatSidebar
-            sessions={sessions}
+            sessions={visibleSessions}
             activeSessionId={activeSessionId}
             onSelectSession={setActiveSessionId}
             onNewSession={createSession}
@@ -266,6 +329,9 @@ export default function ChatWidget({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full" />
               <h3 className="font-semibold text-gray-900 text-sm">Learning Assistant</h3>
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                {meta.label}
+              </span>
             </div>
           </div>
           {!inline && (
@@ -300,10 +366,10 @@ export default function ChatWidget({
                 </svg>
               </div>
               <h4 className="font-semibold text-gray-900 text-base">
-                Hi! I&apos;m your learning assistant
+                {meta.greeting}
               </h4>
               <p className="text-sm text-gray-500 mt-1 max-w-[280px]">
-                Ask me anything about your courses, study strategies, or career development.
+                {meta.description}
               </p>
             </div>
           ) : (
@@ -340,7 +406,7 @@ export default function ChatWidget({
           <ChatInput
             onSend={sendMessage}
             disabled={isSending}
-            suggestedPrompts={messages.length === 0 ? DEFAULT_PROMPTS : undefined}
+            suggestedPrompts={messages.length === 0 ? meta.prompts : undefined}
           />
         </div>
       </div>
