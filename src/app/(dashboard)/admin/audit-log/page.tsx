@@ -60,7 +60,7 @@ export default async function AuditLogPage() {
   const tenantId = await resolveAuditLogTenant({
     role: dbUser.role,
     userId: dbUser.id,
-    organizationId: (dbUser as any).organization_id ?? null,
+    organizationId: dbUser.organization_id ?? null,
     headerTenantId: hdrs.get("x-tenant-id"),
   });
 
@@ -80,7 +80,7 @@ export default async function AuditLogPage() {
   const { data: auditRows, count: totalRowCount } = await auditQuery;
 
   const entries: AuditEntry[] = (auditRows ?? []).map((row: any) => {
-    const u = row.user as any;
+    const u = row.user as unknown as { first_name?: string; last_name?: string; email?: string; organization_id?: string | null; organization?: { name?: string } | null } | null;
     const userName = u
       ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email || "Unknown"
       : "System";
@@ -120,7 +120,7 @@ export default async function AuditLogPage() {
   // users.preferences.ui_prefs.{hide_platform_audit, entity_filter, org_filter}
   // via PATCH /api/profile so they stick across sessions. Strings default
   // to "All" — the client treats that as "no filter".
-  const prefs = ((dbUser as any).preferences ?? {}) as Record<string, any>;
+  const prefs = (dbUser.preferences ?? {}) as Record<string, any>;
   const uiPrefs = (prefs.ui_prefs ?? {}) as Record<string, unknown>;
   const initialHidePlatform = !!uiPrefs.hide_platform_audit;
   const initialEntityFilter = typeof uiPrefs.entity_filter === "string" ? uiPrefs.entity_filter : "All";

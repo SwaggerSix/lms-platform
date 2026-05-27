@@ -6,6 +6,20 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 95 → 71.** Cleared the mid-size clusters
+  (assessments, tenant branding, audit-log, knowledge-base,
+  certifications, ilt-sessions — drops + corrected relation types)
+  and **finished `learn/catalog/[slug]/page.tsx` (3 → 0)** by
+  dropping the whole-row `course` cast (its columns are typed by
+  `select("*")`) and handling only the `categories` join + `metadata`
+  Json explicitly.
+- **`any-annotation` ratchet 325 → 322** from the catalog
+  `(a,b)`/`(lesson)`/`(mod)` callback param conversions.
+- **Documented a realistic floor** for both ratchets in
+  `src/types/README.md` — polymorphic values, intentionally-loose
+  props, external-lib boundaries, and varying Json blobs are
+  defensible survivors; the goal is "every survivor is justified,"
+  not zero.
 - **`as-any` ratchet 112 → 95.** Cleared the small `×2` files
   (cron/history, gamification, manager/skills, documents,
   organizations, settings — flat-select drops + corrected relation

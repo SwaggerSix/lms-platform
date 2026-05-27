@@ -102,7 +102,7 @@ export default async function CourseDetailPage({
     notFound();
   }
 
-  const course = courseRow as any;
+  const course = courseRow;
 
   // Fetch instructor info
   const { data: instructorRow } = await service
@@ -120,14 +120,14 @@ export default async function CourseDetailPage({
     .eq("course_id", course.id)
     .order("sequence_order", { ascending: true });
 
-  const modules = ((modulesData || []) as any[]).map((mod: any) => {
+  const modules = (modulesData || []).map((mod) => {
     const sortedLessons = (mod.lessons || []).sort(
-      (a: any, b: any) => (a.sequence_order || 0) - (b.sequence_order || 0)
+      (a, b) => (a.sequence_order || 0) - (b.sequence_order || 0)
     );
     return {
       id: mod.id,
       title: mod.title,
-      lessons: sortedLessons.map((lesson: any) => ({
+      lessons: sortedLessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
         type: mapContentType(lesson.content_type),
@@ -206,7 +206,7 @@ export default async function CourseDetailPage({
 
   if (prerequisitesData && prerequisitesData.length > 0) {
     for (const prereq of prerequisitesData) {
-      const prereqCourse = prereq.prerequisite_course as any;
+      const prereqCourse = prereq.prerequisite_course as unknown as { id?: string; title?: string; slug?: string } | null;
       const prereqCourseId = prereqCourse?.id;
 
       let met = false;
@@ -284,8 +284,8 @@ export default async function CourseDetailPage({
   }
 
   // Extract metadata fields
-  const metadata = course.metadata || {};
-  const categorySlug = course.categories?.slug || null;
+  const metadata = (course.metadata || {}) as Record<string, any>;
+  const categorySlug = (course.categories as unknown as { slug?: string } | null)?.slug || null;
 
   // Build skills and learning outcomes from metadata/tags
   const skills: string[] = metadata.skills || course.tags || [];

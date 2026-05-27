@@ -86,9 +86,9 @@ export default async function LearnerILTSessionsPage() {
 
   // Map raw sessions to the LearnerSession interface
   const sessions: LearnerSession[] = (rawSessions ?? []).map((s) => {
-    const rawCourse = s.course as any;
+    const rawCourse = s.course as unknown as { title?: string } | Array<{ title?: string }> | null;
     const course = Array.isArray(rawCourse) ? rawCourse[0] : rawCourse;
-    const rawInstructor = s.instructor as any;
+    const rawInstructor = s.instructor as unknown as { first_name?: string; last_name?: string } | Array<{ first_name?: string; last_name?: string }> | null;
     const instructor = Array.isArray(rawInstructor) ? rawInstructor[0] : rawInstructor;
 
     const userRecord = userAttendanceMap[s.id];
@@ -113,8 +113,8 @@ export default async function LearnerILTSessionsPage() {
       location_type: s.location_type as LearnerSession["location_type"],
       location_details: s.location_details ?? "",
       meeting_url: s.meeting_url ?? null,
-      meeting_provider: (s as any).meeting_provider ?? null,
-      meeting_password: (s as any).meeting_password ?? null,
+      meeting_provider: (s as unknown as { meeting_provider?: string | null }).meeting_provider ?? null,
+      meeting_password: (s as unknown as { meeting_password?: string | null }).meeting_password ?? null,
       max_capacity: s.max_capacity ?? 30,
       registered_count: countMap[s.id] ?? 0,
       status: s.status as LearnerSession["status"],

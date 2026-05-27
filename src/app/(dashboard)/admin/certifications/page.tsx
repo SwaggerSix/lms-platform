@@ -75,12 +75,12 @@ export default async function CertificationsPage() {
 
     // Determine linked course or path name
     const linkedCourse =
-      (row as any).recertification_course?.title ??
-      (row as any).recertification_path?.title ??
+      row.recertification_course?.title ??
+      row.recertification_path?.title ??
       'None';
 
     // Surface CPE info from the linked recertification course (if any).
-    const linkedCourseMeta = ((row as any).recertification_course?.metadata ?? {}) as Record<string, unknown>;
+    const linkedCourseMeta = (row.recertification_course?.metadata ?? {}) as Record<string, unknown>;
     const nasbaCpe = !!linkedCourseMeta.nasba_cpe;
     const cpeCredits = Number(linkedCourseMeta.cpe_credits) || 0;
 

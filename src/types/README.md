@@ -37,3 +37,28 @@ the shape **at the boundary**. Prefer, in order:
 If the project ever adopts generated `Database` types, most of the
 boundary casts here become unnecessary and the ratchet can be driven
 to zero.
+
+### Realistic floor for the ratchets
+
+The `as-any-audit` and `any-annotation-audit` ratchets are advisory
+shrinking caps, **not** assertions of zero. A meaningful share of the
+remaining casts are genuinely hard to remove without the generated
+types (or are inherently untypeable), so the floor is well above zero:
+
+- **Polymorphic values** — e.g. `embed/[token]/page.tsx`'s
+  `content`, whose shape varies by widget type. A discriminated
+  union is possible but rarely worth it.
+- **Intentionally-loose props** — some client components declare
+  props as `any[]` (e.g. `FeedbackFormPage.questions`), so the
+  feeding cast can't be narrower than the prop.
+- **External-library boundaries** — passing a Json column to a
+  third-party API typed for its own shape (e.g. the xAPI client in
+  `lrs/[id]/sync`, Teams bot payloads).
+- **Json columns** consumed structurally — `metadata`, `config`,
+  `preferences` blobs; these get `as unknown as <shape>` where the
+  shape is known, but stay loose where it genuinely varies.
+
+Rule of thumb: drive the ratchets down by converting query-row and
+nested-join casts (the bulk), and **stop** at the categories above —
+each remaining cast should be defensible in review. Don't chase zero;
+chase "every survivor is justified."

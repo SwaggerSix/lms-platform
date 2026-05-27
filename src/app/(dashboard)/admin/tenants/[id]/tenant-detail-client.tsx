@@ -365,10 +365,10 @@ export default function TenantDetailClient({
             faviconUrl: tenantData.favicon_url,
             primaryColor: tenantData.primary_color || "#4f46e5",
             secondaryColor: tenantData.secondary_color || "#7c3aed",
-            loginBg: (tenantData.branding as any)?.login_bg || "",
-            heroText: (tenantData.branding as any)?.hero_text || "",
-            footerText: (tenantData.branding as any)?.footer_text || "",
-            customCss: (tenantData.branding as any)?.custom_css || "",
+            loginBg: (tenantData.branding as { login_bg?: string; hero_text?: string; footer_text?: string; custom_css?: string } | null)?.login_bg || "",
+            heroText: (tenantData.branding as { login_bg?: string; hero_text?: string; footer_text?: string; custom_css?: string } | null)?.hero_text || "",
+            footerText: (tenantData.branding as { login_bg?: string; hero_text?: string; footer_text?: string; custom_css?: string } | null)?.footer_text || "",
+            customCss: (tenantData.branding as { login_bg?: string; hero_text?: string; footer_text?: string; custom_css?: string } | null)?.custom_css || "",
           }}
         />
       )}

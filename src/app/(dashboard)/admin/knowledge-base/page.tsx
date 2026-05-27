@@ -40,8 +40,8 @@ export default async function AdminKnowledgeBasePage() {
 
   // Map articles to the client-side shape
   const articles: AdminArticle[] = (articleRows ?? []).map((row: any) => {
-    const cat = row.category as any;
-    const auth = row.author as any;
+    const cat = row.category as unknown as { name?: string } | null;
+    const auth = row.author as unknown as { first_name?: string; last_name?: string; email?: string } | null;
     const authorName = auth
       ? `${auth.first_name ?? ""} ${auth.last_name ?? ""}`.trim() || auth.email || "Unknown"
       : "Unknown";
@@ -69,7 +69,7 @@ export default async function AdminKnowledgeBasePage() {
 
   // Map categories to the client-side shape
   const categories: AdminCategory[] = (categoryRows ?? []).map((row: any) => {
-    const articleList = row.kb_articles as any[];
+    const articleList = row.kb_articles as unknown as unknown[];
     return {
       id: row.id,
       name: row.name ?? "",

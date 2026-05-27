@@ -47,7 +47,7 @@ export default async function AssessmentsPage() {
 
   // Group questions by assessment_id
   const questionsByAssessment = new Map<string, Question[]>();
-  for (const q of (questionRows ?? []) as any[]) {
+  for (const q of questionRows ?? []) {
     const list = questionsByAssessment.get(q.assessment_id) ?? [];
     list.push({
       id: q.id,
@@ -60,14 +60,14 @@ export default async function AssessmentsPage() {
 
   // Compute attempt stats per assessment
   const attemptStats = new Map<string, { count: number; totalScore: number }>();
-  for (const a of (attemptRows ?? []) as any[]) {
+  for (const a of attemptRows ?? []) {
     const stats = attemptStats.get(a.assessment_id) ?? { count: 0, totalScore: 0 };
     stats.count += 1;
     stats.totalScore += Number(a.score ?? 0);
     attemptStats.set(a.assessment_id, stats);
   }
 
-  const assessments: Assessment[] = ((assessmentRows ?? []) as any[]).map((row) => {
+  const assessments: Assessment[] = ((assessmentRows ?? []) as unknown as Array<{ id: string; title: string | null; question_count: number | null; passing_score: number | null; course: { title: string } | null }>).map((row) => {
     const questions = questionsByAssessment.get(row.id) ?? [];
     const stats = attemptStats.get(row.id);
     const avgScore = stats && stats.count > 0 ? Math.round(stats.totalScore / stats.count) : 0;
@@ -96,7 +96,7 @@ export default async function AssessmentsPage() {
     .select('id, title')
     .order('title', { ascending: true });
 
-  const courses = ((courseRows ?? []) as any[]).map((c) => ({
+  const courses = ((courseRows ?? [])).map((c) => ({
     id: c.id as string,
     title: c.title as string,
   }));
