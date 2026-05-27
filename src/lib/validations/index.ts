@@ -599,8 +599,8 @@ export const updateAlertSchema = z.object({
 // HRIS / CRM Integrations
 export const createExternalIntegrationSchema = z.object({
   name: z.string().min(1).max(200),
-  type: z.enum(["hris", "crm", "hr_system"]),
-  provider: z.enum(["bamboohr", "workday", "adp", "salesforce", "hubspot", "custom_webhook"]),
+  type: z.enum(["hris", "crm", "hr_system", "scheduling"]),
+  provider: z.enum(["bamboohr", "workday", "adp", "salesforce", "hubspot", "gems", "custom_webhook"]),
   is_active: z.boolean().optional().default(false),
   config: z.record(z.string(), z.unknown()).optional().default({}),
   sync_direction: z.enum(["import", "export", "both"]).optional().default("import"),
@@ -620,7 +620,7 @@ export const updateFieldMappingsSchema = z.object({
 });
 
 export const testConnectionSchema = z.object({
-  provider: z.enum(["bamboohr", "workday", "adp", "salesforce", "hubspot", "custom_webhook"]),
+  provider: z.enum(["bamboohr", "workday", "adp", "salesforce", "hubspot", "gems", "custom_webhook"]),
   config: z.record(z.string(), z.unknown()),
 });
 

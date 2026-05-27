@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { hrisSync } from "@/lib/integrations/hris-sync";
 import { crmSync } from "@/lib/integrations/crm-sync";
+import { syncGemsEvents } from "@/lib/integrations/gems/sync";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("admin");
@@ -35,7 +36,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     let result;
 
-    if (integration.type === "crm") {
+    if (integration.provider === "gems") {
+      result = await syncGemsEvents(id);
+    } else if (integration.type === "crm") {
       result = await crmSync.syncContacts(id);
     } else {
       result = await hrisSync.syncUsers(id, syncType);
