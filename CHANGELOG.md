@@ -6,6 +6,17 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 167 → 147.** Cleared 20 more casts:
+  `enrollments/progress` (typed profile fields), `integrations/
+  external/[id]` (config Json shape), `cron-alert-replay` (typed
+  query rows), `lrs/[id]/sync` (xAPI union narrowing), and
+  `lib/reports/generate.ts` (the 7 nested-join casts — defined
+  corrected to-one relation types and used `as unknown as`).
+- **`any-annotation-audit` added** — a count-only advisory ratchet
+  over `: any` type annotations (332, ~120 files); count-capped
+  rather than file-snapshotted since the surface is too broad for a
+  useful diff. Detector + edge-case tests live alongside the `as
+  any` one in `scan-casts`.
 - **`as-any` ratchet 199 → 167.** Removed 32 `as any` casts by
   defining row types in `notification-audit/route.ts` (19) and
   dropping now-unnecessary casts in `cron/compliance-recurrence`

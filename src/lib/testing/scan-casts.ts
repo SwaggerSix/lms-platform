@@ -16,3 +16,13 @@ export function isAsAnyLine(line: string): boolean {
   if (line.includes("as unknown as")) return false;
   return AS_ANY_RE.test(line);
 }
+
+// `: any` type annotations (params, vars, members) — a related
+// surface to the `as any` cast. Generic args like `Record<string,
+// any>` use `, any>` (comma), not `: any`, so they don't match.
+export const ANY_ANNOTATION_RE = /:\s*any\b/;
+
+/** True when a source line declares a `: any` type annotation. */
+export function isAnyAnnotationLine(line: string): boolean {
+  return ANY_ANNOTATION_RE.test(line);
+}

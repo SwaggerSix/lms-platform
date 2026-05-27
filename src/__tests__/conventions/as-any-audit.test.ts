@@ -38,7 +38,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 167;
+    const MAX = 147;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -91,8 +91,7 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/(dashboard)/profile/settings/page.tsx",
         "src/app/(dashboard)/profile/skills/page.tsx",
         "src/app/api/admin/audit-log-namespaces/route.ts",
-        "src/app/api/admin/cron-alert-replay/route.ts ×3",
-        "src/app/api/admin/lrs/[id]/sync/route.ts ×3",
+        "src/app/api/admin/lrs/[id]/sync/route.ts",
         "src/app/api/certificates/generate/route.ts",
         "src/app/api/certificates/verify/[code]/route.ts",
         "src/app/api/chat/sessions/[id]/messages/route.ts",
@@ -101,11 +100,9 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/api/cron/history/route.ts ×2",
         "src/app/api/discussions/route.ts",
         "src/app/api/embed/[token]/route.ts ×6",
-        "src/app/api/enrollments/progress/route.ts ×4",
         "src/app/api/enrollments/route.ts",
         "src/app/api/feedback/responses/route.ts ×2",
         "src/app/api/ilt-sessions/[id]/calendar/route.ts",
-        "src/app/api/integrations/external/[id]/route.ts ×4",
         "src/app/api/integrations/external/test/route.ts",
         "src/app/api/marketplace/enroll/route.ts",
         "src/app/api/marketplace/providers/route.ts",
@@ -121,7 +118,6 @@ describe("as-any cast audit (advisory)", () => {
         "src/lib/integrations/crm-sync.ts",
         "src/lib/mentorship/matching.ts",
         "src/lib/notifications/preferences.ts ×2",
-        "src/lib/reports/generate.ts ×7",
       ]
     `);
   });

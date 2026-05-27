@@ -23,13 +23,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   // Mask sensitive fields
+  const cfg = data.config as unknown as {
+    api_key_encrypted?: string;
+    client_secret_encrypted?: string;
+    access_token?: string;
+  } | null;
   const sanitized = {
     ...data,
     config: {
       ...data.config,
-      api_key_encrypted: (data.config as any)?.api_key_encrypted ? "••••••••" : undefined,
-      client_secret_encrypted: (data.config as any)?.client_secret_encrypted ? "••••••••" : undefined,
-      access_token: (data.config as any)?.access_token ? "••••••••" : undefined,
+      api_key_encrypted: cfg?.api_key_encrypted ? "••••••••" : undefined,
+      client_secret_encrypted: cfg?.client_secret_encrypted ? "••••••••" : undefined,
+      access_token: cfg?.access_token ? "••••••••" : undefined,
     },
   };
 
@@ -56,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (existing) {
-      validation.data.config = { ...(existing.config as any), ...validation.data.config };
+      validation.data.config = { ...(existing.config as unknown as Record<string, unknown>), ...validation.data.config };
     }
   }
 

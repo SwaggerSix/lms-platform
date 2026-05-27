@@ -246,9 +246,9 @@ export async function PATCH(request: NextRequest) {
           // enabled. Default is opt-in, so users with no prefs configured get
           // the email. Skip when no email is on file.
           if (
-            (profile as any).email &&
+            profile.email &&
             userMaySend(
-              ((profile as any).preferences?.notifications ?? {}) as Record<string, { inApp?: boolean; email?: boolean }>,
+              (profile.preferences as { notifications?: Record<string, { inApp?: boolean; email?: boolean }> } | null)?.notifications ?? {},
               "completions",
               "email"
             )
@@ -266,7 +266,7 @@ export async function PATCH(request: NextRequest) {
                 .maybeSingle();
               const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
               const learnerName =
-                `${(profile as any).first_name ?? ""} ${(profile as any).last_name ?? ""}`.trim() || "there";
+                `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "there";
               const template = courseCompletion({
                 learnerName,
                 courseName: completedCourseRow?.title ?? "Course",
@@ -275,7 +275,7 @@ export async function PATCH(request: NextRequest) {
                 dashboardUrl: `${appUrl}/dashboard`,
               });
               await sendEmail({
-                to: (profile as any).email,
+                to: profile.email,
                 subject: template.subject,
                 html: template.html,
                 text: template.text,

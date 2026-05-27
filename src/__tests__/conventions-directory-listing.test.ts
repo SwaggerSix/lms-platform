@@ -23,6 +23,7 @@ describe("conventions directory", () => {
       [
         "admin-array-form-audit.test.ts",
         "admin-equality-omission-audit.test.ts",
+        "any-annotation-audit.test.ts",
         "as-any-audit.test.ts",
         "audit-action-conventions.test.ts",
         "audit-tenant-id-coverage.test.ts",

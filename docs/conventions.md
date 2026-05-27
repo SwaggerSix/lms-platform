@@ -42,6 +42,7 @@ glob auto-picks up new files in that directory.
 | `manager-equality-omission-audit` | Enforces no equality-form manager-or-above gates (`role === "admin" \|\| role === "manager"`) that omit super_admin; use `isManagerOrAbove(role)`. Hard assertion (7 offenders migrated 2026-05-29). |
 | `admin-equality-omission-audit` | Enforces no bare single-role `.role === "admin"` gates that omit super_admin; use `isAdmin(role)`. Hard assertion (ratchet hit zero 2026-05-29; `audit-log/resolve-tenant.ts` whitelisted as a deliberate admin/super_admin split). |
 | `as-any-audit` | Advisory ratchet over `as any` casts (the type escape hatch). Caps the count; migrate to `as unknown as T` or real types and lower MAX. `as unknown as` double-casts aren't counted. |
+| `any-annotation-audit` | Advisory count-only ratchet over `: any` type annotations (params/vars/members). Count-capped (no per-file snapshot — surface is too broad). |
 | `suppression-directives-audit` | Hard zero on `@ts-ignore` / `@ts-expect-error`; advisory snapshot of `eslint-disable` sites. |
 | `badge-urls` | All markdown files: workflow badges point at workflow files that actually exist; repo paths anchor to `swaggersix/lms-platform`. |
 | `workflows` | `.github/workflows/*.yml` summaries (filename, display name, trigger keys) are snapshotted. |

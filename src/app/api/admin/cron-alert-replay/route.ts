@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       .from("cron_runs")
       .select("job_name")
       .gte("created_at", since);
-    const knownSet = new Set(((known ?? []) as any[]).map((r) => r.job_name));
+    const knownSet = new Set((known ?? []).map((r) => r.job_name));
 
     // Augment from vercel.json (cached in-process via readVercelConfig).
     for (const name of cronJobBasenames()) knownSet.add(name);
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         {
           ok: false,
           reason: "replay_recently_fired",
-          last_replay_at: (recent[0] as any).created_at,
+          last_replay_at: recent[0].created_at,
           dedup_minutes: dedupMinutes,
           dedup_scope: auditAction,
           message: `A replay (${auditAction}) fired in the last ${dedupMinutes} minute${dedupMinutes === 1 ? "" : "s"}. Pass { "force": true } to override.`,
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     return jsonNoStore({ error: error.message }, { status: 500 });
   }
 
-  const failures = (failureRows ?? []) as any[];
+  const failures = failureRows ?? [];
   if (failures.length === 0) {
     return jsonNoStore({
       ok: true,

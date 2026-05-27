@@ -126,7 +126,7 @@ export async function POST(
       let imported = 0;
       for (const stmt of result.statements || []) {
         const verb = stmt.verb?.id || "";
-        const objectId = "id" in (stmt.object || {}) ? (stmt.object as any).id : "";
+        const objectId = "id" in (stmt.object || {}) ? (stmt.object as unknown as { id?: string }).id ?? "" : "";
 
         const { error: insertError } = await service
           .from("xapi_statements")
@@ -140,7 +140,7 @@ export async function POST(
               object_id: objectId,
               object_name:
                 "definition" in (stmt.object || {})
-                  ? (stmt.object as any).definition?.name?.["en-US"] || null
+                  ? (stmt.object as unknown as { definition?: { name?: Record<string, string> } }).definition?.name?.["en-US"] || null
                   : null,
               result_score_scaled: stmt.result?.score?.scaled ?? null,
               result_score_raw: stmt.result?.score?.raw ?? null,

@@ -1,6 +1,42 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getRequiredCourseSources } from "@/lib/courses/required-training";
 
+// Corrected row shapes for the joined queries below. supabase-js
+// types to-one embedded relations as arrays; these declare them as
+// the single objects they actually are, so the `as unknown as`
+// boundary cast reads cleanly (see src/types/README.md).
+type OrgRel = { name: string } | null;
+type CompletionRow = {
+  status: string;
+  score: number | null;
+  enrolled_at: string;
+  completed_at: string | null;
+  time_spent: number | null;
+  user: { first_name: string | null; last_name: string | null; email: string | null; organization: OrgRel } | null;
+  course: { title: string } | null;
+};
+type SkillsGapRow = {
+  proficiency_level: number;
+  source: string;
+  assessed_at: string;
+  user: { first_name: string | null; last_name: string | null; organization: OrgRel } | null;
+  skill: { name: string; category: string } | null;
+};
+type EffectivenessRow = {
+  course_id: string;
+  status: string;
+  score: number | null;
+  time_spent: number | null;
+  course: { title: string } | null;
+};
+type LearnerRow = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  organization: OrgRel;
+};
+
 export const VALID_REPORT_TYPES = [
   "completion",
   "compliance",
@@ -64,7 +100,7 @@ async function generateCompletionReport(
   const { data, error } = await query;
   if (error) throw error;
 
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return ((data ?? []) as unknown as CompletionRow[]).map((row) => ({
     user_name: `${row.user?.first_name ?? ""} ${row.user?.last_name ?? ""}`.trim() || "Unknown",
     email: row.user?.email ?? "",
     department: row.user?.organization?.name ?? "N/A",
@@ -135,7 +171,7 @@ async function generateSkillsGapReport(
   const { data, error } = await query;
   if (error) throw error;
 
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return ((data ?? []) as unknown as SkillsGapRow[]).map((row) => ({
     user_name: `${row.user?.first_name ?? ""} ${row.user?.last_name ?? ""}`.trim() || "Unknown",
     department: row.user?.organization?.name ?? "N/A",
     skill_name: row.skill?.name ?? "Unknown",
@@ -164,7 +200,7 @@ async function generateEngagementReport(
   const { data, error } = await query;
   if (error) throw error;
 
-  const enrollments = (data ?? []) as any[];
+  const enrollments = (data ?? []) as unknown as EffectivenessRow[];
   const courseMap = new Map<
     string,
     {
@@ -233,7 +269,7 @@ async function generateLearnerProgressReport(
   if (usersError) throw usersError;
 
   const rows = [];
-  for (const user of (users ?? []) as any[]) {
+  for (const user of (users ?? []) as unknown as LearnerRow[]) {
     const { data: enrollments, error: enrollError } = await service
       .from("enrollments")
       .select("status, score, time_spent")
@@ -241,25 +277,25 @@ async function generateLearnerProgressReport(
 
     if (enrollError) throw enrollError;
 
-    const allEnrollments = (enrollments ?? []) as any[];
+    const allEnrollments = enrollments ?? [];
     const coursesAssigned = allEnrollments.length;
     const coursesCompleted = allEnrollments.filter(
-      (e: any) => e.status === "completed"
+      (e) => e.status === "completed"
     ).length;
     const completedWithScore = allEnrollments.filter(
-      (e: any) => e.status === "completed" && e.score !== null
+      (e) => e.status === "completed" && e.score !== null
     );
     const avgScore =
       completedWithScore.length > 0
         ? Math.round(
             completedWithScore.reduce(
-              (sum: number, e: any) => sum + e.score,
+              (sum: number, e) => sum + e.score,
               0
             ) / completedWithScore.length
           )
         : null;
     const totalMinutes = allEnrollments.reduce(
-      (sum: number, e: any) => sum + (e.time_spent ?? 0),
+      (sum: number, e) => sum + (e.time_spent ?? 0),
       0
     );
 
@@ -292,7 +328,7 @@ async function generateCourseEffectivenessReport(
   if (coursesError) throw coursesError;
 
   const rows = [];
-  for (const course of (courses ?? []) as any[]) {
+  for (const course of courses ?? []) {
     const { data: enrollments, error: enrollError } = await service
       .from("enrollments")
       .select("status, score, time_spent")
@@ -300,19 +336,19 @@ async function generateCourseEffectivenessReport(
 
     if (enrollError) throw enrollError;
 
-    const allEnrollments = (enrollments ?? []) as any[];
+    const allEnrollments = enrollments ?? [];
     const enrollmentCount = allEnrollments.length;
     const completionCount = allEnrollments.filter(
-      (e: any) => e.status === "completed"
+      (e) => e.status === "completed"
     ).length;
     const completedWithScore = allEnrollments.filter(
-      (e: any) => e.status === "completed" && e.score !== null
+      (e) => e.status === "completed" && e.score !== null
     );
     const avgScore =
       completedWithScore.length > 0
         ? Math.round(
             completedWithScore.reduce(
-              (sum: number, e: any) => sum + e.score,
+              (sum: number, e) => sum + e.score,
               0
             ) / completedWithScore.length
           )
@@ -321,7 +357,7 @@ async function generateCourseEffectivenessReport(
       enrollmentCount > 0
         ? Math.round(
             allEnrollments.reduce(
-              (sum: number, e: any) => sum + (e.time_spent ?? 0),
+              (sum: number, e) => sum + (e.time_spent ?? 0),
               0
             ) / enrollmentCount
           )
