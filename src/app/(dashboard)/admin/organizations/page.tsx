@@ -45,7 +45,7 @@ export default async function OrganizationsPage() {
   // Build a map of organization_id -> user count
   const userCountMap: Record<string, number> = {};
   if (userCountsRaw) {
-    for (const u of userCountsRaw as any[]) {
+    for (const u of userCountsRaw) {
       if (u.organization_id) {
         userCountMap[u.organization_id] = (userCountMap[u.organization_id] || 0) + 1;
       }
@@ -53,7 +53,7 @@ export default async function OrganizationsPage() {
   }
 
   // Build org tree from flat list
-  const orgs = (orgsRaw || []) as any[];
+  const orgs = orgsRaw || [];
   const orgMap: Record<string, OrgNode & { parent_id: string | null }> = {};
 
   // First pass: create all nodes

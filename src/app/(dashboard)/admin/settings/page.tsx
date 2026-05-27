@@ -84,7 +84,7 @@ export default async function SettingsPage() {
 
   // Build a lookup map from the rows
   const settingsMap: Record<string, any> = {};
-  for (const row of (settingsRows ?? []) as any) {
+  for (const row of settingsRows ?? []) {
     settingsMap[row.key] = row.value;
   }
 
@@ -104,7 +104,7 @@ export default async function SettingsPage() {
       ...(settingsMap["notifications"] ?? {}),
     },
     apiKeys: (settingsMap["api_keys"] as ApiKey[] | undefined) ?? defaultApiKeys,
-    adminEmail: (dbUser as any).email ?? user.email ?? "",
+    adminEmail: dbUser.email ?? user.email ?? "",
   };
 
   return <SettingsClient data={settingsData} />;

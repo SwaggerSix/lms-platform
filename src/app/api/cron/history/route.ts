@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (format === "csv") {
-      const rows = (data ?? []) as any[];
+      const rows = data ?? [];
       const escape = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
       const lines = [
         ["created_at", "status", "duration_ms", "records_processed", "error_message"].map(escape).join(","),
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
   }
 
   const byJob: Record<string, any[]> = {};
-  for (const r of (rawRows ?? []) as any[]) {
+  for (const r of rawRows ?? []) {
     const list = byJob[r.job_name] ?? [];
     if (list.length < limit) list.push(r);
     byJob[r.job_name] = list;

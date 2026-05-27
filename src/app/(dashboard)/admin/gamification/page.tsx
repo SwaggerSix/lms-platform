@@ -75,7 +75,7 @@ export default async function GamificationPage() {
 
     // Aggregate total points per user
     const userPointsMap = new Map<string, { totalPoints: number; firstName: string; lastName: string }>();
-    for (const row of (pointsRows ?? []) as any[]) {
+    for (const row of (pointsRows ?? []) as unknown as Array<{ user_id: string; points: number; user: { first_name?: string; last_name?: string } | null }>) {
       const userId = row.user_id as string;
       const existing = userPointsMap.get(userId);
       const firstName = row.user?.first_name ?? "";
@@ -98,7 +98,7 @@ export default async function GamificationPage() {
       .limit(500);
 
     const userBadgeCountMap = new Map<string, number>();
-    for (const row of (badgeCounts ?? []) as any[]) {
+    for (const row of badgeCounts ?? []) {
       const userId = row.user_id as string;
       userBadgeCountMap.set(userId, (userBadgeCountMap.get(userId) ?? 0) + 1);
     }

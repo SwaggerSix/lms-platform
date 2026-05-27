@@ -6,6 +6,16 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 112 → 95.** Cleared the small `×2` files
+  (cron/history, gamification, manager/skills, documents,
+  organizations, settings — flat-select drops + corrected relation
+  types) and the flat-select casts in `learn/catalog/[slug]`
+  (instructor, progress, related). The `embed/[token]/page.tsx`
+  `widget.config` casts were typed; its polymorphic `content: any`
+  is left documented as a deliberate keeper (standalone embed doc,
+  per-widget-type shape — a discriminated union isn't worth it).
+- **`any-annotation` ratchet 328 → 325** from the `(m: any)` /
+  `(p: any)` param removals.
 - **`as-any` ratchet 135 → 112.** Converted `recommendations/
   page.tsx` (9, the biggest cluster — corrected to-one relation
   types + dropping casts on `Map<string, any>` values), `embed/

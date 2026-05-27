@@ -111,7 +111,7 @@ export default async function CourseDetailPage({
     .eq("id", course.created_by)
     .single();
 
-  const instructor = instructorRow as any;
+  const instructor = instructorRow;
 
   // Fetch modules with lessons
   const { data: modulesData } = await service
@@ -172,9 +172,9 @@ export default async function CourseDetailPage({
 
       if (progressData) {
         const completedSet = new Set(
-          (progressData as any[])
-            .filter((p: any) => p.status === "completed")
-            .map((p: any) => p.lesson_id)
+          progressData
+            .filter((p) => p.status === "completed")
+            .map((p) => p.lesson_id)
         );
         for (const mod of modules) {
           for (const lesson of mod.lessons) {
@@ -263,14 +263,14 @@ export default async function CourseDetailPage({
 
   // Get instructor names for related courses
   const relatedCourses = [];
-  for (const rc of (relatedRows || []) as any[]) {
+  for (const rc of relatedRows || []) {
     const { data: rcInstructor } = await service
       .from("users")
       .select("first_name, last_name")
       .eq("id", rc.created_by)
       .single();
 
-    const rcCatSlug = rc.categories?.slug || null;
+    const rcCatSlug = (rc.categories as unknown as { slug?: string } | null)?.slug || null;
     relatedCourses.push({
       slug: rc.slug,
       title: rc.title,

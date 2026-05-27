@@ -39,8 +39,8 @@ export default async function SkillsPage() {
     .select("id, first_name, last_name, job_title")
     .eq("manager_id", currentUser.id);
 
-  const members = (teamMembers ?? []) as any[];
-  const memberIds = members.map((m: any) => m.id);
+  const members = teamMembers ?? [];
+  const memberIds = members.map((m) => m.id);
 
   // Fetch user_skills with skill joins for all team members
   const { data: userSkillsData } = await service
@@ -48,7 +48,7 @@ export default async function SkillsPage() {
     .select("user_id, proficiency_level, skill:skills(id, name)")
     .in("user_id", memberIds.length > 0 ? memberIds : ["__none__"]);
 
-  const userSkills = (userSkillsData ?? []) as any[];
+  const userSkills = (userSkillsData ?? []) as unknown as Array<{ user_id: string; proficiency_level: number; skill: { id: string; name: string } | null }>;
 
   // Collect all unique skill names from the data
   const skillNameSet = new Set<string>();

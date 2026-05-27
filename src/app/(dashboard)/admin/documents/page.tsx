@@ -58,7 +58,7 @@ export default async function AdminDocumentsPage() {
     .order("created_at", { ascending: false });
 
   const documents: DocumentWithUploader[] = (docRows ?? []).map((row: any) => {
-    const uploaderObj = row.uploader as any;
+    const uploaderObj = row.uploader;
     const uploaderName = uploaderObj
       ? `${uploaderObj.first_name ?? ""} ${uploaderObj.last_name ?? ""}`.trim() || uploaderObj.email || "Unknown"
       : "Unknown";
@@ -100,7 +100,7 @@ export default async function AdminDocumentsPage() {
     .order("acknowledged_at", { ascending: false });
 
   const acknowledgments: AcknowledgmentWithUser[] = (ackRows ?? []).map((row: any) => {
-    const u = row.user as any;
+    const u = row.user;
     const userName = u
       ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || "Unknown"
       : "Unknown";

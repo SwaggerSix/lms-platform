@@ -18,12 +18,15 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
 
   if (!widget) notFound();
 
-  // Fetch widget-specific data
+  // Fetch widget-specific data. `content` is intentionally `any`:
+  // its shape is polymorphic per widget_type (nuggets list, leaderboard
+  // entries, a single course), and this standalone embed document is
+  // rarely touched — a discriminated union here is not worth the churn.
   let content: any = null;
 
   switch (widget.widget_type) {
     case "nugget_feed": {
-      const limit = (widget.config as any)?.limit || 5;
+      const limit = (widget.config as { limit?: number; course_id?: string } | null)?.limit || 5;
       const { data } = await service
         .from("microlearning_nuggets")
         .select("id, title, content_type, content, difficulty, estimated_seconds")
@@ -49,7 +52,7 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
       break;
     }
     case "course_card": {
-      const courseId = (widget.config as any)?.course_id;
+      const courseId = (widget.config as { limit?: number; course_id?: string } | null)?.course_id;
       if (courseId) {
         const { data } = await service
           .from("courses")

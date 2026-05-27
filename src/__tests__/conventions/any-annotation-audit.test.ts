@@ -32,7 +32,7 @@ describe("any-annotation audit (advisory)", () => {
       }
     }
 
-    const MAX = 328;
+    const MAX = 325;
     expect(
       count,
       `\`: any\` annotations: ${count}. Ceiling ${MAX}. Replace with real types and lower MAX.`

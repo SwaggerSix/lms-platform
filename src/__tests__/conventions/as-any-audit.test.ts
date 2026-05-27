@@ -38,7 +38,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 112;
+    const MAX = 95;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -58,20 +58,16 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/(dashboard)/admin/audit-log/page.tsx ×3",
         "src/app/(dashboard)/admin/certifications/page.tsx ×3",
         "src/app/(dashboard)/admin/compliance/page.tsx",
-        "src/app/(dashboard)/admin/documents/page.tsx ×2",
         "src/app/(dashboard)/admin/feedback/[id]/cycle-detail-client.tsx",
-        "src/app/(dashboard)/admin/gamification/page.tsx ×2",
         "src/app/(dashboard)/admin/ilt-sessions/page.tsx",
         "src/app/(dashboard)/admin/knowledge-base/page.tsx ×3",
         "src/app/(dashboard)/admin/marketplace/page.tsx",
         "src/app/(dashboard)/admin/mentorship/admin-mentorship-client.tsx ×2",
-        "src/app/(dashboard)/admin/organizations/page.tsx ×2",
         "src/app/(dashboard)/admin/reports/page.tsx",
-        "src/app/(dashboard)/admin/settings/page.tsx ×2",
         "src/app/(dashboard)/admin/tenants/[id]/tenant-detail-client.tsx ×4",
         "src/app/(dashboard)/learn/assessments/[id]/page.tsx ×2",
         "src/app/(dashboard)/learn/assessments/[id]/results/page.tsx ×3",
-        "src/app/(dashboard)/learn/catalog/[slug]/page.tsx ×6",
+        "src/app/(dashboard)/learn/catalog/[slug]/page.tsx ×3",
         "src/app/(dashboard)/learn/discussions/page.tsx",
         "src/app/(dashboard)/learn/feedback/[nominationId]/page.tsx ×4",
         "src/app/(dashboard)/learn/ilt-sessions/page.tsx ×4",
@@ -85,7 +81,6 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/(dashboard)/learn/transcript/page.tsx ×2",
         "src/app/(dashboard)/manager/analytics/manager-analytics-client.tsx",
         "src/app/(dashboard)/manager/compliance/page.tsx ×2",
-        "src/app/(dashboard)/manager/skills/page.tsx ×2",
         "src/app/(dashboard)/profile/page.tsx",
         "src/app/(dashboard)/profile/settings/page.tsx",
         "src/app/(dashboard)/profile/skills/page.tsx",
@@ -95,13 +90,12 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/api/certificates/verify/[code]/route.ts",
         "src/app/api/chat/sessions/[id]/messages/route.ts",
         "src/app/api/courses/route.ts",
-        "src/app/api/cron/history/route.ts ×2",
         "src/app/api/ilt-sessions/[id]/calendar/route.ts",
         "src/app/api/integrations/external/test/route.ts",
         "src/app/api/marketplace/providers/route.ts",
         "src/app/api/mentorship/sessions/[id]/route.ts",
         "src/app/api/teams/bot/route.ts",
-        "src/app/embed/[token]/page.tsx ×11",
+        "src/app/embed/[token]/page.tsx ×9",
         "src/app/verify/[code]/page.tsx",
         "src/components/marketplace/unified-catalog.tsx",
         "src/lib/integrations/crm-sync.ts",
