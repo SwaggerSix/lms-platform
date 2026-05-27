@@ -6,6 +6,22 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **Deeper correctness coverage: risk scoring, mentor selection, HRIS
+  ingest.** `calculateRiskScore` (`analytics/predictive`) — the
+  five-factor risk model and band thresholds, validated via the
+  per-table Proxy mock (stalled-progress + overdue + stale-access +
+  low-scores → critical; clamp at 100). `findBestMentors`
+  (`mentorship/matching`) — capacity filtering, score-descending
+  sort, limit, and match-reason strings (no-goals path, no AI).
+  `GenericRESTProvider` (`integrations/hris`) — `testConnection` +
+  `fetchEmployees` response→`HRISEmployee` mapping: `results_path`
+  navigation, default + custom field maps, `external_id`
+  stringification, status normalization, and the email/external_id
+  filter (fetch mocked). The field-map test caught a source→target
+  direction the contract now pins. 21 tests.
+- `getRequiredCourseSources` already has thorough coverage (35
+  cases incl. tenant-scoped) — verified, no action.
+
 - **More correctness coverage for analytics/integrations.** Added
   unit tests for `computeEngagementScore` (`lib/analytics/predictive`
   — scoring math via a chainable Supabase mock: empty→0, factor caps,
