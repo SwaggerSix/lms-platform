@@ -26,6 +26,10 @@
     {
       "path": "/api/cron/mentorship-nudges",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/gems-sync",
+      "schedule": "0 */6 * * *"
     }
   ],
   "headers": [
