@@ -781,7 +781,7 @@ export default function ILTSessionsClient({
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 [&>tr>td]:py-5">
                 {filteredSessions.map((session) => {
                   const LocationIcon = LOCATION_ICONS[session.location_type];
                   return (
@@ -876,7 +876,7 @@ export default function ILTSessionsClient({
                 })}
                 {filteredSessions.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-4 !py-12 text-center text-gray-500">
                       No sessions found matching your criteria.
                     </td>
                   </tr>
