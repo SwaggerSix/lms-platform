@@ -53,7 +53,11 @@ export async function POST(request: NextRequest) {
 
   // Attempt external enrollment through provider
   let externalEnrollmentId: string | null = null;
-  const provider = course.provider as any;
+  const provider = course.provider as unknown as {
+    is_active?: boolean;
+    provider_type: string;
+    api_config?: Record<string, unknown>;
+  } | null;
   if (provider && provider.is_active) {
     const impl = getProvider(provider.provider_type);
     if (impl) {

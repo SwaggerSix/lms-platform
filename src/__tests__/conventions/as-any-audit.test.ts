@@ -38,7 +38,7 @@ describe("as-any cast audit (advisory)", () => {
       }
     }
 
-    const MAX = 147;
+    const MAX = 135;
     expect(
       sites.length,
       `\`as any\` casts: ${sites.length}. Ceiling ${MAX}. Replace with real types or \`as unknown as T\` and lower MAX.`
@@ -95,25 +95,18 @@ describe("as-any cast audit (advisory)", () => {
         "src/app/api/certificates/generate/route.ts",
         "src/app/api/certificates/verify/[code]/route.ts",
         "src/app/api/chat/sessions/[id]/messages/route.ts",
-        "src/app/api/courses/[slug]/route.ts",
         "src/app/api/courses/route.ts",
         "src/app/api/cron/history/route.ts ×2",
-        "src/app/api/discussions/route.ts",
         "src/app/api/embed/[token]/route.ts ×6",
-        "src/app/api/enrollments/route.ts",
-        "src/app/api/feedback/responses/route.ts ×2",
         "src/app/api/ilt-sessions/[id]/calendar/route.ts",
         "src/app/api/integrations/external/test/route.ts",
-        "src/app/api/marketplace/enroll/route.ts",
         "src/app/api/marketplace/providers/route.ts",
-        "src/app/api/mentorship/profiles/route.ts",
         "src/app/api/mentorship/sessions/[id]/route.ts",
         "src/app/api/recommendations/route.ts ×4",
         "src/app/api/teams/bot/route.ts",
         "src/app/embed/[token]/page.tsx ×11",
         "src/app/verify/[code]/page.tsx",
         "src/components/marketplace/unified-catalog.tsx",
-        "src/lib/ai/recommendations.ts ×5",
         "src/lib/analytics/predictive.ts ×2",
         "src/lib/integrations/crm-sync.ts",
         "src/lib/mentorship/matching.ts",

@@ -146,10 +146,10 @@ export async function GET(
 
         // A module is "completed" if all its lessons are completed
         for (const mod of data.modules) {
-          const moduleLessons = (mod as any).lessons ?? [];
+          const moduleLessons = (mod as unknown as { lessons?: Array<{ id: string }> }).lessons ?? [];
           if (
             moduleLessons.length > 0 &&
-            moduleLessons.every((l: any) => completedLessonIds.has(l.id))
+            moduleLessons.every((l) => completedLessonIds.has(l.id))
           ) {
             completedModuleIds.add(mod.id);
           }

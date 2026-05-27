@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
   // For each thread, get reply_count
   const threadsWithCounts = await Promise.all(
-    ((threads ?? []) as any[]).map(async (thread) => {
+    (threads ?? []).map(async (thread) => {
       const { count: replyCount } = await service
         .from("discussions")
         .select("*", { count: "exact", head: true })

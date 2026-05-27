@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
   let filtered = data ?? [];
   if (search) {
     const s = search.toLowerCase();
-    filtered = filtered.filter((m: any) => {
-      const user = m.user as any;
+    filtered = filtered.filter((m) => {
+      const user = m.user as unknown as { first_name?: string; last_name?: string } | null;
       const name = `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.toLowerCase();
       const bio = (m.bio ?? "").toLowerCase();
       return name.includes(s) || bio.includes(s);

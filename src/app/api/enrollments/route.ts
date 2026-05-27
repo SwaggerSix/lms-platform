@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }[] = [];
 
     for (const prereq of prerequisites) {
-      const prereqCourse = prereq.prerequisite_course as any;
+      const prereqCourse = prereq.prerequisite_course as unknown as { title?: string; slug?: string } | null;
 
       // Check user's enrollment in the prerequisite course
       const { data: prereqEnrollment } = await service

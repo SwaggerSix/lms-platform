@@ -6,6 +6,18 @@ removals that affect future work.
 
 ## 2026-05-29
 
+- **`as-any` ratchet 147 → 135.** Cleared API-route casts
+  (discussions, feedback/responses, courses/[slug], enrollments
+  prereq, marketplace/enroll, mentorship/profiles) and
+  `lib/ai/recommendations.ts` (5, via corrected to-one relation
+  types). `recommendations/page.tsx` left as a justified nested-join
+  surface (blanket conversion broke the array-typed relation access).
+- **`any-annotation-audit` 332 → 330** as a side effect of the
+  `(e: any)` → `(e)` conversions.
+- **`reports-select-coverage` test added** — pins that every column
+  the report maps consume stays named in the query `.select(...)`,
+  guarding the `as unknown as RowType[]` casts against silent select
+  drift.
 - **`as-any` ratchet 167 → 147.** Cleared 20 more casts:
   `enrollments/progress` (typed profile fields), `integrations/
   external/[id]` (config Json shape), `cron-alert-replay` (typed

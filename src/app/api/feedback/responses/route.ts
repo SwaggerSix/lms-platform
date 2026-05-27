@@ -149,7 +149,7 @@ export async function PUT(request: NextRequest) {
     .eq("id", validation.data.id)
     .single();
 
-  if (!existing || (existing.nomination as any)?.reviewer_id !== auth.user.id) {
+  if (!existing || (existing.nomination as unknown as { reviewer_id?: string } | null)?.reviewer_id !== auth.user.id) {
     return jsonNoStore({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -177,7 +177,7 @@ export async function PUT(request: NextRequest) {
 
   // Update nomination status
   if (!isDraft) {
-    const nomId = (existing as any).nomination_id;
+    const nomId = existing.nomination_id;
     await service
       .from("feedback_nominations")
       .update({ status: "completed" })

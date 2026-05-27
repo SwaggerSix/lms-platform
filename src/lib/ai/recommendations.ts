@@ -4,6 +4,31 @@ import { createServiceClient } from "@/lib/supabase/service";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
+// Corrected to-one shapes for course joins (supabase-js types
+// embedded relations as arrays; see src/types/README.md).
+type EnrollCourseRel = {
+  id: string;
+  category_id: string | null;
+  difficulty_level: string | null;
+  estimated_duration: number | null;
+  course_type: string | null;
+  tags: string[] | null;
+} | null;
+type EnrollmentWithCourse = {
+  status: string;
+  score: number | null;
+  time_spent: number | null;
+  course: EnrollCourseRel;
+};
+type SkillCourseRel = {
+  id: string;
+  title: string | null;
+  slug: string | null;
+  status: string | null;
+  difficulty_level: string | null;
+  estimated_duration: number | null;
+} | null;
+
 export interface UserPreferences {
   preferred_difficulty: string | null;
   preferred_duration: "short" | "medium" | "long" | null;
@@ -92,7 +117,7 @@ export async function computeUserPreferences(userId: string): Promise<UserPrefer
     )
     .eq("user_id", userId);
 
-  const rows = (enrollments ?? []) as any[];
+  const rows = (enrollments ?? []) as unknown as EnrollmentWithCourse[];
 
   // Fetch learning events for time-of-day analysis
   const { data: events } = await service
@@ -114,7 +139,7 @@ export async function computeUserPreferences(userId: string): Promise<UserPrefer
 
   for (const row of rows) {
     totalEnrollments++;
-    const course = row.course as any;
+    const course = row.course;
     if (!course) continue;
 
     if (course.difficulty_level) {
@@ -536,8 +561,8 @@ export async function getAdaptivePath(
 
   // Sort courses by difficulty then proficiency_gained
   const sortedCourseSkills = [...courseSkills].sort((a, b) => {
-    const courseA = a.course as any;
-    const courseB = b.course as any;
+    const courseA = a.course as unknown as SkillCourseRel;
+    const courseB = b.course as unknown as SkillCourseRel;
     if (!courseA || !courseB) return 0;
     const diffA = difficultyOrder.indexOf(courseA.difficulty_level?.toLowerCase() ?? "intermediate");
     const diffB = difficultyOrder.indexOf(courseB.difficulty_level?.toLowerCase() ?? "intermediate");
@@ -546,7 +571,7 @@ export async function getAdaptivePath(
   });
 
   for (const cs of sortedCourseSkills) {
-    const course = cs.course as any;
+    const course = cs.course as unknown as SkillCourseRel;
     if (!course) continue;
     if (course.status !== "published") continue;
 
@@ -560,8 +585,8 @@ export async function getAdaptivePath(
 
     pathCourses.push({
       courseId: course.id,
-      title: course.title,
-      slug: course.slug,
+      title: course.title ?? "",
+      slug: course.slug ?? "",
       difficulty_level: course.difficulty_level,
       estimated_duration: course.estimated_duration,
       reason: alreadyEnrolled
