@@ -61,6 +61,15 @@ export default async function MentorshipDetailPage({
     .eq("request_id", requestId)
     .order("created_at", { ascending: false });
 
+  // Development goals for this pairing
+  const { data: goals } = await service
+    .from("mentorship_goals")
+    .select("*")
+    .eq("request_id", requestId)
+    .order("status", { ascending: true })
+    .order("target_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+
   const isMentor = request.mentor_id === dbUser.id;
 
   return (
@@ -68,6 +77,7 @@ export default async function MentorshipDetailPage({
       request={request}
       sessions={sessions ?? []}
       reviews={reviews ?? []}
+      goals={goals ?? []}
       userId={dbUser.id}
       isMentor={isMentor}
     />
