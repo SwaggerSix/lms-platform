@@ -222,6 +222,57 @@ export default function MentorshipDetailClient({
     }
   }
 
+  // Per-session notes editor state
+  const [openNotesId, setOpenNotesId] = useState<string | null>(null);
+  const [draftShared, setDraftShared] = useState("");
+  const [draftMine, setDraftMine] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesError, setNotesError] = useState<string | null>(null);
+
+  const myNotesField: "mentor_notes" | "mentee_notes" | null = isMentor
+    ? "mentor_notes"
+    : request.mentee_id === userId
+    ? "mentee_notes"
+    : null;
+
+  function openNotes(session: any) {
+    setOpenNotesId(session.id);
+    setDraftShared(session.notes ?? "");
+    setDraftMine(myNotesField ? session[myNotesField] ?? "" : "");
+    setNotesError(null);
+  }
+
+  function closeNotes() {
+    setOpenNotesId(null);
+    setDraftShared("");
+    setDraftMine("");
+    setNotesError(null);
+  }
+
+  async function saveNotes(sessionId: string) {
+    setSavingNotes(true);
+    setNotesError(null);
+    try {
+      const payload: Record<string, string> = { notes: draftShared };
+      if (myNotesField) payload[myNotesField] = draftMine;
+      const res = await fetch(`/api/mentorship/sessions/${sessionId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to save notes");
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, ...payload } : s))
+      );
+      closeNotes();
+    } catch (err: any) {
+      setNotesError(err.message);
+    } finally {
+      setSavingNotes(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Back link */}
@@ -593,25 +644,102 @@ export default function MentorshipDetailClient({
                       {session.status}
                     </span>
                     {session.status === "scheduled" && (
+                      <>
+                        <button
+                          onClick={() => updateSessionStatus(session.id, "completed")}
+                          className="text-xs text-green-600 hover:text-green-700 font-medium"
+                        >
+                          Complete
+                        </button>
+                        <button
+                          onClick={() => updateSessionStatus(session.id, "no_show")}
+                          className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                        >
+                          No-show
+                        </button>
+                        <button
+                          onClick={() => updateSessionStatus(session.id, "cancelled")}
+                          className="text-xs text-red-600 hover:text-red-700 font-medium"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                    {openNotesId !== session.id && (
                       <button
-                        onClick={() => updateSessionStatus(session.id, "completed")}
-                        className="text-xs text-green-600 hover:text-green-700 font-medium"
+                        onClick={() => openNotes(session)}
+                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                       >
-                        Complete
+                        {session.notes || session.mentor_notes || session.mentee_notes
+                          ? "Edit Notes"
+                          : "Add Notes"}
                       </button>
                     )}
                   </div>
                 </div>
-                {(session.notes || session.mentor_notes || session.mentee_notes) && (
+
+                {/* Inline notes editor */}
+                {openNotesId === session.id && (
+                  <div className="mt-3 ml-12 rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
+                    {notesError && (
+                      <div className="mb-2 rounded bg-red-50 border border-red-200 p-2 text-xs text-red-700">
+                        {notesError}
+                      </div>
+                    )}
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Shared notes / action items
+                    </label>
+                    <textarea
+                      value={draftShared}
+                      onChange={(e) => setDraftShared(e.target.value)}
+                      rows={3}
+                      placeholder="What did you discuss? What are the next steps?"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                    {myNotesField && (
+                      <>
+                        <label className="block text-xs font-medium text-gray-700 mt-3 mb-1">
+                          Your private notes ({isMentor ? "mentor" : "mentee"})
+                        </label>
+                        <textarea
+                          value={draftMine}
+                          onChange={(e) => setDraftMine(e.target.value)}
+                          rows={2}
+                          placeholder="Notes only you can see (visible to the other party once saved)."
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </>
+                    )}
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        onClick={closeNotes}
+                        disabled={savingNotes}
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => saveNotes(session.id)}
+                        disabled={savingNotes}
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        {savingNotes ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Read-only notes display */}
+                {openNotesId !== session.id && (session.notes || session.mentor_notes || session.mentee_notes) && (
                   <div className="mt-2 ml-12 space-y-1">
                     {session.notes && (
-                      <p className="text-xs text-gray-500">Notes: {session.notes}</p>
+                      <p className="text-xs text-gray-600"><span className="font-medium text-gray-700">Notes:</span> {session.notes}</p>
                     )}
                     {session.mentor_notes && (
-                      <p className="text-xs text-gray-500">Mentor: {session.mentor_notes}</p>
+                      <p className="text-xs text-gray-600"><span className="font-medium text-gray-700">Mentor:</span> {session.mentor_notes}</p>
                     )}
                     {session.mentee_notes && (
-                      <p className="text-xs text-gray-500">Mentee: {session.mentee_notes}</p>
+                      <p className="text-xs text-gray-600"><span className="font-medium text-gray-700">Mentee:</span> {session.mentee_notes}</p>
                     )}
                   </div>
                 )}
