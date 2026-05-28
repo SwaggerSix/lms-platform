@@ -16,6 +16,8 @@ import {
 import { cn } from "@/utils/cn";
 import { trackEvent } from "@/lib/analytics/track";
 import { useToast } from "@/components/ui/toast";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -178,7 +180,10 @@ export default function DiscussionsClient({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Discussions</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">Discussions</h1>
+              <InfoTooltip content={getHelp("learn.discussions").details} label="About Discussions" side="bottom" />
+            </div>
             <p className="mt-1 text-sm text-gray-500">Ask questions, share knowledge, and connect with peers.</p>
           </div>
           <button

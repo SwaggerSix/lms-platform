@@ -22,6 +22,8 @@ import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
 import DOMPurify from "dompurify";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 /** Escape HTML entities to prevent XSS in certificate templates */
 function escapeHtml(str: string): string {
@@ -285,7 +287,10 @@ export default function CertificationsClient({ certificates, userName }: Certifi
         <div className="flex items-center gap-3">
           <Award className="h-8 w-8 text-indigo-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Certifications</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">My Certifications</h1>
+              <InfoTooltip content={getHelp("learn.certifications").details} label="About Certifications" side="bottom" />
+            </div>
             <p className="mt-1 text-gray-500">View and manage your earned certificates.</p>
           </div>
         </div>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import ChatWidget from "@/components/chat/chat-widget";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 interface ChatPageClientProps {
   userName: string;
@@ -23,7 +25,10 @@ export default function ChatPageClient({ courses }: ChatPageClientProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">AI Learning Assistant</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">AI Learning Assistant</h1>
+            <InfoTooltip content={getHelp("learn.chat").details} label="About the AI Assistant" side="bottom" />
+          </div>
           <p className="text-gray-500 mt-1">Get personalized help with your learning journey</p>
         </div>
 

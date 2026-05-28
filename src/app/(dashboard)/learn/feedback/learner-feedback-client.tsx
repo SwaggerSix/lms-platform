@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 interface PendingReview {
   id: string;
@@ -45,7 +47,10 @@ export default function LearnerFeedbackClient({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Feedback</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">My Feedback</h1>
+          <InfoTooltip content={getHelp("learn.feedback").details} label="About Feedback" side="bottom" />
+        </div>
         <p className="text-gray-500 mt-1">Complete pending reviews and view feedback reports about you</p>
       </div>
 

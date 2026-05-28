@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -128,7 +130,10 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Observation Checklists</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">Observation Checklists</h1>
+            <InfoTooltip content={getHelp("admin.observations").details} label="About Observation Templates" side="bottom" />
+          </div>
           <p className="mt-1 text-sm text-gray-500">Manage templates and track observation assessments</p>
         </div>
         <Link

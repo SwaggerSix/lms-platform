@@ -5,6 +5,8 @@ import { Clock, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from "lucide
 import { cn } from "@/utils/cn";
 import { formatDate, formatDuration } from "@/utils/format";
 import OfflineDownload from "@/components/pwa/offline-download";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 export interface MyCourse {
   id: string;
@@ -50,7 +52,10 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <h1 className="text-2xl font-bold text-gray-900">My Courses</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">My Courses</h1>
+          <InfoTooltip content={getHelp("learn.my-courses").details} label="About My Courses" side="bottom" />
+        </div>
         <p className="mt-1 text-gray-500">Track your learning progress and pick up where you left off.</p>
 
         {/* Tabs */}

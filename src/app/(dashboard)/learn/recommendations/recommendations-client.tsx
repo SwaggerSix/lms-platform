@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/format";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -290,7 +292,10 @@ export default function RecommendationsClient({
               <Sparkles className="h-5 w-5 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Recommended for You</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-gray-900">Recommended for You</h1>
+                <InfoTooltip content={getHelp("learn.recommendations").details} label="About Recommendations" side="bottom" />
+              </div>
               <p className="mt-1 text-gray-500">
                 Personalized course suggestions based on your role, skills, and learning history.
               </p>

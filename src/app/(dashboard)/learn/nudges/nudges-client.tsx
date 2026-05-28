@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { Flame, CheckCircle2, Clock, Zap, Target } from "lucide-react";
 import type { NudgeAssignment, NudgeDailyLog, NudgeStreak } from "@/types/nudges";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 type Nudge = NudgeAssignment & {
   todayLog: NudgeDailyLog | null;
@@ -71,7 +73,10 @@ export default function NudgesLearnerClient({ nudges: initial }: Props) {
           <Zap className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Nudges</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">My Nudges</h1>
+            <InfoTooltip content={getHelp("learn.nudges").details} label="About Nudges" side="bottom" />
+          </div>
           <p className="text-sm text-gray-500">Small daily MicroActions that build lasting habits.</p>
         </div>
       </div>

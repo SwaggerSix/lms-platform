@@ -10,6 +10,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -207,7 +209,10 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Skills</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">My Skills</h1>
+              <InfoTooltip content={getHelp("profile.skills").details} label="About My Skills" side="bottom" />
+            </div>
             <p className="mt-1 text-sm text-gray-500">Track your skill development and identify growth areas.</p>
           </div>
           <button
