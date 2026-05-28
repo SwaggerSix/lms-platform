@@ -49,6 +49,7 @@ const PROVIDERS = [
   { id: "adp", name: "ADP", type: "hris", description: "Sync HR data from ADP Workforce Now", color: "border-red-200 bg-red-50 hover:bg-red-100" },
   { id: "salesforce", name: "Salesforce", type: "crm", description: "Sync contacts and push training data", color: "border-blue-200 bg-blue-50 hover:bg-blue-100" },
   { id: "hubspot", name: "HubSpot", type: "crm", description: "Sync contacts and training data with HubSpot", color: "border-orange-200 bg-orange-50 hover:bg-orange-100" },
+  { id: "gems", name: "GEMS", type: "scheduling", description: "Import training events from GEMS as ILT sessions", color: "border-indigo-200 bg-indigo-50 hover:bg-indigo-100" },
   { id: "custom_webhook", name: "Custom Webhook", type: "hr_system", description: "Connect via custom webhook", color: "border-gray-200 bg-gray-50 hover:bg-gray-100" },
 ];
 
@@ -73,6 +74,13 @@ const CREDENTIAL_FIELDS: Record<string, Array<{ key: string; label: string; type
   ],
   hubspot: [
     { key: "access_token", label: "Private App Access Token", type: "password", placeholder: "Enter HubSpot access token" },
+  ],
+  gems: [
+    { key: "api_base", label: "GEMS API URL", type: "url", placeholder: "https://gems-api.azurewebsites.net" },
+    { key: "tenant_id", label: "Azure AD Tenant ID", type: "text", placeholder: "30295520-84b7-447c-ba6d-3a2b11790cd4" },
+    { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Client ID from your GEMS admin" },
+    { key: "client_secret_encrypted", label: "Client Secret", type: "password", placeholder: "Client secret from your GEMS admin" },
+    { key: "api_app_id_uri", label: "Backend API App ID URI", type: "text", placeholder: "api://d9fbbe9d-7bd0-4ede-b9a7-e2c90c1d1d5f" },
   ],
   custom_webhook: [
     { key: "base_url", label: "Webhook URL", type: "url", placeholder: "https://your-api.example.com/webhooks/lms" },
