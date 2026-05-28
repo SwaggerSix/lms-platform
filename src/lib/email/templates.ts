@@ -296,3 +296,41 @@ export function scheduledReportDelivery(params: {
     text: `Hi ${params.recipientName}, your ${params.reportName} report for ${params.period} is ready. Download: ${params.downloadUrl}`,
   };
 }
+
+export function mentorshipMatch(params: {
+  recipientName: string;
+  otherName: string;
+  role: "mentor" | "mentee";
+  goals?: string | null;
+  link: string;
+  portalName?: string;
+}): EmailTemplate {
+  const heading =
+    params.role === "mentor" ? "You have a new mentee" : "You've been matched with a mentor";
+  const intro =
+    params.role === "mentor"
+      ? `<strong>${params.otherName}</strong> has been paired with you for mentorship.`
+      : `<strong>${params.otherName}</strong> will be your mentor.`;
+
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">${heading}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">
+      Hi ${params.recipientName},
+    </p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      ${intro}
+    </p>
+    ${params.goals ? `<div style="padding:12px 16px;background-color:#f9fafb;border-radius:6px;border-left:4px solid #4f46e5;margin:0 0 16px;"><p style="margin:0;color:#374151;font-size:13px;"><strong>Goals:</strong> ${params.goals}</p></div>` : ""}
+    ${button("Open Mentorship", params.link)}
+    <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">Reach out to your match soon to schedule a first session.</p>
+  `;
+
+  return {
+    subject:
+      params.role === "mentor"
+        ? `New mentee: ${params.otherName}`
+        : `You've been matched with ${params.otherName}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.recipientName}, ${params.role === "mentor" ? `${params.otherName} has been paired with you for mentorship.` : `${params.otherName} will be your mentor.`} View it at ${params.link}.`,
+  };
+}
