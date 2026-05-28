@@ -39,11 +39,21 @@ export default async function MentorshipDetailPage({
 
   if (!request) notFound();
 
-  // Verify access
+  // Verify access. Admins/managers see everything; participants see their
+  // own; the mentee's manager sees it when the mentee has opted in.
   const isParticipant =
     request.mentee_id === dbUser.id || request.mentor_id === dbUser.id;
-  const isAdmin = dbUser.role === "admin";
-  if (!isParticipant && !isAdmin) notFound();
+  const isAdmin = dbUser.role === "admin" || dbUser.role === "super_admin";
+  let isMenteeManager = false;
+  if (!isParticipant && !isAdmin && request.share_with_manager) {
+    const { data: mentee } = await service
+      .from("users")
+      .select("manager_id")
+      .eq("id", request.mentee_id)
+      .single();
+    isMenteeManager = mentee?.manager_id === dbUser.id;
+  }
+  if (!isParticipant && !isAdmin && !isMenteeManager) notFound();
 
   // Fetch sessions
   const { data: sessions } = await service

@@ -232,6 +232,30 @@ export default function MentorshipDetailClient({
     }
   }
 
+  // Share-with-manager state (mentee-only control)
+  const isMentee = request.mentee_id === userId;
+  const [shareWithManager, setShareWithManager] = useState<boolean>(!!request.share_with_manager);
+  const [sharing, setSharing] = useState(false);
+
+  async function toggleShareWithManager() {
+    const next = !shareWithManager;
+    setShareWithManager(next);
+    setSharing(true);
+    try {
+      const res = await fetch(`/api/mentorship/requests/${request.id}/share`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share_with_manager: next }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setShareWithManager(!next);
+      alert("Failed to update sharing setting.");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   // Per-session notes editor state
   const [openNotesId, setOpenNotesId] = useState<string | null>(null);
   const [draftShared, setDraftShared] = useState("");
@@ -344,6 +368,26 @@ export default function MentorshipDetailClient({
                 {area}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Share with manager (mentee-only) */}
+        {isMentee && (
+          <div className="mt-4 flex items-center gap-3 rounded-lg bg-gray-50 px-4 py-3">
+            <input
+              id="share-with-manager"
+              type="checkbox"
+              checked={shareWithManager}
+              onChange={toggleShareWithManager}
+              disabled={sharing}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+            />
+            <label htmlFor="share-with-manager" className="text-sm text-gray-700">
+              Share this mentorship with my manager
+              <span className="block text-xs text-gray-500">
+                Lets your direct manager see your goals, sessions, and reviews. You can turn this off any time.
+              </span>
+            </label>
           </div>
         )}
 
