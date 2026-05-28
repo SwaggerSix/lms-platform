@@ -58,3 +58,44 @@ export async function GET(
 
   return NextResponse.json({ ...data, reviews: mentorReviews });
 }
+
+// Admin/manager management of a mentor profile (e.g. activate/deactivate).
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await authorize("admin", "manager");
+  if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { id } = await params;
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (typeof body.is_active === "boolean") updates.is_active = body.is_active;
+  if (typeof body.availability === "string") updates.availability = body.availability;
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+  updates.updated_at = new Date().toISOString();
+
+  const service = createServiceClient();
+  const { data, error } = await service
+    .from("mentor_profiles")
+    .update(updates)
+    .eq("id", id)
+    .select("id, is_active, availability")
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: "Mentor profile not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(data);
+}

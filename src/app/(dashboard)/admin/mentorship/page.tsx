@@ -64,5 +64,20 @@ export default async function AdminMentorshipPage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  return <AdminMentorshipClient stats={stats} recentRequests={recentRequests ?? []} />;
+  // Full mentor profile list for the admin Mentors table
+  const { data: mentorProfiles } = await service
+    .from("mentor_profiles")
+    .select(
+      "id, is_active, availability, expertise_areas, years_experience, max_mentees, current_mentee_count, rating, total_reviews, created_at, user:users!mentor_profiles_user_id_fkey(first_name, last_name, email, job_title)"
+    )
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  return (
+    <AdminMentorshipClient
+      stats={stats}
+      recentRequests={recentRequests ?? []}
+      mentors={mentorProfiles ?? []}
+    />
+  );
 }
