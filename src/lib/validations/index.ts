@@ -551,6 +551,9 @@ export const createMentorProfileSchema = z.object({
   years_experience: z.number().int().min(0).max(50).optional(),
   timezone: z.string().max(100).optional(),
   preferred_meeting_frequency: z.enum(["weekly", "biweekly", "monthly"]).default("weekly"),
+  // Optional, opt-in preferences for discoverability — never used to gate access.
+  affinity_groups: z.array(z.string()).default([]),
+  languages: z.array(z.string()).default([]),
 });
 
 export const updateMentorProfileSchema = createMentorProfileSchema.partial();
