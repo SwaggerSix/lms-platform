@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createMentorshipRequestSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { notifyMentorshipMatch } from "@/lib/mentorship/notify";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -120,6 +121,14 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error("Mentorship request create error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  if (requestData.mentor_id) {
+    await notifyMentorshipMatch({
+      menteeId: auth.user.id,
+      mentorId: requestData.mentor_id,
+      goals: validation.data.goals,
+    });
   }
 
   return NextResponse.json(data, { status: 201 });

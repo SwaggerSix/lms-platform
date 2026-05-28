@@ -1,6 +1,7 @@
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { notifyMentorshipMatch } from "@/lib/mentorship/notify";
 
 // Admin/manager direct assignment of a mentor to a mentee. Creates an active
 // mentorship_request linking the two and bumps the mentor's mentee count.
@@ -86,6 +87,8 @@ export async function POST(request: NextRequest) {
     .from("mentor_profiles")
     .update({ current_mentee_count: (mentor.current_mentee_count ?? 0) + 1 })
     .eq("user_id", mentorId);
+
+  await notifyMentorshipMatch({ menteeId, mentorId, goals });
 
   return NextResponse.json(data, { status: 201 });
 }
