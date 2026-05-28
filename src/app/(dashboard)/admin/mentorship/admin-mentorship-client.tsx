@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Stats {
   totalMentors: number;
@@ -20,16 +21,75 @@ interface AdminMentorshipClientProps {
   stats: Stats;
   recentRequests: any[];
   mentors: any[];
+  users: any[];
 }
 
 export default function AdminMentorshipClient({
   stats,
   recentRequests,
   mentors,
+  users,
 }: AdminMentorshipClientProps) {
+  const router = useRouter();
   const [filter, setFilter] = useState<string>("all");
   const [mentorList, setMentorList] = useState<any[]>(mentors);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Assign-mentor dialog state
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignMentorId, setAssignMentorId] = useState("");
+  const [assignMenteeId, setAssignMenteeId] = useState("");
+  const [assignGoals, setAssignGoals] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  // Mentors that can still take a mentee
+  const assignableMentors = mentorList.filter(
+    (m: any) => m.is_active && (m.current_mentee_count ?? 0) < (m.max_mentees ?? 0) && m.availability !== "unavailable"
+  );
+
+  function userName(u: any) {
+    const name = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`.trim();
+    return name || u?.email || "Unknown";
+  }
+
+  function resetAssign() {
+    setAssignOpen(false);
+    setAssignMentorId("");
+    setAssignMenteeId("");
+    setAssignGoals("");
+    setAssignError(null);
+  }
+
+  async function submitAssign() {
+    if (!assignMentorId || !assignMenteeId) {
+      setAssignError("Please choose both a mentor and a mentee.");
+      return;
+    }
+    setAssigning(true);
+    setAssignError(null);
+    try {
+      const res = await fetch("/api/mentorship/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mentor_id: assignMentorId,
+          mentee_id: assignMenteeId,
+          goals: assignGoals,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to assign mentor");
+      }
+      resetAssign();
+      router.refresh();
+    } catch (err: any) {
+      setAssignError(err.message);
+    } finally {
+      setAssigning(false);
+    }
+  }
 
   async function toggleActive(id: string, current: boolean) {
     setTogglingId(id);
@@ -74,12 +134,113 @@ export default function AdminMentorshipClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mentorship Administration</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Overview of all mentorship activity and management tools
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Mentorship Administration</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Overview of all mentorship activity and management tools
+          </p>
+        </div>
+        <button
+          onClick={() => setAssignOpen(true)}
+          className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        >
+          Assign Mentor
+        </button>
       </div>
+
+      {/* Assign mentor modal */}
+      {assignOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={resetAssign}>
+          <div
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900">Assign a Mentor</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Pair a mentee with an available mentor. This creates an active mentorship right away.
+            </p>
+
+            {assignError && (
+              <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                {assignError}
+              </div>
+            )}
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mentor *</label>
+                <select
+                  value={assignMentorId}
+                  onChange={(e) => setAssignMentorId(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="">Select a mentor...</option>
+                  {assignableMentors.map((m: any) => {
+                    const open = (m.max_mentees ?? 0) - (m.current_mentee_count ?? 0);
+                    return (
+                      <option key={m.id} value={m.user_id}>
+                        {userName(m.user)} ({open} spot{open === 1 ? "" : "s"} open)
+                      </option>
+                    );
+                  })}
+                </select>
+                {assignableMentors.length === 0 && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    No mentors with open capacity. Activate a mentor or free up capacity first.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mentee *</label>
+                <select
+                  value={assignMenteeId}
+                  onChange={(e) => setAssignMenteeId(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="">Select a mentee...</option>
+                  {users
+                    .filter((u: any) => u.id !== assignMentorId)
+                    .map((u: any) => (
+                      <option key={u.id} value={u.id}>
+                        {userName(u)} — {u.email}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Goals (optional)</label>
+                <textarea
+                  value={assignGoals}
+                  onChange={(e) => setAssignGoals(e.target.value)}
+                  rows={3}
+                  placeholder="What should this mentorship focus on?"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={resetAssign}
+                disabled={assigning}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitAssign}
+                disabled={assigning || !assignMentorId || !assignMenteeId}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {assigning ? "Assigning..." : "Assign Mentor"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
