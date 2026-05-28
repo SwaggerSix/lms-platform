@@ -323,7 +323,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
         {/* Add Rule Modal */}
         {showRuleModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Add Point Rule</h3>
                 <button onClick={() => setShowRuleModal(false)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"><X className="h-5 w-5" /></button>
@@ -412,7 +412,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
           {/* Badge create/edit modal */}
           {showBadgeModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">
                     {editingBadgeId ? "Edit Badge" : "Create Badge"}

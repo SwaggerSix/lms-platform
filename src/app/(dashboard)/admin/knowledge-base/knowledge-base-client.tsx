@@ -515,7 +515,7 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
             </div>
 
             {/* Articles Table */}
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
@@ -951,7 +951,7 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
       {/* ═══ Category Modal ═══ */}
       {showCategoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingCategory ? "Edit Category" : "Create New Category"}

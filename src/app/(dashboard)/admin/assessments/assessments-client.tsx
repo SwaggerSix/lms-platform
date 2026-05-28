@@ -430,7 +430,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -559,7 +559,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       {/* Create / Edit Modal */}
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={closeModal}>
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingId ? 'Edit Assessment' : 'Create Assessment'}

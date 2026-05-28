@@ -400,7 +400,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
           {/* Edit announcement modal */}
           {editingId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Edit Announcement</h2>
                   <button onClick={() => setEditingId(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
@@ -504,7 +504,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
           {/* Template edit modal */}
           {editingTemplate && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">Edit Template</h2>
                   <button onClick={() => setEditingTemplate(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">

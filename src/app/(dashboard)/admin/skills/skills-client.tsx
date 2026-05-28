@@ -346,7 +346,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
 
       {editingSkill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Edit Skill</h2>
               <button onClick={() => setEditingSkill(null)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
@@ -383,7 +383,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Add New Skill</h2>
               <button onClick={() => setShowAddModal(false)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">

@@ -546,7 +546,7 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
       {/* Reject Modal */}
       {rejectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-200 p-6">
               <div className="flex items-center gap-3">
                 <div className="rounded-full bg-red-100 p-2">

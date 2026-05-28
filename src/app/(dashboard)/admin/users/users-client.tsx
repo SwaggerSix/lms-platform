@@ -367,7 +367,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -518,7 +518,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       {/* Edit User Modal */}
       {showEditModal && editUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Edit User</h2>
               <button onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
@@ -597,7 +597,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       {/* Generated Credentials Modal */}
       {credentials && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Login credentials</h2>
               <button onClick={() => setCredentials(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
@@ -649,7 +649,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       {/* Add User Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Add New User</h2>
               <button onClick={() => { resetForm(); setShowModal(false); }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">

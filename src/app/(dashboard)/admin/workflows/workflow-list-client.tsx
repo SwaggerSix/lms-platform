@@ -353,7 +353,7 @@ export default function WorkflowListClient({
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Workflow</h2>
             <div className="space-y-4">
               <div>
