@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MentorCard from "@/components/mentorship/mentor-card";
 import MatchResults from "@/components/mentorship/match-results";
 
@@ -44,6 +44,45 @@ export default function MentorshipClient({
   );
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  // Browse-Mentors search & filter state
+  const [displayMentors, setDisplayMentors] = useState<any[]>(mentors);
+  const [searchInput, setSearchInput] = useState("");
+  const [availabilityFilter, setAvailabilityFilter] = useState("");
+  const [expertiseFilter, setExpertiseFilter] = useState("");
+  const [browsing, setBrowsing] = useState(false);
+
+  // Unique expertise values from the directory, for the filter dropdown.
+  const expertiseOptions = Array.from(
+    new Set(
+      (mentors as any[])
+        .flatMap((m) => (Array.isArray(m.expertise_areas) ? m.expertise_areas : []))
+        .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    )
+  ).sort();
+
+  // Debounced refetch when the user changes search/filters; the API already
+  // supports search/availability/expertise params.
+  useEffect(() => {
+    if (activeTab !== "browse") return;
+    const handle = setTimeout(async () => {
+      const params = new URLSearchParams();
+      if (searchInput.trim()) params.set("search", searchInput.trim());
+      if (availabilityFilter) params.set("availability", availabilityFilter);
+      if (expertiseFilter) params.set("expertise", expertiseFilter);
+      setBrowsing(true);
+      try {
+        const res = await fetch(`/api/mentorship/profiles?${params.toString()}`);
+        const data = await res.json();
+        if (res.ok) setDisplayMentors(data.mentors ?? []);
+      } catch {
+        // keep prior list on transient errors
+      } finally {
+        setBrowsing(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [searchInput, availabilityFilter, expertiseFilter, activeTab]);
 
   async function handleRequestMentor(mentorUserId: string) {
     setSelectedMentorId(mentorUserId);
@@ -260,8 +299,58 @@ export default function MentorshipClient({
             </div>
           )}
 
+          {/* Search & filters */}
+          <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto_auto] items-end">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Search</label>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search by name or bio..."
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Availability</label>
+              <select
+                value={availabilityFilter}
+                onChange={(e) => setAvailabilityFilter(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="">Any</option>
+                <option value="available">Available</option>
+                <option value="limited">Limited</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Expertise</label>
+              <select
+                value={expertiseFilter}
+                onChange={(e) => setExpertiseFilter(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="">Any</option>
+                {expertiseOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-gray-500">{mentors.length} mentors available</p>
+            <p className="text-sm text-gray-500">
+              {browsing ? "Searching..." : `${displayMentors.length} mentor${displayMentors.length === 1 ? "" : "s"} found`}
+              {(searchInput || availabilityFilter || expertiseFilter) && !browsing && (
+                <button
+                  onClick={() => { setSearchInput(""); setAvailabilityFilter(""); setExpertiseFilter(""); }}
+                  className="ml-3 text-xs text-indigo-600 hover:text-indigo-700"
+                >
+                  Clear filters
+                </button>
+              )}
+            </p>
             <button
               onClick={() => {
                 setSelectedMentorId(null);
@@ -273,7 +362,7 @@ export default function MentorshipClient({
             </button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {mentors.map((mentor: any) => (
+            {displayMentors.map((mentor: any) => (
               <MentorCard
                 key={mentor.id}
                 mentor={mentor}
@@ -282,9 +371,13 @@ export default function MentorshipClient({
               />
             ))}
           </div>
-          {mentors.length === 0 && (
+          {displayMentors.length === 0 && !browsing && (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-              <p className="text-sm text-gray-500">No mentors available yet. Be the first to become a mentor!</p>
+              <p className="text-sm text-gray-500">
+                {searchInput || availabilityFilter || expertiseFilter
+                  ? "No mentors match those filters. Try clearing some."
+                  : "No mentors available yet. Be the first to become a mentor!"}
+              </p>
             </div>
           )}
         </div>
