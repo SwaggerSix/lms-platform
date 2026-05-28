@@ -297,6 +297,31 @@ export function scheduledReportDelivery(params: {
   };
 }
 
+export function mentorshipNudge(params: {
+  recipientName: string;
+  otherName: string;
+  daysSinceContact: number;
+  link: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Time to reconnect with ${params.otherName}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">
+      Hi ${params.recipientName},
+    </p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      It's been about <strong>${params.daysSinceContact} days</strong> since your last session. A short check-in keeps the mentorship moving — schedule your next session today.
+    </p>
+    ${button("Schedule a Session", params.link)}
+    <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">Even 20 minutes makes a difference.</p>
+  `;
+  return {
+    subject: `Time to reconnect with ${params.otherName}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.recipientName}, it's been ${params.daysSinceContact} days since your last mentorship session with ${params.otherName}. Schedule the next one: ${params.link}`,
+  };
+}
+
 export function mentorshipMatch(params: {
   recipientName: string;
   otherName: string;
