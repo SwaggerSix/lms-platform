@@ -80,6 +80,15 @@ export default async function MentorshipDetailPage({
     .order("target_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
+  // Conversation between the pair
+  const { data: messages } = await service
+    .from("mentorship_messages")
+    .select(
+      "id, request_id, sender_id, body, created_at, sender:users!mentorship_messages_sender_id_fkey(first_name, last_name)"
+    )
+    .eq("request_id", requestId)
+    .order("created_at", { ascending: true });
+
   const isMentor = request.mentor_id === dbUser.id;
 
   return (
@@ -88,6 +97,7 @@ export default async function MentorshipDetailPage({
       sessions={sessions ?? []}
       reviews={reviews ?? []}
       goals={goals ?? []}
+      messages={messages ?? []}
       userId={dbUser.id}
       isMentor={isMentor}
     />
