@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateMentorshipRequestSchema } from "@/lib/validations";
+import { awardMentorBadges } from "@/lib/mentorship/badges";
 
 export async function PUT(
   request: NextRequest,
@@ -110,6 +111,11 @@ export async function PUT(
   if (error) {
     console.error("Mentorship request update error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // When a mentorship completes, check the mentor for any newly-earned badges.
+  if (validation.data.status === "completed" && existing.mentor_id) {
+    await awardMentorBadges(existing.mentor_id);
   }
 
   return NextResponse.json(data);
