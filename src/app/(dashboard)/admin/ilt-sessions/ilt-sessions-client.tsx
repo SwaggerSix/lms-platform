@@ -578,7 +578,7 @@ export default function ILTSessionsClient({
           </div>
 
           {/* Roster Table */}
-          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="mt-4 rounded-xl border border-gray-200 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
@@ -766,7 +766,7 @@ export default function ILTSessionsClient({
 
         {/* List View */}
         {viewMode === "list" && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="mt-4 rounded-xl border border-gray-200 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
@@ -888,7 +888,7 @@ export default function ILTSessionsClient({
 
         {/* Calendar View */}
         {viewMode === "calendar" && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="mt-4 rounded-xl border border-gray-200 bg-white">
             <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 text-center font-semibold text-gray-900">
               {calendarMonth.label}
             </div>
