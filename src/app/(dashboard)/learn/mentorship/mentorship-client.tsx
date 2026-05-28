@@ -45,6 +45,17 @@ export default function MentorshipClient({
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
+  // Mentor onboarding gate (env-driven; null until fetched)
+  const [onboarding, setOnboarding] = useState<{ required: boolean; completed: boolean; courseId: string | null; courseTitle: string | null } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/mentorship/onboarding-status")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (!cancelled && data) setOnboarding(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   // Browse-Mentors search & filter state
   const [displayMentors, setDisplayMentors] = useState<any[]>(mentors);
   const [searchInput, setSearchInput] = useState("");
@@ -476,6 +487,34 @@ export default function MentorshipClient({
             {profileSaved && (
               <div className="mb-4 rounded-lg bg-green-50 border border-green-200 p-3">
                 <p className="text-sm text-green-700">Profile saved successfully!</p>
+              </div>
+            )}
+
+            {onboarding?.required && !onboarding.completed && (
+              <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-4">
+                <h4 className="text-sm font-semibold text-amber-900">
+                  Mentor onboarding required
+                </h4>
+                <p className="mt-1 text-sm text-amber-800">
+                  Before your profile can go live for mentees to find, please complete
+                  {onboarding.courseTitle ? <> the <strong>{onboarding.courseTitle}</strong> course</> : " the mentor onboarding course"}.
+                  Your profile can still be saved as a draft.
+                </p>
+                {onboarding.courseId && (
+                  <a
+                    href={`/learn/courses/${onboarding.courseId}`}
+                    className="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+                  >
+                    Start onboarding course
+                  </a>
+                )}
+              </div>
+            )}
+            {onboarding?.required && onboarding.completed && !myProfile?.is_active && (
+              <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 p-3">
+                <p className="text-sm text-blue-800">
+                  You've completed onboarding. Re-save your profile to activate it for mentees.
+                </p>
               </div>
             )}
 
