@@ -19,6 +19,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 /* ------------------------------------------------------------------ */
 /*  Data Interfaces                                                    */
@@ -133,7 +135,10 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Achievements</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">Achievements</h1>
+            <InfoTooltip content={getHelp("learn.achievements").details} label="About Achievements" side="bottom" />
+          </div>
           <p className="mt-1 text-sm text-gray-500">Track your learning milestones and compete with peers.</p>
         </div>
 

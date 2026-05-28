@@ -4,6 +4,8 @@ import Link from "next/link";
 import { BookOpen, Clock, Award, ArrowRight, Layers } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/format";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 export interface LearningPath {
   id: string;
@@ -44,7 +46,10 @@ export default function PathsClient({ paths }: Props) {
         <div className="flex items-center gap-3">
           <Layers className="h-8 w-8 text-indigo-600" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Explore Learning Paths</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">Explore Learning Paths</h1>
+              <InfoTooltip content={getHelp("learn.paths").details} label="About Learning Paths" side="bottom" />
+            </div>
             <p className="mt-1 text-gray-500">
               Structured programs to guide your professional development from start to finish.
             </p>

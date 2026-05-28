@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
+import { PageIntro } from "@/components/ui/page-intro";
+import { getHelp } from "@/lib/help-content";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -134,21 +136,22 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Observations</h1>
-          <p className="mt-1 text-sm text-gray-500">View and manage your observation checklists</p>
-        </div>
-        {canObserve && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Observation
-          </button>
-        )}
-      </div>
+      <PageIntro
+        title={getHelp("learn.observations").title}
+        description={getHelp("learn.observations").description}
+        details={getHelp("learn.observations").details}
+        actions={
+          canObserve && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              New Observation
+            </button>
+          )
+        }
+      />
 
       {/* Create modal */}
       {showCreate && (

@@ -26,6 +26,8 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate, formatRelativeTime, formatPercent } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 export interface TeamMember {
   id: string;
@@ -399,6 +401,7 @@ export default function TeamClient({
           <div className="flex items-center gap-3 mb-1">
             <Users className="h-8 w-8 text-indigo-600" />
             <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+            <InfoTooltip content={getHelp("manager.team").details} label="About My Team" side="bottom" />
             <span className="ml-2 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
               {stats.teamSize} members
             </span>

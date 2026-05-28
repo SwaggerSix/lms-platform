@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import MentorCard from "@/components/mentorship/mentor-card";
 import MatchResults from "@/components/mentorship/match-results";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 interface MentorshipClientProps {
   userId: string;
@@ -211,7 +213,10 @@ export default function MentorshipClient({
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Mentorship</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">Mentorship</h1>
+          <InfoTooltip content={getHelp("learn.mentorship").details} label="About Mentorship" side="bottom" />
+        </div>
         <p className="mt-1 text-sm text-gray-500">
           Connect with experienced mentors or become one yourself
         </p>
