@@ -3,10 +3,21 @@
 import { useState } from "react";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
 
+interface Goal {
+  id: string;
+  title: string;
+  description: string | null;
+  target_date: string | null;
+  status: "open" | "done";
+  completed_at: string | null;
+  created_at: string;
+}
+
 interface DetailClientProps {
   request: any;
   sessions: any[];
   reviews: any[];
+  goals: Goal[];
   userId: string;
   isMentor: boolean;
 }
@@ -15,6 +26,7 @@ export default function MentorshipDetailClient({
   request,
   sessions: initialSessions,
   reviews,
+  goals: initialGoals,
   userId,
   isMentor,
 }: DetailClientProps) {
@@ -26,6 +38,92 @@ export default function MentorshipDetailClient({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
+  // Development goals state
+  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [goalAddOpen, setGoalAddOpen] = useState(false);
+  const [goalTitle, setGoalTitle] = useState("");
+  const [goalDescription, setGoalDescription] = useState("");
+  const [goalTarget, setGoalTarget] = useState("");
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [goalError, setGoalError] = useState<string | null>(null);
+  const canEditGoals = status !== "completed" && status !== "cancelled";
+
+  function resetGoalForm() {
+    setGoalAddOpen(false);
+    setGoalTitle("");
+    setGoalDescription("");
+    setGoalTarget("");
+    setGoalError(null);
+  }
+
+  async function addGoal() {
+    const t = goalTitle.trim();
+    if (!t) { setGoalError("Please enter a title."); return; }
+    setGoalSaving(true);
+    setGoalError(null);
+    try {
+      const res = await fetch(`/api/mentorship/requests/${request.id}/goals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: t,
+          description: goalDescription.trim() || null,
+          target_date: goalTarget || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to add goal");
+      setGoals((prev) => [...prev, data as Goal].sort(sortGoals));
+      resetGoalForm();
+    } catch (err: any) {
+      setGoalError(err.message);
+    } finally {
+      setGoalSaving(false);
+    }
+  }
+
+  async function toggleGoalDone(goal: Goal) {
+    const newStatus: "open" | "done" = goal.status === "done" ? "open" : "done";
+    setGoals((prev) =>
+      prev.map((g) =>
+        g.id === goal.id ? { ...g, status: newStatus, completed_at: newStatus === "done" ? new Date().toISOString() : null } : g
+      ).sort(sortGoals)
+    );
+    try {
+      const res = await fetch(`/api/mentorship/goals/${goal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // Revert on failure
+      setGoals((prev) => prev.map((g) => (g.id === goal.id ? goal : g)).sort(sortGoals));
+      alert("Failed to update goal. Please try again.");
+    }
+  }
+
+  async function deleteGoal(goal: Goal) {
+    if (!confirm(`Delete goal "${goal.title}"?`)) return;
+    const previous = goals;
+    setGoals((prev) => prev.filter((g) => g.id !== goal.id));
+    try {
+      const res = await fetch(`/api/mentorship/goals/${goal.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      setGoals(previous);
+      alert("Failed to delete goal.");
+    }
+  }
+
+  function sortGoals(a: Goal, b: Goal) {
+    if (a.status !== b.status) return a.status === "open" ? -1 : 1;
+    const ad = a.target_date ? new Date(a.target_date).getTime() : Infinity;
+    const bd = b.target_date ? new Date(b.target_date).getTime() : Infinity;
+    if (ad !== bd) return ad - bd;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  }
 
   const mentee = request.mentee as any;
   const mentor = request.mentor as any;
@@ -298,6 +396,141 @@ export default function MentorshipDetailClient({
           </div>
         </div>
       )}
+
+      {/* Development Goals */}
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Development Goals</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Specific outcomes you and your {isMentor ? "mentee" : "mentor"} are working toward.
+            </p>
+          </div>
+          {canEditGoals && !goalAddOpen && (
+            <button
+              onClick={() => setGoalAddOpen(true)}
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+            >
+              + Add Goal
+            </button>
+          )}
+        </div>
+
+        {goalAddOpen && (
+          <div className="border-b border-gray-100 bg-gray-50/40 p-5">
+            {goalError && (
+              <div className="mb-3 rounded-lg bg-red-50 border border-red-200 p-2 text-xs text-red-700">
+                {goalError}
+              </div>
+            )}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Title *</label>
+                <input
+                  type="text"
+                  value={goalTitle}
+                  onChange={(e) => setGoalTitle(e.target.value)}
+                  placeholder="e.g. Run a project status meeting independently"
+                  maxLength={200}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Details (optional)</label>
+                <textarea
+                  value={goalDescription}
+                  onChange={(e) => setGoalDescription(e.target.value)}
+                  rows={2}
+                  placeholder="What does success look like?"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Target date (optional)</label>
+                <input
+                  type="date"
+                  value={goalTarget}
+                  onChange={(e) => setGoalTarget(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={resetGoalForm}
+                  disabled={goalSaving}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-white disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={addGoal}
+                  disabled={goalSaving || !goalTitle.trim()}
+                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {goalSaving ? "Saving..." : "Save Goal"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {goals.length === 0 && !goalAddOpen ? (
+          <div className="p-6 text-center text-sm text-gray-400">
+            No goals yet. {canEditGoals && "Add the first one to start tracking progress."}
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {goals.map((goal) => {
+              const isDone = goal.status === "done";
+              const overdue =
+                !isDone && goal.target_date && new Date(goal.target_date) < new Date();
+              return (
+                <li key={goal.id} className="flex items-start gap-3 px-5 py-3">
+                  <input
+                    type="checkbox"
+                    checked={isDone}
+                    onChange={() => toggleGoalDone(goal)}
+                    disabled={!canEditGoals}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${isDone ? "text-gray-400 line-through" : "text-gray-900"}`}>
+                      {goal.title}
+                    </p>
+                    {goal.description && (
+                      <p className={`mt-0.5 text-xs ${isDone ? "text-gray-400" : "text-gray-600"}`}>
+                        {goal.description}
+                      </p>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      {goal.target_date && (
+                        <span className={overdue ? "text-red-600 font-medium" : "text-gray-500"}>
+                          Target: {new Date(goal.target_date).toLocaleDateString()}
+                          {overdue ? " (overdue)" : ""}
+                        </span>
+                      )}
+                      {isDone && goal.completed_at && (
+                        <span className="text-green-600">
+                          Completed {new Date(goal.completed_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {canEditGoals && (
+                    <button
+                      onClick={() => deleteGoal(goal)}
+                      className="text-xs text-gray-400 hover:text-red-600"
+                      aria-label="Delete goal"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
       {/* Sessions */}
       <div className="rounded-xl border border-gray-200 bg-white mb-6">
