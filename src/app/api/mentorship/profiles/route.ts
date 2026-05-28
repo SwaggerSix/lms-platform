@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createMentorProfileSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { getMentorOnboardingStatus } from "@/lib/mentorship/onboarding";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -91,11 +92,18 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient();
 
+  // Gate is_active on mentor onboarding completion when configured.
+  const onboarding = await getMentorOnboardingStatus(auth.user.id);
+  const enforced: Record<string, unknown> = { ...validation.data };
+  if (onboarding.required && !onboarding.completed) {
+    enforced.is_active = false;
+  }
+
   // Upsert: create or update
   const { data, error } = await service
     .from("mentor_profiles")
     .upsert(
-      { user_id: auth.user.id, ...validation.data, updated_at: new Date().toISOString() },
+      { user_id: auth.user.id, ...enforced, updated_at: new Date().toISOString() },
       { onConflict: "user_id" }
     )
     .select("*, user:users!mentor_profiles_user_id_fkey(id, first_name, last_name, email)")
