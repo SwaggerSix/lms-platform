@@ -53,6 +53,7 @@ export default function AdminMentorshipClient({
   const [assignMentorId, setAssignMentorId] = useState("");
   const [assignMenteeId, setAssignMenteeId] = useState("");
   const [assignGoals, setAssignGoals] = useState("");
+  const [assignType, setAssignType] = useState<"traditional" | "reverse" | "peer">("traditional");
   const [assigning, setAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
 
@@ -175,6 +176,7 @@ export default function AdminMentorshipClient({
           mentor_id: assignMentorId,
           mentee_id: assignMenteeId,
           goals: assignGoals,
+          mentorship_type: assignType,
         }),
       });
       if (!res.ok) {
@@ -310,6 +312,16 @@ export default function AdminMentorshipClient({
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mentorship type</label>
+                <select
+                  value={assignType}
+                  onChange={(e) => setAssignType(e.target.value as "traditional" | "reverse" | "peer")}
+                  className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="traditional">Traditional</option>
+                  <option value="reverse">Reverse</option>
+                  <option value="peer">Peer</option>
+                </select>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Goals (optional)</label>
                 <textarea
                   value={assignGoals}

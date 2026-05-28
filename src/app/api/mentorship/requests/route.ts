@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
     mentee_id: auth.user.id,
     goals: validation.data.goals,
     preferred_areas: validation.data.preferred_areas,
+    mentorship_type: validation.data.mentorship_type ?? "traditional",
   };
 
   // If a specific mentor was requested
