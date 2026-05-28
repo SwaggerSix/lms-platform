@@ -68,16 +68,24 @@ export default async function AdminMentorshipPage() {
   const { data: mentorProfiles } = await service
     .from("mentor_profiles")
     .select(
-      "id, is_active, availability, expertise_areas, years_experience, max_mentees, current_mentee_count, rating, total_reviews, created_at, user:users!mentor_profiles_user_id_fkey(first_name, last_name, email, job_title)"
+      "id, user_id, is_active, availability, expertise_areas, years_experience, max_mentees, current_mentee_count, rating, total_reviews, created_at, user:users!mentor_profiles_user_id_fkey(first_name, last_name, email, job_title)"
     )
     .order("created_at", { ascending: false })
     .limit(200);
+
+  // Users list for the mentee picker in the assign dialog
+  const { data: allUsers } = await service
+    .from("users")
+    .select("id, first_name, last_name, email")
+    .order("first_name", { ascending: true })
+    .limit(1000);
 
   return (
     <AdminMentorshipClient
       stats={stats}
       recentRequests={recentRequests ?? []}
       mentors={mentorProfiles ?? []}
+      users={allUsers ?? []}
     />
   );
 }
