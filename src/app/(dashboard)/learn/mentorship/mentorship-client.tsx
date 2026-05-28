@@ -43,6 +43,13 @@ export default function MentorshipClient({
   const [profileFrequency, setProfileFrequency] = useState(
     myProfile?.preferred_meeting_frequency ?? "weekly"
   );
+  // Optional discoverability preferences (opt-in)
+  const [profileAffinity, setProfileAffinity] = useState(
+    myProfile?.affinity_groups?.join(", ") ?? ""
+  );
+  const [profileLanguages, setProfileLanguages] = useState(
+    myProfile?.languages?.join(", ") ?? ""
+  );
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -160,6 +167,14 @@ export default function MentorshipClient({
           max_mentees: profileMaxMentees,
           timezone: profileTimezone,
           preferred_meeting_frequency: profileFrequency,
+          affinity_groups: profileAffinity
+            .split(",")
+            .map((a: string) => a.trim())
+            .filter(Boolean),
+          languages: profileLanguages
+            .split(",")
+            .map((a: string) => a.trim())
+            .filter(Boolean),
         }),
       });
 
@@ -631,6 +646,41 @@ export default function MentorshipClient({
                     <option value="biweekly">Biweekly</option>
                     <option value="monthly">Monthly</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-4">
+                <p className="text-xs font-medium text-gray-700 mb-2">
+                  Optional preferences <span className="font-normal text-gray-500">— help mentees self-select. Leave blank to skip.</span>
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Languages spoken (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={profileLanguages}
+                      onChange={(e) => setProfileLanguages(e.target.value)}
+                      placeholder="e.g. English, Spanish"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Affinity groups (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={profileAffinity}
+                      onChange={(e) => setProfileAffinity(e.target.value)}
+                      placeholder="e.g. Women in Tech, BIPOC, LGBTQ+, Veterans"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Self-identified. Shown on your mentor card so mentees can find affinity matches; never used to gate access.
+                    </p>
+                  </div>
                 </div>
               </div>
 

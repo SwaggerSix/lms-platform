@@ -14,6 +14,8 @@ interface MentorCardProps {
     years_experience: number | null;
     timezone: string | null;
     preferred_meeting_frequency: string;
+    languages?: string[] | null;
+    affinity_groups?: string[] | null;
     rating: number | null;
     total_reviews: number;
     user: {
@@ -142,6 +144,34 @@ export default function MentorCard({
               +{mentor.expertise_areas.length - 5} more
             </span>
           )}
+        </div>
+      )}
+
+      {/* Languages */}
+      {Array.isArray(mentor.languages) && mentor.languages.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {mentor.languages.map((lang: string, i: number) => (
+            <span
+              key={i}
+              className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700 ring-1 ring-inset ring-blue-200"
+            >
+              {lang}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Affinity groups */}
+      {Array.isArray(mentor.affinity_groups) && mentor.affinity_groups.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {mentor.affinity_groups.map((group: string, i: number) => (
+            <span
+              key={i}
+              className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700 ring-1 ring-inset ring-purple-200"
+            >
+              {group}
+            </span>
+          ))}
         </div>
       )}
 
