@@ -24,6 +24,7 @@ export default function MentorshipClient({
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestGoals, setRequestGoals] = useState("");
   const [requestAreas, setRequestAreas] = useState("");
+  const [requestType, setRequestType] = useState<"traditional" | "reverse" | "peer">("traditional");
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [requestSuccess, setRequestSuccess] = useState(false);
@@ -121,6 +122,7 @@ export default function MentorshipClient({
             .split(",")
             .map((a: string) => a.trim())
             .filter(Boolean),
+          mentorship_type: requestType,
         }),
       });
 
@@ -243,6 +245,20 @@ export default function MentorshipClient({
             </div>
           )}
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mentorship type
+              </label>
+              <select
+                value={requestType}
+                onChange={(e) => setRequestType(e.target.value as "traditional" | "reverse" | "peer")}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="traditional">Traditional — learn from someone more senior</option>
+                <option value="reverse">Reverse — share fresh perspective with a senior colleague</option>
+                <option value="peer">Peer — partner with someone at a similar level</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 What are your mentorship goals? *

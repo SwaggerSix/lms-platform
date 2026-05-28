@@ -377,6 +377,11 @@ export default function MentorshipDetailClient({
           </div>
 
           <div className="flex items-center gap-3">
+            {request.mentorship_type && request.mentorship_type !== "traditional" && (
+              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 capitalize">
+                {request.mentorship_type} mentorship
+              </span>
+            )}
             <span
               className={`rounded-full border px-3 py-1 text-sm font-medium ${
                 statusColors[status] ?? "bg-gray-100 text-gray-600"

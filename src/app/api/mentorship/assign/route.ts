@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
   const mentorId = typeof body.mentor_id === "string" ? body.mentor_id : null;
   const goals = typeof body.goals === "string" && body.goals.trim() ? body.goals.trim() : null;
   const preferredAreas = Array.isArray(body.preferred_areas) ? body.preferred_areas : null;
+  const mentorshipType =
+    body.mentorship_type === "reverse" || body.mentorship_type === "peer"
+      ? body.mentorship_type
+      : "traditional";
 
   if (!menteeId || !mentorId) {
     return NextResponse.json({ error: "Both a mentee and a mentor are required" }, { status: 400 });
@@ -70,6 +74,7 @@ export async function POST(request: NextRequest) {
       mentor_id: mentorId,
       goals,
       preferred_areas: preferredAreas,
+      mentorship_type: mentorshipType,
       status: "active",
       matched_at: new Date().toISOString(),
     })

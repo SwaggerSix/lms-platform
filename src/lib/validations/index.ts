@@ -560,6 +560,7 @@ export const createMentorshipRequestSchema = z.object({
   mentor_id: z.string().uuid().optional(),
   goals: z.string().min(1).max(2000),
   preferred_areas: z.array(z.string()).default([]),
+  mentorship_type: z.enum(["traditional", "reverse", "peer"]).optional(),
 });
 
 export const updateMentorshipRequestSchema = z.object({
