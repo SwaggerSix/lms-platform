@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Workflow,
   Plus,
@@ -21,6 +22,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 interface WorkflowItem {
   id: string;
@@ -65,6 +68,7 @@ export default function WorkflowListClient({
   const [creating, setCreating] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const toast = useToast();
+  const router = useRouter();
 
   const filtered = workflows.filter((w) => {
     const matchesSearch =
@@ -95,7 +99,8 @@ export default function WorkflowListClient({
       setNewName("");
       setNewDescription("");
       setNewTrigger("manual");
-      toast.toast({ type: "success", message: "Workflow created" });
+      toast.toast({ type: "success", message: "Workflow created — opening editor" });
+      if (data?.id) router.push(`/admin/workflows/${data.id}`);
     } catch {
       toast.toast({ type: "error", message: "Failed to create workflow" });
     } finally {
@@ -163,8 +168,11 @@ export default function WorkflowListClient({
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Workflow className="w-7 h-7 text-indigo-600" />
             Workflow Automation
+            <InfoTooltip content={getHelp("admin.workflows").details} label="About Workflows" side="bottom" />
           </h1>
-          <p className="text-gray-500 mt-1">Build visual automation workflows with triggers, conditions, and actions</p>
+          <p className="text-gray-500 mt-1">
+            Build multi-step automations. After creating a workflow, click it to open the visual editor and add conditions, actions, branches, and delays.
+          </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -339,9 +347,10 @@ export default function WorkflowListClient({
 
                   <Link
                     href={`/admin/workflows/${workflow.id}`}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    Open editor
+                    <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
               );
@@ -354,7 +363,10 @@ export default function WorkflowListClient({
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Workflow</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Create Workflow</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              You'll be taken to the visual editor next, where you can add conditions, actions, branches, and delays.
+            </p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

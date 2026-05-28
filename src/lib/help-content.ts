@@ -328,15 +328,15 @@ export const helpContent = {
   },
   "admin.workflows": {
     title: "Workflows",
-    description: "Automated multi-step processes (approvals, onboarding, etc.).",
+    description: "Multi-step automations with branches, conditions, and delays.",
     details:
-      "Design workflows visually: triggers, conditions, actions. Use for onboarding, offboarding, escalations, and any repeating process.",
+      "Workflows are visual automations for complex processes — onboarding, offboarding, escalations, anything that needs multiple steps in sequence. Pick a trigger (event, schedule, webhook, or manual), then open the editor to add steps: actions (send email, enroll user, assign badge, call webhook), conditions (if/else branching), delays (wait N hours/days), and loops. After creating a workflow you'll be taken straight to the visual editor — that's where the conditions and actions live, not on the list page. Use Automation instead if you just need a simple \"when X happens, do Y\" rule.",
   },
   "admin.automation": {
-    title: "Automation",
-    description: "Rules that fire actions automatically based on events.",
+    title: "Enrollment Automation",
+    description: "Simple if-this-then-that rules for enrollments and badges.",
     details:
-      "If-this-then-that rules — e.g., \"when a new hire joins, assign onboarding path.\" Lower-level than workflows; great for simple triggers.",
+      "Automation rules fire one action when a single trigger condition is met — e.g. \"when a user's department becomes Sales, enroll them in the Sales Onboarding path,\" or \"when a course is completed, award the Pro Badge.\" Unlike Workflows, there are no branches, delays, or multi-step sequences. If you need anything more complex than a single trigger → single action, build it as a Workflow instead.",
   },
   "admin.gamification": {
     title: "Gamification",

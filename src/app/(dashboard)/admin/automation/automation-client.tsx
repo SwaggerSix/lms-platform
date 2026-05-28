@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { getHelp } from "@/lib/help-content";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -971,9 +973,12 @@ export default function AutomationClient({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Enrollment Automation</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">Enrollment Automation</h1>
+            <InfoTooltip content={getHelp("admin.automation").details} label="About Automation" side="bottom" />
+          </div>
           <p className="text-sm text-gray-500 mt-1">
-            Create rules that automatically enroll users in courses, paths, or award badges based on triggers.
+            Simple if-this-then-that rules — e.g. "when a new hire joins, enroll them in onboarding." For multi-step flows with branches and delays, use Workflows instead.
           </p>
         </div>
         <button
