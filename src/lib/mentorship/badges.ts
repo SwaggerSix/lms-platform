@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendPushToUsers } from "@/lib/push/dispatch";
 
 // Award any mentor-category badges whose threshold the mentor has now met,
 // based on count of completed mentorships as the mentor. Idempotent: skips
@@ -63,6 +64,15 @@ export async function awardMentorBadges(mentorUserId: string): Promise<void> {
           is_read: false,
         }))
       );
+      await sendPushToUsers({
+        userIds: [mentorUserId],
+        title:
+          awardedBadges.length === 1
+            ? `Badge earned: ${awardedBadges[0].name}`
+            : `${awardedBadges.length} new mentorship badges`,
+        body: "Recognition for your mentorship work.",
+        url: "/learn/mentorship",
+      });
     }
   } catch (err) {
     console.error("awardMentorBadges error:", err);
