@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email/sender";
 import { mentorshipMatch, mentorshipNudge } from "@/lib/email/templates";
+import { sendPushToUsers } from "@/lib/push/dispatch";
 
 // Fan-out notification when a mentor and mentee are paired: a row in the in-app
 // inbox for each, plus an email. Best-effort — failures are logged but never
@@ -73,6 +74,18 @@ export async function notifyMentorshipMatch(params: {
     await Promise.allSettled([
       sendEmail({ to: mentee.email, subject: tplMentee.subject, html: tplMentee.html, text: tplMentee.text }),
       sendEmail({ to: mentor.email, subject: tplMentor.subject, html: tplMentor.html, text: tplMentor.text }),
+      sendPushToUsers({
+        userIds: [mentee.id],
+        title: tplMentee.subject,
+        body: `${fullName(mentor)} will be your mentor.`,
+        url: "/learn/mentorship",
+      }),
+      sendPushToUsers({
+        userIds: [mentor.id],
+        title: tplMentor.subject,
+        body: `${fullName(mentee)} has been paired with you.`,
+        url: "/learn/mentorship",
+      }),
     ]);
   } catch (err) {
     console.error("notifyMentorshipMatch error:", err);
@@ -133,6 +146,12 @@ export async function notifyMentorshipNudge(params: {
     await Promise.allSettled([
       sendEmail({ to: mentee.email, subject: tplMentee.subject, html: tplMentee.html, text: tplMentee.text }),
       sendEmail({ to: mentor.email, subject: tplMentor.subject, html: tplMentor.html, text: tplMentor.text }),
+      sendPushToUsers({
+        userIds: [mentee.id, mentor.id],
+        title: "Time to reconnect",
+        body,
+        url: "/learn/mentorship",
+      }),
     ]);
   } catch (err) {
     console.error("notifyMentorshipNudge error:", err);

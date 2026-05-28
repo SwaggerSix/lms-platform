@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { canAccessMentorshipRequest } from "@/lib/mentorship/access";
+import { sendPushToUsers } from "@/lib/push/dispatch";
 
 export async function GET(
   _request: NextRequest,
@@ -77,14 +78,21 @@ export async function POST(
   if (otherId) {
     const sender = msg.sender as any;
     const senderName = `${sender?.first_name ?? ""} ${sender?.last_name ?? ""}`.trim() || "Your mentorship partner";
+    const preview = text.length > 140 ? text.slice(0, 137) + "..." : text;
     await service.from("notifications").insert({
       user_id: otherId,
       type: "mentorship",
       channel: "in_app",
       title: `New message from ${senderName}`,
-      body: text.length > 140 ? text.slice(0, 137) + "..." : text,
+      body: preview,
       link: `/learn/mentorship/${requestId}`,
       is_read: false,
+    });
+    await sendPushToUsers({
+      userIds: [otherId],
+      title: `New message from ${senderName}`,
+      body: preview,
+      url: `/learn/mentorship/${requestId}`,
     });
   }
 
