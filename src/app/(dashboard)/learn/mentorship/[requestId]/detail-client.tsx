@@ -13,11 +13,21 @@ interface Goal {
   created_at: string;
 }
 
+interface Message {
+  id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  // Supabase types nested selects as arrays, so we accept either shape.
+  sender: any;
+}
+
 interface DetailClientProps {
   request: any;
   sessions: any[];
   reviews: any[];
   goals: Goal[];
+  messages: Message[];
   userId: string;
   isMentor: boolean;
 }
@@ -27,6 +37,7 @@ export default function MentorshipDetailClient({
   sessions: initialSessions,
   reviews,
   goals: initialGoals,
+  messages: initialMessages,
   userId,
   isMentor,
 }: DetailClientProps) {
@@ -229,6 +240,33 @@ export default function MentorshipDetailClient({
       }
     } catch {
       // ignore
+    }
+  }
+
+  // Conversation state
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [draftMessage, setDraftMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const canPostMessage = request.mentee_id === userId || request.mentor_id === userId;
+
+  async function sendMessage() {
+    const text = draftMessage.trim();
+    if (!text) return;
+    setSendingMessage(true);
+    try {
+      const res = await fetch(`/api/mentorship/requests/${request.id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      setMessages((prev) => [...prev, data as Message]);
+      setDraftMessage("");
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSendingMessage(false);
     }
   }
 
@@ -699,6 +737,75 @@ export default function MentorshipDetailClient({
               );
             })}
           </ul>
+        )}
+      </div>
+
+      {/* Conversation */}
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-100 px-5 py-3">
+          <h2 className="text-sm font-semibold text-gray-900">Conversation</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Quick notes and check-ins between you and your {isMentor ? "mentee" : "mentor"}.
+          </p>
+        </div>
+        <div className="max-h-[400px] overflow-y-auto px-5 py-4 space-y-3">
+          {messages.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">
+              No messages yet. Send the first one below.
+            </p>
+          ) : (
+            messages.map((m) => {
+              const mine = m.sender_id === userId;
+              const s = Array.isArray(m.sender) ? m.sender[0] : m.sender;
+              const senderName = mine
+                ? "You"
+                : `${s?.first_name ?? ""} ${s?.last_name ?? ""}`.trim() || "Partner";
+              return (
+                <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
+                      mine
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    <p className={`mb-0.5 text-xs ${mine ? "text-indigo-100" : "text-gray-500"}`}>
+                      {senderName} · {new Date(m.created_at).toLocaleString()}
+                    </p>
+                    <p className="whitespace-pre-wrap">{m.body}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        {canPostMessage && (
+          <div className="border-t border-gray-100 p-3">
+            <div className="flex gap-2">
+              <textarea
+                value={draftMessage}
+                onChange={(e) => setDraftMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                rows={2}
+                placeholder="Write a message..."
+                maxLength={5000}
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={sendingMessage || !draftMessage.trim()}
+                className="self-end rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {sendingMessage ? "Sending..." : "Send"}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-400">⌘/Ctrl + Enter to send</p>
+          </div>
         )}
       </div>
 
