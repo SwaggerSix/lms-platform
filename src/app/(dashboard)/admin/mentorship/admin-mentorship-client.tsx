@@ -19,6 +19,16 @@ interface Stats {
 
 interface AdminMentorshipClientProps {
   stats: Stats;
+  outcomes: {
+    avgTimeToMatchDays: string | null;
+    completionRatePct: number | null;
+    goalsMetPct: number | null;
+    wouldRecommendPct: number | null;
+    engagementPct: number | null;
+    engagedActive: number;
+    activeCount: number;
+    sessionsLast90d: number;
+  };
   recentRequests: any[];
   mentors: any[];
   users: any[];
@@ -27,6 +37,7 @@ interface AdminMentorshipClientProps {
 
 export default function AdminMentorshipClient({
   stats,
+  outcomes,
   recentRequests,
   mentors,
   users,
@@ -344,6 +355,55 @@ export default function AdminMentorshipClient({
             <p className="mt-0.5 text-xs opacity-60">{card.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Program Outcomes */}
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Program Outcomes</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Avg time to match</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {outcomes.avgTimeToMatchDays !== null ? `${outcomes.avgTimeToMatchDays} days` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">From request to matched_at</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Completion rate</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {outcomes.completionRatePct !== null ? `${outcomes.completionRatePct}%` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">Completed vs. cancelled</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Goals met</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {outcomes.goalsMetPct !== null ? `${outcomes.goalsMetPct}%` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">Per exit reviews</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Would recommend</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {outcomes.wouldRecommendPct !== null ? `${outcomes.wouldRecommendPct}%` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">Per exit reviews</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Active engagement</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {outcomes.engagementPct !== null ? `${outcomes.engagementPct}%` : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">
+              {outcomes.engagedActive} of {outcomes.activeCount} active met in last 30d
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Sessions (90d)</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">{outcomes.sessionsLast90d}</p>
+            <p className="mt-0.5 text-xs text-gray-500">Completed in the last 90 days</p>
+          </div>
+        </div>
       </div>
 
       {/* Mentors table */}

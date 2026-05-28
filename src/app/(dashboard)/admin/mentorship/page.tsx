@@ -28,9 +28,9 @@ export default async function AdminMentorshipPage() {
   // Aggregate stats
   const [mentorsResult, requestsResult, sessionsResult, reviewsResult] = await Promise.all([
     service.from("mentor_profiles").select("id, is_active, availability, rating, current_mentee_count"),
-    service.from("mentorship_requests").select("id, status, match_score, created_at"),
-    service.from("mentorship_sessions").select("id, status"),
-    service.from("mentor_reviews").select("id, rating"),
+    service.from("mentorship_requests").select("id, status, match_score, created_at, matched_at, completed_at, mentor_id"),
+    service.from("mentorship_sessions").select("id, status, scheduled_at, request_id"),
+    service.from("mentor_reviews").select("id, rating, outcomes_met, would_recommend"),
   ]);
 
   const mentors = mentorsResult.data ?? [];
@@ -53,6 +53,92 @@ export default async function AdminMentorshipPage() {
         ? (reviewsList.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewsList.length).toFixed(1)
         : "N/A",
     totalActiveMentees: mentors.reduce((sum: number, m: any) => sum + (m.current_mentee_count ?? 0), 0),
+  };
+
+  // Program outcomes: real measures of whether the program is working.
+  const now = Date.now();
+  const day = 86_400_000;
+
+  // Time-to-match: days between request created_at and matched_at
+  const matchedRequests = requests.filter((r: any) => r.matched_at && r.created_at);
+  const avgTimeToMatchDays =
+    matchedRequests.length > 0
+      ? (
+          matchedRequests.reduce(
+            (sum: number, r: any) =>
+              sum + (new Date(r.matched_at).getTime() - new Date(r.created_at).getTime()) / day,
+            0
+          ) / matchedRequests.length
+        ).toFixed(1)
+      : null;
+
+  // Completion rate: completed / (completed + cancelled)
+  const completedCount = requests.filter((r: any) => r.status === "completed").length;
+  const cancelledCount = requests.filter((r: any) => r.status === "cancelled").length;
+  const decided = completedCount + cancelledCount;
+  const completionRatePct =
+    decided > 0 ? Math.round((completedCount / decided) * 100) : null;
+
+  // Outcomes from exit reviews
+  const reviewsWithOutcomes = reviewsList.filter((r: any) => r.outcomes_met !== null && r.outcomes_met !== undefined);
+  const goalsMetPct =
+    reviewsWithOutcomes.length > 0
+      ? Math.round(
+          (reviewsWithOutcomes.filter((r: any) => r.outcomes_met === true).length /
+            reviewsWithOutcomes.length) *
+            100
+        )
+      : null;
+
+  const reviewsWithRec = reviewsList.filter((r: any) => r.would_recommend !== null && r.would_recommend !== undefined);
+  const wouldRecommendPct =
+    reviewsWithRec.length > 0
+      ? Math.round(
+          (reviewsWithRec.filter((r: any) => r.would_recommend === true).length /
+            reviewsWithRec.length) *
+            100
+        )
+      : null;
+
+  // Engagement: active pairs with a completed session in the last 30 days
+  const thirtyDaysAgo = now - 30 * day;
+  const activeRequestIds = new Set(
+    requests.filter((r: any) => r.status === "active").map((r: any) => r.id)
+  );
+  const engagedRequestIds = new Set(
+    sessions
+      .filter(
+        (s: any) =>
+          s.status === "completed" &&
+          s.scheduled_at &&
+          new Date(s.scheduled_at).getTime() >= thirtyDaysAgo
+      )
+      .map((s: any) => s.request_id)
+  );
+  const engagedActive = Array.from(engagedRequestIds).filter((id) => activeRequestIds.has(id)).length;
+  const engagementPct =
+    activeRequestIds.size > 0
+      ? Math.round((engagedActive / activeRequestIds.size) * 100)
+      : null;
+
+  // Sessions completed in the last 90 days
+  const ninetyDaysAgo = now - 90 * day;
+  const sessionsLast90d = sessions.filter(
+    (s: any) =>
+      s.status === "completed" &&
+      s.scheduled_at &&
+      new Date(s.scheduled_at).getTime() >= ninetyDaysAgo
+  ).length;
+
+  const outcomes = {
+    avgTimeToMatchDays,
+    completionRatePct,
+    goalsMetPct,
+    wouldRecommendPct,
+    engagementPct,
+    engagedActive,
+    activeCount: activeRequestIds.size,
+    sessionsLast90d,
   };
 
   // Recent requests
@@ -91,6 +177,7 @@ export default async function AdminMentorshipPage() {
   return (
     <AdminMentorshipClient
       stats={stats}
+      outcomes={outcomes}
       recentRequests={recentRequests ?? []}
       mentors={mentorProfiles ?? []}
       users={allUsers ?? []}
