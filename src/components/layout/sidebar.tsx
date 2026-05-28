@@ -83,6 +83,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Help & Manuals", href: "/help", icon: HelpCircle },
     ],
     roles: ["learner", "manager", "admin", "super_admin"],
   },

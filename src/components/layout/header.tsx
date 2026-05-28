@@ -13,12 +13,14 @@ import {
   LogOut,
   Settings,
   X,
+  HelpCircle,
 } from "lucide-react";
 import { useRealtimeSubscription } from "@/hooks/use-realtime";
 import { useNotificationStore } from "@/stores/notification-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import GlobalSearch from "@/components/layout/global-search";
+import HelpSearchDialog from "@/components/help/help-search-dialog";
 import type { Notification } from "@/types/database";
 
 function relativeTime(dateStr: string): string {
@@ -52,6 +54,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -107,7 +110,22 @@ export default function Header({ onMenuToggle }: HeaderProps) {
       setNotifOpen(false);
       setUserOpen(false);
       setSearchOpen(false);
+      setHelpOpen(false);
     }
+  }, []);
+
+  // "?" keyboard shortcut opens help search (when no input focused)
+  useEffect(() => {
+    const onShortcut = (e: KeyboardEvent) => {
+      if (e.key !== "?") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+      e.preventDefault();
+      setHelpOpen(true);
+    };
+    document.addEventListener("keydown", onShortcut);
+    return () => document.removeEventListener("keydown", onShortcut);
   }, []);
 
   // Close dropdowns on outside click
@@ -187,6 +205,17 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           <Search className="h-5 w-5" aria-hidden="true" />
         </button>
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+        {/* Help search */}
+        <button
+          onClick={() => setHelpOpen(true)}
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          aria-label="Open help search (shortcut: ?)"
+          title="Help & manuals (?)"
+        >
+          <HelpCircle className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <HelpSearchDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
