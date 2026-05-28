@@ -80,12 +80,21 @@ export default async function AdminMentorshipPage() {
     .order("first_name", { ascending: true })
     .limit(1000);
 
+  // Mentorship circles (group mentorship)
+  const { data: circles } = await service
+    .from("mentorship_circles")
+    .select(
+      "id, name, description, mentor_id, max_members, created_at, mentor:users!mentorship_circles_mentor_id_fkey(first_name, last_name, email), members:mentorship_circle_members(mentee_id, mentee:users!mentorship_circle_members_mentee_id_fkey(first_name, last_name, email))"
+    )
+    .order("created_at", { ascending: false });
+
   return (
     <AdminMentorshipClient
       stats={stats}
       recentRequests={recentRequests ?? []}
       mentors={mentorProfiles ?? []}
       users={allUsers ?? []}
+      circles={circles ?? []}
     />
   );
 }

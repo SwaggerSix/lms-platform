@@ -22,6 +22,7 @@ interface AdminMentorshipClientProps {
   recentRequests: any[];
   mentors: any[];
   users: any[];
+  circles: any[];
 }
 
 export default function AdminMentorshipClient({
@@ -29,6 +30,7 @@ export default function AdminMentorshipClient({
   recentRequests,
   mentors,
   users,
+  circles: initialCircles,
 }: AdminMentorshipClientProps) {
   const router = useRouter();
   const [filter, setFilter] = useState<string>("all");
@@ -42,6 +44,92 @@ export default function AdminMentorshipClient({
   const [assignGoals, setAssignGoals] = useState("");
   const [assigning, setAssigning] = useState(false);
   const [assignError, setAssignError] = useState<string | null>(null);
+
+  // Circles state
+  const [circles, setCircles] = useState<any[]>(initialCircles);
+  const [circleOpen, setCircleOpen] = useState(false);
+  const [circleName, setCircleName] = useState("");
+  const [circleMentorId, setCircleMentorId] = useState("");
+  const [circleDescription, setCircleDescription] = useState("");
+  const [circleMaxMembers, setCircleMaxMembers] = useState(6);
+  const [circleSaving, setCircleSaving] = useState(false);
+  const [circleError, setCircleError] = useState<string | null>(null);
+  const [addMemberCircleId, setAddMemberCircleId] = useState<string | null>(null);
+  const [addMemberMenteeId, setAddMemberMenteeId] = useState("");
+
+  function resetCircleForm() {
+    setCircleOpen(false);
+    setCircleName("");
+    setCircleMentorId("");
+    setCircleDescription("");
+    setCircleMaxMembers(6);
+    setCircleError(null);
+  }
+
+  async function submitCircle() {
+    if (!circleName.trim() || !circleMentorId) {
+      setCircleError("Name and mentor are required.");
+      return;
+    }
+    setCircleSaving(true);
+    setCircleError(null);
+    try {
+      const res = await fetch("/api/mentorship/circles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: circleName.trim(),
+          mentor_id: circleMentorId,
+          description: circleDescription.trim() || null,
+          max_members: circleMaxMembers,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create circle");
+      resetCircleForm();
+      router.refresh();
+    } catch (err: any) {
+      setCircleError(err.message);
+    } finally {
+      setCircleSaving(false);
+    }
+  }
+
+  async function addCircleMember(circleId: string, menteeId: string) {
+    if (!menteeId) return;
+    try {
+      const res = await fetch(`/api/mentorship/circles/${circleId}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mentee_id: menteeId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to add member");
+      setAddMemberCircleId(null);
+      setAddMemberMenteeId("");
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
+
+  async function removeCircleMember(circleId: string, menteeId: string) {
+    if (!confirm("Remove this mentee from the circle?")) return;
+    setCircles((prev) =>
+      prev.map((c: any) =>
+        c.id === circleId ? { ...c, members: (c.members ?? []).filter((m: any) => m.mentee_id !== menteeId) } : c
+      )
+    );
+    try {
+      const res = await fetch(`/api/mentorship/circles/${circleId}/members?mentee_id=${menteeId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      alert("Failed to remove member.");
+      router.refresh();
+    }
+  }
 
   // Mentors that can still take a mentee
   const assignableMentors = mentorList.filter(
@@ -347,6 +435,199 @@ export default function AdminMentorshipClient({
           </div>
         )}
       </div>
+
+      {/* Mentorship Circles */}
+      <div className="mb-8 rounded-xl border border-gray-200 bg-white">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Mentorship Circles</h2>
+            <p className="text-xs text-gray-500 mt-0.5">One mentor leads a group of mentees.</p>
+          </div>
+          <button
+            onClick={() => setCircleOpen(true)}
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+          >
+            + New Circle
+          </button>
+        </div>
+        {circles.length === 0 ? (
+          <div className="p-8 text-center text-sm text-gray-400">
+            No circles yet. Create one to start a group mentorship.
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-50">
+            {circles.map((c: any) => {
+              const mentor = c.mentor as any;
+              const mentorName = `${mentor?.first_name ?? ""} ${mentor?.last_name ?? ""}`.trim() || mentor?.email || "—";
+              const memberRows = (c.members ?? []) as any[];
+              const full = memberRows.length >= (c.max_members ?? 0);
+              return (
+                <li key={c.id} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{c.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Mentor: {mentorName} · {memberRows.length}/{c.max_members} members
+                      </p>
+                      {c.description && (
+                        <p className="mt-1 text-xs text-gray-600">{c.description}</p>
+                      )}
+                    </div>
+                    {!full && (
+                      <button
+                        onClick={() => setAddMemberCircleId(c.id)}
+                        className="shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        + Add Member
+                      </button>
+                    )}
+                  </div>
+
+                  {addMemberCircleId === c.id && (
+                    <div className="mt-3 flex items-end gap-2 rounded-lg bg-gray-50 p-3">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Mentee</label>
+                        <select
+                          value={addMemberMenteeId}
+                          onChange={(e) => setAddMemberMenteeId(e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        >
+                          <option value="">Select a mentee...</option>
+                          {users
+                            .filter((u: any) =>
+                              u.id !== c.mentor_id &&
+                              !memberRows.some((m: any) => m.mentee_id === u.id)
+                            )
+                            .map((u: any) => (
+                              <option key={u.id} value={u.id}>
+                                {`${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email} — {u.email}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => addCircleMember(c.id, addMemberMenteeId)}
+                        disabled={!addMemberMenteeId}
+                        className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        Add
+                      </button>
+                      <button
+                        onClick={() => { setAddMemberCircleId(null); setAddMemberMenteeId(""); }}
+                        className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+
+                  {memberRows.length > 0 && (
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                      {memberRows.map((m: any) => {
+                        const mn = m.mentee as any;
+                        const name = `${mn?.first_name ?? ""} ${mn?.last_name ?? ""}`.trim() || mn?.email || "Mentee";
+                        return (
+                          <li key={m.mentee_id} className="inline-flex items-center gap-2 rounded-full bg-indigo-50 pl-3 pr-2 py-0.5 text-xs text-indigo-700">
+                            <span>{name}</span>
+                            <button
+                              onClick={() => removeCircleMember(c.id, m.mentee_id)}
+                              className="text-indigo-500 hover:text-indigo-700"
+                              aria-label="Remove member"
+                            >
+                              ×
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      {/* Create-circle modal */}
+      {circleOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={resetCircleForm}>
+          <div
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900">New Mentorship Circle</h3>
+            {circleError && (
+              <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{circleError}</div>
+            )}
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={circleName}
+                  onChange={(e) => setCircleName(e.target.value)}
+                  maxLength={200}
+                  placeholder="e.g. Q1 Emerging Leaders"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mentor *</label>
+                <select
+                  value={circleMentorId}
+                  onChange={(e) => setCircleMentorId(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="">Select a mentor...</option>
+                  {mentorList
+                    .filter((m: any) => m.is_active)
+                    .map((m: any) => {
+                      const u = m.user as any;
+                      const name = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`.trim() || u?.email || "—";
+                      return <option key={m.id} value={m.user_id}>{name}</option>;
+                    })}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                <textarea
+                  value={circleDescription}
+                  onChange={(e) => setCircleDescription(e.target.value)}
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max members</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={circleMaxMembers}
+                  onChange={(e) => setCircleMaxMembers(Number(e.target.value) || 6)}
+                  className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={resetCircleForm}
+                disabled={circleSaving}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitCircle}
+                disabled={circleSaving || !circleName.trim() || !circleMentorId}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {circleSaving ? "Creating..." : "Create Circle"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Requests table */}
       <div className="rounded-xl border border-gray-200 bg-white">
