@@ -588,6 +588,9 @@ export const createMentorReviewSchema = z.object({
   request_id: z.string().uuid(),
   rating: z.number().int().min(1).max(5),
   review: z.string().max(2000).optional(),
+  outcomes_met: z.boolean().optional().nullable(),
+  would_recommend: z.boolean().optional().nullable(),
+  key_takeaways: z.string().max(5000).optional().nullable(),
 });
 
 // Analytics - Alerts

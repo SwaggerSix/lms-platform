@@ -36,8 +36,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Mentorship request not found" }, { status: 404 });
   }
 
-  if (mentorshipRequest.mentee_id !== auth.user.id) {
-    return NextResponse.json({ error: "Only mentees can review mentors" }, { status: 403 });
+  // Both participants can submit a review/reflection on their own mentorship.
+  if (
+    mentorshipRequest.mentee_id !== auth.user.id &&
+    mentorshipRequest.mentor_id !== auth.user.id
+  ) {
+    return NextResponse.json({ error: "Only participants can review this mentorship" }, { status: 403 });
   }
 
   if (!["completed", "active"].includes(mentorshipRequest.status)) {

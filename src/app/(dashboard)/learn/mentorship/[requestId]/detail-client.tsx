@@ -37,6 +37,9 @@ export default function MentorshipDetailClient({
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+  const [reviewOutcomesMet, setReviewOutcomesMet] = useState<boolean | null>(null);
+  const [reviewWouldRecommend, setReviewWouldRecommend] = useState<boolean | null>(null);
+  const [reviewTakeaways, setReviewTakeaways] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   // Development goals state
@@ -189,11 +192,18 @@ export default function MentorshipDetailClient({
           request_id: request.id,
           rating: reviewRating,
           review: reviewText || undefined,
+          outcomes_met: reviewOutcomesMet,
+          would_recommend: reviewWouldRecommend,
+          key_takeaways: reviewTakeaways || undefined,
         }),
       });
       if (res.ok) {
         setShowReviewForm(false);
         setReviewText("");
+        setReviewTakeaways("");
+        setReviewOutcomesMet(null);
+        setReviewWouldRecommend(null);
+        window.location.reload();
       } else {
         const data = await res.json();
         alert(data.error || "Failed to submit review");
@@ -374,14 +384,15 @@ export default function MentorshipDetailClient({
               Schedule Session
             </button>
           )}
-          {!isMentor && ["active", "completed"].includes(status) && reviews.length === 0 && (
-            <button
-              onClick={() => setShowReviewForm(true)}
-              className="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
-            >
-              Leave Review
-            </button>
-          )}
+          {["active", "completed"].includes(status) &&
+            !reviews.some((r: any) => r.reviewer_id === userId) && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+              >
+                {isMentor ? "Leave Reflection" : "Leave Review"}
+              </button>
+            )}
         </div>
       </div>
 
@@ -421,7 +432,71 @@ export default function MentorshipDetailClient({
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Review (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Did the mentorship meet its goals?
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { v: true, label: "Yes" },
+                  { v: false, label: "No" },
+                  { v: null, label: "Not sure" },
+                ].map((o) => (
+                  <button
+                    key={String(o.v)}
+                    type="button"
+                    onClick={() => setReviewOutcomesMet(o.v)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm ${
+                      reviewOutcomesMet === o.v
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Would you recommend this mentorship to others?
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { v: true, label: "Yes" },
+                  { v: false, label: "No" },
+                  { v: null, label: "Not sure" },
+                ].map((o) => (
+                  <button
+                    key={String(o.v)}
+                    type="button"
+                    onClick={() => setReviewWouldRecommend(o.v)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm ${
+                      reviewWouldRecommend === o.v
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Key takeaways (optional)
+              </label>
+              <textarea
+                value={reviewTakeaways}
+                onChange={(e) => setReviewTakeaways(e.target.value)}
+                rows={2}
+                placeholder="What did you learn? What changed for you?"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Additional comments (optional)
+              </label>
               <textarea
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
@@ -782,6 +857,24 @@ export default function MentorshipDetailClient({
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>
+                  {(review.outcomes_met !== null && review.outcomes_met !== undefined) && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      <span className="font-medium text-gray-700">Goals met:</span>{" "}
+                      {review.outcomes_met ? "Yes" : "No"}
+                    </p>
+                  )}
+                  {(review.would_recommend !== null && review.would_recommend !== undefined) && (
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium text-gray-700">Would recommend:</span>{" "}
+                      {review.would_recommend ? "Yes" : "No"}
+                    </p>
+                  )}
+                  {review.key_takeaways && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      <span className="font-medium text-gray-700">Takeaways:</span>{" "}
+                      {review.key_takeaways}
+                    </p>
+                  )}
                   {review.review && (
                     <p className="mt-1 text-sm text-gray-600">{review.review}</p>
                   )}
