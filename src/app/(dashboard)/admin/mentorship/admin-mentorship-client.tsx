@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Stats {
@@ -59,6 +59,15 @@ export default function AdminMentorshipClient({
 
   // Circles state
   const [circles, setCircles] = useState<any[]>(initialCircles);
+
+  // Keep local state in sync after router.refresh() so newly-created circles
+  // and freshly-toggled mentors appear without a full reload.
+  useEffect(() => {
+    setCircles(initialCircles);
+  }, [initialCircles]);
+  useEffect(() => {
+    setMentorList(mentors);
+  }, [mentors]);
   const [circleOpen, setCircleOpen] = useState(false);
   const [circleName, setCircleName] = useState("");
   const [circleMentorId, setCircleMentorId] = useState("");
