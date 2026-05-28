@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Send,
   Download,
+  Eye,
   FileText,
   FileSpreadsheet,
   File,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import type { ScheduledReport, ReportFrequency, ReportFormat } from "@/types/database";
+import { ReportViewerModal, type ReportColumn } from "@/components/ui/report-viewer-modal";
 
 // ── Exported Types ──
 
@@ -174,6 +176,53 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [hoveredRecipients, setHoveredRecipients] = useState<string | null>(null);
+
+  // In-app report viewer state
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerLoading, setViewerLoading] = useState(false);
+  const [viewerTitle, setViewerTitle] = useState("");
+  const [viewerSubtitle, setViewerSubtitle] = useState<string | undefined>(undefined);
+  const [viewerRows, setViewerRows] = useState<Record<string, unknown>[]>([]);
+  const [viewerColumns, setViewerColumns] = useState<ReportColumn<Record<string, unknown>>[]>([]);
+
+  const openRunViewer = async (
+    parent: ScheduledReportWithHistory,
+    entry: RunHistoryEntry
+  ) => {
+    setViewerOpen(true);
+    setViewerLoading(true);
+    setViewerTitle(parent.name);
+    setViewerSubtitle(
+      `Run ${formatDate(entry.runDate)} · ${entry.records.toLocaleString()} records · ${entry.fileSize}`
+    );
+    setViewerRows([]);
+    setViewerColumns([]);
+    try {
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report_type: parent.report_type, format: "json" }),
+      });
+      const data = await response.json();
+      const rows: Record<string, unknown>[] = Array.isArray(data?.rows) ? data.rows : [];
+      if (rows.length > 0) {
+        const keys = Object.keys(rows[0]);
+        setViewerColumns(
+          keys.map((k) => ({
+            key: k,
+            label: k
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase()),
+          })) as ReportColumn<Record<string, unknown>>[]
+        );
+      }
+      setViewerRows(rows);
+    } catch {
+      setViewerRows([]);
+    } finally {
+      setViewerLoading(false);
+    }
+  };
 
   // Create schedule form state
   const [formName, setFormName] = useState("");
@@ -581,7 +630,7 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                     <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
                     <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Records</th>
                     <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500">File Size</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Download</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -605,9 +654,21 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                         <td className="px-4 py-2.5 text-right text-sm text-gray-500">{entry.fileSize}</td>
                         <td className="px-4 py-2.5 text-right">
                           {entry.status === "success" ? (
-                            <button className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
-                              <Download className="h-3 w-3" /> Download
-                            </button>
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const parent = reports.find((r) => r.id === expandedReport);
+                                  if (parent) openRunViewer(parent, entry);
+                                }}
+                                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                              >
+                                <Eye className="h-3 w-3" /> View
+                              </button>
+                              <button className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
+                                <Download className="h-3 w-3" /> Download
+                              </button>
+                            </div>
                           ) : (
                             <span className="text-xs text-gray-400">N/A</span>
                           )}
@@ -954,6 +1015,15 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
           </div>
         </div>
       )}
+
+      <ReportViewerModal
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        title={viewerTitle}
+        subtitle={viewerLoading ? `${viewerSubtitle ?? ""} · Loading…` : viewerSubtitle}
+        rows={viewerRows}
+        columns={viewerColumns}
+      />
     </div>
   );
 }

@@ -9,12 +9,14 @@ import {
   Target,
   Users,
   Download,
+  Eye,
   FileText,
   Filter,
   Table,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { ReportViewerModal, type ReportColumn } from "@/components/ui/report-viewer-modal";
 
 export interface ReportRow {
   userName: string;
@@ -122,6 +124,8 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
   const [reportData, setReportData] = useState<ReportRow[]>(initialReportData);
   const [loadingReport, setLoadingReport] = useState<string | null>(null);
   const [activeReportName, setActiveReportName] = useState("");
+  const [viewingReport, setViewingReport] = useState<RecentReport | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   const getFilteredData = useCallback((): Record<string, unknown>[] => {
     return reportData.map(row => {
@@ -188,6 +192,67 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       setLoadingReport(null);
     }
   }, [dateFrom, dateTo, department, role]);
+
+  const inferReportType = (name: string): string => {
+    const lc = name.toLowerCase();
+    if (lc.includes("compliance")) return "compliance";
+    if (lc.includes("skill")) return "skills_gap";
+    if (lc.includes("engagement")) return "engagement";
+    if (lc.includes("effectiveness") || lc.includes("course")) return "course_effectiveness";
+    if (lc.includes("progress") || lc.includes("learner")) return "learner_progress";
+    return "completion";
+  };
+
+  const handleViewRecentReport = async (report: RecentReport) => {
+    setViewerLoading(true);
+    setViewingReport(report);
+    try {
+      const response = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report_type: inferReportType(report.name), format: "json" }),
+      });
+      const data = await response.json();
+      if (response.ok && data?.rows) {
+        const mapped: ReportRow[] = data.rows.map((row: Record<string, any>) => ({
+          userName: row.user_name || row.name || row.course_title || "-",
+          department: row.department || "-",
+          course: row.course_title || row.course || row.skill_name || "-",
+          status: row.status || (row.compliance_rate != null ? `${row.compliance_rate}%` : "-"),
+          score: row.score ?? row.avg_score ?? row.proficiency_level ?? 0,
+          completionDate: row.completed_at
+            ? new Date(row.completed_at).toISOString().split("T")[0]
+            : row.assessed_at
+            ? new Date(row.assessed_at).toISOString().split("T")[0]
+            : "-",
+          timeSpent: row.time_spent
+            ? `${Math.round(row.time_spent / 60)}h`
+            : row.total_hours
+            ? `${row.total_hours}h`
+            : row.avg_time_spent
+            ? `${Math.round(row.avg_time_spent / 60)}h`
+            : "-",
+          certificate: row.status === "completed" ? "Yes" : "-",
+        }));
+        setReportData(mapped);
+      }
+    } catch {
+      // Fall back to currently loaded data
+    } finally {
+      setViewerLoading(false);
+    }
+  };
+
+  const viewerColumns: ReportColumn<ReportRow>[] = [
+    { key: "userName", label: "User Name" },
+    { key: "department", label: "Department" },
+    { key: "course", label: "Course" },
+    { key: "status", label: "Status" },
+    { key: "score", label: "Score", align: "right", render: (r) => (r.score > 0 ? `${r.score}%` : "—") },
+    { key: "completionDate", label: "Completion Date" },
+    { key: "timeSpent", label: "Time Spent", align: "right" },
+    { key: "certificate", label: "Certificate", align: "center" },
+  ];
 
   const handleDownloadRecentReport = (report: RecentReport) => {
     // Generate a CSV from the current report data as a proxy for stored reports
@@ -370,6 +435,10 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-500">{report.rowCount.toLocaleString()} rows</span>
+                <button onClick={() => handleViewRecentReport(report)} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Eye className="h-3.5 w-3.5" />
+                  View
+                </button>
                 <button onClick={() => handleDownloadRecentReport(report)} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                   <Download className="h-3.5 w-3.5" />
                   Download
@@ -379,6 +448,19 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
           ))}
         </div>
       </div>
+
+      <ReportViewerModal
+        open={viewingReport !== null}
+        onClose={() => setViewingReport(null)}
+        title={viewingReport?.name ?? "Report"}
+        subtitle={
+          viewingReport
+            ? `Generated ${viewingReport.generatedDate} by ${viewingReport.generatedBy}${viewerLoading ? " · Loading…" : ""}`
+            : undefined
+        }
+        rows={reportData as unknown as Record<string, unknown>[]}
+        columns={viewerColumns as unknown as ReportColumn<Record<string, unknown>>[]}
+      />
     </div>
   );
 }
