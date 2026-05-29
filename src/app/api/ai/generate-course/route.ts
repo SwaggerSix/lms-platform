@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const auth = await authorize("admin", "instructor");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

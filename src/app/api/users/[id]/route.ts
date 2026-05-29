@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
+import { canAssignRole, isSuperAdmin } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
@@ -21,6 +22,22 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
   const { id } = await params;
+
+  // Guard the Super Admin (gC/GGS) role: only Super Admins may modify a Super
+  // Admin account or promote someone into the role.
+  if (!isSuperAdmin(auth.user.role)) {
+    const { data: target } = await service
+      .from("users")
+      .select("role")
+      .eq("id", id)
+      .single();
+    if (target && isSuperAdmin(target.role)) {
+      return NextResponse.json({ error: "You are not allowed to modify this user" }, { status: 403 });
+    }
+    if (typeof body?.role === "string" && !canAssignRole(auth.user.role, body.role)) {
+      return NextResponse.json({ error: "You are not allowed to assign that role" }, { status: 403 });
+    }
+  }
 
   // Mass assignment fix: whitelist allowed fields
   const allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
@@ -79,7 +96,7 @@ export async function DELETE(
 
   const { data: existing, error: fetchError } = await service
     .from("users")
-    .select("id, email, auth_id")
+    .select("id, email, auth_id, role")
     .eq("id", id)
     .single();
 
@@ -93,6 +110,11 @@ export async function DELETE(
 
   if (!existing) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Only Super Admins (gC/GGS) may delete a Super Admin account.
+  if (isSuperAdmin(existing.role) && !isSuperAdmin(auth.user.role)) {
+    return NextResponse.json({ error: "You are not allowed to delete this user" }, { status: 403 });
   }
 
   const { error: deleteError } = await service.from("users").delete().eq("id", id);

@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isSuperAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateTenantSchema } from "@/lib/validations";
@@ -25,8 +26,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const service = createServiceClient();
 
-  // Admin or tenant member can view
-  if (auth.user.role !== "admin") {
+  // Super Admin (gC/GGS) or tenant member can view
+  if (!isSuperAdmin(auth.user.role)) {
     const access = await verifyTenantAccess(auth.user.id, id);
     if (!access) return NextResponse.json({ error: "Not a member of this tenant" }, { status: 403 });
   }
@@ -56,8 +57,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const auth = await authorize();
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  // Only admin or tenant owner/admin can update
-  if (auth.user.role !== "admin") {
+  // Super Admin (gC/GGS) or tenant owner/admin can update
+  if (!isSuperAdmin(auth.user.role)) {
     const access = await verifyTenantAccess(auth.user.id, id, ["owner", "admin"]);
     if (!access) return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
@@ -85,7 +86,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 // DELETE /api/tenants/[id]
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();

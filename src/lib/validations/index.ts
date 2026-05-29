@@ -48,7 +48,9 @@ export const createUserSchema = z.object({
   first_name: z.string().min(1).max(100),
   last_name: z.string().min(1).max(100),
   email: z.string().email(),
-  role: z.enum(["admin", "manager", "instructor", "learner"]).optional(),
+  // super_admin (gC/GGS staff) is accepted here but the users API only lets an
+  // existing Super Admin actually assign it (see canAssignRole).
+  role: z.enum(["super_admin", "admin", "manager", "instructor", "learner"]).optional(),
   job_title: z.string().max(200).optional(),
   organization_id: z.string().uuid().optional().nullable(),
   manager_id: z.string().uuid().optional().nullable(),

@@ -9,27 +9,29 @@ export interface TenantScope {
 
 /**
  * Resolve the active tenant for a user.
- * Returns null for super_admin/admin (they see everything).
- * Returns the tenant ID from tenant_memberships for other users.
- * Also checks x-tenant-id header (set by middleware or API clients).
+ *
+ * - super_admin (gC/GGS staff) is platform-wide: returns null so they see
+ *   every tenant, unless they explicitly target one via the x-tenant-id header.
+ * - Everyone else — including client "admin" learning leaders — is scoped to
+ *   the tenant they belong to (resolved from tenant_memberships). The header is
+ *   intentionally NOT trusted for these roles so a scoped user can't read
+ *   another organization's data by spoofing it.
+ *
+ * Returns the resolved tenant ID, or null when no scoping applies.
  */
 export async function resolveTenantForUser(
   userId: string,
   userRole: string,
   request?: NextRequest
 ): Promise<string | null> {
-  // Platform admins see everything
-  if (userRole === "super_admin" || userRole === "admin") {
-    // But if they explicitly pass a tenant header, respect it
+  // Super Admins (gC/GGS) see everything, unless they target a tenant.
+  if (userRole === "super_admin") {
     const headerTenantId = request?.headers.get("x-tenant-id");
     return headerTenantId || null;
   }
 
-  // Check header first
-  const headerTenantId = request?.headers.get("x-tenant-id");
-  if (headerTenantId) return headerTenantId;
-
-  // Look up from memberships
+  // Everyone else (client admins, managers, instructors, learners) is scoped
+  // to their own tenant membership.
   const service = createServiceClient();
   const { data } = await service
     .from("tenant_memberships")
@@ -71,7 +73,7 @@ export async function getTenantUserIds(tenantId: string): Promise<string[]> {
 
 /**
  * Full tenant scope: resolves tenant and prefetches course + user IDs.
- * Returns null if no tenant scoping needed (admin users).
+ * Returns null if no tenant scoping needed (platform-wide super_admin).
  */
 export async function getTenantScope(
   userId: string,

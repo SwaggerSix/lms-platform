@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/lib/auth/authorize";
+import { canAssignRole } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { validateBody, createUserSchema } from "@/lib/validations";
@@ -79,6 +80,11 @@ export async function POST(request: NextRequest) {
   const validation = validateBody(createUserSchema, body);
   if (!validation.success) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+
+  // Only Super Admins (gC/GGS) may grant the Super Admin role.
+  if (validation.data.role && !canAssignRole(auth.user.role, validation.data.role)) {
+    return NextResponse.json({ error: "You are not allowed to assign that role" }, { status: 403 });
   }
 
   // Mass assignment fix: whitelist allowed fields

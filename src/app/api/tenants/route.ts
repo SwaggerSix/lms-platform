@@ -1,4 +1,5 @@
 import { authorize } from "@/lib/auth/authorize";
+import { isSuperAdmin } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
@@ -15,8 +16,8 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "20");
   const offset = (page - 1) * limit;
 
-  // Admins see all tenants; others see only their memberships
-  if (auth.user.role === "admin") {
+  // Super Admins (gC/GGS) see all tenants; everyone else sees only their memberships
+  if (isSuperAdmin(auth.user.role)) {
     const search = searchParams.get("search");
     const status = searchParams.get("status");
     let query = service
@@ -50,9 +51,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ tenants, total: tenants.length, page, totalPages: 1 });
 }
 
-// POST /api/tenants - Create a new tenant
+// POST /api/tenants - Create a new tenant (platform-level: gC/GGS staff only)
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin", "manager");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`tenant-create-${auth.user.id}`, 5, 60000);
