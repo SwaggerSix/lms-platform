@@ -5,7 +5,7 @@ import { validateBody, createCouponSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
-  const auth = await authorize("admin", "manager");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -23,7 +23,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin", "manager");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`coupon-create-${auth.user.id}`, 20, 60000);

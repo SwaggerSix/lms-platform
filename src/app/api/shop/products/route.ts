@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`product-create-${auth.user.id}`, 20, 60000);

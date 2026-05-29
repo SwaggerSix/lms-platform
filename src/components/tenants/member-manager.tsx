@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { roleLabel } from "@/lib/auth/roles";
 
 interface Member {
   id: string;
@@ -301,7 +302,7 @@ export function MemberManager({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600 capitalize">{m.user?.role}</span>
+                      <span className="text-sm text-gray-600">{roleLabel(m.user?.role)}</span>
                     </td>
                     <td className="px-6 py-4">
                       <select

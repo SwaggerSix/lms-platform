@@ -5,7 +5,7 @@ import { validateBody, createMarketplaceProviderSchema } from "@/lib/validations
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`mp-provider-${auth.user.id}`, 10, 60000);

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+import { isSuperAdminOnlyPath } from "@/lib/auth/roles";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -143,6 +144,15 @@ export async function middleware(request: NextRequest) {
     const role = profile?.role;
 
     if (pathname.startsWith("/admin") && role !== "admin" && role !== "super_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // Platform-level areas (tenants, eCommerce, marketplace, integrations,
+    // cross-tenant analytics, AI course creator) are reserved for Super Admins
+    // (gC/GGS staff). Client Admins are scoped to their own organization.
+    if (role !== "super_admin" && isSuperAdminOnlyPath(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

@@ -4,7 +4,7 @@ import { validateBody, createSSOProviderSchema, updateSSOProviderSchema } from "
 import { createServiceClient } from "@/lib/supabase/service";
 
 export async function GET() {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -28,7 +28,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   let body;
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   let body;
@@ -143,7 +143,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(request.url);

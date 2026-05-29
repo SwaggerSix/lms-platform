@@ -62,6 +62,7 @@ import {
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
+import { roleLabel } from "@/lib/auth/roles";
 
 type Role = "learner" | "manager" | "admin" | "super_admin";
 
@@ -131,7 +132,6 @@ const navSections: NavSection[] = [
       { label: "Users", href: "/admin/users", icon: UserCog },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap },
-      { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Sparkles },
       { label: "ILT Sessions", href: "/admin/ilt-sessions", icon: CalendarDays },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion },
@@ -146,7 +146,6 @@ const navSections: NavSection[] = [
       { label: "Reports", href: "/admin/reports", icon: PieChart },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
       { label: "Settings", href: "/admin/settings", icon: Settings },
-      { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
       { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
       { label: "360 Feedback", href: "/admin/feedback", icon: MessageSquare },
@@ -155,15 +154,25 @@ const navSections: NavSection[] = [
       { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardList },
       { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle },
       { label: "Nudges", href: "/admin/nudges", icon: Zap },
-      { label: "Marketplace", href: "/admin/marketplace", icon: Store },
+    ],
+    roles: ["admin", "super_admin"],
+  },
+  {
+    // Platform administration — reserved for gC / GGS Super Admins. These manage
+    // cross-organization concerns and are hidden from client Admins.
+    header: "PLATFORM (gC / GGS)",
+    items: [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
+      { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Sparkles },
       { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
+      { label: "Marketplace", href: "/admin/marketplace", icon: Store },
       { label: "Predictive Analytics", href: "/admin/analytics/predictive", icon: BrainCircuit },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
+      { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
       { label: "HRIS Integration", href: "/admin/settings/integrations/hris", icon: Link2 },
       { label: "Teams", href: "/admin/settings/integrations/teams", icon: MessageSquareMore },
     ],
-    roles: ["admin", "super_admin"],
+    roles: ["super_admin"],
   },
 ];
 
@@ -317,8 +326,8 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
                   <p className="text-sm font-medium text-white">
                     {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
                   </p>
-                  <p className="text-xs capitalize text-gray-500">
-                    {currentRole.replace("_", " ")}
+                  <p className="text-xs text-gray-500">
+                    {roleLabel(currentRole)}
                   </p>
                 </div>
                 <ChevronDown className="h-4 w-4 text-gray-500" aria-hidden="true" />

@@ -6,6 +6,7 @@ import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { assignableRoles, ROLE_LABELS, type UserRole } from "@/lib/auth/roles";
 import {
   Search,
   Plus,
@@ -26,7 +27,7 @@ export interface UserItem {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'admin' | 'manager' | 'instructor' | 'learner';
+  role: UserRole;
   department: string;
   departmentId: string;
   jobTitle: string;
@@ -40,11 +41,11 @@ export interface OrgItem {
   name: string;
 }
 
-const roles = ['All Roles', 'Admin', 'Manager', 'Instructor', 'Learner'];
 const statuses = ['All Status', 'Active', 'Inactive', 'Pending'];
 const departments = ['All Departments', 'Executive', 'HR', 'Operations', 'Finance', 'Training Delivery', 'Training Development'];
 
 const roleBadge: Record<string, string> = {
+  super_admin: 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
   admin: 'bg-red-50 text-red-700 ring-red-600/20',
   manager: 'bg-blue-50 text-blue-700 ring-blue-600/20',
   instructor: 'bg-purple-50 text-purple-700 ring-purple-600/20',
@@ -57,8 +58,16 @@ const statusBadge: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
 };
 
-export default function UsersClient({ users, organizations = [] }: { users: UserItem[]; organizations?: OrgItem[] }) {
+export default function UsersClient({ users, organizations = [], currentUserRole = 'admin' }: { users: UserItem[]; organizations?: OrgItem[]; currentUserRole?: UserRole }) {
   const toast = useToast();
+  // Roles the current admin is permitted to assign. Only Super Admins (gC/GGS)
+  // can grant the Super Admin role.
+  const assignable = assignableRoles(currentUserRole);
+  const roleOptions = assignable.map((r) => ({ value: r, label: ROLE_LABELS[r] }));
+  const roleFilters: { value: string; label: string }[] = [
+    { value: 'All Roles', label: 'All Roles' },
+    ...roleOptions,
+  ];
   const [userList, setUserList] = useState<UserItem[]>(users);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('All Roles');
@@ -73,7 +82,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
   const [formFirstName, setFormFirstName] = useState('');
   const [formLastName, setFormLastName] = useState('');
   const [formEmail, setFormEmail] = useState('');
-  const [formRole, setFormRole] = useState<'learner' | 'instructor' | 'manager' | 'admin'>('learner');
+  const [formRole, setFormRole] = useState<UserRole>('learner');
   const [formDepartment, setFormDepartment] = useState(organizations[0]?.id ?? '');
 
   // Edit User modal state
@@ -84,7 +93,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
   const [editEmail, setEditEmail] = useState('');
   const [editJobTitle, setEditJobTitle] = useState('');
   const [editDepartment, setEditDepartment] = useState('');
-  const [editRole, setEditRole] = useState<'learner' | 'instructor' | 'manager' | 'admin'>('learner');
+  const [editRole, setEditRole] = useState<UserRole>('learner');
   const [editStatus, setEditStatus] = useState<'active' | 'inactive' | 'pending'>('active');
 
   // Loading & error state
@@ -297,7 +306,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
       !search ||
       `${u.firstName} ${u.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = roleFilter === 'All Roles' || u.role === roleFilter.toLowerCase();
+    const matchesRole = roleFilter === 'All Roles' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'All Status' || u.status === statusFilter.toLowerCase();
     const matchesDept = deptFilter === 'All Departments' || u.department === deptFilter;
     return matchesSearch && matchesRole && matchesStatus && matchesDept;
@@ -361,7 +370,7 @@ export default function UsersClient({ users, organizations = [] }: { users: User
           />
         </div>
         <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-          {roles.map((r) => <option key={r}>{r}</option>)}
+          {roleFilters.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
           {statuses.map((s) => <option key={s}>{s}</option>)}
@@ -398,8 +407,8 @@ export default function UsersClient({ users, organizations = [] }: { users: User
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{user.email}</td>
                 <td className="whitespace-nowrap px-6 py-4">
-                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', roleBadge[user.role])}>
-                    {user.role}
+                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', roleBadge[user.role])}>
+                    {ROLE_LABELS[user.role]}
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{user.department}</td>
@@ -563,11 +572,8 @@ export default function UsersClient({ users, organizations = [] }: { users: User
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as typeof editRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                    <option value="learner">Learner</option>
-                    <option value="instructor">Instructor</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
+                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
                 <div>
@@ -678,11 +684,8 @@ export default function UsersClient({ users, organizations = [] }: { users: User
               </div>
               <div>
                 <label htmlFor="add-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                <select id="add-user-role" value={formRole} onChange={(e) => setFormRole(e.target.value as typeof formRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option value="learner">Learner</option>
-                  <option value="instructor">Instructor</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
+                <select id="add-user-role" value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </div>
               <div>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const roleMap: Record<string, UserItem['role']> = {
-  super_admin: 'admin',
+  super_admin: 'super_admin',
   admin: 'admin',
   manager: 'manager',
   instructor: 'instructor',
@@ -64,5 +64,5 @@ export default async function UsersPage() {
     avatar: `${(row.first_name ?? '?')[0]}${(row.last_name ?? '?')[0]}`.toUpperCase(),
   }));
 
-  return <UsersClient users={users} organizations={organizations} />;
+  return <UsersClient users={users} organizations={organizations} currentUserRole={dbUser.role} />;
 }
