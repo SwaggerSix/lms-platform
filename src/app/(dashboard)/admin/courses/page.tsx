@@ -51,6 +51,13 @@ export default async function CoursesPage() {
     .select('*, category:categories(name)')
     .order('created_at', { ascending: false });
 
+  const { data: categoryRows } = await service
+    .from('categories')
+    .select('id, name')
+    .order('name');
+
+  const categoryOptions = (categoryRows ?? []).map((c: any) => ({ id: c.id, name: c.name }));
+
   const courses: CourseItem[] = (rows ?? []).map((row: any, index: number) => {
     const isPublished = row.status === 'published';
     // Derive a deterministic pseudo-random number from the row id for placeholder stats
@@ -64,6 +71,7 @@ export default async function CoursesPage() {
       status: row.status ?? 'draft',
       type: courseTypeMap[row.course_type] ?? 'self-paced',
       category: row.category?.name ?? 'General',
+      categoryId: row.category_id ?? '',
       difficulty: difficultyMap[row.difficulty_level] ?? 'beginner',
       enrolled: isPublished ? 100 + (seed * 37) % 900 : 0,
       completionRate: isPublished ? 60 + (seed * 13) % 35 : 0,
@@ -72,5 +80,5 @@ export default async function CoursesPage() {
     };
   });
 
-  return <CoursesClient courses={courses} />;
+  return <CoursesClient courses={courses} categoryOptions={categoryOptions} />;
 }

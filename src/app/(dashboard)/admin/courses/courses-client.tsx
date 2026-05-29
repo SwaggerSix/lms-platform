@@ -38,12 +38,25 @@ export interface CourseItem {
   status: 'published' | 'draft' | 'archived';
   type: 'self-paced' | 'instructor-led' | 'blended';
   category: string;
+  categoryId: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   enrolled: number;
   completionRate: number;
   duration: number;
   thumbnail: string;
 }
+
+export interface CategoryOption {
+  id: string;
+  name: string;
+}
+
+// The UI uses hyphenated type values; the API/DB expects underscored course_type.
+const TYPE_TO_DB: Record<CourseItem['type'], string> = {
+  'self-paced': 'self_paced',
+  'instructor-led': 'instructor_led',
+  blended: 'blended',
+};
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
 const categories = ['All Categories', 'Compliance', 'Management', 'Technical', 'Sales', 'Soft Skills'];
@@ -68,7 +81,7 @@ const diffBadge: Record<string, string> = {
   advanced: 'text-red-600',
 };
 
-export default function CoursesClient({ courses: initialCourses }: { courses: CourseItem[] }) {
+export default function CoursesClient({ courses: initialCourses, categoryOptions = [] }: { courses: CourseItem[]; categoryOptions?: CategoryOption[] }) {
   const router = useRouter();
   const toast = useToast();
   const [courses, setCourses] = useState<CourseItem[]>(initialCourses);
@@ -97,20 +110,35 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
   const handleEdit = useCallback((course: CourseItem) => {
     setOpenMenu(null);
     setEditModal(course);
-    setEditForm({ title: course.title, status: course.status, type: course.type, category: course.category, difficulty: course.difficulty });
+    setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty });
   }, []);
 
   const handleEditSubmit = useCallback(async () => {
     if (!editModal) return;
     setLoadingAction({ id: editModal.id, action: 'edit' });
     try {
+      // Map the form fields onto the column names the API/DB expect.
+      const payload: Record<string, unknown> = { id: editModal.id };
+      if (editForm.title !== undefined) payload.title = editForm.title;
+      if (editForm.status !== undefined) payload.status = editForm.status;
+      if (editForm.type !== undefined) payload.course_type = TYPE_TO_DB[editForm.type];
+      if (editForm.difficulty !== undefined) payload.difficulty_level = editForm.difficulty;
+      if (editForm.categoryId) payload.category_id = editForm.categoryId;
+
       const res = await fetch('/api/courses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editModal.id, ...editForm }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to update course');
-      setCourses((prev) => prev.map((c) => (c.id === editModal.id ? { ...c, ...editForm } as CourseItem : c)));
+      const categoryName = categoryOptions.find((c) => c.id === editForm.categoryId)?.name;
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.id === editModal.id
+            ? { ...c, ...editForm, category: categoryName ?? c.category } as CourseItem
+            : c
+        )
+      );
       setEditModal(null);
       setEditForm({});
     } catch (err) {
@@ -119,17 +147,25 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
     } finally {
       setLoadingAction(null);
     }
-  }, [editModal, editForm]);
+  }, [editModal, editForm, categoryOptions]);
 
   const handleDuplicate = useCallback(async (course: CourseItem) => {
     setOpenMenu(null);
     setLoadingAction({ id: course.id, action: 'duplicate' });
     try {
-      const { id, ...rest } = course;
+      // Send only real, correctly-named columns to the API.
+      const payload: Record<string, unknown> = {
+        title: `${course.title} (Copy)`,
+        status: 'draft',
+        course_type: TYPE_TO_DB[course.type],
+        difficulty_level: course.difficulty,
+      };
+      if (course.categoryId) payload.category_id = course.categoryId;
+      if (course.duration) payload.estimated_duration = course.duration;
       const res = await fetch('/api/courses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...rest, title: `${course.title} (Copy)`, status: 'draft' }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to duplicate course');
       const newCourse = await res.json();
@@ -139,6 +175,7 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
         status: 'draft',
         type: course.type,
         category: course.category,
+        categoryId: course.categoryId,
         difficulty: course.difficulty,
         enrolled: 0,
         completionRate: 0,
@@ -491,11 +528,12 @@ export default function CoursesClient({ courses: initialCourses }: { courses: Co
                   <label htmlFor="edit-course-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                   <select
                     id="edit-course-category"
-                    value={editForm.category || ''}
-                    onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}
+                    value={editForm.categoryId || ''}
+                    onChange={(e) => setEditForm((f) => ({ ...f, categoryId: e.target.value }))}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
-                    {categories.filter((c) => c !== 'All Categories').map((c) => <option key={c} value={c}>{c}</option>)}
+                    <option value="">Uncategorized</option>
+                    {categoryOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
