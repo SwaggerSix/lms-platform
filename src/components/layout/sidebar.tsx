@@ -77,6 +77,8 @@ interface NavSection {
   header?: string;
   items: NavItem[];
   roles: Role[];
+  /** Optional slightly-tinted background to visually separate the role group. */
+  bgClass?: string;
 }
 
 // All nav sections including new features
@@ -125,6 +127,7 @@ const navSections: NavSection[] = [
       { label: "Team Analytics", href: "/manager/analytics", icon: TrendingUp },
     ],
     roles: ["manager", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
   },
   {
     header: "ADMINISTRATION",
@@ -156,11 +159,12 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/admin/nudges", icon: Zap },
     ],
     roles: ["admin", "super_admin"],
+    bgClass: "bg-gray-800/60",
   },
   {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
     // cross-organization concerns and are hidden from client Admins.
-    header: "PLATFORM (gC / GGS)",
+    header: "Super Admin",
     items: [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
       { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Sparkles },
@@ -173,6 +177,7 @@ const navSections: NavSection[] = [
       { label: "Teams", href: "/admin/settings/integrations/teams", icon: MessageSquareMore },
     ],
     roles: ["super_admin"],
+    bgClass: "bg-indigo-900/30",
   },
 ];
 
@@ -185,7 +190,11 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, boolean> | null>(null);
+
+  const toggleSection = (header: string) =>
+    setCollapsedSections((prev) => ({ ...prev, [header]: !prev[header] }));
   const { user } = useAuth();
   const locale = useLocale();
   const currentRole: Role = (user?.role as Role) ?? "learner";
@@ -254,16 +263,40 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
 
       {/* Navigation */}
       <nav aria-label="Primary" className="flex-1 space-y-1 overflow-y-auto px-2 py-4">
-        {filteredSections.map((section, sectionIdx) => (
-          <div key={sectionIdx} role="group" aria-label={section.header || "Main"}>
+        {filteredSections.map((section, sectionIdx) => {
+          // Sections with a header are collapsible when the sidebar is expanded.
+          const isCollapsible = !!section.header && !collapsed;
+          const isSectionCollapsed = isCollapsible && !!collapsedSections[section.header!];
+
+          return (
+          <div
+            key={sectionIdx}
+            role="group"
+            aria-label={section.header || "Main"}
+            className={cn(
+              section.header && !collapsed && "mt-3 rounded-lg px-1 py-1",
+              section.header && !collapsed && section.bgClass
+            )}
+          >
             {section.header && !collapsed && (
-              <p className="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500" aria-hidden="true">
-                {section.header}
-              </p>
+              <button
+                type="button"
+                onClick={() => toggleSection(section.header!)}
+                aria-expanded={!isSectionCollapsed}
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+              >
+                <span>{section.header}</span>
+                {isSectionCollapsed ? (
+                  <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                )}
+              </button>
             )}
             {section.header && collapsed && (
               <div className="my-3 border-t border-gray-800" aria-hidden="true" />
             )}
+            {!isSectionCollapsed && (
             <ul role="list" className="space-y-0.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -299,8 +332,10 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
                 );
               })}
             </ul>
+            )}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* User area */}
