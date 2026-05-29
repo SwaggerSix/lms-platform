@@ -217,6 +217,9 @@ export const createProductSchema = z.object({
   discount_ends_at: z.string().optional().nullable(),
   is_featured: z.boolean().default(false),
   status: z.enum(["active", "inactive", "coming_soon"]).default("active"),
+  name: z.string().max(200).optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+  image_url: z.string().url().max(2000).optional().nullable(),
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({
