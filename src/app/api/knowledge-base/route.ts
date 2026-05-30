@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
  * Create a new KB article or category (use type: 'category' for categories)
  */
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -157,8 +157,8 @@ export async function PATCH(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   } else {
-    // All other PATCH operations require admin
-    const auth = await authorize("admin");
+    // All other PATCH operations require admin or instructor
+    const auth = await authorize("admin", "instructor");
     if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 

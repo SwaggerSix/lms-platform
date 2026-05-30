@@ -51,7 +51,7 @@ export interface SettingsData {
 
 const webhookEvents = ["user.created", "user.updated", "course.completed", "enrollment.created", "certificate.issued", "quiz.submitted"];
 
-const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations"] as const;
+const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations", "Automation", "Audit Log"] as const;
 
 export default function SettingsClient({ data }: { data: SettingsData }) {
   const toast = useToast();
@@ -539,6 +539,40 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
             >
               Manage Integrations
+            </a>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Automation" && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Automation Rules</h3>
+              <p className="mt-1 text-xs text-gray-500">Build trigger-based rules to automatically enroll, notify, and act on learner activity.</p>
+            </div>
+            <a
+              href="/admin/automation"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              Manage Automation
+            </a>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Audit Log" && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Audit Log</h3>
+              <p className="mt-1 text-xs text-gray-500">Review a chronological record of administrative actions and changes across the platform.</p>
+            </div>
+            <a
+              href="/admin/audit-log"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              View Audit Log
             </a>
           </div>
         </div>

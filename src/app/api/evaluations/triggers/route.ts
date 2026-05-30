@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createEvaluationTriggerSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { getInstructorCourseIds } from "@/lib/instructor/instructor-queries";
 
 export async function GET(request: NextRequest) {
-  const auth = await authorize("admin", "super_admin", "manager");
+  const auth = await authorize("admin", "super_admin", "manager", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin", "super_admin");
+  const auth = await authorize("admin", "super_admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`eval-trigger-create-${auth.user.id}`, 30, 60000);
@@ -48,6 +49,18 @@ export async function POST(request: NextRequest) {
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
 
   const service = createServiceClient();
+
+  // Instructors may only deploy evaluations to courses they are responsible for.
+  if (auth.user.role === "instructor") {
+    const courseIds = await getInstructorCourseIds(auth.user.id, service);
+    if (!courseIds.includes(validation.data.course_id)) {
+      return NextResponse.json(
+        { error: "You can only deploy evaluations to your own courses" },
+        { status: 403 }
+      );
+    }
+  }
+
   const { data, error } = await service
     .from("evaluation_triggers")
     .insert({ ...validation.data, created_by: auth.user.id })
