@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -20,7 +21,11 @@ const memberInputSchema = z.object({
   status: z.enum(["active", "inactive", "suspended"]).optional(),
 });
 
+// Assign an existing employee (by id) to the current manager's team.
+const assignInputSchema = z.object({ user_id: z.string().uuid() });
+
 const createSchema = z.union([
+  assignInputSchema,
   memberInputSchema,
   z.object({ members: z.array(memberInputSchema).min(1).max(500) }),
 ]);
@@ -102,6 +107,57 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient();
   const managerId = auth.user.id;
+
+  // Assign an existing employee to this manager's team (set their manager).
+  if ("user_id" in validation.data) {
+    const targetId = validation.data.user_id;
+    if (targetId === managerId) {
+      return NextResponse.json(
+        { error: "You cannot add yourself to your team" },
+        { status: 400 }
+      );
+    }
+
+    // Managers can only assign employees within their own tenant scope.
+    const scope = await getTenantScope(managerId, auth.user.role, request);
+    if (scope && !scope.userIds.includes(targetId)) {
+      return NextResponse.json(
+        { error: "Employee not found in your organization" },
+        { status: 403 }
+      );
+    }
+
+    const { data: target, error: fetchErr } = await service
+      .from("users")
+      .select("id, first_name, last_name, email")
+      .eq("id", targetId)
+      .single();
+    if (fetchErr || !target) {
+      return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+    }
+
+    const { error: updErr } = await service
+      .from("users")
+      .update({ manager_id: managerId })
+      .eq("id", targetId);
+    if (updErr) {
+      console.error("Team members assign error:", updErr.message);
+      return NextResponse.json(
+        { error: "Failed to add employee to your team" },
+        { status: 500 }
+      );
+    }
+
+    logAudit({
+      userId: managerId,
+      action: "updated",
+      entityType: "user",
+      entityId: targetId,
+      newValues: { manager_id: managerId },
+    });
+
+    return NextResponse.json({ id: targetId, assigned: true }, { status: 200 });
+  }
 
   const inputs: MemberInput[] =
     "members" in validation.data ? validation.data.members : [validation.data];
