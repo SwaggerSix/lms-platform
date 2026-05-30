@@ -164,7 +164,6 @@ const navSections: NavSection[] = [
       { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardList },
       { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle },
       { label: "Nudges", href: "/admin/nudges", icon: Zap },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
     roles: ["admin", "super_admin"],
     bgClass: "bg-gray-800/60",
@@ -186,6 +185,11 @@ const navSections: NavSection[] = [
     ],
     roles: ["super_admin"],
     bgClass: "bg-indigo-900/30",
+  },
+  // Settings always sits at the very bottom of the sidebar.
+  {
+    items: [{ label: "Settings", href: "/admin/settings", icon: Settings }],
+    roles: ["admin", "super_admin"],
   },
 ];
 
