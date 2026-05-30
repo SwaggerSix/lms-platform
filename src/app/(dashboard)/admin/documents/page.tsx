@@ -126,6 +126,7 @@ export default async function AdminDocumentsPage() {
       initialDocuments={documents}
       acknowledgments={acknowledgments}
       versionHistory={versionHistory}
+      canManage={["admin", "super_admin"].includes(dbUser.role)}
     />
   );
 }

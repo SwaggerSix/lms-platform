@@ -84,6 +84,7 @@ export default async function AdminKnowledgeBasePage() {
     <KnowledgeBaseClient
       initialArticles={articles}
       initialCategories={categories}
+      canManage={["admin", "super_admin"].includes(dbUser.role)}
     />
   );
 }

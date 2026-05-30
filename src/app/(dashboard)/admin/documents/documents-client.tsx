@@ -69,6 +69,8 @@ export interface DocumentsClientProps {
   initialDocuments: DocumentWithUploader[];
   acknowledgments: AcknowledgmentWithUser[];
   versionHistory: VersionHistoryEntry[];
+  /** Full management rights (delete, acknowledgments). Admins only; instructors can add/edit but not delete. */
+  canManage?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -165,6 +167,7 @@ export default function DocumentsClient({
   initialDocuments: initialDocumentsProp,
   acknowledgments: mockAcknowledgments,
   versionHistory: mockVersionHistory,
+  canManage = true,
 }: DocumentsClientProps) {
   const toast = useToast();
   const [folders, setFolders] =
@@ -674,16 +677,18 @@ export default function DocumentsClient({
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteFolder(folder.id);
-                    }}
-                    className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500"
-                    title="Delete folder"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFolder(folder.id);
+                      }}
+                      className="p-1 rounded hover:bg-red-100 text-gray-400 hover:text-red-500"
+                      title="Delete folder"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -726,13 +731,15 @@ export default function DocumentsClient({
                     </option>
                   ))}
                 </select>
-                <button
-                  onClick={handleBulkDelete}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete
-                </button>
+                {canManage && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -954,14 +961,18 @@ export default function DocumentsClient({
                                   View Acknowledgments
                                 </button>
                               )}
-                              <hr className="my-1 border-gray-100" />
-                              <button
-                                onClick={() => handleDeleteDoc(doc.id)}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Delete
-                              </button>
+                              {canManage && (
+                                <>
+                                  <hr className="my-1 border-gray-100" />
+                                  <button
+                                    onClick={() => handleDeleteDoc(doc.id)}
+                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Delete
+                                  </button>
+                                </>
+                              )}
                             </div>
                           )}
                         </td>
