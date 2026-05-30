@@ -64,7 +64,7 @@ import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
 import { roleLabel } from "@/lib/auth/roles";
 
-type Role = "learner" | "manager" | "admin" | "super_admin";
+type Role = "learner" | "manager" | "instructor" | "admin" | "super_admin";
 
 interface NavItem {
   label: string;
@@ -88,7 +88,18 @@ const navSections: NavSection[] = [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Help & Manuals", href: "/help", icon: HelpCircle },
     ],
-    roles: ["learner", "manager", "admin", "super_admin"],
+    roles: ["learner", "manager", "instructor", "admin", "super_admin"],
+  },
+  {
+    header: "INSTRUCTOR",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "Messages", href: "/learn/messages", icon: Mail },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
+    ],
+    roles: ["instructor", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
   },
   {
     items: [
