@@ -65,6 +65,24 @@ export default async function MessagesPage() {
 
   const currentUserId = currentProfile?.id ?? authUser.id;
 
+  // The current user's direct reports, so managers can quickly message their
+  // team. Empty for users with no reports.
+  const { data: teamRows } = await service
+    .from("users")
+    .select("id, first_name, last_name, email, status")
+    .eq("manager_id", currentUserId)
+    .eq("status", "active")
+    .order("first_name", { ascending: true });
+
+  const teamMembers: MessageUser[] = (teamRows ?? []).map((u: any, i: number) => ({
+    id: u.id,
+    name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email,
+    initials: initials(u.first_name, u.last_name),
+    avatarColor: pickColor(i),
+    online: u.status === "active",
+    email: u.email ?? "",
+  }));
+
   // Get conversation IDs where user is a participant
   const { data: participantRows } = await service
     .from("conversation_participants")
@@ -94,6 +112,7 @@ export default async function MessagesPage() {
         users={{ [currentUserId]: currentUser }}
         conversations={[]}
         messages={[]}
+        teamMembers={teamMembers}
       />
     );
   }
@@ -248,6 +267,7 @@ export default async function MessagesPage() {
       users={userMap}
       conversations={mappedConversations}
       messages={mappedMessages}
+      teamMembers={teamMembers}
     />
   );
 }

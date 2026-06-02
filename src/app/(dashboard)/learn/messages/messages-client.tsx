@@ -95,6 +95,8 @@ export interface MessagesClientProps {
   users: Record<string, MessageUser>;
   conversations: ConversationData[];
   messages: MessageData[];
+  /** The current user's direct reports, for managers to quickly message their team. */
+  teamMembers?: MessageUser[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -203,10 +205,12 @@ function FileAttachment({ name, type }: { name: string; type: "file" | "image" }
 
 function NewMessageModal({
   currentUserId,
+  teamMembers,
   onClose,
   onSend,
 }: {
   currentUserId: string;
+  teamMembers: MessageUser[];
   onClose: () => void;
   onSend: (recipients: MessageUser[], message: string) => void;
 }) {
@@ -217,6 +221,14 @@ function NewMessageModal({
   const [message, setMessage] = useState("");
 
   const selectedIds = selectedUsers.map((u) => u.id);
+
+  const addUsers = (toAdd: MessageUser[]) =>
+    setSelectedUsers((prev) => {
+      const have = new Set(prev.map((u) => u.id));
+      return [...prev, ...toAdd.filter((u) => !have.has(u.id))];
+    });
+
+  const unselectedTeam = teamMembers.filter((m) => !selectedIds.includes(m.id));
 
   useEffect(() => {
     const query = search.trim();
@@ -289,6 +301,41 @@ function NewMessageModal({
                   </button>
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Quick-add the manager's team */}
+          {teamMembers.length > 0 && (
+            <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Your team
+                </span>
+                <button
+                  onClick={() => addUsers(teamMembers)}
+                  disabled={unselectedTeam.length === 0}
+                  className="text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:cursor-not-allowed disabled:text-gray-400"
+                >
+                  Add entire team ({teamMembers.length})
+                </button>
+              </div>
+              {unselectedTeam.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {unselectedTeam.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => addUsers([m])}
+                      className="rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                    >
+                      + {m.name}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-gray-400">
+                  Everyone on your team is added.
+                </p>
+              )}
             </div>
           )}
 
@@ -381,6 +428,7 @@ export default function MessagesClient({
   users: initialUsers,
   conversations: initialConversations,
   messages: initialMessages,
+  teamMembers = [],
 }: MessagesClientProps) {
   const [users, setUsers] = useState(initialUsers);
   const [conversations, setConversations] = useState(initialConversations);
@@ -1118,6 +1166,7 @@ export default function MessagesClient({
       {showNewMessage && (
         <NewMessageModal
           currentUserId={currentUserId}
+          teamMembers={teamMembers}
           onClose={() => setShowNewMessage(false)}
           onSend={handleNewMessageSend}
         />
