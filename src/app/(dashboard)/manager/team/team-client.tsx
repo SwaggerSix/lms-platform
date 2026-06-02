@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -61,9 +61,11 @@ const statusColors: Record<string, string> = {
 export default function TeamClient({
   members,
   courses = [],
+  currentUserId,
 }: {
   members: TeamMember[];
   courses?: CourseOption[];
+  currentUserId?: string;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -95,6 +97,82 @@ export default function TeamClient({
   const [memberStatus, setMemberStatus] =
     useState<TeamMember["status"]>("active");
   const [savingMember, setSavingMember] = useState(false);
+
+  // Existing-employee typeahead (Add Member modal)
+  type EmployeeMatch = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    jobTitle: string;
+  };
+  const [employeeQuery, setEmployeeQuery] = useState("");
+  const [employeeResults, setEmployeeResults] = useState<EmployeeMatch[]>([]);
+  const [employeeLoading, setEmployeeLoading] = useState(false);
+  const [employeeDropdownOpen, setEmployeeDropdownOpen] = useState(false);
+  // Set when the manager picks an existing employee — they'll be assigned to
+  // the team rather than created as a new account.
+  const [selectedExistingId, setSelectedExistingId] = useState<string | null>(null);
+
+  // Look up existing employees as the manager types (debounced).
+  useEffect(() => {
+    if (!showAddMember) return;
+    const q = employeeQuery.trim();
+    if (selectedExistingId || q.length < 2) {
+      setEmployeeResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setEmployeeLoading(true);
+      try {
+        const res = await fetch(
+          `/api/users?search=${encodeURIComponent(q)}&status=active&limit=8`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const existingIds = new Set(members.map((m) => m.id));
+          setEmployeeResults(
+            (data.users ?? [])
+              .filter(
+                (u: any) => u.id !== currentUserId && !existingIds.has(u.id)
+              )
+              .map((u: any) => ({
+                id: u.id,
+                firstName: u.first_name ?? "",
+                lastName: u.last_name ?? "",
+                email: u.email ?? "",
+                jobTitle: u.job_title ?? "",
+              }))
+          );
+          setEmployeeDropdownOpen(true);
+        }
+      } catch {
+        // Ignore lookup failures — the manager can still type a new member.
+      } finally {
+        setEmployeeLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [employeeQuery, showAddMember, selectedExistingId, members, currentUserId]);
+
+  const resetEmployeeSearch = () => {
+    setEmployeeQuery("");
+    setEmployeeResults([]);
+    setEmployeeDropdownOpen(false);
+    setSelectedExistingId(null);
+  };
+
+  const selectExistingEmployee = (emp: EmployeeMatch) => {
+    setMemberForm({
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      jobTitle: emp.jobTitle,
+    });
+    setSelectedExistingId(emp.id);
+    setEmployeeQuery(`${emp.firstName} ${emp.lastName}`.trim());
+    setEmployeeDropdownOpen(false);
+  };
 
   // CSV import modal state
   const [showImport, setShowImport] = useState(false);
@@ -227,6 +305,7 @@ export default function TeamClient({
   const openAddMember = () => {
     setMemberForm(emptyForm);
     setMemberStatus("active");
+    resetEmployeeSearch();
     setEditMember(null);
     setShowAddMember(true);
   };
@@ -239,6 +318,7 @@ export default function TeamClient({
       jobTitle: member.jobTitle === "Employee" ? "" : member.jobTitle,
     });
     setMemberStatus(member.status);
+    resetEmployeeSearch();
     setShowAddMember(false);
     setEditMember(member);
     setOpenActionMenu(null);
@@ -250,26 +330,31 @@ export default function TeamClient({
 
   const handleSaveMember = async () => {
     const { firstName, lastName, email, jobTitle } = memberForm;
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+    const isEdit = Boolean(editMember);
+    const isAssign = !isEdit && Boolean(selectedExistingId);
+
+    if (!isAssign && (!firstName.trim() || !lastName.trim() || !email.trim())) {
       toast.error("First name, last name, and email are required.");
       return;
     }
     setSavingMember(true);
     try {
-      const isEdit = Boolean(editMember);
       const url = isEdit
         ? `/api/team/members/${editMember!.id}`
         : "/api/team/members";
+      const body = isAssign
+        ? { user_id: selectedExistingId }
+        : {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            email: email.trim(),
+            job_title: jobTitle.trim() || null,
+            status: toDbStatus(memberStatus),
+          };
       const res = await fetch(url, {
         method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          job_title: jobTitle.trim() || null,
-          status: toDbStatus(memberStatus),
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -282,6 +367,7 @@ export default function TeamClient({
       );
       setShowAddMember(false);
       setEditMember(null);
+      resetEmployeeSearch();
       router.refresh();
     } catch (error) {
       console.error("Save member failed:", error);
@@ -1132,6 +1218,7 @@ export default function TeamClient({
                 onClick={() => {
                   setShowAddMember(false);
                   setEditMember(null);
+                  resetEmployeeSearch();
                 }}
                 className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
@@ -1140,6 +1227,82 @@ export default function TeamClient({
             </div>
 
             <div className="px-6 py-5 space-y-4">
+              {!editMember && (
+                <div className="relative">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Find an existing employee
+                  </label>
+                  {selectedExistingId ? (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
+                      <span className="flex items-center gap-2 text-sm text-indigo-900">
+                        <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                        {memberForm.firstName} {memberForm.lastName} will be
+                        added to your team.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMemberForm(emptyForm);
+                          resetEmployeeSearch();
+                        }}
+                        className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="text"
+                          value={employeeQuery}
+                          onChange={(e) => setEmployeeQuery(e.target.value)}
+                          onFocus={() => {
+                            if (employeeResults.length > 0)
+                              setEmployeeDropdownOpen(true);
+                          }}
+                          placeholder="Search by name or email..."
+                          className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                        {employeeLoading && (
+                          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+                        )}
+                      </div>
+                      {employeeDropdownOpen && employeeResults.length > 0 && (
+                        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          {employeeResults.map((emp) => (
+                            <li key={emp.id}>
+                              <button
+                                type="button"
+                                onClick={() => selectExistingEmployee(emp)}
+                                className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-indigo-50"
+                              >
+                                <span className="text-sm font-medium text-gray-900">
+                                  {emp.firstName} {emp.lastName}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {emp.email}
+                                  {emp.jobTitle ? ` · ${emp.jobTitle}` : ""}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {employeeDropdownOpen &&
+                        !employeeLoading &&
+                        employeeQuery.trim().length >= 2 &&
+                        employeeResults.length === 0 && (
+                          <p className="mt-1.5 text-xs text-gray-400">
+                            No matching employee found. Fill in the details below
+                            to create a new account.
+                          </p>
+                        )}
+                    </>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -1151,7 +1314,8 @@ export default function TeamClient({
                     onChange={(e) =>
                       setMemberForm({ ...memberForm, firstName: e.target.value })
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    disabled={Boolean(selectedExistingId)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -1164,7 +1328,8 @@ export default function TeamClient({
                     onChange={(e) =>
                       setMemberForm({ ...memberForm, lastName: e.target.value })
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    disabled={Boolean(selectedExistingId)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 </div>
               </div>
@@ -1178,7 +1343,8 @@ export default function TeamClient({
                   onChange={(e) =>
                     setMemberForm({ ...memberForm, email: e.target.value })
                   }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  disabled={Boolean(selectedExistingId)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </div>
               <div>
@@ -1191,26 +1357,29 @@ export default function TeamClient({
                   onChange={(e) =>
                     setMemberForm({ ...memberForm, jobTitle: e.target.value })
                   }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  disabled={Boolean(selectedExistingId)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <select
-                  value={memberStatus}
-                  onChange={(e) =>
-                    setMemberStatus(e.target.value as TeamMember["status"])
-                  }
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="on-leave">On Leave</option>
-                </select>
-              </div>
-              {!editMember && (
+              {!selectedExistingId && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Status
+                  </label>
+                  <select
+                    value={memberStatus}
+                    onChange={(e) =>
+                      setMemberStatus(e.target.value as TeamMember["status"])
+                    }
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="on-leave">On Leave</option>
+                  </select>
+                </div>
+              )}
+              {!editMember && !selectedExistingId && (
                 <p className="text-xs text-gray-400">
                   A login will be created and the member will be prompted to set
                   a password on first sign-in.
@@ -1223,6 +1392,7 @@ export default function TeamClient({
                 onClick={() => {
                   setShowAddMember(false);
                   setEditMember(null);
+                  resetEmployeeSearch();
                 }}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >

@@ -111,5 +111,5 @@ export default async function TeamPage() {
     category: c.category?.name ?? "Uncategorized",
   }));
 
-  return <TeamClient members={members} courses={courses} />;
+  return <TeamClient members={members} courses={courses} currentUserId={dbUser.id} />;
 }

@@ -128,7 +128,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Role-based route protection for authenticated users
-  if (user && (pathname.startsWith("/admin") || pathname.startsWith("/manager"))) {
+  if (
+    user &&
+    (pathname.startsWith("/admin") ||
+      pathname.startsWith("/manager") ||
+      pathname.startsWith("/instructor"))
+  ) {
     // Use service client to bypass RLS (avoids infinite recursion in users policy)
     const serviceClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -143,7 +148,29 @@ export async function middleware(request: NextRequest) {
 
     const role = profile?.role;
 
-    if (pathname.startsWith("/admin") && role !== "admin" && role !== "super_admin") {
+    // Instructors share a few admin-area management pages (Documents, Knowledge
+    // Base) so they can add and edit content alongside admins.
+    const instructorSharedAdminPaths = ["/admin/documents", "/admin/knowledge-base"];
+    const isInstructorSharedAdminPath = instructorSharedAdminPaths.some((p) =>
+      pathname.startsWith(p)
+    );
+
+    if (
+      pathname.startsWith("/admin") &&
+      role !== "admin" &&
+      role !== "super_admin" &&
+      !(role === "instructor" && isInstructorSharedAdminPath)
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // The instructor portal is open to instructors (and admins/super admins).
+    if (
+      pathname.startsWith("/instructor") &&
+      !["instructor", "admin", "super_admin"].includes(role)
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

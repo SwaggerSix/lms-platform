@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
  * Body: Partial<Document> with required title
  */
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   try {
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
  * Body: { id: string, ...fieldsToUpdate }
  */
 export async function PATCH(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorize("admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   try {

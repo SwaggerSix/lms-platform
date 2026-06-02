@@ -29,7 +29,6 @@ import {
   Gamepad2,
   PieChart,
   Settings,
-  ScrollText,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -64,7 +63,7 @@ import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
 import { roleLabel } from "@/lib/auth/roles";
 
-type Role = "learner" | "manager" | "admin" | "super_admin";
+type Role = "learner" | "manager" | "instructor" | "admin" | "super_admin";
 
 interface NavItem {
   label: string;
@@ -88,7 +87,18 @@ const navSections: NavSection[] = [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Help & Manuals", href: "/help", icon: HelpCircle },
     ],
-    roles: ["learner", "manager", "admin", "super_admin"],
+    roles: ["learner", "manager", "instructor", "admin", "super_admin"],
+  },
+  {
+    header: "INSTRUCTOR",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "Messages", href: "/learn/messages", icon: Mail },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
+    ],
+    roles: ["instructor", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
   },
   {
     items: [
@@ -145,11 +155,8 @@ const navSections: NavSection[] = [
       { label: "Gamification", href: "/admin/gamification", icon: Gamepad2 },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
-      { label: "Automation", href: "/admin/automation", icon: Zap },
       { label: "Reports", href: "/admin/reports", icon: PieChart },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
-      { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
       { label: "360 Feedback", href: "/admin/feedback", icon: MessageSquare },
       { label: "Mentorship", href: "/admin/mentorship", icon: Heart },
@@ -178,6 +185,11 @@ const navSections: NavSection[] = [
     ],
     roles: ["super_admin"],
     bgClass: "bg-indigo-900/30",
+  },
+  // Settings always sits at the very bottom of the sidebar.
+  {
+    items: [{ label: "Settings", href: "/admin/settings", icon: Settings }],
+    roles: ["admin", "super_admin"],
   },
 ];
 

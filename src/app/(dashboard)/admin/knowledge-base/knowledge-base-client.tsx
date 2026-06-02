@@ -75,6 +75,8 @@ interface ArticleForm {
 export interface KnowledgeBaseClientProps {
   initialArticles: AdminArticle[];
   initialCategories: AdminCategory[];
+  /** Full management rights (delete, analytics). Admins only; instructors can add/edit but not delete. */
+  canManage?: boolean;
 }
 
 // ── Mock Search Analytics (kept client-side, not in DB) ───────────────
@@ -150,7 +152,7 @@ type TabKey = (typeof TABS)[number]["key"];
 
 // ── Main Client Component ─────────────────────────────────────────────
 
-export default function KnowledgeBaseClient({ initialArticles, initialCategories }: KnowledgeBaseClientProps) {
+export default function KnowledgeBaseClient({ initialArticles, initialCategories, canManage = true }: KnowledgeBaseClientProps) {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabKey>("articles");
   const [articles, setArticles] = useState(initialArticles);
@@ -453,7 +455,7 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
         {/* Tabs */}
         <div className="mt-8 border-b border-gray-200">
           <nav className="flex gap-6">
-            {TABS.map((tab) => {
+            {TABS.filter((tab) => canManage || tab.key !== "analytics").map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
@@ -579,13 +581,17 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
                               >
                                 <Eye className="h-4 w-4" /> View Article
                               </button>
-                              <hr className="my-1 border-gray-100" />
-                              <button
-                                onClick={() => handleDeleteArticle(article.id)}
-                                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" /> Delete
-                              </button>
+                              {canManage && (
+                                <>
+                                  <hr className="my-1 border-gray-100" />
+                                  <button
+                                    onClick={() => handleDeleteArticle(article.id)}
+                                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" /> Delete
+                                  </button>
+                                </>
+                              )}
                             </div>
                           )}
                         </div>
@@ -633,12 +639,14 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteCategory(cat.id)}
-                        className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {canManage && (
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
