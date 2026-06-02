@@ -23,6 +23,8 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDuration, formatDate } from "@/utils/format";
 import { trackEvent } from "@/lib/analytics/track";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { courseTypeDefinition } from "@/lib/course-type-info";
 
 export interface Lesson {
   id: string;
@@ -230,7 +232,17 @@ export default function CourseDetailClient({
           </a>
           <div className="flex flex-wrap items-start gap-3">
             <DifficultyBadge difficulty={course.difficulty} />
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">{course.type}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
+              {course.type}
+              {courseTypeDefinition(course.type) && (
+                <InfoTooltip
+                  content={courseTypeDefinition(course.type)}
+                  label={`What "${course.type}" means`}
+                  side="bottom"
+                  iconClassName="text-white/80"
+                />
+              )}
+            </span>
           </div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">{course.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">{course.shortDescription}</p>
