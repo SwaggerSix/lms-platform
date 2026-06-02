@@ -128,12 +128,22 @@ export default async function CoursePlayerPage({
   const { data: course } = await service
     .from("courses")
     .select(
-      "id, title, slug, description, course_type, estimated_duration, modules(id, title, description, sequence_order, drip_type, drip_days, drip_date, lessons(id, title, content_type, content_url, content_data, duration, sequence_order, is_required))"
+      "id, title, slug, description, course_type, estimated_duration, available_from, available_until, modules(id, title, description, sequence_order, drip_type, drip_days, drip_date, lessons(id, title, content_type, content_url, content_data, duration, sequence_order, is_required))"
     )
     .eq("id", courseId)
     .single();
 
   if (!course) {
+    redirect("/learn/my-courses");
+  }
+
+  // Enforce the availability window (client licensing) — cut access for
+  // already-enrolled learners once a course's license has expired.
+  const playerNow = Date.now();
+  if (
+    (course.available_from && playerNow < new Date(course.available_from).getTime()) ||
+    (course.available_until && playerNow > new Date(course.available_until).getTime())
+  ) {
     redirect("/learn/my-courses");
   }
 

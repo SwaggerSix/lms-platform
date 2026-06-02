@@ -101,6 +101,16 @@ export default async function CourseDetailPage({
     notFound();
   }
 
+  // Enforce the course availability window (client licensing). Outside the
+  // window the course is treated as not found.
+  const nowMs = Date.now();
+  if (
+    (courseRow.available_from && nowMs < new Date(courseRow.available_from).getTime()) ||
+    (courseRow.available_until && nowMs > new Date(courseRow.available_until).getTime())
+  ) {
+    notFound();
+  }
+
   const course = courseRow as any;
 
   // Fetch instructor info

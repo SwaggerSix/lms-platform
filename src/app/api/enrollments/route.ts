@@ -197,9 +197,21 @@ export async function POST(request: NextRequest) {
   // Check if the course requires approval for enrollment
   const { data: course } = await service
     .from("courses")
-    .select("enrollment_type")
+    .select("enrollment_type, available_from, available_until")
     .eq("id", validation.data.course_id)
     .single();
+
+  // Block enrollment outside the course's availability window (client licensing).
+  const enrollNow = Date.now();
+  if (
+    (course?.available_from && enrollNow < new Date(course.available_from).getTime()) ||
+    (course?.available_until && enrollNow > new Date(course.available_until).getTime())
+  ) {
+    return NextResponse.json(
+      { error: "This course is not currently available." },
+      { status: 403 }
+    );
+  }
 
   if (course?.enrollment_type === "approval" && !["admin", "manager"].includes(profile.role)) {
     // Check for an existing pending request

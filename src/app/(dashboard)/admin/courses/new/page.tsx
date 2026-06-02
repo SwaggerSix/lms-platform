@@ -149,6 +149,8 @@ export default function CreateCoursePage() {
   const [prereqReqType, setPrereqReqType] = useState<string>('completion');
   const [prereqMinScore, setPrereqMinScore] = useState<number>(70);
   const [skills, setSkills] = useState<string[]>([]);
+  const [availableFrom, setAvailableFrom] = useState("");
+  const [availableUntil, setAvailableUntil] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (status: 'draft' | 'published') => {
@@ -192,6 +194,8 @@ export default function CreateCoursePage() {
           skills,
         },
         published_at: status === 'published' ? new Date().toISOString() : null,
+        available_from: availableFrom ? `${availableFrom}T00:00:00.000Z` : null,
+        available_until: availableUntil ? `${availableUntil}T23:59:59.999Z` : null,
       };
 
       const res = await fetch('/api/courses', {
@@ -609,6 +613,20 @@ export default function CreateCoursePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Attempts</label>
               <input type="number" min={1} max={10} value={maxAttempts} onChange={(e) => setMaxAttempts(parseInt(e.target.value) || 1)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Availability</label>
+              <p className="text-xs text-gray-500 mb-3">Leave both blank to keep the course live forever. Set a window to license it for a fixed period — outside the window it&apos;s hidden and access is blocked.</p>
+              <div className="grid grid-cols-2 gap-4 max-w-md">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Available from</label>
+                  <input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Available until</label>
+                  <input type="date" value={availableUntil} onChange={(e) => setAvailableUntil(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                </div>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Prerequisites</label>

@@ -33,6 +33,8 @@ export const createCourseSchema = z.object({
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   published_at: z.string().nullable().optional(),
+  available_from: z.string().nullable().optional(),
+  available_until: z.string().nullable().optional(),
   short_description: z.string().max(500).optional(),
   passing_score: z.number().int().min(0).max(100).optional(),
   max_attempts: z.number().int().positive().optional(),

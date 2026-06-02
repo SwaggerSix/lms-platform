@@ -77,6 +77,8 @@ export default async function CoursesPage() {
       completionRate: isPublished ? 60 + (seed * 13) % 35 : 0,
       duration: row.estimated_duration ?? 0,
       thumbnail: GRADIENTS[index % GRADIENTS.length],
+      availableFrom: row.available_from ?? null,
+      availableUntil: row.available_until ?? null,
     };
   });
 
