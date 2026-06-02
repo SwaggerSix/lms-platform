@@ -966,7 +966,8 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     >
                       <option value="all">All Roles</option>
-                      <option value="employee">Employee</option>
+                      <option value="instructor">Instructor</option>
+                      <option value="learner">Learner</option>
                       <option value="manager">Manager</option>
                       <option value="admin">Admin</option>
                     </select>

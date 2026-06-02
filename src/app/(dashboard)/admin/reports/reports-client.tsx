@@ -354,7 +354,8 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
               <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
               <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 <option value="All">All Roles</option>
-                <option value="Employee">Employee</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Learner">Learner</option>
                 <option value="Manager">Manager</option>
                 <option value="Admin">Admin</option>
               </select>

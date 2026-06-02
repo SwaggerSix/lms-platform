@@ -345,7 +345,8 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     )}
                     {formAudienceType === "role" && (
                       <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        <option value="employee">Employee</option>
+                        <option value="instructor">Instructor</option>
+                        <option value="learner">Learner</option>
                         <option value="manager">Manager</option>
                         <option value="admin">Admin</option>
                       </select>
