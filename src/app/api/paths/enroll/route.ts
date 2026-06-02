@@ -6,9 +6,13 @@ import { logAudit } from "@/lib/audit";
 
 /**
  * POST /api/paths/enroll
- * Body: { path_id: string, user_ids?: string[] }
- * Enrolls the authenticated user in a learning path. Admins and managers may
- * pass user_ids to assign one or more other users to the path instead.
+ * Body: { path_id: string, user_id?: string, due_date?: string }
+ *
+ * - Learners enroll themselves (omit user_id).
+ * - Managers/admins assign a path to someone else (pass user_id). Managers may
+ *   only assign to their own direct reports; admins/super admins to anyone.
+ *
+ * Enrolling in a path also enrolls the target user in each of its courses.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -35,28 +39,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
-  let body: { path_id?: string; user_ids?: string[] };
+  let body: { path_id?: string; user_id?: string; due_date?: string | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const { path_id } = body;
+  const { path_id, user_id, due_date } = body;
   if (!path_id) {
     return NextResponse.json({ error: "path_id is required" }, { status: 400 });
   }
 
-  // Determine who is being enrolled. Only admins/managers can assign others.
-  const isManager = ["admin", "manager"].includes(profile.role);
-  let targetUserIds: string[];
-  if (body.user_ids && body.user_ids.length > 0) {
-    if (!isManager) {
-      return NextResponse.json({ error: "Forbidden: cannot assign other users" }, { status: 403 });
+  // Resolve the target learner and authorize assignment-on-behalf-of.
+  const targetUserId = user_id || profile.id;
+  const isSelf = targetUserId === profile.id;
+  const isPrivileged = ["admin", "super_admin"].includes(profile.role);
+
+  if (!isSelf) {
+    if (profile.role !== "manager" && !isPrivileged) {
+      return NextResponse.json(
+        { error: "You are not allowed to assign learning paths" },
+        { status: 403 }
+      );
     }
-    targetUserIds = [...new Set(body.user_ids)];
-  } else {
-    targetUserIds = [profile.id];
+    // Managers may only assign to their own direct reports.
+    if (!isPrivileged) {
+      const { data: target } = await service
+        .from("users")
+        .select("id, manager_id")
+        .eq("id", targetUserId)
+        .single();
+      if (!target) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+      if (target.manager_id !== profile.id) {
+        return NextResponse.json(
+          { error: "You can only assign paths to your own team members" },
+          { status: 403 }
+        );
+      }
+    }
   }
 
   // Verify the path exists and is published
@@ -71,40 +94,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Learning path not found" }, { status: 404 });
   }
 
-  // Skip users already enrolled in the path
+  // Check if already enrolled in the path
   const { data: existing } = await service
     .from("learning_path_enrollments")
-    .select("user_id")
+    .select("id")
+    .eq("user_id", targetUserId)
     .eq("path_id", path_id)
-    .in("user_id", targetUserIds);
+    .maybeSingle();
 
-  const alreadyInPath = new Set((existing ?? []).map((e: any) => e.user_id));
-  const toEnroll = targetUserIds.filter((id) => !alreadyInPath.has(id));
-
-  // Self-enrollment with no new work: report the conflict as before
-  if (toEnroll.length === 0) {
-    return NextResponse.json({ error: "Already enrolled in this path" }, { status: 409 });
+  if (existing) {
+    return NextResponse.json(
+      {
+        error: isSelf
+          ? "Already enrolled in this path"
+          : "This user is already enrolled in this path",
+      },
+      { status: 409 }
+    );
   }
 
-  const now = new Date().toISOString();
-  const { data: enrollments, error: enrollError } = await service
+  // Create the path enrollment. Self-enroll starts in progress; an assignment
+  // sits at "enrolled" until the learner begins.
+  const { data: enrollment, error: enrollError } = await service
     .from("learning_path_enrollments")
-    .insert(
-      toEnroll.map((userId) => ({
-        user_id: userId,
-        path_id,
-        status: "in_progress",
-        enrolled_at: now,
-      }))
-    )
-    .select();
+    .insert({
+      user_id: targetUserId,
+      path_id,
+      status: isSelf ? "in_progress" : "enrolled",
+      enrolled_at: new Date().toISOString(),
+      due_date: due_date || null,
+      assigned_by: isSelf ? null : profile.id,
+    })
+    .select()
+    .single();
 
   if (enrollError) {
     console.error("Path enrollment error:", enrollError.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  // Also enroll each user in all courses within the path (if not already enrolled)
+  // Also enroll the target user in all courses within the path (if not already).
   const { data: pathItems } = await service
     .from("learning_path_items")
     .select("course_id")
@@ -116,42 +145,50 @@ export async function POST(request: NextRequest) {
 
     const { data: existingEnrollments } = await service
       .from("enrollments")
-      .select("user_id, course_id")
-      .in("user_id", toEnroll)
+      .select("course_id")
+      .eq("user_id", targetUserId)
       .in("course_id", courseIds);
 
     const alreadyEnrolled = new Set(
-      (existingEnrollments ?? []).map((e: any) => `${e.user_id}:${e.course_id}`)
+      (existingEnrollments ?? []).map((e: any) => e.course_id)
     );
 
-    const newEnrollments = toEnroll.flatMap((userId) =>
-      courseIds
-        .filter((cid: string) => !alreadyEnrolled.has(`${userId}:${cid}`))
-        .map((course_id: string) => ({
-          user_id: userId,
-          course_id,
-          status: "not_started",
-          enrolled_at: now,
-        }))
-    );
+    const newEnrollments = courseIds
+      .filter((cid: string) => !alreadyEnrolled.has(cid))
+      .map((course_id: string) => ({
+        user_id: targetUserId,
+        course_id,
+        status: "enrolled",
+        enrolled_at: new Date().toISOString(),
+        due_date: due_date || null,
+        assigned_by: isSelf ? null : profile.id,
+      }));
 
     if (newEnrollments.length > 0) {
-      await service.from("enrollments").insert(newEnrollments);
+      const { error: courseEnrollError } = await service
+        .from("enrollments")
+        .insert(newEnrollments);
+      if (courseEnrollError) {
+        console.error("Path course enrollment error:", courseEnrollError.message);
+      }
     }
   }
 
-  for (const enrollment of enrollments ?? []) {
-    logAudit({
-      userId: profile.id,
-      action: "created",
-      entityType: "learning_path_enrollment",
-      entityId: enrollment.id,
-      newValues: { path_id, path_title: path.title, enrolled_user_id: enrollment.user_id },
-    });
-  }
+  logAudit({
+    userId: profile.id,
+    action: "created",
+    entityType: "learning_path_enrollment",
+    entityId: enrollment.id,
+    newValues: {
+      path_id,
+      path_title: path.title,
+      target_user_id: targetUserId,
+      assigned: !isSelf,
+    },
+  });
 
   return NextResponse.json(
-    { data: enrollments, enrolled_count: enrollments?.length ?? 0 },
+    { data: enrollment, enrolled_count: 1 },
     { status: 201 }
   );
 }
