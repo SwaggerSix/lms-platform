@@ -23,7 +23,6 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDuration, formatDate } from "@/utils/format";
 import { trackEvent } from "@/lib/analytics/track";
-import OfflineDownload from "@/components/pwa/offline-download";
 
 export interface Lesson {
   id: string;
@@ -511,13 +510,6 @@ export default function CourseDetailClient({
                         style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
                       />
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <OfflineDownload
-                      courseId={course.id || course.slug}
-                      slug={course.slug}
-                      title={course.title}
-                    />
                   </div>
                 </>
               )}
