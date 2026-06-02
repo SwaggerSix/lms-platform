@@ -40,7 +40,7 @@ export default async function LearnerILTSessionsPage() {
   const { data: rawSessions, error } = await service
     .from("ilt_sessions")
     .select(
-      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, meeting_url, meeting_provider, meeting_password, max_capacity, status, course:courses(title), instructor:users!ilt_sessions_instructor_id_fkey(first_name, last_name)"
+      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, meeting_url, meeting_provider, meeting_password, max_capacity, status, course:courses(title), instructor:users!ilt_sessions_instructor_id_fkey(first_name, last_name, bio)"
     )
     .in("status", ["scheduled", "in_progress", "completed"])
     .order("session_date", { ascending: true });
@@ -106,6 +106,7 @@ export default async function LearnerILTSessionsPage() {
       course_title: course?.title ?? "Untitled Course",
       session_title: s.title,
       instructor_name: instructor ? `${instructor.first_name} ${instructor.last_name}` : "Unknown Instructor",
+      instructor_bio: instructor?.bio ?? "",
       session_date: s.session_date,
       start_time: s.start_time,
       end_time: s.end_time,

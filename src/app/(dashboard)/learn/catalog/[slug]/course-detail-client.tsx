@@ -417,7 +417,7 @@ export default function CourseDetailClient({
                 <div>
                   <h3 className="font-semibold text-gray-900">{course.instructor.name}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                    {course.instructor.bio}
+                    {course.instructor.bio || "This instructor hasn't added a bio yet."}
                   </p>
                 </div>
               </div>

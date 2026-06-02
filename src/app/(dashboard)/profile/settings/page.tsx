@@ -34,6 +34,7 @@ export default async function SettingsPage() {
       organization_id,
       job_title,
       preferences,
+      bio,
       organizations (
         id,
         name
@@ -75,7 +76,7 @@ export default async function SettingsPage() {
     email: userData.email || user.email || "",
     jobTitle: userData.job_title || "No title",
     organizationName: userData.organizations?.name || "Unknown Department",
-    bio: preferences.bio || "",
+    bio: userData.bio ?? preferences.bio ?? "",
     language: preferences.language || platformDefaults.default_language || "en",
     timezone: preferences.timezone || platformDefaults.default_timezone || "America/Los_Angeles",
     theme: preferences.theme || platformDefaults.default_theme || "system",

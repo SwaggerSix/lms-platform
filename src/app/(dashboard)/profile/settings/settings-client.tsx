@@ -122,6 +122,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
+          bio,
           preferences: { ...getCurrentPreferences(), bio },
         }),
       });

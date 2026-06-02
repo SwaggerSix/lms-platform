@@ -27,6 +27,7 @@ export interface LearnerSession {
   course_title: string;
   session_title: string;
   instructor_name: string;
+  instructor_bio?: string;
   session_date: string;
   start_time: string;
   end_time: string;
@@ -414,6 +415,13 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <User className="h-3.5 w-3.5 flex-shrink-0" />
                             {session.instructor_name}
+                            {session.instructor_bio && (
+                              <InfoTooltip
+                                content={session.instructor_bio}
+                                label={`About ${session.instructor_name}`}
+                                side="top"
+                              />
+                            )}
                           </div>
                         </div>
                       </div>

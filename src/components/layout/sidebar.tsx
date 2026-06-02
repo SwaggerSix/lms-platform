@@ -93,6 +93,18 @@ const navSections: NavSection[] = [
     roles: ["learner", "manager", "instructor", "admin", "super_admin"],
   },
   {
+    header: "INSTRUCTOR",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "My Bio", href: "/instructor/bio", icon: User },
+      { label: "Messages", href: "/learn/messages", icon: Mail },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
+    ],
+    roles: ["instructor", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
+  },
+  {
     header: "Learning",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
