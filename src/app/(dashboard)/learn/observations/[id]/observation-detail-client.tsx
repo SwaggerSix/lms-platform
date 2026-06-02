@@ -14,6 +14,7 @@ import {
 import { cn } from "@/utils/cn";
 import ChecklistForm from "@/components/observations/checklist-form";
 import ObservationSummary from "@/components/observations/observation-summary";
+import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 import Link from "next/link";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -207,6 +208,7 @@ export default function ObservationDetailClient({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <ObservationDevelopmentNotice />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

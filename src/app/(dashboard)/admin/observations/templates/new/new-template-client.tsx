@@ -13,6 +13,7 @@ import {
 import { cn } from "@/utils/cn";
 import ChecklistBuilder, { type ChecklistItem } from "@/components/observations/checklist-builder";
 import ChecklistForm from "@/components/observations/checklist-form";
+import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 import Link from "next/link";
 
 // ─── Component ──────────────────────────────────────────────────
@@ -78,6 +79,7 @@ export default function NewTemplateClient() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <ObservationDevelopmentNotice />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
