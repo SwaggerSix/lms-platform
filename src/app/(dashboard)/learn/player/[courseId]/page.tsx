@@ -89,10 +89,18 @@ function computeModuleDripAvailability(
 
 export default async function CoursePlayerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { courseId } = await params;
+  const { from } = await searchParams;
+
+  // Only honor internal in-app return targets (e.g. a learning path) to avoid
+  // open-redirects; otherwise fall back to My Courses.
+  const backHref =
+    from && /^\/learn\/[A-Za-z0-9/_-]+$/.test(from) ? from : "/learn/my-courses";
   const supabase = await createClient();
 
   // Auth check
@@ -311,6 +319,7 @@ export default async function CoursePlayerPage({
       course={playerCourse}
       initialLessonId={currentLessonId ?? playerModules[0]?.lessons[0]?.id ?? ""}
       enrollmentId={enrollment?.id ?? null}
+      backHref={backHref}
     />
   );
 }
