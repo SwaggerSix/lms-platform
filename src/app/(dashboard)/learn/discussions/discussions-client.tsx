@@ -38,20 +38,41 @@ export interface Thread {
   author: string;
   authorInitials: string;
   course: string;
+  courseId: string | null;
   courseColor: string;
+  topic: string | null;
   timeAgo: string;
   replies: number;
   upvotes: number;
   mockReplies: Reply[];
 }
 
+export interface CourseOption {
+  id: string;
+  title: string;
+}
+
 export interface DiscussionsClientProps {
   threads: Thread[];
+  courseOptions: CourseOption[];
   currentUserInitials: string;
   currentUserName: string;
 }
 
 type TabFilter = "All Discussions" | "My Posts" | "Unanswered";
+
+/** Topics discussions can be segregated into (in addition to by course). */
+const TOPICS = [
+  "General",
+  "Questions",
+  "Announcements",
+  "Resources",
+  "Assignments",
+  "Feedback",
+] as const;
+
+const NO_COURSE = "__none__";
+const NO_TOPIC = "__none__";
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -59,15 +80,19 @@ type TabFilter = "All Discussions" | "My Posts" | "Unanswered";
 
 export default function DiscussionsClient({
   threads,
+  courseOptions,
   currentUserInitials,
   currentUserName,
 }: DiscussionsClientProps) {
   const [activeTab, setActiveTab] = useState<TabFilter>("All Discussions");
   const [searchQuery, setSearchQuery] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+  const [topicFilter, setTopicFilter] = useState("");
   const [showNewForm, setShowNewForm] = useState(false);
   const [expandedThread, setExpandedThread] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
-  const [newCourse, setNewCourse] = useState("");
+  const [newCourseId, setNewCourseId] = useState("");
+  const [newTopic, setNewTopic] = useState("");
   const [newBody, setNewBody] = useState("");
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -88,12 +113,14 @@ export default function DiscussionsClient({
           action: "create_thread",
           title: newTitle,
           body: newBody,
-          course: newCourse || null,
+          course_id: newCourseId || null,
+          topic: newTopic || null,
         }),
       });
       if (!res.ok) throw new Error("Failed to create discussion");
       setNewTitle("");
-      setNewCourse("");
+      setNewCourseId("");
+      setNewTopic("");
       setNewBody("");
       setShowNewForm(false);
       trackEvent("discussion_posted");
@@ -158,7 +185,15 @@ export default function DiscussionsClient({
     searchQuery === "" ||
     t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.body.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter((t) => {
+    if (!courseFilter) return true;
+    if (courseFilter === NO_COURSE) return !t.courseId;
+    return t.courseId === courseFilter;
+  }).filter((t) => {
+    if (!topicFilter) return true;
+    if (topicFilter === NO_TOPIC) return !t.topic;
+    return t.topic === topicFilter;
+  });
 
   const totalPages = Math.max(1, Math.ceil(filteredThreads.length / pageSize));
   const paginatedThreads = filteredThreads.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -211,21 +246,35 @@ export default function DiscussionsClient({
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 />
               </div>
-              <div>
-                <label htmlFor="discussion-course" className="mb-1.5 block text-sm font-medium text-gray-700">Course</label>
-                <select
-                  id="discussion-course"
-                  value={newCourse}
-                  onChange={(e) => setNewCourse(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  <option value="">Select a course...</option>
-                  <option value="data-science">Data Science</option>
-                  <option value="leadership">Leadership</option>
-                  <option value="project-management">Project Management</option>
-                  <option value="safety">Safety</option>
-                  <option value="cloud-architecture">Cloud Architecture</option>
-                </select>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="discussion-course" className="mb-1.5 block text-sm font-medium text-gray-700">Course</label>
+                  <select
+                    id="discussion-course"
+                    value={newCourseId}
+                    onChange={(e) => setNewCourseId(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    <option value="">No specific course</option>
+                    {courseOptions.map((c) => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="discussion-topic" className="mb-1.5 block text-sm font-medium text-gray-700">Topic</label>
+                  <select
+                    id="discussion-topic"
+                    value={newTopic}
+                    onChange={(e) => setNewTopic(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    <option value="">No topic</option>
+                    {TOPICS.map((tp) => (
+                      <option key={tp} value={tp}>{tp}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label htmlFor="discussion-body" className="mb-1.5 block text-sm font-medium text-gray-700">Body</label>
@@ -235,15 +284,6 @@ export default function DiscussionsClient({
                   onChange={(e) => setNewBody(e.target.value)}
                   rows={5}
                   placeholder="Share the details of your question or discussion topic..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                />
-              </div>
-              <div>
-                <label htmlFor="discussion-tags" className="mb-1.5 block text-sm font-medium text-gray-700">Tags</label>
-                <input
-                  id="discussion-tags"
-                  type="text"
-                  placeholder="e.g. python, beginner, best-practices"
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 />
               </div>
@@ -276,15 +316,41 @@ export default function DiscussionsClient({
               </button>
             ))}
           </div>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              placeholder="Search discussions..."
-              className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-64"
-            />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <select
+              value={courseFilter}
+              onChange={(e) => { setCourseFilter(e.target.value); setCurrentPage(1); }}
+              aria-label="Filter by course"
+              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              <option value="">All courses</option>
+              {courseOptions.map((c) => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+              <option value={NO_COURSE}>No course</option>
+            </select>
+            <select
+              value={topicFilter}
+              onChange={(e) => { setTopicFilter(e.target.value); setCurrentPage(1); }}
+              aria-label="Filter by topic"
+              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              <option value="">All topics</option>
+              {TOPICS.map((tp) => (
+                <option key={tp} value={tp}>{tp}</option>
+              ))}
+              <option value={NO_TOPIC}>No topic</option>
+            </select>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                placeholder="Search discussions..."
+                className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-56"
+              />
+            </div>
           </div>
         </div>
 
@@ -334,6 +400,11 @@ export default function DiscussionsClient({
                       <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", thread.courseColor)}>
                         {thread.course}
                       </span>
+                      {thread.topic && (
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                          {thread.topic}
+                        </span>
+                      )}
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>{thread.timeAgo}</span>

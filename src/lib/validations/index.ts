@@ -173,6 +173,8 @@ export const createDiscussionSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   body: z.string().min(1).max(10000).optional(),
   course: z.string().optional(),
+  course_id: z.string().uuid().optional().nullable(),
+  topic: z.string().max(50).optional().nullable(),
   thread_id: z.string().uuid().optional(),
   post_id: z.string().uuid().optional(),
 });
