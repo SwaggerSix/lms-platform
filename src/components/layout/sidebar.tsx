@@ -90,17 +90,6 @@ const navSections: NavSection[] = [
     roles: ["learner", "manager", "instructor", "admin", "super_admin"],
   },
   {
-    header: "INSTRUCTOR",
-    items: [
-      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
-      { label: "Messages", href: "/learn/messages", icon: Mail },
-      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
-      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
-    ],
-    roles: ["instructor", "admin", "super_admin"],
-    bgClass: "bg-gray-800/30",
-  },
-  {
     header: "LEARNER",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
@@ -125,6 +114,17 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/learn/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["learner", "manager", "admin", "super_admin"],
+  },
+  {
+    header: "INSTRUCTOR",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "Messages", href: "/learn/messages", icon: Mail },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
+    ],
+    roles: ["instructor", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
   },
   {
     header: "MANAGEMENT",
