@@ -47,10 +47,10 @@ export const helpContent = {
       "Certifications recognize that you've completed a defined set of training and (optionally) passed an assessment. Each certification has an expiration policy — keep an eye on renewal dates.",
   },
   "learn.ilt-sessions": {
-    title: "Instructor-Led Sessions",
-    description: "Live sessions (in-person or virtual) you can attend.",
+    title: "Webinars",
+    description: "Register to attend free webinars on a wide variety of topics.",
     details:
-      "Instructor-led training (ILT) sessions are scheduled live classes. Register to reserve a seat; your attendance and completion are recorded automatically.",
+      "This is where learners can register to attend free webinars on a wide variety of topics. Register to reserve a seat; your attendance and completion are recorded automatically.",
   },
   "learn.transcript": {
     title: "Transcript",
