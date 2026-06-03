@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     let result: { success: boolean; message: string };
 
     if (provider === "gems") {
-      result = await gemsAdapter.testConnection(config as GemsConfig);
+      result = await gemsAdapter.testConnection(config as unknown as GemsConfig);
     } else if (HRIS_PROVIDERS.includes(provider)) {
       const sync = new HRISSync();
       const adapter = sync.getAdapter(provider);
