@@ -167,6 +167,7 @@ export const createSkillSchema = z.object({
   category: z.string().max(200).optional(),
   description: z.string().max(2000).optional(),
   parent_id: z.string().uuid().optional().nullable(),
+  tags: z.array(z.string().max(50)).max(50).optional(),
 });
 
 // Discussions
