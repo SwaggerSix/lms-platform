@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
+import { provisionCourseMaterials } from "@/lib/services/course-materials";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -297,6 +298,10 @@ export async function POST(request: NextRequest) {
     console.error("Enrollments API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+
+  // Copy the course's learner materials into the user's Documents (persists
+  // for future access). Best-effort.
+  await provisionCourseMaterials(service, targetUserId, validation.data.course_id);
 
   // Award points for enrollment
   await service.from("points_ledger").insert({

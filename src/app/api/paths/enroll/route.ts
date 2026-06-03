@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { provisionCourseMaterials } from "@/lib/services/course-materials";
 
 /**
  * POST /api/paths/enroll
@@ -172,6 +173,13 @@ export async function POST(request: NextRequest) {
         console.error("Path course enrollment error:", courseEnrollError.message);
       }
     }
+
+    // Copy each course's learner materials into the user's Documents.
+    await Promise.allSettled(
+      courseIds.map((cid: string) =>
+        provisionCourseMaterials(service, targetUserId, cid)
+      )
+    );
   }
 
   logAudit({
