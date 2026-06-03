@@ -101,6 +101,7 @@ const navSections: NavSection[] = [
     bgClass: "bg-gray-800/30",
   },
   {
+    header: "LEARNER",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
       { label: "My Courses", href: "/learn/my-courses", icon: Library },
