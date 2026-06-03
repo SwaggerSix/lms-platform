@@ -455,12 +455,13 @@ function CampaignsTab({ teamMembers }: { teamMembers: TeamMember[] }) {
             <Card key={c.id}>
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-gray-900">{c.name}</p>
                     <Badge variant="info">{c.category}</Badge>
+                    {!c.created_by && <Badge variant="outline">Template</Badge>}
                   </div>
                   <p className="text-sm text-gray-500">
-                    {c.total_nudges} nudges · {c.enrolledCount ?? 0} enrolled · {c.completedCount ?? 0} completed
+                    {c.total_nudges} nudges · {c.frequency.replace(/_/g, " ")} · {c.enrolledCount ?? 0} enrolled · {c.completedCount ?? 0} completed
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" onClick={() => setEnrollFor(c)}>

@@ -25,7 +25,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const isAdmin = ["admin", "super_admin"].includes(auth.user.role);
-  if (!isAdmin && campaignRes.data.created_by !== auth.user.id) {
+  const isGlobal = campaignRes.data.created_by === null;
+  if (!isAdmin && !isGlobal && campaignRes.data.created_by !== auth.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
