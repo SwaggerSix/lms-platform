@@ -50,6 +50,7 @@ const PROVIDERS = [
   { id: "salesforce", name: "Salesforce", type: "crm", description: "Sync contacts and push training data", color: "border-blue-200 bg-blue-50 hover:bg-blue-100" },
   { id: "hubspot", name: "HubSpot", type: "crm", description: "Sync contacts and training data with HubSpot", color: "border-orange-200 bg-orange-50 hover:bg-orange-100" },
   { id: "gems", name: "GEMS", type: "scheduling", description: "Import training events from GEMS as ILT sessions", color: "border-indigo-200 bg-indigo-50 hover:bg-indigo-100" },
+  { id: "sharepoint_rosters", name: "SharePoint Rosters", type: "documents", description: "Import attendee rosters from SharePoint .xlsx files", color: "border-cyan-200 bg-cyan-50 hover:bg-cyan-100" },
   { id: "custom_webhook", name: "Custom Webhook", type: "hr_system", description: "Connect via custom webhook", color: "border-gray-200 bg-gray-50 hover:bg-gray-100" },
 ];
 
@@ -81,6 +82,14 @@ const CREDENTIAL_FIELDS: Record<string, Array<{ key: string; label: string; type
     { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Client ID from your GEMS admin" },
     { key: "client_secret_encrypted", label: "Client Secret", type: "password", placeholder: "Client secret from your GEMS admin" },
     { key: "api_app_id_uri", label: "Backend API App ID URI", type: "text", placeholder: "api://d9fbbe9d-7bd0-4ede-b9a7-e2c90c1d1d5f" },
+  ],
+  sharepoint_rosters: [
+    { key: "tenant_id", label: "Azure AD Tenant ID", type: "text", placeholder: "30295520-84b7-447c-ba6d-3a2b11790cd4" },
+    { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Same SP as GEMS, with Graph Sites.Selected on the rosters site" },
+    { key: "client_secret_encrypted", label: "Client Secret", type: "password", placeholder: "Client secret from your IT" },
+    { key: "site_path", label: "SharePoint Site Path", type: "text", placeholder: "alishq.sharepoint.com:/sites/AMCIFileShare" },
+    { key: "root_folder", label: "Root Folder", type: "text", placeholder: "_Courses" },
+    { key: "archive_folder", label: "Archive Subfolder (optional)", type: "text", placeholder: "_Archive" },
   ],
   custom_webhook: [
     { key: "base_url", label: "Webhook URL", type: "url", placeholder: "https://your-api.example.com/webhooks/lms" },
