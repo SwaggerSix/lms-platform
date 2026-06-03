@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createMentorshipSessionSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { notifyMentorshipSessionScheduled } from "@/lib/mentorship/notify";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize();
@@ -103,6 +104,18 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error("Session create error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // Automatically notify both participants with calendar invites (best-effort).
+  if (data?.scheduled_at) {
+    await notifyMentorshipSessionScheduled({
+      sessionId: data.id,
+      menteeId: mentorshipRequest.mentee_id,
+      mentorId: mentorshipRequest.mentor_id,
+      scheduledAt: data.scheduled_at,
+      durationMinutes: data.duration_minutes ?? 30,
+      meetingUrl: data.meeting_url ?? null,
+    });
   }
 
   return NextResponse.json(data, { status: 201 });
