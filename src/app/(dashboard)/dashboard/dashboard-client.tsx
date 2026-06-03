@@ -135,10 +135,13 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
           <p className="mt-1 text-indigo-100">
             You&apos;re on a 7-day learning streak. Keep it going!
           </p>
-          <button className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">
+          <a
+            href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].id}` : "/learn/my-courses"}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
+          >
             <Play className="h-4 w-4" aria-hidden="true" />
             Continue Learning
-          </button>
+          </a>
         </div>
         <div className="absolute -right-4 -top-4 h-40 w-40 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 right-20 h-32 w-32 rounded-full bg-white/5" />
@@ -212,10 +215,12 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                   <p className="mt-2 text-sm text-gray-500">{course.instructor}</p>
                   <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
                     <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        {course.rating}
-                      </span>
+                      {course.rating > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          {course.rating}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
                         {course.enrolled}
@@ -249,9 +254,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.inProgressCourses.map((course) => (
-              <div
+              <a
                 key={course.id}
-                className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                href={`/learn/player/${course.id}`}
+                className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <div className={cn("flex h-36 items-center justify-center", course.thumbnail)}>
                   <Play className="h-12 w-12 text-white/80 transition-transform group-hover:scale-110" />
@@ -279,7 +285,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </section>
