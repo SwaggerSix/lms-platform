@@ -3,6 +3,17 @@
 import { useState } from "react";
 import AtRiskTable from "@/components/analytics/at-risk-table";
 import RiskIndicator from "@/components/analytics/risk-indicator";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+
+const RISK_LEVEL_DEFINITIONS = (
+  <div className="space-y-1.5 text-left">
+    <p><strong>Risk score</strong> — a 0–100 estimate of how likely a learner is to fall behind or not complete; higher means more risk.</p>
+    <p><strong className="text-red-600">Critical</strong> — highest predicted risk; needs immediate intervention.</p>
+    <p><strong className="text-orange-600">High</strong> — elevated risk; prioritize outreach soon.</p>
+    <p><strong className="text-yellow-600">Medium</strong> — moderate risk; monitor and nudge.</p>
+    <p><strong className="text-green-600">Low</strong> — on track; no action needed.</p>
+  </div>
+);
 
 interface AtRiskLearner {
   userId: string;
@@ -82,7 +93,19 @@ export default function PredictiveAnalyticsClient({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Predictive Analytics</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">Predictive Analytics</h1>
+          <InfoTooltip
+            side="bottom"
+            label="About predictive analytics"
+            content={
+              <div className="space-y-1.5 text-left">
+                <p>Daily-computed forecasts of which learners may fall behind, so you can intervene early.</p>
+                {RISK_LEVEL_DEFINITIONS}
+              </div>
+            }
+          />
+        </div>
         <p className="mt-1 text-sm text-gray-500">
           Identify at-risk learners and take proactive interventions
         </p>
@@ -122,12 +145,18 @@ export default function PredictiveAnalyticsClient({
               <p className="mt-0.5 text-xs text-gray-400">Across all courses</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Risk Score</p>
+              <p className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Avg Risk Score
+                <InfoTooltip side="top" label="Average risk score" content="The mean predicted risk (0–100) across all learners with a prediction. Higher means more learners are trending at-risk." />
+              </p>
               <p className="mt-1 text-2xl font-bold text-gray-900">{avgRiskScore}</p>
               <p className="mt-0.5 text-xs text-gray-400">Out of 100</p>
             </div>
             <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-              <p className="text-xs font-medium text-red-600 uppercase tracking-wider">Critical + High Risk</p>
+              <p className="flex items-center gap-1 text-xs font-medium text-red-600 uppercase tracking-wider">
+                Critical + High Risk
+                <InfoTooltip side="top" label="Critical plus high risk" content="Number of learners in the Critical or High risk bands — those most likely to fall behind and needing prompt intervention." />
+              </p>
               <p className="mt-1 text-2xl font-bold text-red-700">
                 {distribution.critical + distribution.high}
               </p>
@@ -144,7 +173,10 @@ export default function PredictiveAnalyticsClient({
 
           {/* Risk Distribution */}
           <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Risk Distribution</h3>
+            <h3 className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+              Risk Distribution
+              <InfoTooltip side="right" label="Risk level definitions" content={RISK_LEVEL_DEFINITIONS} />
+            </h3>
             {total > 0 ? (
               <div className="space-y-3">
                 {(["critical", "high", "medium", "low"] as const).map((level) => {
