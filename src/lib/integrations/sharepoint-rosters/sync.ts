@@ -155,7 +155,11 @@ export async function syncSharePointRosters(
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
-/** Pull the GEMS course code from the joined courses row, or fall back to title. */
+/**
+ * Pull the GEMS course code from the joined courses row.
+ * Auto-created GEMS courses store it as metadata.gems_course_code;
+ * pre-existing courses may not, so we fall back to parsing the title.
+ */
 function extractCourseCode(session: any): string | null {
   const meta = session.courses?.metadata ?? {};
   const code =
@@ -251,6 +255,7 @@ async function upsertAttendance(
       registration_status: "registered",
       attendance_status: attendee.attendance_status,
       completion_status: attendee.attendance_status === "present" ? "completed" : "failed",
+      org: attendee.org ?? null,
       external_source: EXTERNAL_SOURCE,
       external_id: `${driveItemId}:${attendee.email}`,
       updated_at: new Date().toISOString(),
