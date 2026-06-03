@@ -16,6 +16,16 @@ export async function createEvaluationAssignments({
 }) {
   const service = createServiceClient();
 
+  // Respect a course opting out of evaluations (set in the course builder).
+  const { data: course } = await service
+    .from("courses")
+    .select("metadata")
+    .eq("id", courseId)
+    .single();
+  if ((course?.metadata as { include_evaluation?: boolean } | null)?.include_evaluation === false) {
+    return;
+  }
+
   // Fetch all active triggers for this course
   const { data: triggers, error } = await service
     .from("evaluation_triggers")

@@ -340,6 +340,7 @@ export default async function CourseDetailPage({
     gradient: getGradient(categorySlug),
     skills,
     learningOutcomes,
+    optimalAudience: metadata.optimal_audience || metadata.optimalAudience || "",
     modules,
     resources,
     reviews: metadata.reviews || [],

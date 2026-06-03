@@ -80,6 +80,7 @@ export interface CourseData {
   gradient: string;
   skills: string[];
   learningOutcomes: string[];
+  optimalAudience?: string;
   modules: Module[];
   resources?: { id: string; title: string; type: string; fileUrl: string }[];
   reviews: Review[];
@@ -272,6 +273,11 @@ export default function CourseDetailClient({
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900">About This Course</h2>
               <p className="mt-3 leading-relaxed text-gray-600">{course.fullDescription}</p>
+              {course.optimalAudience && (
+                <p className="mt-4 text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">Ideal for:</span> {course.optimalAudience}
+                </p>
+              )}
             </section>
 
             {/* Prerequisites */}

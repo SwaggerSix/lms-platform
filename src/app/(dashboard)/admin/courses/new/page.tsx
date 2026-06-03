@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { slugify, formatDuration } from '@/utils/format';
 import {
   Check,
@@ -50,7 +51,6 @@ const steps = [
   { num: 4, label: 'Review' },
 ];
 
-const categoryOptions = ['Compliance', 'Management', 'Technical', 'Sales', 'Soft Skills', 'Business'];
 const typeOptions = ['Self-Paced', 'Instructor-Led', 'Blended'];
 const difficultyOptions = ['Beginner', 'Intermediate', 'Advanced'];
 const contentTypeOptions = ['video', 'document', 'audio', 'quiz', 'interactive'];
@@ -69,6 +69,7 @@ const dripTypeLabels: Record<DripType, string> = {
   after_previous: 'After Previous Module',
 };
 
+// Default skeleton: a single starter module.
 const initialModules: Module[] = [
   {
     id: 'm1',
@@ -80,18 +81,6 @@ const initialModules: Module[] = [
       { id: 'l1', title: 'Welcome & Course Overview', contentType: 'video', duration: 10, required: true },
       { id: 'l2', title: 'Setting Up Your Environment', contentType: 'document', duration: 15, required: true },
       { id: 'l3', title: 'Quick Start Exercise', contentType: 'interactive', duration: 20, required: false },
-    ],
-  },
-  {
-    id: 'm2',
-    title: 'Core Concepts',
-    dripType: 'immediate',
-    dripDays: 0,
-    dripDate: '',
-    lessons: [
-      { id: 'l4', title: 'Understanding the Fundamentals', contentType: 'video', duration: 25, required: true },
-      { id: 'l5', title: 'Deep Dive: Key Principles', contentType: 'document', duration: 30, required: true },
-      { id: 'l6', title: 'Module Quiz', contentType: 'quiz', duration: 15, required: true },
     ],
   },
 ];
@@ -130,11 +119,15 @@ export default function CreateCoursePage() {
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
-  const [category, setCategory] = useState('Compliance');
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categoryId, setCategoryId] = useState('');
   const [courseType, setCourseType] = useState('Self-Paced');
   const [difficulty, setDifficulty] = useState('Beginner');
-  const [duration, setDuration] = useState(120);
-  const [tags, setTags] = useState<string[]>(['compliance', 'required']);
+  const [duration, setDuration] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [learningObjectives, setLearningObjectives] = useState('');
+  const [optimalAudience, setOptimalAudience] = useState('');
+  const [includeEvaluation, setIncludeEvaluation] = useState(true);
   const [tagInput, setTagInput] = useState('');
   const [modules, setModules] = useState<Module[]>(initialModules);
   const [enrollmentType, setEnrollmentType] = useState('Open');
@@ -153,10 +146,72 @@ export default function CreateCoursePage() {
   const [availableUntil, setAvailableUntil] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Load real categories so admins pick (and manage) actual category records.
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => (r.ok ? r.json() : { categories: [] }))
+      .then((d) => setCategories(d.categories ?? []))
+      .catch(() => {});
+  }, []);
+
+  const addCategory = async () => {
+    const name = window.prompt("New category name:")?.trim();
+    if (!name) return;
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to add category");
+      setCategories((prev) => [...prev, { id: data.id, name: data.name }].sort((a, b) => a.name.localeCompare(b.name)));
+      setCategoryId(data.id);
+      toast.success("Category added.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to add category");
+    }
+  };
+
+  const renameCategory = async () => {
+    const current = categories.find((c) => c.id === categoryId);
+    if (!current) {
+      toast.error("Select a category to rename first.");
+      return;
+    }
+    const name = window.prompt("Rename category:", current.name)?.trim();
+    if (!name || name === current.name) return;
+    try {
+      const res = await fetch("/api/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: categoryId, name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to rename category");
+      setCategories((prev) => prev.map((c) => (c.id === categoryId ? { ...c, name: data.name } : c)).sort((a, b) => a.name.localeCompare(b.name)));
+      toast.success("Category renamed.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to rename category");
+    }
+  };
+
   const handleSubmit = async (status: 'draft' | 'published') => {
+    // Course length (Step 1) must match the sum of lesson durations (Step 2).
+    if (duration !== totalDuration) {
+      toast.error(
+        `Course length (${formatDuration(duration)}) doesn't match the total of your lessons (${formatDuration(totalDuration)}). Use "Match content" or adjust the lessons.`
+      );
+      setStep(2);
+      return;
+    }
     setSubmitting(true);
     try {
       const finalSlug = slug || slugify(title);
+      const objectives = learningObjectives
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
       const body: Record<string, unknown> = {
         title,
         slug: finalSlug,
@@ -170,8 +225,12 @@ export default function CreateCoursePage() {
         passing_score: passingScore,
         max_attempts: maxAttempts,
         tags,
+        category_id: categoryId || undefined,
         metadata: {
-          category_name: category,
+          category_id: categoryId || null,
+          learning_outcomes: objectives,
+          optimal_audience: optimalAudience || null,
+          include_evaluation: includeEvaluation,
           modules: modules.map((m, mi) => ({
             title: m.title,
             sequence_order: mi + 1,
@@ -241,6 +300,18 @@ export default function CreateCoursePage() {
         ? { ...m, lessons: [...m.lessons, { id: `l${Date.now()}`, title: 'New Lesson', contentType: 'video', duration: 10, required: false }] }
         : m
     ));
+  };
+
+  // Add a lesson from the top toolbar — appends to the last module (creating
+  // one if there are none yet).
+  const addLessonTop = () => {
+    const newLesson = { id: `l${Date.now()}`, title: 'New Lesson', contentType: 'video', duration: 10, required: false } as Lesson;
+    setModules((prev) => {
+      if (prev.length === 0) {
+        return [{ id: `m${Date.now()}`, title: 'New Module', lessons: [newLesson], dripType: 'immediate', dripDays: 0, dripDate: '' }];
+      }
+      return prev.map((m, i) => (i === prev.length - 1 ? { ...m, lessons: [...m.lessons, newLesson] } : m));
+    });
   };
 
   const removeModule = (moduleId: string) => {
@@ -410,12 +481,26 @@ export default function CreateCoursePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Short Description</label>
               <input type="text" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} placeholder="Brief summary (max 160 characters)" maxLength={160} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Learning Objectives</label>
+              <textarea rows={4} value={learningObjectives} onChange={(e) => setLearningObjectives(e.target.value)} placeholder="One objective per line, e.g.&#10;Understand core concepts&#10;Apply best practices" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+              <p className="mt-1 text-xs text-gray-400">One per line. Shown to learners as &ldquo;What you&rsquo;ll learn&rdquo;.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Optimal Audience</label>
+              <input type="text" value={optimalAudience} onChange={(e) => setOptimalAudience(e.target.value)} placeholder="Who is this course best suited for?" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  {categoryOptions.map((c) => <option key={c}>{c}</option>)}
+                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <option value="">Uncategorized</option>
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+                <div className="mt-1 flex gap-3">
+                  <button type="button" onClick={addCategory} className="text-xs font-medium text-indigo-600 hover:text-indigo-700">+ Add category</button>
+                  <button type="button" onClick={renameCategory} className="text-xs font-medium text-gray-500 hover:text-gray-700">Edit selected</button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Type</label>
@@ -431,9 +516,19 @@ export default function CreateCoursePage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Estimated Duration (minutes)</label>
-              <input type="number" value={duration} onChange={(e) => setDuration(parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
-              <span className="ml-2 text-sm text-gray-400">({formatDuration(duration)})</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Length (minutes)</label>
+              <div className="flex items-center gap-2">
+                <input type="number" min={0} value={duration} onChange={(e) => setDuration(parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <span className="text-sm text-gray-400">({formatDuration(duration)})</span>
+                <button type="button" onClick={() => setDuration(totalDuration)} className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200">
+                  Match content ({formatDuration(totalDuration)})
+                </button>
+              </div>
+              {duration !== totalDuration && (
+                <p className="mt-1 text-xs text-amber-600">
+                  Course length must match the total of your lesson durations ({formatDuration(totalDuration)}) before publishing.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Thumbnail</label>
@@ -468,12 +563,30 @@ export default function CreateCoursePage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Course Content</h2>
-                <p className="text-sm text-gray-500">{modules.length} modules, {totalLessons} lessons, {formatDuration(totalDuration)} total</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-gray-900">Course Content</h2>
+                  <InfoTooltip
+                    side="bottom"
+                    label="Content structure definitions"
+                    content={
+                      <div className="space-y-1.5 text-left">
+                        <p><strong>Module</strong> — a section that groups related lessons. Parameters: title and an optional drip/release schedule.</p>
+                        <p><strong>Lesson</strong> — an individual unit of content within a module. Parameters: title, content type (video, document, audio, quiz, interactive), duration (minutes), and whether it&rsquo;s required.</p>
+                        <p><strong>Topic</strong> — the subject a lesson covers; use the lesson title and course tags to capture it (there is no separate topic level).</p>
+                      </div>
+                    }
+                  />
+                </div>
+                <p className="text-sm text-gray-500">{modules.length} module{modules.length === 1 ? '' : 's'}, {totalLessons} lessons, {formatDuration(totalDuration)} total</p>
               </div>
-              <button onClick={addModule} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                <Plus className="h-4 w-4" /> Add Module
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={addLessonTop} className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">
+                  <Plus className="h-4 w-4" /> Add Lesson
+                </button>
+                <button onClick={addModule} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                  <Plus className="h-4 w-4" /> Add Module
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -613,6 +726,20 @@ export default function CreateCoursePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Attempts</label>
               <input type="number" min={1} max={10} value={maxAttempts} onChange={(e) => setMaxAttempts(parseInt(e.target.value) || 1)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={includeEvaluation}
+                  onChange={(e) => setIncludeEvaluation(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-700">Include a course evaluation</span>
+                  <span className="block text-xs text-gray-500">When enabled, learners receive a post-completion evaluation. Uncheck to skip evaluations for this course.</span>
+                </span>
+              </label>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Availability</label>
@@ -769,7 +896,7 @@ export default function CreateCoursePage() {
                 <div className="rounded-lg bg-gray-50 p-4 space-y-3">
                   <div><span className="text-xs text-gray-500">Title</span><p className="text-sm font-medium text-gray-900">{title || 'Untitled Course'}</p></div>
                   <div><span className="text-xs text-gray-500">Slug</span><p className="text-sm text-gray-700">/courses/{slug || '...'}</p></div>
-                  <div><span className="text-xs text-gray-500">Category</span><p className="text-sm text-gray-700">{category}</p></div>
+                  <div><span className="text-xs text-gray-500">Category</span><p className="text-sm text-gray-700">{categories.find((c) => c.id === categoryId)?.name ?? 'Uncategorized'}</p></div>
                   <div><span className="text-xs text-gray-500">Type</span><p className="text-sm text-gray-700">{courseType}</p></div>
                   <div><span className="text-xs text-gray-500">Difficulty</span><p className="text-sm text-gray-700">{difficulty}</p></div>
                   <div><span className="text-xs text-gray-500">Duration</span><p className="text-sm text-gray-700">{formatDuration(duration)}</p></div>
