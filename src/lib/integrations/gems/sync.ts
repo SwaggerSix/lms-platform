@@ -154,18 +154,70 @@ async function resolveUserId(service: Service, email: string): Promise<string | 
 }
 
 /**
- * Resolve the LMS course for a GEMS event by matching course_name (case-insensitive
- * title match). Returns null if no course matches — the caller decides what to do.
- * TODO(gems): decide whether to auto-create an instructor_led course when unmatched.
+ * Resolve the LMS course for a GEMS event.
+ *   1. Match by metadata->>'gems_course_code' (most reliable).
+ *   2. Fall back to a case-insensitive title match on course_name.
+ * Returns null if neither hits.
  */
 async function resolveCourseId(service: Service, event: GemsEvent): Promise<string | null> {
-  if (!event.course_name) return null;
-  const { data } = await service
+  if (event.course_code) {
+    const { data } = await service
+      .from("courses")
+      .select("id")
+      .eq("metadata->>gems_course_code", event.course_code)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+  if (event.course_name) {
+    const { data } = await service
+      .from("courses")
+      .select("id")
+      .ilike("title", event.course_name)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+  return null;
+}
+
+/**
+ * Auto-create an instructor-led LMS course for a GEMS event whose course
+ * doesn't yet exist. Stores the GEMS course code in metadata so subsequent
+ * syncs match by code. Title/slug derived from the GEMS course info.
+ */
+async function autoCreateCourse(service: Service, event: GemsEvent): Promise<string> {
+  const title = event.course_name || event.course_code || event.title;
+  const baseSlug = (event.course_code || title)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80);
+  // Slugs are unique; append a short suffix if a collision occurs.
+  let slug = baseSlug;
+  for (let i = 0; i < 5; i++) {
+    const { data: clash } = await service
+      .from("courses")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!clash) break;
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+  }
+
+  const { data: inserted, error } = await service
     .from("courses")
+    .insert({
+      title,
+      slug,
+      course_type: "instructor_led",
+      status: "published",
+      metadata: { gems_course_code: event.course_code ?? null, auto_created_from: "gems" },
+    })
     .select("id")
-    .ilike("title", event.course_name)
-    .maybeSingle();
-  return data?.id ?? null;
+    .single();
+  if (error || !inserted) {
+    throw new Error(`Failed to auto-create course for "${title}": ${error?.message ?? "unknown"}`);
+  }
+  return inserted.id;
 }
 
 async function upsertSession(
@@ -173,7 +225,8 @@ async function upsertSession(
   event: GemsEvent,
   integrationId: string
 ): Promise<{ sessionId: string; created: boolean }> {
-  const courseId = await resolveCourseId(service, event);
+  const courseId =
+    (await resolveCourseId(service, event)) ?? (await autoCreateCourse(service, event));
   const instructorId = event.instructor_email
     ? await resolveUserId(service, event.instructor_email)
     : null;
@@ -209,14 +262,6 @@ async function upsertSession(
   if (existing) {
     await service.from("ilt_sessions").update(sessionData).eq("id", existing.id);
     return { sessionId: existing.id, created: false };
-  }
-
-  // course_id is NOT NULL on ilt_sessions — without a matched course we can't
-  // create the session yet. Surface that rather than crashing.
-  if (!courseId) {
-    throw new Error(
-      `No LMS course matches "${event.course_name ?? "(none)"}" — cannot create session`
-    );
   }
 
   const { data: inserted, error } = await service
