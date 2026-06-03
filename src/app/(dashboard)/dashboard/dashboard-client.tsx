@@ -44,6 +44,7 @@ export interface LearnerDashboardData {
   spotlightCourses: {
     id: string;
     title: string;
+    slug: string;
     description: string;
     thumbnail: string;
     instructor: string;
@@ -180,9 +181,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.spotlightCourses.map((course) => (
-              <div
+              <a
                 key={course.id}
-                className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                href={`/learn/catalog/${course.slug}`}
+                className="group relative block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <div className={cn("relative flex h-40 items-end p-4", course.thumbnail)}>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -223,13 +225,13 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                         {course.duration}
                       </span>
                     </div>
-                    <button className="flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-100">
+                    <span className="flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors group-hover:bg-indigo-100">
                       <TrendingUp className="h-3.5 w-3.5" />
-                      Enroll
-                    </button>
+                      View
+                    </span>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </section>

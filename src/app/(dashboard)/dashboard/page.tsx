@@ -245,6 +245,7 @@ export default async function DashboardPage() {
         .select(`
           id,
           title,
+          slug,
           description,
           estimated_duration,
           course_type,
@@ -331,6 +332,7 @@ export default async function DashboardPage() {
     return {
       id: course.id,
       title: course.title ?? "Untitled Course",
+      slug: course.slug ?? "",
       description: course.description ?? "",
       thumbnail: SPOTLIGHT_GRADIENTS[index % SPOTLIGHT_GRADIENTS.length],
       instructor,
