@@ -22,7 +22,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { data: campaign } = await service.from("nudge_campaigns").select("*").eq("id", campaignId).single();
   if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const isAdmin = ["admin", "super_admin"].includes(auth.user.role);
-  if (!isAdmin && campaign.created_by !== auth.user.id) {
+  const isGlobal = campaign.created_by === null;
+  if (!isAdmin && !isGlobal && campaign.created_by !== auth.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -51,11 +52,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const today = new Date().toISOString().split("T")[0];
+  const { data: me } = await service.from("users").select("organization_id").eq("id", auth.user.id).single();
+  const effectiveOrgId = campaign.organization_id ?? me?.organization_id ?? null;
 
   const { data: assignment, error: aErr } = await service
     .from("nudge_assignments")
     .insert({
-      organization_id: campaign.organization_id,
+      organization_id: effectiveOrgId,
       nudge_action_id: firstItem.nudge_action_id,
       assignee_id: input.assignee_id ?? null,
       assigned_by: auth.user.id,

@@ -12,8 +12,16 @@ export async function GET(_request: NextRequest) {
   const service = createServiceClient();
   const isAdmin = ["admin", "super_admin"].includes(auth.user.role);
 
+  const { data: me } = await service.from("users").select("organization_id").eq("id", auth.user.id).single();
+
   let query = service.from("nudge_campaigns").select("*").order("created_at", { ascending: false });
-  if (!isAdmin) query = query.eq("created_by", auth.user.id);
+  if (!isAdmin) {
+    // Managers see their own campaigns + global seed campaigns (created_by IS NULL)
+    // + org-wide campaigns
+    const orFilter = [`created_by.eq.${auth.user.id}`, "created_by.is.null"];
+    if (me?.organization_id) orFilter.push(`organization_id.eq.${me.organization_id}`);
+    query = query.or(orFilter.join(","));
+  }
 
   const { data: campaigns, error } = await query;
   if (error) {

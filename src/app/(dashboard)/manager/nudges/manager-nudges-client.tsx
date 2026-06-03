@@ -9,7 +9,8 @@ import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
-import { Zap, Flame, Plus, Trash2, Pause, Play, Users, ClipboardList, Mail, MessageSquare } from "lucide-react";
+import { Zap, Flame, Plus, Trash2, Pause, Play, Users, ClipboardList, Mail, MessageSquare, Clock } from "lucide-react";
+import { NUDGE_CATEGORIES } from "@/types/nudges";
 import type {
   NudgeAction,
   NudgeAssignment,
@@ -110,6 +111,8 @@ export default function ManagerNudgesClient({ teamMembers, initialAssignments, a
   );
 }
 
+const categoryOptions = NUDGE_CATEGORIES.map((c) => ({ label: c, value: c }));
+
 function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
   const toast = useToast();
   const [assignments, setAssignments] = useState<NudgeAssignment[]>(initialAssignments);
@@ -121,7 +124,8 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [actionId, setActionId] = useState("");
+  const [focusArea, setFocusArea] = useState("");
+  const [selectedActionIds, setSelectedActionIds] = useState<string[]>([]);
   const [morningEmail, setMorningEmail] = useState(true);
   const [morningSms, setMorningSms] = useState(false);
   const [eveningEmail, setEveningEmail] = useState(true);
@@ -132,8 +136,19 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
   const [startsOn, setStartsOn] = useState("");
   const [endsOn, setEndsOn] = useState("");
 
+  const filteredActions = focusArea
+    ? actions.filter((a) => a.category === focusArea && a.is_active)
+    : [];
+
+  function toggleAction(id: string) {
+    setSelectedActionIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
   function reset() {
-    setMemberId(""); setName(""); setEmail(""); setPhone(""); setActionId("");
+    setMemberId(""); setName(""); setEmail(""); setPhone("");
+    setFocusArea(""); setSelectedActionIds([]);
     setMorningEmail(true); setMorningSms(false); setEveningEmail(true); setEveningSms(false);
     setMorningTime("08:00"); setEveningTime("18:00"); setTimezone("America/New_York");
     setStartsOn(""); setEndsOn("");
@@ -158,44 +173,47 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
   ];
 
   async function submit() {
-    if (!actionId) return toast.error("Pick a nudge action");
+    if (selectedActionIds.length === 0) return toast.error("Select at least one nudge action");
     if (!name || !email) return toast.error("Assignee name and email are required");
     setSubmitting(true);
     try {
-      const res = await fetch("/api/nudges/assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nudge_action_id: actionId,
-          assignee_id: memberId && memberId !== "other" ? memberId : undefined,
-          assignee_name: name,
-          assignee_email: email,
-          assignee_phone: phone || undefined,
-          send_morning_email: morningEmail,
-          send_morning_sms: morningSms,
-          send_evening_email: eveningEmail,
-          send_evening_sms: eveningSms,
-          morning_send_time: morningTime,
-          evening_send_time: eveningTime,
-          timezone,
-          starts_on: startsOn || undefined,
-          ends_on: endsOn || undefined,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to assign nudge");
+      const created: NudgeAssignment[] = [];
+      for (const actionId of selectedActionIds) {
+        const res = await fetch("/api/nudges/assignments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nudge_action_id: actionId,
+            assignee_id: memberId && memberId !== "other" ? memberId : undefined,
+            assignee_name: name,
+            assignee_email: email,
+            assignee_phone: phone || undefined,
+            send_morning_email: morningEmail,
+            send_morning_sms: morningSms,
+            send_evening_email: eveningEmail,
+            send_evening_sms: eveningSms,
+            morning_send_time: morningTime,
+            evening_send_time: eveningTime,
+            timezone,
+            starts_on: startsOn || undefined,
+            ends_on: endsOn || undefined,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to assign nudge");
+        }
+        const row: NudgeAssignment = await res.json();
+        const action = actions.find((a) => a.id === actionId);
+        created.push({
+          ...row,
+          nudge_actions: row.nudge_actions ?? (action
+            ? { title: action.title, description: action.description, estimated_minutes: action.estimated_minutes, image_url: action.image_url, quote: action.quote, quote_author: action.quote_author }
+            : undefined),
+        });
       }
-      const created: NudgeAssignment = await res.json();
-      const action = actions.find((a) => a.id === actionId);
-      const withAction: NudgeAssignment = {
-        ...created,
-        nudge_actions: created.nudge_actions ?? (action
-          ? { title: action.title, description: action.description, estimated_minutes: action.estimated_minutes, image_url: action.image_url, quote: action.quote, quote_author: action.quote_author }
-          : undefined),
-      };
-      setAssignments((prev) => [withAction, ...prev]);
-      toast.success("Nudge assigned");
+      setAssignments((prev) => [...created, ...prev]);
+      toast.success(`${created.length} nudge${created.length > 1 ? "s" : ""} assigned`);
       setOpen(false);
       reset();
     } catch (err) {
@@ -294,12 +312,40 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
           )}
           <Input label="Phone (optional, for SMS)" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <Select
-            label="Nudge action"
-            placeholder="Select a nudge"
-            options={actions.map((a) => ({ label: `${a.title} (${a.category})`, value: a.id }))}
-            value={actionId}
-            onChange={setActionId}
+            label="Focus area"
+            placeholder="Select a focus area"
+            options={categoryOptions}
+            value={focusArea}
+            onChange={(v) => { setFocusArea(v); setSelectedActionIds([]); }}
           />
+          {focusArea && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Nudges in {focusArea} ({selectedActionIds.length} selected)
+              </label>
+              {filteredActions.length === 0 ? (
+                <p className="text-sm text-gray-500">No active nudges in this focus area.</p>
+              ) : (
+                <div className="max-h-56 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-3">
+                  {filteredActions.map((a) => (
+                    <label key={a.id} className="flex items-start gap-2 rounded-md p-2 text-sm text-gray-700 hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={selectedActionIds.includes(a.id)}
+                        onChange={() => toggleAction(a.id)}
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900">{a.title}</p>
+                        <p className="text-xs text-gray-500 line-clamp-2">{a.description}</p>
+                        <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-400"><Clock className="h-3 w-3" />~{a.estimated_minutes} min</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2 rounded-md border border-gray-200 p-3">
             <Checkbox label="Morning email" checked={morningEmail} onChange={setMorningEmail} />
             <Checkbox label="Morning SMS" checked={morningSms} onChange={setMorningSms} />
@@ -317,7 +363,9 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={submit} loading={submitting} disabled={submitting}>Assign</Button>
+            <Button onClick={submit} loading={submitting} disabled={submitting}>
+              Assign{selectedActionIds.length > 1 ? ` (${selectedActionIds.length})` : ""}
+            </Button>
           </div>
         </div>
       </Modal>
@@ -407,12 +455,13 @@ function CampaignsTab({ teamMembers }: { teamMembers: TeamMember[] }) {
             <Card key={c.id}>
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-gray-900">{c.name}</p>
                     <Badge variant="info">{c.category}</Badge>
+                    {!c.created_by && <Badge variant="outline">Template</Badge>}
                   </div>
                   <p className="text-sm text-gray-500">
-                    {c.total_nudges} nudges · {c.enrolledCount ?? 0} enrolled · {c.completedCount ?? 0} completed
+                    {c.total_nudges} nudges · {c.frequency.replace(/_/g, " ")} · {c.enrolledCount ?? 0} enrolled · {c.completedCount ?? 0} completed
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" onClick={() => setEnrollFor(c)}>
