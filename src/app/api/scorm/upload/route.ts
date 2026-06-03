@@ -172,6 +172,16 @@ export async function POST(request: NextRequest) {
     if (lessonErr) {
       console.error("SCORM lesson update error:", lessonErr.message);
     }
+    // Bump the parent course's Last Updated timestamp (courseware changed).
+    const { data: lessonRow } = await service
+      .from("lessons")
+      .select("module:modules!lessons_module_id_fkey(course_id)")
+      .eq("id", lessonId)
+      .single();
+    const courseId = (lessonRow?.module as any)?.course_id ?? (Array.isArray((lessonRow as any)?.module) ? (lessonRow as any).module[0]?.course_id : null);
+    if (courseId) {
+      await service.from("courses").update({ updated_at: new Date().toISOString() }).eq("id", courseId);
+    }
   }
 
   return NextResponse.json({ launchUrl, fileCount: entries.length }, { status: 201 });

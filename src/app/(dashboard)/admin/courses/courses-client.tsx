@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
-import { formatNumber, formatPercent, formatDuration } from '@/utils/format';
+import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -50,6 +50,8 @@ export interface CourseItem {
   /** Availability window for client licensing (ISO strings; null = unbounded). */
   availableFrom: string | null;
   availableUntil: string | null;
+  /** Last time the course/courseware was updated (ISO). */
+  updatedAt: string | null;
 }
 
 export interface CategoryOption {
@@ -202,6 +204,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         thumbnail: course.thumbnail,
         availableFrom: null,
         availableUntil: null,
+        updatedAt: new Date().toISOString(),
       };
       setCourses((prev) => [mappedCourse, ...prev]);
     } catch (err) {
@@ -396,6 +399,9 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#4f46e5' }} />
                   </div>
                 </div>
+                {course.updatedAt && (
+                  <p className="mt-2 text-[11px] text-gray-400">Last updated on {formatDate(course.updatedAt)}</p>
+                )}
               </div>
               <div className="border-t border-gray-100 px-4 py-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
@@ -468,7 +474,12 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                       <span className="text-xs text-gray-500">{formatPercent(course.completionRate)}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatDuration(course.duration)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div>{formatDuration(course.duration)}</div>
+                    {course.updatedAt && (
+                      <div className="mt-0.5 text-xs text-gray-400">Updated {formatDate(course.updatedAt)}</div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div className="relative inline-block">
                       <button onClick={() => setOpenMenu(openMenu === course.id ? null : course.id)} aria-label="Course actions" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">

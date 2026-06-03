@@ -116,6 +116,8 @@ export async function POST(request: NextRequest) {
     console.error("Course resources POST error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  // Bump the course's Last Updated timestamp (courseware changed).
+  await service.from("courses").update({ updated_at: new Date().toISOString() }).eq("id", course_id);
   return NextResponse.json(data, { status: 201 });
 }
 
@@ -145,5 +147,6 @@ export async function DELETE(request: NextRequest) {
     console.error("Course resources DELETE error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  await service.from("courses").update({ updated_at: new Date().toISOString() }).eq("id", existing.course_id);
   return NextResponse.json({ success: true });
 }

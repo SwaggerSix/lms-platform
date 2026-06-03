@@ -80,6 +80,7 @@ export default async function CoursesPage() {
       thumbnail: GRADIENTS[index % GRADIENTS.length],
       availableFrom: row.available_from ?? null,
       availableUntil: row.available_until ?? null,
+      updatedAt: row.updated_at ?? null,
     };
   });
 
