@@ -19,7 +19,7 @@ export async function GET() {
 
   const { data: profile, error } = await service
     .from("users")
-    .select("id, auth_id, first_name, last_name, email, role, job_title, organization_id, manager_id, avatar_url, bio, hire_date, status, preferences, created_at, updated_at")
+    .select("id, auth_id, first_name, last_name, email, role, job_title, organization_id, manager_id, avatar_url, bio, timezone, hire_date, status, preferences, created_at, updated_at")
     .eq("auth_id", authUser.id)
     .single();
 
@@ -60,7 +60,7 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json();
 
   // Only allow self-editable fields
-  const allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio"];
+  const allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio", "timezone"];
   const sanitized = Object.fromEntries(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
   );
@@ -73,7 +73,7 @@ export async function PATCH(request: NextRequest) {
     .from("users")
     .update(sanitized)
     .eq("id", profile.id)
-    .select("id, first_name, last_name, email, preferences, avatar_url, bio")
+    .select("id, first_name, last_name, email, preferences, avatar_url, bio, timezone")
     .single();
 
   if (error) {

@@ -35,6 +35,7 @@ export default async function SettingsPage() {
       job_title,
       preferences,
       bio,
+      timezone,
       organizations (
         id,
         name
@@ -78,7 +79,7 @@ export default async function SettingsPage() {
     organizationName: userData.organizations?.name || "Unknown Department",
     bio: userData.bio ?? preferences.bio ?? "",
     language: preferences.language || platformDefaults.default_language || "en",
-    timezone: preferences.timezone || platformDefaults.default_timezone || "America/Los_Angeles",
+    timezone: userData.timezone ?? preferences.timezone ?? platformDefaults.default_timezone ?? "America/Los_Angeles",
     theme: preferences.theme || platformDefaults.default_theme || "system",
     dateFormat: preferences.date_format || platformDefaults.default_date_format || "MM/DD/YYYY",
   };

@@ -6,16 +6,17 @@ export function formatDuration(minutes: number | null): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function formatDate(date: string | null): string {
+export function formatDate(date: string | null, timeZone?: string): string {
   if (!date) return "—";
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    ...(timeZone ? { timeZone } : {}),
   });
 }
 
-export function formatDateTime(date: string | null): string {
+export function formatDateTime(date: string | null, timeZone?: string): string {
   if (!date) return "—";
   return new Date(date).toLocaleString("en-US", {
     month: "short",
@@ -23,7 +24,59 @@ export function formatDateTime(date: string | null): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    ...(timeZone ? { timeZone } : {}),
   });
+}
+
+/**
+ * Interpret a wall-clock date (YYYY-MM-DD) + time (HH:MM[:SS]) as being in
+ * `sourceTz` and return the corresponding UTC instant. Used for records that
+ * store local wall-clock time plus a named timezone (e.g. ILT sessions).
+ */
+export function zonedWallClockToInstant(
+  dateStr: string,
+  timeStr: string,
+  sourceTz: string
+): Date {
+  const time = timeStr && timeStr.length >= 5 ? timeStr : "00:00:00";
+  const naiveUtc = new Date(`${dateStr}T${time}Z`);
+  if (isNaN(naiveUtc.getTime())) return new Date(`${dateStr}T${time}`);
+  // How that same UTC instant reads as wall-clock in the source tz vs UTC.
+  const asSource = new Date(naiveUtc.toLocaleString("en-US", { timeZone: sourceTz }));
+  const asUtc = new Date(naiveUtc.toLocaleString("en-US", { timeZone: "UTC" }));
+  const offset = asUtc.getTime() - asSource.getTime();
+  return new Date(naiveUtc.getTime() + offset);
+}
+
+/**
+ * Format an ILT-style wall-clock time (in `sourceTz`) as a clock time in the
+ * viewer's `viewerTz`, e.g. "2:00 PM".
+ */
+export function formatZonedTime(
+  dateStr: string,
+  timeStr: string,
+  sourceTz: string,
+  viewerTz: string
+): string {
+  const instant = zonedWallClockToInstant(dateStr, timeStr, sourceTz);
+  return instant.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: viewerTz,
+  });
+}
+
+/** Short timezone abbreviation for a tz on a given date, e.g. "PST", "EDT". */
+export function timezoneAbbrev(timeZone: string, date: Date = new Date()): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      timeZoneName: "short",
+    }).formatToParts(date);
+    return parts.find((p) => p.type === "timeZoneName")?.value ?? timeZone;
+  } catch {
+    return timeZone;
+  }
 }
 
 export function formatPercent(value: number | null): string {

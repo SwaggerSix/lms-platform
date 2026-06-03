@@ -217,7 +217,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: prefs }),
+        body: JSON.stringify({ preferences: prefs, timezone }),
       });
       if (!res.ok) {
         const { error } = await res.json();

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { trackEvent } from "@/lib/analytics/track";
+import { formatZonedTime, timezoneAbbrev } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import type { ILTSessionStatus, ILTLocationType, AttendanceStatus } from "@/types/database";
@@ -47,6 +48,8 @@ export interface LearnerSession {
 
 export interface ILTSessionsClientProps {
   sessions: LearnerSession[];
+  /** Viewer's timezone (IANA). When set, session times are shown in it. */
+  userTimeZone?: string | null;
 }
 
 const TABS = [
@@ -240,7 +243,7 @@ function MeetingPasswordDisplay({ password }: { password: string }) {
 
 // ─── Main Component ──────────────────────────────────────────────
 
-export default function ILTSessionsClient({ sessions: initialSessions }: ILTSessionsClientProps) {
+export default function ILTSessionsClient({ sessions: initialSessions, userTimeZone }: ILTSessionsClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
   const [sessions, setSessions] = useState(initialSessions);
 
@@ -404,7 +407,9 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                            {session.start_time} - {session.end_time} ({session.timezone.replace("America/", "")})
+                            {userTimeZone
+                              ? `${formatZonedTime(session.session_date, session.start_time, session.timezone, userTimeZone)} - ${formatZonedTime(session.session_date, session.end_time, session.timezone, userTimeZone)} (${timezoneAbbrev(userTimeZone, new Date(session.session_date))})`
+                              : `${session.start_time} - ${session.end_time} (${session.timezone.replace("America/", "")})`}
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <LocationIcon className="h-3.5 w-3.5 flex-shrink-0" />

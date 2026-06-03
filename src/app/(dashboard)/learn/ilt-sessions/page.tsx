@@ -26,7 +26,7 @@ export default async function LearnerILTSessionsPage() {
   const service = createServiceClient();
   const { data: profile } = await service
     .from("users")
-    .select("id")
+    .select("id, timezone, preferences")
     .eq("auth_id", authUser.id)
     .single();
 
@@ -35,6 +35,10 @@ export default async function LearnerILTSessionsPage() {
   }
 
   const userId = profile.id;
+  const userTimeZone =
+    profile.timezone ??
+    (profile.preferences as { timezone?: string } | null)?.timezone ??
+    null;
 
   // Fetch all ILT sessions with course and instructor joins
   const { data: rawSessions, error } = await service
@@ -125,5 +129,5 @@ export default async function LearnerILTSessionsPage() {
     };
   });
 
-  return <ILTSessionsClient sessions={sessions} />;
+  return <ILTSessionsClient sessions={sessions} userTimeZone={userTimeZone} />;
 }
