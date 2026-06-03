@@ -73,6 +73,12 @@ const PROVIDER_META: Record<string, { label: string; color: string; bgColor: str
     bgColor: "bg-indigo-50 border-indigo-200",
     description: "Import training events scheduled in GEMS as ILT sessions",
   },
+  sharepoint_rosters: {
+    label: "SharePoint Rosters",
+    color: "text-cyan-700",
+    bgColor: "bg-cyan-50 border-cyan-200",
+    description: "Import attendee rosters from SharePoint .xlsx files",
+  },
   custom_webhook: {
     label: "Custom Webhook",
     color: "text-gray-700",
