@@ -30,11 +30,14 @@ import {
   X,
   AlertTriangle,
   Sparkles,
+  FolderOpen,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export interface CourseItem {
   id: string;
   title: string;
+  slug: string;
   status: 'published' | 'draft' | 'archived';
   type: 'self-paced' | 'instructor-led' | 'blended';
   category: string;
@@ -187,6 +190,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       const mappedCourse: CourseItem = {
         id: newCourse.id,
         title: newCourse.title || `${course.title} (Copy)`,
+        slug: newCourse.slug || course.slug,
         status: 'draft',
         type: course.type,
         category: course.category,
@@ -479,6 +483,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                           <button onClick={() => handleArchive(course)} disabled={!!loadingAction || course.status === 'archived'} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                             {isLoading(course.id, 'archive') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />} Archive
                           </button>
+                          <Link href={`/admin/courses/${course.slug}/resources`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FolderOpen className="h-3.5 w-3.5" /> Course Content</Link>
                           <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><BarChart3 className="h-3.5 w-3.5" /> Analytics</button>
                         </div>
                       )}

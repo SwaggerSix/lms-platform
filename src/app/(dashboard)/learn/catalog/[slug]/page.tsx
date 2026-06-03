@@ -300,6 +300,20 @@ export default async function CourseDetailPage({
   const skills: string[] = metadata.skills || course.tags || [];
   const learningOutcomes: string[] = metadata.learning_outcomes || metadata.learningOutcomes || [];
 
+  // Learner-facing course content artifacts (decks, guides, materials).
+  const { data: resourceRows } = await service
+    .from("course_resources")
+    .select("id, title, resource_type, file_url")
+    .eq("course_id", course.id)
+    .eq("audience", "learner")
+    .order("created_at", { ascending: true });
+  const resources = (resourceRows ?? []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    type: r.resource_type as string,
+    fileUrl: r.file_url as string,
+  }));
+
   const courseData: CourseData = {
     id: course.id,
     slug: course.slug,
@@ -327,6 +341,7 @@ export default async function CourseDetailPage({
     skills,
     learningOutcomes,
     modules,
+    resources,
     reviews: metadata.reviews || [],
     relatedCourses,
   };

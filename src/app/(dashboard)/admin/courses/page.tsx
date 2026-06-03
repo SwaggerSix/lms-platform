@@ -68,6 +68,7 @@ export default async function CoursesPage() {
     return {
       id: row.id,
       title: row.title ?? 'Untitled Course',
+      slug: row.slug ?? '',
       status: row.status ?? 'draft',
       type: courseTypeMap[row.course_type] ?? 'self-paced',
       category: row.category?.name ?? 'General',

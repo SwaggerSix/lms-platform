@@ -81,6 +81,7 @@ export interface CourseData {
   skills: string[];
   learningOutcomes: string[];
   modules: Module[];
+  resources?: { id: string; title: string; type: string; fileUrl: string }[];
   reviews: Review[];
   relatedCourses: RelatedCourse[];
 }
@@ -406,6 +407,34 @@ export default function CourseDetailClient({
                 })}
               </div>
             </section>
+
+            {/* Course Materials */}
+            {course.resources && course.resources.length > 0 && (
+              <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-900">Course Materials</h2>
+                <ul className="mt-4 divide-y divide-gray-100">
+                  {course.resources.map((r) => (
+                    <li key={r.id} className="flex items-center justify-between gap-3 py-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-gray-900">{r.title}</p>
+                        <p className="text-xs capitalize text-gray-400">
+                          {r.type.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <a
+                        href={r.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        Download
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {/* Instructor */}
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

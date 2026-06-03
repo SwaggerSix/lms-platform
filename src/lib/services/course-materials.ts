@@ -36,9 +36,28 @@ export async function provisionCourseMaterials(
       .select("title, content_type, content_url")
       .in("module_id", moduleIds);
 
-    const materials = (lessons ?? []).filter(
-      (l: any) => l.content_url && l.content_type !== "quiz"
-    );
+    // Downloadable materials = lesson content + learner-facing course
+    // resources (decks, guides, etc.). Facilitator-only resources are excluded.
+    const { data: resources } = await service
+      .from("course_resources")
+      .select("title, file_url, file_type")
+      .eq("course_id", courseId)
+      .eq("audience", "learner");
+
+    const materials: { title: string; file_url: string; file_type: string }[] = [
+      ...(lessons ?? [])
+        .filter((l: any) => l.content_url && l.content_type !== "quiz")
+        .map((l: any) => ({
+          title: l.title || course.title,
+          file_url: l.content_url as string,
+          file_type: l.content_type ?? "document",
+        })),
+      ...(resources ?? []).map((r: any) => ({
+        title: r.title || course.title,
+        file_url: r.file_url as string,
+        file_type: r.file_type ?? "document",
+      })),
+    ];
     if (materials.length === 0) return;
 
     // Owner's organization (for org scoping consistency).
@@ -56,14 +75,15 @@ export async function provisionCourseMaterials(
       .eq("course_id", courseId);
     const have = new Set((existing ?? []).map((d: any) => d.file_url));
 
+    const seen = new Set<string>();
     const rows = materials
-      .filter((l: any) => !have.has(l.content_url))
-      .map((l: any) => ({
-        title: l.title || course.title,
+      .filter((m) => m.file_url && !have.has(m.file_url) && !seen.has(m.file_url) && seen.add(m.file_url))
+      .map((m) => ({
+        title: m.title,
         description: `Course material from "${course.title}"`,
-        file_url: l.content_url,
-        file_name: `${(l.title || "material").toLowerCase().replace(/\s+/g, "-")}`,
-        file_type: l.content_type ?? "document",
+        file_url: m.file_url,
+        file_name: `${(m.title || "material").toLowerCase().replace(/\s+/g, "-")}`,
+        file_type: m.file_type,
         file_size: 0,
         version: 1,
         tags: [course.title],
