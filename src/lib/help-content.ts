@@ -48,9 +48,9 @@ export const helpContent = {
   },
   "learn.ilt-sessions": {
     title: "Webinars",
-    description: "Register to attend free webinars on a wide variety of topics.",
+    description: "Open learning events and webinars (in-person or virtual) you can attend.",
     details:
-      "This is where learners can register to attend free webinars on a wide variety of topics. Register to reserve a seat; your attendance and completion are recorded automatically.",
+      "Webinars are scheduled, open learning events — live classes and sessions, in-person or virtual. Register to reserve a seat; your attendance and completion are recorded automatically.",
   },
   "learn.transcript": {
     title: "Transcript",
@@ -309,10 +309,10 @@ export const helpContent = {
       "Skills are the foundation for recommendations, gap analysis, and competency tracking. Group them, set proficiency scales, and tag content with them.",
   },
   "admin.ilt-sessions": {
-    title: "ILT Sessions",
-    description: "Schedule and manage instructor-led classes.",
+    title: "Webinars",
+    description: "Post and manage webinars and open learning events.",
     details:
-      "Set up sessions (in-person or virtual), assign instructors, manage rosters, and track attendance.",
+      "Post webinars and open learning events (in-person or virtual), assign hosts/instructors, manage rosters, and track attendance.",
   },
   "admin.compliance": {
     title: "Compliance",

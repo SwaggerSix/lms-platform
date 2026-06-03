@@ -307,7 +307,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
           <h1 className="text-2xl font-bold text-gray-900">Webinars</h1>
           <InfoTooltip content={getHelp("learn.ilt-sessions").details} label="About Webinars" side="bottom" />
         </div>
-        <p className="mt-1 text-gray-500">View upcoming sessions, register, and review past attendance.</p>
+        <p className="mt-1 text-gray-500">Browse open learning events and webinars, register, and review past attendance.</p>
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200">

@@ -7,7 +7,7 @@ import type { LearnerSession } from "./ilt-sessions-client";
 
 export const metadata: Metadata = {
   title: "Live Sessions | LMS Platform",
-  description: "Browse and register for instructor-led training sessions",
+  description: "Browse and register for webinars and open learning events",
 };
 
 export default async function LearnerILTSessionsPage() {

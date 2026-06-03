@@ -370,7 +370,7 @@ function CalendarTab({ initialEnabled }: { initialEnabled: boolean }) {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
-              Calendar Sync for ILT Sessions
+              Calendar Sync for Webinars
             </h3>
             <p className="mt-1 text-sm text-gray-500">
               Automatically create Teams/Outlook calendar events when ILT

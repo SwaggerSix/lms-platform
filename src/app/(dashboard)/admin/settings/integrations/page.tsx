@@ -6,7 +6,7 @@ import IntegrationsClient from "./integrations-client";
 
 export const metadata: Metadata = {
   title: "Integrations | LMS Platform",
-  description: "Configure video conferencing integrations for ILT sessions",
+  description: "Configure video conferencing integrations for webinars",
 };
 
 export default async function IntegrationsPage() {

@@ -532,7 +532,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Video Conferencing Integrations</h3>
-              <p className="mt-1 text-xs text-gray-500">Connect Zoom, Microsoft Teams, or Google Meet to auto-create meetings for ILT sessions.</p>
+              <p className="mt-1 text-xs text-gray-500">Connect Zoom, Microsoft Teams, or Google Meet to auto-create meetings for webinars.</p>
             </div>
             <a
               href="/admin/settings/integrations"
