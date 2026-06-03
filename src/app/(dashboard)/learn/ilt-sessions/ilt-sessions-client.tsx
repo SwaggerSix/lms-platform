@@ -300,8 +300,8 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-gray-900">Instructor-Led Training Sessions</h1>
-          <InfoTooltip content={getHelp("learn.ilt-sessions").details} label="About ILT Sessions" side="bottom" />
+          <h1 className="text-2xl font-bold text-gray-900">Webinars</h1>
+          <InfoTooltip content={getHelp("learn.ilt-sessions").details} label="About Webinars" side="bottom" />
         </div>
         <p className="mt-1 text-gray-500">View upcoming sessions, register, and review past attendance.</p>
 
