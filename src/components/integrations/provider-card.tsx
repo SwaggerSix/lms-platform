@@ -67,6 +67,12 @@ const PROVIDER_META: Record<string, { label: string; color: string; bgColor: str
     bgColor: "bg-orange-50 border-orange-200",
     description: "Sync contacts and training data with HubSpot CRM",
   },
+  gems: {
+    label: "GEMS",
+    color: "text-indigo-700",
+    bgColor: "bg-indigo-50 border-indigo-200",
+    description: "Import training events scheduled in GEMS as ILT sessions",
+  },
   custom_webhook: {
     label: "Custom Webhook",
     color: "text-gray-700",

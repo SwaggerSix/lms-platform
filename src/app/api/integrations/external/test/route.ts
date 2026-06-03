@@ -6,6 +6,8 @@ import { HRISSync } from "@/lib/integrations/hris-sync";
 import { CRMSync } from "@/lib/integrations/crm-sync";
 import type { IntegrationConfig as HRISConfig } from "@/lib/integrations/hris-sync";
 import type { IntegrationConfig as CRMConfig } from "@/lib/integrations/crm-sync";
+import { gemsAdapter } from "@/lib/integrations/gems/adapter";
+import type { GemsConfig } from "@/lib/integrations/gems/types";
 
 const HRIS_PROVIDERS = ["bamboohr", "workday", "adp"];
 const CRM_PROVIDERS = ["salesforce", "hubspot"];
@@ -44,7 +46,9 @@ export async function POST(request: NextRequest) {
   try {
     let result: { success: boolean; message: string };
 
-    if (HRIS_PROVIDERS.includes(provider)) {
+    if (provider === "gems") {
+      result = await gemsAdapter.testConnection(config as GemsConfig);
+    } else if (HRIS_PROVIDERS.includes(provider)) {
       const sync = new HRISSync();
       const adapter = sync.getAdapter(provider);
       result = await adapter.testConnection(config as HRISConfig);
