@@ -29,8 +29,29 @@ export interface GemsConfig {
   /** Base URL of the GEMS host, e.g. "https://gems-api.azurewebsites.net". */
   api_base: string;
   /**
-   * OAuth scope. For client-credentials flow this is "{api_app_id_uri}/.default".
-   * Optional override; defaults to that value.
+   * Auth mode. Defaults to "app_only" (client-credentials flow).
+   *
+   * Use "delegated" when the GEMS backend only accepts delegated tokens
+   * (i.e., it checks `scp: Gems.Access` and rejects app-only `roles`
+   * claims). In that mode the LMS authenticates as a designated service
+   * account user via ROPC; service_user_email and
+   * service_user_password_encrypted become required.
+   *
+   * The service account must:
+   *   - have access to the GEMS API,
+   *   - have MFA disabled / be excluded from Conditional Access MFA
+   *     (ROPC fails for MFA-protected accounts),
+   *   - belong to a managed (not federated) identity provider.
+   */
+  auth_mode?: "app_only" | "delegated";
+  /** Delegated mode only: email/UPN of the designated service account user. */
+  service_user_email?: string;
+  /** Delegated mode only: password for the service account user (encrypted at rest). */
+  service_user_password_encrypted?: string;
+  /**
+   * OAuth scope override. Defaults are:
+   *   app_only:  "{api_app_id_uri}/.default"
+   *   delegated: "{api_app_id_uri}/Gems.Access"
    */
   scope?: string;
 }

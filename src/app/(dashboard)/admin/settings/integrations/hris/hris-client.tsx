@@ -54,7 +54,10 @@ const PROVIDERS = [
   { id: "custom_webhook", name: "Custom Webhook", type: "hr_system", description: "Connect via custom webhook", color: "border-gray-200 bg-gray-50 hover:bg-gray-100" },
 ];
 
-const CREDENTIAL_FIELDS: Record<string, Array<{ key: string; label: string; type: string; placeholder: string }>> = {
+const CREDENTIAL_FIELDS: Record<
+  string,
+  Array<{ key: string; label: string; type: string; placeholder: string; options?: Array<{ value: string; label: string }>; help?: string }>
+> = {
   bamboohr: [
     { key: "subdomain", label: "Company Subdomain", type: "text", placeholder: "yourcompany" },
     { key: "api_key_encrypted", label: "API Key", type: "password", placeholder: "Enter BambooHR API key" },
@@ -82,6 +85,19 @@ const CREDENTIAL_FIELDS: Record<string, Array<{ key: string; label: string; type
     { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Client ID from your GEMS admin" },
     { key: "client_secret_encrypted", label: "Client Secret", type: "password", placeholder: "Client secret from your GEMS admin" },
     { key: "api_app_id_uri", label: "Backend API App ID URI", type: "text", placeholder: "api://d9fbbe9d-7bd0-4ede-b9a7-e2c90c1d1d5f" },
+    {
+      key: "auth_mode",
+      label: "Auth Mode",
+      type: "select",
+      placeholder: "",
+      options: [
+        { value: "app_only", label: "App-only (Client Credentials) — recommended" },
+        { value: "delegated", label: "Delegated (Service Account) — fallback if GEMS rejects app tokens" },
+      ],
+      help: "Use Delegated mode only if App-only test connection returns 403 Forbidden. Delegated requires a service-account user with MFA disabled and the Gems.Access delegated scope.",
+    },
+    { key: "service_user_email", label: "Service Account Email (Delegated mode only)", type: "text", placeholder: "service-account@yourtenant.onmicrosoft.com" },
+    { key: "service_user_password_encrypted", label: "Service Account Password (Delegated mode only)", type: "password", placeholder: "Password for the service account user" },
   ],
   sharepoint_rosters: [
     { key: "tenant_id", label: "Azure AD Tenant ID", type: "text", placeholder: "30295520-84b7-447c-ba6d-3a2b11790cd4" },
@@ -451,18 +467,40 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
             {CREDENTIAL_FIELDS[newIntegration.provider]?.map((field) => (
               <div key={field.key}>
                 <label className="block text-xs font-medium text-gray-600 mb-1">{field.label}</label>
-                <input
-                  type={field.type}
-                  value={newIntegration.config[field.key] || ""}
-                  onChange={(e) =>
-                    setNewIntegration((prev) => ({
-                      ...prev,
-                      config: { ...prev.config, [field.key]: e.target.value },
-                    }))
-                  }
-                  placeholder={field.placeholder}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
-                />
+                {field.type === "select" ? (
+                  <select
+                    value={newIntegration.config[field.key] || field.options?.[0]?.value || ""}
+                    onChange={(e) =>
+                      setNewIntegration((prev) => ({
+                        ...prev,
+                        config: { ...prev.config, [field.key]: e.target.value },
+                      }))
+                    }
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none bg-white"
+                  >
+                    {field.options?.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type}
+                    value={newIntegration.config[field.key] || ""}
+                    onChange={(e) =>
+                      setNewIntegration((prev) => ({
+                        ...prev,
+                        config: { ...prev.config, [field.key]: e.target.value },
+                      }))
+                    }
+                    placeholder={field.placeholder}
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                  />
+                )}
+                {field.help && (
+                  <p className="mt-1 text-xs text-gray-500">{field.help}</p>
+                )}
               </div>
             ))}
 
