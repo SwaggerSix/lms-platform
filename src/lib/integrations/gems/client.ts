@@ -105,8 +105,8 @@ export class GemsClient {
   async getCustomers() {
     return this.request<unknown[]>("/api/Customer/");
   }
-  async getCourseProducts() {
-    return this.request<unknown[]>("/api/CourseProduct");
+  async getCourseProducts(): Promise<GemsCourseProductCatalog[]> {
+    return this.request<GemsCourseProductCatalog[]>("/api/CourseProduct");
   }
   async getCourseLocations() {
     return this.request<unknown[]>("/api/CourseLocation");
@@ -114,4 +114,17 @@ export class GemsClient {
   async getDivisions() {
     return this.request<unknown[]>("/api/Division");
   }
+}
+
+/**
+ * GEMS course-catalog row as returned by GET /api/CourseProduct. Field
+ * names mirror the TrainingEvent.courseProduct nested object.
+ */
+export interface GemsCourseProductCatalog {
+  courseProductId: number;
+  productDescription: string;
+  productCode: string;
+  min?: number;
+  max?: number;
+  sinnumber?: string;
 }

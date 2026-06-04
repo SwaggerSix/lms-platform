@@ -314,6 +314,16 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
           </div>
         </div>
 
+        {/* GEMS course mapping shortcut — only visible when GEMS is configured. */}
+        {integrations.some((i) => i.provider === "gems") && (
+          <a
+            href="/admin/settings/integrations/gems/course-mapping"
+            className="mb-4 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+          >
+            Map existing LMS courses to GEMS course codes →
+          </a>
+        )}
+
         {/* Integration cards */}
         {integrations.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
