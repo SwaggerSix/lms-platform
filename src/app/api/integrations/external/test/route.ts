@@ -49,9 +49,18 @@ export async function POST(request: NextRequest) {
     let result: { success: boolean; message: string };
 
     if (provider === "gems") {
-      const missing = (
-        ["api_base", "tenant_id", "client_id", "client_secret_encrypted", "api_app_id_uri"] as const
-      ).filter((k) => !(config as Record<string, unknown>)[k]);
+      const cfg = config as Record<string, unknown>;
+      const required = [
+        "api_base",
+        "tenant_id",
+        "client_id",
+        "client_secret_encrypted",
+        "api_app_id_uri",
+      ];
+      if (cfg.auth_mode === "delegated") {
+        required.push("service_user_email", "service_user_password_encrypted");
+      }
+      const missing = required.filter((k) => !cfg[k]);
       if (missing.length > 0) {
         return NextResponse.json({
           success: false,
