@@ -49,8 +49,32 @@ export async function POST(request: NextRequest) {
     let result: { success: boolean; message: string };
 
     if (provider === "gems") {
+      const missing = (
+        ["api_base", "tenant_id", "client_id", "client_secret_encrypted", "api_app_id_uri"] as const
+      ).filter((k) => !(config as Record<string, unknown>)[k]);
+      if (missing.length > 0) {
+        return NextResponse.json({
+          success: false,
+          message: `Missing required field${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}`,
+        });
+      }
       result = await gemsAdapter.testConnection(config as unknown as GemsConfig);
     } else if (provider === "sharepoint_rosters") {
+      const missing = (
+        [
+          "tenant_id",
+          "client_id",
+          "client_secret_encrypted",
+          "site_path",
+          "root_folder",
+        ] as const
+      ).filter((k) => !(config as Record<string, unknown>)[k]);
+      if (missing.length > 0) {
+        return NextResponse.json({
+          success: false,
+          message: `Missing required field${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}`,
+        });
+      }
       const sp = new SharePointClient(config as unknown as SharePointRostersConfig);
       result = await sp.testConnection();
     } else if (HRIS_PROVIDERS.includes(provider)) {

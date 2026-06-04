@@ -42,6 +42,9 @@ export class GemsClient {
   constructor(private readonly config: GemsConfig) {}
 
   private get base(): string {
+    if (!this.config.api_base) {
+      throw new Error("GEMS API URL is required");
+    }
     return this.config.api_base.replace(/\/+$/, "");
   }
 
