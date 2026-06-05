@@ -50,15 +50,12 @@ export async function POST(request: NextRequest) {
 
     if (provider === "gems") {
       const cfg = config as Record<string, unknown>;
-      const required = [
-        "api_base",
-        "tenant_id",
-        "client_id",
-        "client_secret_encrypted",
-        "api_app_id_uri",
-      ];
+      const required = ["api_base", "tenant_id", "client_id", "api_app_id_uri"];
       if (cfg.auth_mode === "delegated") {
         required.push("service_user_email", "service_user_password_encrypted");
+      } else {
+        // app_only / client-credentials needs the client secret.
+        required.push("client_secret_encrypted");
       }
       const missing = required.filter((k) => !cfg[k]);
       if (missing.length > 0) {
