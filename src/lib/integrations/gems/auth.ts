@@ -71,7 +71,7 @@ function getPublicClient(config: GemsConfig): PublicClientApplication {
 export function resolveScope(config: GemsConfig): string {
   if (config.scope) return config.scope;
   return authMode(config) === "delegated"
-    ? `${config.api_app_id_uri}/Gems.Access`
+    ? `${config.api_app_id_uri}/access_as_user`
     : `${config.api_app_id_uri}/.default`;
 }
 
