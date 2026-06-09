@@ -38,6 +38,47 @@ export function gemsTimePart(value: unknown): string | null {
   return d ? d.toISOString().slice(11, 19) : null;
 }
 
+/**
+ * Best-effort decode of a JWT's payload (no signature validation; for
+ * diagnostics only). Returns null if the string isn't a parseable JWT.
+ */
+export function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
+    const json = Buffer.from(b64 + pad, "base64").toString("utf8");
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Pluck the claims most relevant for diagnosing a GEMS 403: did we send
+ * the right audience? scope? user identity? group membership?
+ */
+function summarizeClaims(claims: Record<string, unknown> | null): string {
+  if (!claims) return "(unable to decode token)";
+  const pick = (k: string) => {
+    const v = claims[k];
+    if (v === undefined) return null;
+    if (Array.isArray(v)) {
+      const arr = v as unknown[];
+      return arr.length > 6 ? `[${arr.length} entries]` : JSON.stringify(arr);
+    }
+    return typeof v === "string" || typeof v === "number" || typeof v === "boolean"
+      ? String(v)
+      : JSON.stringify(v);
+  };
+  const fields = ["aud", "iss", "scp", "roles", "upn", "preferred_username", "oid", "appid", "groups"];
+  return fields
+    .map((f) => `${f}=${pick(f) ?? "—"}`)
+    .filter((s) => !s.endsWith("=—"))
+    .join(", ");
+}
+
 export class GemsClient {
   constructor(private readonly config: GemsConfig) {}
 
@@ -69,16 +110,26 @@ export class GemsClient {
     return response.json() as Promise<T>;
   }
 
-  /** Verify connectivity + auth by listing events with a narrow filter. */
+  /**
+   * Verify connectivity + auth. On 4xx responses, include a one-line
+   * summary of the token's claims so an admin can see whether the right
+   * `aud`, `scp`, `upn` etc. are being sent. Diagnostics only — the
+   * token itself is never logged or returned.
+   */
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
       await this.searchTrainingEvents({});
       return { success: true, message: "Successfully connected to GEMS" };
     } catch (error) {
-      return {
-        success: false,
-        message: `Connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      };
+      const message = error instanceof Error ? error.message : "Unknown error";
+      let diag = "";
+      try {
+        const token = await getAccessToken(this.config);
+        diag = ` | Token claims: ${summarizeClaims(decodeJwtPayload(token))}`;
+      } catch {
+        diag = " | (token unavailable for diagnostics)";
+      }
+      return { success: false, message: `Connection failed: ${message}${diag}` };
     }
   }
 
