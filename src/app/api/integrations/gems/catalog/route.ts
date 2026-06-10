@@ -2,20 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { GemsClient } from "@/lib/integrations/gems/client";
+import { getAccessToken } from "@/lib/integrations/gems/auth";
 import type { GemsConfig } from "@/lib/integrations/gems/types";
 
 // GET /api/integrations/gems/catalog
 // Returns the GEMS course catalog (productCode + productDescription) using
-// the active GEMS integration's stored credentials. Used by the
-// course-mapping admin tool to let an admin tag existing LMS courses with
-// their GEMS productCode before the first sync.
+// the active GEMS integration's stored credentials.
+//
+// Pass ?debug=1 to also return the raw GEMS response (visible only to
+// admins) so we can diagnose mismatched response shapes or empty results.
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   const auth = await authorize("admin");
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
+
+  const debug = request.nextUrl.searchParams.get("debug") === "1";
 
   const service = createServiceClient();
   const { data: integration, error } = await service
@@ -39,8 +43,9 @@ export async function GET(_request: NextRequest) {
     );
   }
 
+  const config = integration.config as unknown as GemsConfig;
   try {
-    const client = new GemsClient(integration.config as unknown as GemsConfig);
+    const client = new GemsClient(config);
     const catalog = await client.getCourseProducts();
     const trimmed = catalog
       .map((c) => ({
@@ -49,7 +54,48 @@ export async function GET(_request: NextRequest) {
         product_description: c.productDescription,
       }))
       .sort((a, b) => a.product_code.localeCompare(b.product_code));
-    return NextResponse.json({ catalog: trimmed });
+
+    if (!debug) return NextResponse.json({ catalog: trimmed });
+
+    // Debug mode: also fetch the raw GEMS response so an admin can see
+    // exactly what /api/CourseProduct returned (shape + status). The
+    // bearer token is never echoed.
+    const token = await getAccessToken(config);
+    const url = `${config.api_base.replace(/\/+$/, "")}/api/CourseProduct`;
+    const rawRes = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+    const rawText = await rawRes.text();
+    let rawJson: unknown;
+    try {
+      rawJson = JSON.parse(rawText);
+    } catch {
+      rawJson = null;
+    }
+    return NextResponse.json({
+      catalog: trimmed,
+      _debug: {
+        endpoint: url,
+        http_status: rawRes.status,
+        content_type: rawRes.headers.get("content-type"),
+        raw_top_level_type: Array.isArray(rawJson)
+          ? "array"
+          : rawJson && typeof rawJson === "object"
+            ? "object"
+            : typeof rawJson,
+        raw_keys:
+          rawJson && typeof rawJson === "object" && !Array.isArray(rawJson)
+            ? Object.keys(rawJson as Record<string, unknown>)
+            : null,
+        raw_length: Array.isArray(rawJson) ? (rawJson as unknown[]).length : null,
+        raw_sample:
+          Array.isArray(rawJson) && (rawJson as unknown[]).length > 0
+            ? (rawJson as unknown[]).slice(0, 1)
+            : rawJson && typeof rawJson === "object"
+              ? rawJson
+              : rawText.slice(0, 500),
+      },
+    });
   } catch (err) {
     return NextResponse.json(
       {
