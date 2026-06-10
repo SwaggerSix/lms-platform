@@ -39,6 +39,23 @@ export function gemsTimePart(value: unknown): string | null {
 }
 
 /**
+ * GEMS endpoints sometimes return a bare JSON array and sometimes wrap the
+ * list in an envelope ({ data: [...] }, { value: [...] }, etc., depending
+ * on the endpoint). This helper tolerates both shapes.
+ */
+function asArray<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    for (const key of ["data", "value", "items", "results", "Items", "Data", "Value", "Results"]) {
+      const v = obj[key];
+      if (Array.isArray(v)) return v as T[];
+    }
+  }
+  return [];
+}
+
+/**
  * Best-effort decode of a JWT's payload (no signature validation; for
  * diagnostics only). Returns null if the string isn't a parseable JWT.
  */
@@ -137,11 +154,12 @@ export class GemsClient {
   async searchTrainingEvents(
     filter: GemsEventFilter
   ): Promise<GemsTrainingEvent[]> {
-    return this.request<GemsTrainingEvent[]>("/api/TrainingEvent", {
+    const raw = await this.request<unknown>("/api/TrainingEvent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(filter),
     });
+    return asArray<GemsTrainingEvent>(raw);
   }
 
   /** GET /api/TrainingEvent/{eventId} — full event detail (eventId is an integer). */
@@ -154,19 +172,21 @@ export class GemsClient {
   // ─── Reference / lookup endpoints (all GET, JSON arrays) ───────
 
   async getInstructors() {
-    return this.request<unknown[]>("/api/Instructor");
+    return asArray<unknown>(await this.request<unknown>("/api/Instructor"));
   }
   async getCustomers() {
-    return this.request<unknown[]>("/api/Customer/");
+    return asArray<unknown>(await this.request<unknown>("/api/Customer/"));
   }
   async getCourseProducts(): Promise<GemsCourseProductCatalog[]> {
-    return this.request<GemsCourseProductCatalog[]>("/api/CourseProduct");
+    return asArray<GemsCourseProductCatalog>(
+      await this.request<unknown>("/api/CourseProduct")
+    );
   }
   async getCourseLocations() {
-    return this.request<unknown[]>("/api/CourseLocation");
+    return asArray<unknown>(await this.request<unknown>("/api/CourseLocation"));
   }
   async getDivisions() {
-    return this.request<unknown[]>("/api/Division");
+    return asArray<unknown>(await this.request<unknown>("/api/Division"));
   }
 }
 
