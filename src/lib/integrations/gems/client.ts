@@ -41,13 +41,25 @@ export function gemsTimePart(value: unknown): string | null {
 /**
  * GEMS endpoints sometimes return a bare JSON array and sometimes wrap the
  * list in an envelope ({ data: [...] }, { value: [...] }, etc., depending
- * on the endpoint). This helper tolerates both shapes.
+ * on the endpoint). GEMS specifically uses .NET ReferenceHandler.Preserve
+ * which wraps every collection in { "$id": "...", "$values": [...] }, so
+ * we check `$values` first. This helper tolerates all of those shapes.
  */
 function asArray<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data as T[];
   if (data && typeof data === "object") {
     const obj = data as Record<string, unknown>;
-    for (const key of ["data", "value", "items", "results", "Items", "Data", "Value", "Results"]) {
+    for (const key of [
+      "$values",
+      "data",
+      "value",
+      "items",
+      "results",
+      "Items",
+      "Data",
+      "Value",
+      "Results",
+    ]) {
       const v = obj[key];
       if (Array.isArray(v)) return v as T[];
     }
