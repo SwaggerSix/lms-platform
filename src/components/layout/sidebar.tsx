@@ -147,6 +147,7 @@ const navSections: NavSection[] = [
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap },
       { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays },
+      { label: "ILT Sessions", href: "/admin/training-events", icon: ClipboardList },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion },
       { label: "Certifications", href: "/admin/certifications", icon: Medal },
