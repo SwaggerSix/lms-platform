@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 // Fallback defaults when database rows don't exist yet
 const defaultGeneral = {
-  companyName: "Acme Corporation",
+  companyName: "",
   timezone: "America/New_York",
   language: "en",
   dateFormat: "MM/DD/YYYY",
@@ -40,16 +40,12 @@ const defaultNotifications = {
     { id: "4", name: "Certification Expiry", description: "When a certification is about to expire", enabled: true },
     { id: "5", name: "Discussion Reply", description: "When someone replies to a discussion post", enabled: false },
   ] as NotificationType[],
-  emailFooter: "This email was sent by Acme Corporation LMS. If you have questions, contact your administrator.",
-  webhookUrl: "https://api.acme.com/webhooks/lms",
-  selectedWebhookEvents: ["course.completed", "enrollment.created"],
+  emailFooter: "",
+  webhookUrl: "",
+  selectedWebhookEvents: [],
 };
 
-const defaultApiKeys: ApiKey[] = [
-  { id: "1", name: "Production API", keyPreview: "sk-prod-****-****-7f3a", created: "2026-01-15", lastUsed: "2026-03-16", status: "Active" },
-  { id: "2", name: "Staging API", keyPreview: "sk-stg-****-****-2b9c", created: "2026-02-01", lastUsed: "2026-03-14", status: "Active" },
-  { id: "3", name: "Legacy Integration", keyPreview: "sk-leg-****-****-8d1e", created: "2025-08-20", lastUsed: "2025-12-01", status: "Revoked" },
-];
+const defaultApiKeys: ApiKey[] = [];
 
 export default async function SettingsPage() {
   const supabase = await createClient();
