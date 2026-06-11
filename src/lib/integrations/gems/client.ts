@@ -39,29 +39,39 @@ export function gemsTimePart(value: unknown): string | null {
 }
 
 /**
- * GEMS endpoints sometimes return a bare JSON array and sometimes wrap the
- * list in an envelope ({ data: [...] }, { value: [...] }, etc., depending
- * on the endpoint). GEMS specifically uses .NET ReferenceHandler.Preserve
- * which wraps every collection in { "$id": "...", "$values": [...] }, so
- * we check `$values` first. This helper tolerates all of those shapes.
+ * GEMS endpoints return collections in a variety of envelopes:
+ *   - bare JSON array
+ *   - `{ "$id": "...", "$values": [...] }`  (ReferenceHandler.Preserve)
+ *   - `{ "queryResults": { "$values": [...] }, "totalCount": N, ... }`
+ *     (the POST /api/TrainingEvent search shape)
+ *   - other common envelope keys (data/value/items/results)
+ *
+ * This helper unwraps any of those — and crucially, descends one level
+ * deeper if it finds e.g. `queryResults` that is itself a `$values` wrapper.
  */
 function asArray<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data as T[];
-  if (data && typeof data === "object") {
-    const obj = data as Record<string, unknown>;
-    for (const key of [
-      "$values",
-      "data",
-      "value",
-      "items",
-      "results",
-      "Items",
-      "Data",
-      "Value",
-      "Results",
-    ]) {
-      const v = obj[key];
-      if (Array.isArray(v)) return v as T[];
+  if (!data || typeof data !== "object") return [];
+  const obj = data as Record<string, unknown>;
+  // Direct array under a known key.
+  for (const key of [
+    "$values",
+    "queryResults",
+    "data",
+    "value",
+    "items",
+    "results",
+    "Items",
+    "Data",
+    "Value",
+    "Results",
+  ]) {
+    const v = obj[key];
+    if (Array.isArray(v)) return v as T[];
+    // Nested .NET wrapper: queryResults -> { $values: [...] }
+    if (v && typeof v === "object") {
+      const inner = (v as Record<string, unknown>).$values;
+      if (Array.isArray(inner)) return inner as T[];
     }
   }
   return [];
