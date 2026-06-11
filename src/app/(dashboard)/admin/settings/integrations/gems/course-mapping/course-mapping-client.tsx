@@ -144,7 +144,12 @@ export default function CourseMappingClient({
         >
           <ArrowLeft className="mr-1 h-4 w-4" /> Back to Integrations
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-gray-900">GEMS Course Mapping</h1>
+        <h1 className="mt-2 text-2xl font-semibold text-gray-900">
+          GEMS Course Mapping{" "}
+          <span className="ml-2 inline-block rounded-full bg-indigo-100 px-2 py-0.5 align-middle text-xs font-medium text-indigo-700">
+            {catalog.length} GEMS courses available
+          </span>
+        </h1>
         <p className="mt-1 text-sm text-gray-600">
           Tag each existing LMS course with its GEMS course code. After saving, the next GEMS sync
           will match events to these courses instead of creating duplicates.

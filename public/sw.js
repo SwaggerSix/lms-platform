@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lms-v1';
+const CACHE_NAME = 'lms-v2';
 const OFFLINE_URL = '/offline';
 
 // Assets to precache
