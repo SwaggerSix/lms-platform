@@ -92,9 +92,11 @@ export class GemsHttpAdapter {
     config: GemsConfig,
     filter: GemsEventFilter = {}
   ): Promise<GemsEvent[]> {
+    // GEMS is .NET; pass full ISO 8601 datetimes (date-only strings have
+    // produced empty results).
     const effective: GemsEventFilter = {
-      earliestDate: "2000-01-01",
-      lastDate: `${new Date().getUTCFullYear() + 5}-12-31`,
+      earliestDate: "2000-01-01T00:00:00",
+      lastDate: `${new Date().getUTCFullYear() + 5}-12-31T23:59:59`,
       ...filter,
     };
     const events = await this.client(config).searchTrainingEvents(effective);
