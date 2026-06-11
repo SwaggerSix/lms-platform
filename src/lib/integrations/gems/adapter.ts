@@ -84,10 +84,20 @@ export class GemsHttpAdapter {
 
   /**
    * Fetch events. Pass a filter (e.g. modifiedDate for incremental syncs);
-   * defaults to all events.
+   * defaults to a wide date range (2000-01-01 .. 5 years from now), because
+   * GEMS' POST /api/TrainingEvent treats an empty filter as "match nothing"
+   * — sending no earliestDate/lastDate yields zero events.
    */
-  async fetchEvents(config: GemsConfig, filter: GemsEventFilter = {}): Promise<GemsEvent[]> {
-    const events = await this.client(config).searchTrainingEvents(filter);
+  async fetchEvents(
+    config: GemsConfig,
+    filter: GemsEventFilter = {}
+  ): Promise<GemsEvent[]> {
+    const effective: GemsEventFilter = {
+      earliestDate: "2000-01-01",
+      lastDate: `${new Date().getUTCFullYear() + 5}-12-31`,
+      ...filter,
+    };
+    const events = await this.client(config).searchTrainingEvents(effective);
     return events
       .map((e) => normalizeEvent(e))
       .filter((e): e is GemsEvent => e !== null);
