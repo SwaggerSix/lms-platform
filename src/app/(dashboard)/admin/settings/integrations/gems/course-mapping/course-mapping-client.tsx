@@ -73,7 +73,14 @@ export default function CourseMappingClient({ initialCourses }: Props) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/integrations/gems/catalog");
+        // Cache-bust: bypass any stale browser/service-worker cache by adding
+        // a unique timestamp param and explicit no-store cache directive.
+        // GEMS courses change frequently and Course Mapping is an admin tool,
+        // so always fetch fresh.
+        const res = await fetch(`/api/integrations/gems/catalog?_=${Date.now()}`, {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
