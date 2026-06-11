@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Save, Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +21,10 @@ interface CatalogRow {
 
 interface Props {
   initialCourses: CourseRow[];
+  /** GEMS catalog fetched server-side (always fresh; bypasses client caches). */
+  initialCatalog: CatalogRow[];
+  /** Non-null if the server couldn't load the catalog (auth, no integration, etc.). */
+  initialCatalogError: string | null;
 }
 
 /**
@@ -56,66 +60,33 @@ function suggestMatch(title: string, catalog: CatalogRow[]): CatalogRow | null {
   return best?.c ?? null;
 }
 
-export default function CourseMappingClient({ initialCourses }: Props) {
+export default function CourseMappingClient({
+  initialCourses,
+  initialCatalog,
+  initialCatalogError,
+}: Props) {
   const [courses] = useState<CourseRow[]>(initialCourses);
-  const [catalog, setCatalog] = useState<CatalogRow[] | null>(null);
-  const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [catalogLoading, setCatalogLoading] = useState(true);
-  const [mappings, setMappings] = useState<Record<string, string | null>>(() =>
-    Object.fromEntries(initialCourses.map((c) => [c.id, c.gems_course_code]))
-  );
+  const [catalog] = useState<CatalogRow[]>(initialCatalog);
+  const [catalogError] = useState<string | null>(initialCatalogError);
+  const catalogLoading = false;
+  const [mappings, setMappings] = useState<Record<string, string | null>>(() => {
+    // Seed with saved gems_course_code, then auto-suggest for unmapped courses.
+    const base = Object.fromEntries(
+      initialCourses.map((c) => [c.id, c.gems_course_code])
+    );
+    if (initialCatalog.length > 0) {
+      for (const c of initialCourses) {
+        if (base[c.id]) continue;
+        const suggestion = suggestMatch(c.title, initialCatalog);
+        if (suggestion) base[c.id] = suggestion.product_code;
+      }
+    }
+    return base;
+  });
   const [filter, setFilter] = useState("");
   const [showUnmappedOnly, setShowUnmappedOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        // Cache-bust: bypass any stale browser/service-worker cache by adding
-        // a unique timestamp param and explicit no-store cache directive.
-        // GEMS courses change frequently and Course Mapping is an admin tool,
-        // so always fetch fresh.
-        const res = await fetch(`/api/integrations/gems/catalog?_=${Date.now()}`, {
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
-        });
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setCatalogError(data.error ?? `Catalog fetch failed (${res.status})`);
-          setCatalogLoading(false);
-          return;
-        }
-        setCatalog(data.catalog ?? []);
-        setCatalogLoading(false);
-      } catch (err) {
-        if (!cancelled) {
-          setCatalogError(err instanceof Error ? err.message : "Catalog fetch failed");
-          setCatalogLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Auto-suggest matches once the catalog arrives, but only for courses
-  // that don't already have a saved mapping.
-  useEffect(() => {
-    if (!catalog) return;
-    setMappings((prev) => {
-      const next = { ...prev };
-      for (const c of courses) {
-        if (next[c.id]) continue; // existing mapping wins
-        const suggestion = suggestMatch(c.title, catalog);
-        if (suggestion) next[c.id] = suggestion.product_code;
-      }
-      return next;
-    });
-  }, [catalog, courses]);
 
   const filtered = useMemo(() => {
     const f = filter.trim().toLowerCase();
