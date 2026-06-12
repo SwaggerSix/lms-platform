@@ -18,7 +18,7 @@ export default async function ProductPage({
 
   const { data: store } = await service
     .from("storefronts")
-    .select("id, slug")
+    .select("id, slug, contact_email")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -78,12 +78,20 @@ export default async function ProductPage({
           )}
           <h1 className="mt-2 text-3xl font-bold tracking-tight">{product.name}</h1>
           <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-3xl font-bold" style={{ color: "var(--store-primary)" }}>
-              {formatPrice(price)}
-            </span>
-            {onSale && (
-              <span className="text-lg text-slate-400 line-through">
-                {formatPrice(Number(product.price))}
+            {price > 0 ? (
+              <>
+                <span className="text-3xl font-bold" style={{ color: "var(--store-primary)" }}>
+                  {formatPrice(price)}
+                </span>
+                {onSale && (
+                  <span className="text-lg text-slate-400 line-through">
+                    {formatPrice(Number(product.price))}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-2xl font-bold" style={{ color: "var(--store-primary)" }}>
+                Contact us for pricing
               </span>
             )}
           </div>
@@ -93,15 +101,27 @@ export default async function ProductPage({
             </p>
           )}
           <div className="mt-8">
-            <AddToCart
-              slug={slug}
-              product={{
-                productId: product.id,
-                name: product.name || "Course",
-                price,
-                imageUrl: product.image_url,
-              }}
-            />
+            {price > 0 ? (
+              <AddToCart
+                slug={slug}
+                product={{
+                  productId: product.id,
+                  name: product.name || "Course",
+                  price,
+                  imageUrl: product.image_url,
+                }}
+              />
+            ) : (
+              <a
+                href={`mailto:${store.contact_email || "info@gothamculture.com"}?subject=${encodeURIComponent(
+                  `Pricing inquiry: ${product.name || "Course"}`
+                )}`}
+                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full text-white font-semibold text-base hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "var(--store-primary)" }}
+              >
+                Request pricing &amp; availability
+              </a>
+            )}
           </div>
         </div>
       </div>

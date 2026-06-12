@@ -59,11 +59,19 @@ export function ProductCard({ slug, product }: { slug: string; product: CatalogP
           <p className="mt-1.5 text-sm text-slate-600 line-clamp-2">{product.description}</p>
         )}
         <div className="mt-auto pt-4 flex items-baseline gap-2">
-          <span className="text-lg font-bold" style={{ color: "var(--store-primary)" }}>
-            {formatPrice(product.discountPrice ?? product.price)}
-          </span>
-          {onSale && (
-            <span className="text-sm text-slate-400 line-through">{formatPrice(product.price)}</span>
+          {product.price > 0 ? (
+            <>
+              <span className="text-lg font-bold" style={{ color: "var(--store-primary)" }}>
+                {formatPrice(product.discountPrice ?? product.price)}
+              </span>
+              {onSale && (
+                <span className="text-sm text-slate-400 line-through">{formatPrice(product.price)}</span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm font-semibold" style={{ color: "var(--store-primary)" }}>
+              Contact us for pricing
+            </span>
           )}
         </div>
       </div>

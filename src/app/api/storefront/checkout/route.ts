@@ -80,6 +80,14 @@ export async function POST(request: NextRequest) {
     return { product: p, price: effectivePrice(p), quantity: item.quantity };
   });
 
+  // Quote-only items (no public price) cannot be checked out
+  if (lineItems.some((li) => li.price <= 0)) {
+    return NextResponse.json(
+      { error: "An item in your cart is priced on request. Please contact us to order it." },
+      { status: 400 }
+    );
+  }
+
   // Coupon (optional)
   let coupon = null;
   if (body.coupon_code) {
