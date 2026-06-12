@@ -65,6 +65,25 @@ export async function GET(request: NextRequest) {
     } catch {
       // not JSON
     }
+    // Try to extract the first event from the various known wrapper shapes
+    // so we can see its real structure (instructor, courseProduct, etc.).
+    let firstEvent: unknown = null;
+    if (json && typeof json === "object") {
+      const obj = json as Record<string, unknown>;
+      const candidates: unknown[] = [
+        obj.queryResults && typeof obj.queryResults === "object"
+          ? (obj.queryResults as Record<string, unknown>).$values
+          : null,
+        obj.$values,
+      ];
+      for (const c of candidates) {
+        if (Array.isArray(c) && c.length > 0) {
+          firstEvent = c[0];
+          break;
+        }
+      }
+    }
+
     return NextResponse.json({
       endpoint: url,
       filter_sent: filter,
@@ -84,9 +103,36 @@ export async function GET(request: NextRequest) {
         json && typeof json === "object" && !Array.isArray(json)
           ? Array.isArray((json as Record<string, unknown>).$values)
             ? ((json as Record<string, unknown>).$values as unknown[]).length
-            : null
+            : (json as Record<string, unknown>).queryResults &&
+                typeof (json as Record<string, unknown>).queryResults === "object"
+              ? Array.isArray(
+                  ((json as Record<string, unknown>).queryResults as Record<string, unknown>)
+                    .$values
+                )
+                ? (
+                    ((json as Record<string, unknown>).queryResults as Record<string, unknown>)
+                      .$values as unknown[]
+                  ).length
+                : null
+              : null
           : null,
-      raw_preview: text.slice(0, 1500),
+      first_event_keys:
+        firstEvent && typeof firstEvent === "object"
+          ? Object.keys(firstEvent as Record<string, unknown>)
+          : null,
+      first_event_instructor:
+        firstEvent && typeof firstEvent === "object"
+          ? (firstEvent as Record<string, unknown>).instructor
+          : null,
+      first_event_courseProduct:
+        firstEvent && typeof firstEvent === "object"
+          ? (firstEvent as Record<string, unknown>).courseProduct
+          : null,
+      first_event_courseLocation:
+        firstEvent && typeof firstEvent === "object"
+          ? (firstEvent as Record<string, unknown>).courseLocation
+          : null,
+      first_event_sample: firstEvent,
     });
   } catch (err) {
     return NextResponse.json(
