@@ -32,6 +32,9 @@ drop policy if exists "System insert audit logs" on public.audit_logs;
 drop policy if exists "System insert cron runs" on public.cron_runs;
 
 -- ── 3. SECURITY DEFINER helpers: remove anon execute, pin search_path ─────────
+-- Note: EXECUTE is granted to PUBLIC by default, so revoking from anon alone
+-- is not enough — revoke from PUBLIC too, then re-grant to authenticated
+-- (RLS policies call these helpers) and service_role.
 do $$
 declare
   r record;
@@ -42,7 +45,8 @@ begin
     where n.nspname = 'public'
       and p.proname in ('current_user_id', 'current_user_role', 'get_my_id', 'get_my_role')
   loop
-    execute format('revoke execute on function %s from anon', r.sig);
+    execute format('revoke execute on function %s from public, anon', r.sig);
+    execute format('grant execute on function %s to authenticated, service_role', r.sig);
     execute format('alter function %s set search_path = public', r.sig);
   end loop;
 end $$;
