@@ -54,7 +54,7 @@ const PROVIDER_META: Record<
     color: "text-blue-700",
     bgColor: "bg-blue-50 border-blue-200",
     iconBg: "bg-blue-100",
-    description: "Auto-create Zoom meetings for virtual ILT sessions.",
+    description: "Auto-create Zoom meetings for virtual webinars.",
     docsUrl: "https://marketplace.zoom.us/docs/guides/build/server-to-server-oauth-app",
     setupSteps: [
       "Go to the Zoom App Marketplace (marketplace.zoom.us)",
@@ -473,7 +473,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Video Conferencing Integrations</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Connect video conferencing providers to auto-create meetings for ILT sessions.
+          Connect video conferencing providers to auto-create meetings for webinars.
         </p>
       </div>
 

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Clock, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatDuration } from "@/utils/format";
-import OfflineDownload from "@/components/pwa/offline-download";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 
@@ -150,12 +149,6 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                           Completed {formatDate(course.completedAt)}
                         </span>
                       )}
-                      <OfflineDownload
-                        courseId={course.id}
-                        slug={course.slug}
-                        title={course.title}
-                        compact
-                      />
                     </div>
 
                     {/* Due date warning */}

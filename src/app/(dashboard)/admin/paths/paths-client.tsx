@@ -122,6 +122,13 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
 
   const toast = useToast();
 
+  // Total time is auto-calculated from the durations of the selected courses.
+  const totalDuration = formData.selectedCourseIds.reduce((sum, cid) => {
+    const avail = availableCourses.find((c) => c.id === cid);
+    const existing = editingPath?.courses.find((c) => c.id === cid);
+    return sum + (avail?.estimated_duration ?? existing?.duration ?? 0);
+  }, 0);
+
   const fetchAvailableCourses = useCallback(async () => {
     setLoadingCourses(true);
     try {
@@ -211,7 +218,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             title: formData.title,
             description: formData.description,
             status: formData.status,
-            estimated_duration: formData.estimated_duration || null,
+            estimated_duration: totalDuration,
             items,
           }),
         });
@@ -243,9 +250,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   title: formData.title,
                   description: formData.description,
                   status: formData.status,
-                  totalDuration:
-                    formData.estimated_duration ||
-                    selectedCourses.reduce((sum, c) => sum + c.duration, 0),
+                  totalDuration,
                   courseCount: selectedCourses.length,
                   courses: selectedCourses,
                 }
@@ -264,7 +269,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             slug: slugify(formData.title),
             description: formData.description,
             status: formData.status,
-            estimated_duration: formData.estimated_duration || null,
+            estimated_duration: totalDuration,
             items,
           }),
         });
@@ -295,9 +300,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             courseCount: selectedCourses.length,
             enrolled: 0,
             status: formData.status,
-            totalDuration:
-              formData.estimated_duration ||
-              selectedCourses.reduce((sum, c) => sum + c.duration, 0),
+            totalDuration,
             courses: selectedCourses,
           },
           ...prev,
@@ -601,15 +604,15 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Duration (minutes)</label>
-              <input
-                type="number"
-                min={0}
-                value={formData.estimated_duration || ''}
-                onChange={(e) => setFormData({ ...formData, estimated_duration: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                placeholder="0"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Time (auto-calculated)</label>
+              <div className="flex h-[38px] items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span>{totalDuration > 0 ? formatDuration(totalDuration) : '—'}</span>
+              </div>
+              <p className="mt-1 text-xs text-gray-400">
+                Sum of the {formData.selectedCourseIds.length} selected course
+                {formData.selectedCourseIds.length === 1 ? '' : 's'}.
+              </p>
             </div>
           </div>
 

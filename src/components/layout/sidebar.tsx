@@ -93,6 +93,18 @@ const navSections: NavSection[] = [
     roles: ["learner", "manager", "instructor", "admin", "super_admin"],
   },
   {
+    header: "INSTRUCTOR",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "My Bio", href: "/instructor/bio", icon: User },
+      { label: "Messages", href: "/learn/messages", icon: Mail },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
+    ],
+    roles: ["instructor", "admin", "super_admin"],
+    bgClass: "bg-gray-800/30",
+  },
+  {
     header: "Learning",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
@@ -152,10 +164,10 @@ const navSections: NavSection[] = [
       { label: "Users", href: "/admin/users", icon: UserCog },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap },
+      { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion },
       { label: "Certifications", href: "/admin/certifications", icon: Medal },
-      { label: "ILT Sessions", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
       { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],
     roles: ["admin", "super_admin"],

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import ContentEditor from "@/components/content-editor/content-editor";
+import ScormUpload from "@/components/course/scorm-upload";
 import { type ContentBlock } from "@/lib/content/block-editor";
 
 export const metadata: Metadata = {
@@ -39,7 +40,7 @@ export default async function ContentEditorPage({ params }: PageProps) {
   // Fetch lesson with its module and course info
   const { data: lesson } = await service
     .from("lessons")
-    .select("id, title, module_id")
+    .select("id, title, module_id, content_url, content_type")
     .eq("id", lessonId)
     .single();
 
@@ -92,12 +93,20 @@ export default async function ContentEditorPage({ params }: PageProps) {
     .eq("id", lessonId);
 
   return (
-    <ContentEditor
-      lessonId={lessonId}
-      initialBlocks={blocks}
-      lessonTitle={lesson.title}
-      courseTitle={course.title}
-      courseSlug={course.slug}
-    />
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-5xl px-6 pt-6">
+        <ScormUpload
+          lessonId={lessonId}
+          initialUrl={lesson.content_type === "scorm" ? lesson.content_url : null}
+        />
+      </div>
+      <ContentEditor
+        lessonId={lessonId}
+        initialBlocks={blocks}
+        lessonTitle={lesson.title}
+        courseTitle={course.title}
+        courseSlug={course.slug}
+      />
+    </div>
   );
 }

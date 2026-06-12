@@ -87,7 +87,7 @@ export async function PATCH(request: NextRequest) {
 
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const allowedFields = ["name", "category", "description"] as const;
+  const allowedFields = ["name", "category", "description", "tags"] as const;
   const updates: Record<string, unknown> = {};
   for (const field of allowedFields) {
     if (body[field] !== undefined) updates[field] = body[field];

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
+import AddToCalendar from "@/components/calendar/add-to-calendar";
 
 interface Goal {
   id: string;
@@ -874,6 +875,16 @@ export default function MentorshipDetailClient({
                     >
                       {session.status}
                     </span>
+                    {session.status === "scheduled" && session.scheduled_at && (
+                      <AddToCalendar
+                        title="Mentoring Session"
+                        startISO={session.scheduled_at}
+                        durationMinutes={session.duration_minutes ?? 30}
+                        description={session.meeting_url ? `Join meeting: ${session.meeting_url}` : undefined}
+                        location={session.meeting_url ?? undefined}
+                        icsHref={`/api/mentorship/sessions/${session.id}/calendar`}
+                      />
+                    )}
                     {session.status === "scheduled" && (
                       <>
                         <button

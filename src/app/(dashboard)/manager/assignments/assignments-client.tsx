@@ -46,10 +46,18 @@ export interface TeamMemberOption {
   name: string;
 }
 
+export interface PathOption {
+  id: string;
+  name: string;
+  duration: string;
+  courseCount: number;
+}
+
 interface AssignmentsClientProps {
   assignments: Assignment[];
   courses: Course[];
   teamMembers: TeamMemberOption[];
+  paths: PathOption[];
 }
 
 const priorityStyles: Record<string, string> = {
@@ -68,6 +76,7 @@ export default function AssignmentsClient({
   assignments,
   courses,
   teamMembers,
+  paths,
 }: AssignmentsClientProps) {
   const [localAssignments, setLocalAssignments] = useState<Assignment[]>(assignments);
   const [activeTab, setActiveTab] = useState<"active" | "completed" | "overdue">("active");
@@ -77,8 +86,11 @@ export default function AssignmentsClient({
   const [showBulkActions, setShowBulkActions] = useState(false);
 
   // Modal form state
+  const [assignType, setAssignType] = useState<"course" | "path">("course");
   const [courseSearch, setCourseSearch] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [pathSearch, setPathSearch] = useState("");
+  const [selectedPath, setSelectedPath] = useState<string>("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<string>("medium");
@@ -94,6 +106,10 @@ export default function AssignmentsClient({
 
   const filteredCourses = courses.filter((c) =>
     c.name.toLowerCase().includes(courseSearch.toLowerCase())
+  );
+
+  const filteredPaths = paths.filter((p) =>
+    p.name.toLowerCase().includes(pathSearch.toLowerCase())
   );
 
   const tabCounts = {
@@ -255,28 +271,33 @@ export default function AssignmentsClient({
 
   const resetModal = () => {
     setShowModal(false);
+    setAssignType("course");
     setCourseSearch("");
     setSelectedCourse("");
+    setPathSearch("");
+    setSelectedPath("");
     setSelectedMembers([]);
     setDueDate("");
     setPriority("medium");
     setNotes("");
   };
 
-  const handleAssignCourse = async () => {
-    if (!selectedCourse || selectedMembers.length === 0 || !dueDate) return;
+  const handleAssign = async () => {
+    const isPath = assignType === "path";
+    const selectedId = isPath ? selectedPath : selectedCourse;
+    if (!selectedId || selectedMembers.length === 0 || !dueDate) return;
     setAssigning(true);
     try {
       const results = await Promise.all(
         selectedMembers.map((userId) =>
-          fetch('/api/enrollments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              course_id: selectedCourse,
-              user_id: userId,
-              due_date: dueDate,
-            }),
+          fetch(isPath ? "/api/paths/enroll" : "/api/enrollments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              isPath
+                ? { path_id: selectedPath, user_id: userId, due_date: dueDate }
+                : { course_id: selectedCourse, user_id: userId, due_date: dueDate }
+            ),
           }).then(async (res) => {
             if (!res.ok) {
               const err = await res.json();
@@ -286,12 +307,14 @@ export default function AssignmentsClient({
           })
         )
       );
-      const courseName = courses.find((c) => c.id === selectedCourse)?.name || "Unknown Course";
+      const assignedName = isPath
+        ? `Path: ${paths.find((p) => p.id === selectedPath)?.name || "Learning Path"}`
+        : courses.find((c) => c.id === selectedCourse)?.name || "Unknown Course";
       const newAssignments: Assignment[] = selectedMembers.map((userId, idx) => {
         const member = teamMembers.find((m) => m.id === userId);
         return {
-          id: results[idx]?.id || crypto.randomUUID(),
-          courseName,
+          id: results[idx]?.id || results[idx]?.data?.id || crypto.randomUUID(),
+          courseName: assignedName,
           assignedTo: member?.name || userId,
           assignedToUserId: userId,
           assignedToAvatar: (member?.name || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
@@ -306,7 +329,7 @@ export default function AssignmentsClient({
       resetModal();
     } catch (error) {
       console.error('Assignment failed:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to assign course');
+      toast.error(error instanceof Error ? error.message : 'Failed to assign');
     } finally {
       setAssigning(false);
     }
@@ -606,19 +629,39 @@ export default function AssignmentsClient({
           <div role="dialog" aria-modal="true" aria-label="Assign Course" className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">
-                Assign Course
+                {assignType === "path" ? "Assign Learning Path" : "Assign Course"}
               </h2>
               <button
                 onClick={resetModal}
                 className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label="Close assign course dialog"
+                aria-label="Close assign dialog"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
             <div className="max-h-[70vh] overflow-y-auto px-6 py-4 space-y-5">
+              {/* What to assign: course or learning path */}
+              <div className="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
+                {(["course", "path"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setAssignType(t)}
+                    className={cn(
+                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      assignType === t
+                        ? "bg-white text-indigo-700 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    )}
+                  >
+                    {t === "course" ? "Course" : "Learning Path"}
+                  </button>
+                ))}
+              </div>
+
               {/* Select Course */}
+              {assignType === "course" && (
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Select Course
@@ -657,6 +700,59 @@ export default function AssignmentsClient({
                   ))}
                 </div>
               </div>
+              )}
+
+              {/* Select Learning Path */}
+              {assignType === "path" && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Select Learning Path
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search learning paths..."
+                    value={pathSearch}
+                    onChange={(e) => setPathSearch(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
+                  {filteredPaths.length === 0 ? (
+                    <p className="px-3 py-4 text-center text-sm text-gray-400">
+                      No published learning paths available.
+                    </p>
+                  ) : (
+                    filteredPaths.map((path) => (
+                      <button
+                        key={path.id}
+                        onClick={() => setSelectedPath(path.id)}
+                        className={cn(
+                          "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50",
+                          selectedPath === path.id && "bg-indigo-50 text-indigo-700"
+                        )}
+                      >
+                        <div>
+                          <p className="font-medium">{path.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {path.courseCount} course{path.courseCount === 1 ? "" : "s"}
+                            {path.duration && path.duration !== "—" ? ` - ${path.duration}` : ""}
+                          </p>
+                        </div>
+                        {selectedPath === path.id && (
+                          <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Assigning a path enrolls the member in the path and all of its
+                  courses.
+                </p>
+              </div>
+              )}
 
               {/* Select Team Members */}
               <div>
@@ -738,16 +834,28 @@ export default function AssignmentsClient({
                 Cancel
               </button>
               <button
-                onClick={handleAssignCourse}
-                disabled={!selectedCourse || selectedMembers.length === 0 || !dueDate || assigning}
+                onClick={handleAssign}
+                disabled={
+                  !(assignType === "path" ? selectedPath : selectedCourse) ||
+                  selectedMembers.length === 0 ||
+                  !dueDate ||
+                  assigning
+                }
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
-                  selectedCourse && selectedMembers.length > 0 && dueDate && !assigning
+                  (assignType === "path" ? selectedPath : selectedCourse) &&
+                    selectedMembers.length > 0 &&
+                    dueDate &&
+                    !assigning
                     ? "bg-indigo-600 hover:bg-indigo-700"
                     : "bg-indigo-300 cursor-not-allowed"
                 )}
               >
-                {assigning ? "Assigning..." : "Assign Course"}
+                {assigning
+                  ? "Assigning..."
+                  : assignType === "path"
+                    ? "Assign Path"
+                    : "Assign Course"}
               </button>
             </div>
           </div>

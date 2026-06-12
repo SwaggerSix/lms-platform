@@ -77,6 +77,9 @@ export interface PlayerProps {
   course: PlayerCourse;
   initialLessonId: string;
   enrollmentId: string | null;
+  /** Where the close (X) button returns to — e.g. the learning path the
+   *  learner launched the course from. Defaults to My Courses. */
+  backHref?: string;
 }
 
 function sanitizeHTML(html: string): string {
@@ -96,7 +99,7 @@ const lessonIcons = {
   quiz: HelpCircle,
 };
 
-export default function PlayerClient({ course, initialLessonId, enrollmentId }: PlayerProps) {
+export default function PlayerClient({ course, initialLessonId, enrollmentId, backHref = "/learn/my-courses" }: PlayerProps) {
   const [currentLessonId, setCurrentLessonId] = useState(initialLessonId);
   const [expandedModules, setExpandedModules] = useState<string[]>(
     course.modules.map((m) => m.id).slice(0, 2)
@@ -285,7 +288,8 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId }: 
       <div className="flex h-14 items-center justify-between border-b border-gray-700 bg-gray-800 px-4">
         <div className="flex items-center gap-3">
           <a
-            href="/learn/my-courses"
+            href={backHref}
+            aria-label="Close course"
             className="flex items-center justify-center rounded-lg p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white"
           >
             <X className="h-5 w-5" />

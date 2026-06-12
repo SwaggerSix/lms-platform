@@ -34,6 +34,7 @@ export default async function SkillsManagementPage() {
       category,
       description,
       parent_id,
+      tags,
       user_skills (
         proficiency_level
       ),
@@ -63,6 +64,7 @@ export default async function SkillsManagementPage() {
       usersCount,
       avgProficiency,
       parentId: s.parent_id || undefined,
+      tags: s.tags ?? [],
     };
   });
 

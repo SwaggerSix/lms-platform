@@ -149,12 +149,16 @@ export default async function CourseCatalogPage() {
   type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
   type Enrollment = { course_id: string; status: string; score: number | null };
 
+  const nowIso = new Date().toISOString();
   const dbCourses = (await safe(
     "courses",
     service
       .from("courses")
       .select("*, category:categories(name)")
       .eq("status", "published")
+      // Only courses currently within their availability window (NULL = unbounded).
+      .or(`available_from.is.null,available_from.lte.${nowIso}`)
+      .or(`available_until.is.null,available_until.gte.${nowIso}`)
       .order("created_at", { ascending: false })
       .limit(50)
   )) as DbCourse[] | null;

@@ -5,6 +5,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createPathSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
+/**
+ * Sum the durations (minutes) of the courses referenced by a path's items.
+ * This is the authoritative total time for a learning path — derived from its
+ * courses rather than entered by hand.
+ */
+async function computePathDuration(
+  service: ReturnType<typeof createServiceClient>,
+  items: Array<{ course_id?: string }> | undefined
+): Promise<number> {
+  const ids = (items ?? [])
+    .map((i) => i.course_id)
+    .filter((id): id is string => Boolean(id));
+  if (ids.length === 0) return 0;
+  const { data } = await service
+    .from("courses")
+    .select("estimated_duration")
+    .in("id", ids);
+  return (data ?? []).reduce(
+    (sum, c) => sum + (c.estimated_duration ?? 0),
+    0
+  );
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -57,6 +80,10 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient();
 
+  // Total time is always derived from the path's courses, never trusted from
+  // the client.
+  pathData.estimated_duration = await computePathDuration(service, items);
+
   const { data: path, error } = await service
     .from("learning_paths")
     .insert(pathData)
@@ -103,6 +130,11 @@ export async function PATCH(request: NextRequest) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
   const service = createServiceClient();
+
+  // When the set of courses changes, recompute the authoritative total time.
+  if (items?.length) {
+    updates.estimated_duration = await computePathDuration(service, items);
+  }
 
   const { data, error } = await service
     .from("learning_paths")

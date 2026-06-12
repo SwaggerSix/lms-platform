@@ -7,7 +7,7 @@ import type { LearnerSession } from "./ilt-sessions-client";
 
 export const metadata: Metadata = {
   title: "Live Sessions | LMS Platform",
-  description: "Browse and register for instructor-led training sessions",
+  description: "Browse and register for webinars and open learning events",
 };
 
 export default async function LearnerILTSessionsPage() {
@@ -26,7 +26,7 @@ export default async function LearnerILTSessionsPage() {
   const service = createServiceClient();
   const { data: profile } = await service
     .from("users")
-    .select("id")
+    .select("id, timezone, preferences")
     .eq("auth_id", authUser.id)
     .single();
 
@@ -35,12 +35,16 @@ export default async function LearnerILTSessionsPage() {
   }
 
   const userId = profile.id;
+  const userTimeZone =
+    profile.timezone ??
+    (profile.preferences as { timezone?: string } | null)?.timezone ??
+    null;
 
   // Fetch all ILT sessions with course and instructor joins
   const { data: rawSessions, error } = await service
     .from("ilt_sessions")
     .select(
-      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, meeting_url, meeting_provider, meeting_password, max_capacity, status, course:courses(title), instructor:users!ilt_sessions_instructor_id_fkey(first_name, last_name)"
+      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, meeting_url, meeting_provider, meeting_password, max_capacity, status, course:courses(title), instructor:users!ilt_sessions_instructor_id_fkey(first_name, last_name, bio)"
     )
     .in("status", ["scheduled", "in_progress", "completed"])
     .order("session_date", { ascending: true });
@@ -106,6 +110,7 @@ export default async function LearnerILTSessionsPage() {
       course_title: course?.title ?? "Untitled Course",
       session_title: s.title,
       instructor_name: instructor ? `${instructor.first_name} ${instructor.last_name}` : "Unknown Instructor",
+      instructor_bio: instructor?.bio ?? "",
       session_date: s.session_date,
       start_time: s.start_time,
       end_time: s.end_time,
@@ -124,5 +129,5 @@ export default async function LearnerILTSessionsPage() {
     };
   });
 
-  return <ILTSessionsClient sessions={sessions} />;
+  return <ILTSessionsClient sessions={sessions} userTimeZone={userTimeZone} />;
 }

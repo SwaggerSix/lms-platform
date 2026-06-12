@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
-import { formatNumber, formatPercent, formatDuration } from '@/utils/format';
+import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -30,11 +30,14 @@ import {
   X,
   AlertTriangle,
   Sparkles,
+  FolderOpen,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export interface CourseItem {
   id: string;
   title: string;
+  slug: string;
   status: 'published' | 'draft' | 'archived';
   type: 'self-paced' | 'instructor-led' | 'blended';
   category: string;
@@ -44,6 +47,11 @@ export interface CourseItem {
   completionRate: number;
   duration: number;
   thumbnail: string;
+  /** Availability window for client licensing (ISO strings; null = unbounded). */
+  availableFrom: string | null;
+  availableUntil: string | null;
+  /** Last time the course/courseware was updated (ISO). */
+  updatedAt: string | null;
 }
 
 export interface CategoryOption {
@@ -110,7 +118,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   const handleEdit = useCallback((course: CourseItem) => {
     setOpenMenu(null);
     setEditModal(course);
-    setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty });
+    setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty, availableFrom: course.availableFrom ? course.availableFrom.slice(0, 10) : null, availableUntil: course.availableUntil ? course.availableUntil.slice(0, 10) : null });
   }, []);
 
   const handleEditSubmit = useCallback(async () => {
@@ -124,6 +132,18 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       if (editForm.type !== undefined) payload.course_type = TYPE_TO_DB[editForm.type];
       if (editForm.difficulty !== undefined) payload.difficulty_level = editForm.difficulty;
       if (editForm.categoryId) payload.category_id = editForm.categoryId;
+      // Availability window. Empty = unbounded (null). "from" starts at the
+      // beginning of the day; "until" runs through the end of the day.
+      if (editForm.availableFrom !== undefined) {
+        payload.available_from = editForm.availableFrom
+          ? `${editForm.availableFrom}T00:00:00.000Z`
+          : null;
+      }
+      if (editForm.availableUntil !== undefined) {
+        payload.available_until = editForm.availableUntil
+          ? `${editForm.availableUntil}T23:59:59.999Z`
+          : null;
+      }
 
       const res = await fetch('/api/courses', {
         method: 'PATCH',
@@ -172,6 +192,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       const mappedCourse: CourseItem = {
         id: newCourse.id,
         title: newCourse.title || `${course.title} (Copy)`,
+        slug: newCourse.slug || course.slug,
         status: 'draft',
         type: course.type,
         category: course.category,
@@ -181,6 +202,9 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         completionRate: 0,
         duration: course.duration,
         thumbnail: course.thumbnail,
+        availableFrom: null,
+        availableUntil: null,
+        updatedAt: new Date().toISOString(),
       };
       setCourses((prev) => [mappedCourse, ...prev]);
     } catch (err) {
@@ -375,6 +399,9 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#4f46e5' }} />
                   </div>
                 </div>
+                {course.updatedAt && (
+                  <p className="mt-2 text-[11px] text-gray-400">Last updated on {formatDate(course.updatedAt)}</p>
+                )}
               </div>
               <div className="border-t border-gray-100 px-4 py-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
@@ -447,7 +474,12 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                       <span className="text-xs text-gray-500">{formatPercent(course.completionRate)}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatDuration(course.duration)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div>{formatDuration(course.duration)}</div>
+                    {course.updatedAt && (
+                      <div className="mt-0.5 text-xs text-gray-400">Updated {formatDate(course.updatedAt)}</div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div className="relative inline-block">
                       <button onClick={() => setOpenMenu(openMenu === course.id ? null : course.id)} aria-label="Course actions" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
@@ -462,6 +494,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                           <button onClick={() => handleArchive(course)} disabled={!!loadingAction || course.status === 'archived'} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                             {isLoading(course.id, 'archive') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />} Archive
                           </button>
+                          <Link href={`/admin/courses/${course.slug}/resources`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FolderOpen className="h-3.5 w-3.5" /> Course Content</Link>
                           <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><BarChart3 className="h-3.5 w-3.5" /> Analytics</button>
                         </div>
                       )}
@@ -548,6 +581,57 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Availability window (client licensing) */}
+              <div className="border-t border-gray-100 pt-4">
+                <h3 className="text-sm font-semibold text-gray-900">Availability</h3>
+                <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={!editForm.availableUntil}
+                    onChange={(e) =>
+                      setEditForm((f) => ({
+                        ...f,
+                        availableUntil: e.target.checked
+                          ? null
+                          : new Date().toISOString().slice(0, 10),
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  Available forever (no end date)
+                </label>
+                <p className="mt-1 text-xs text-gray-500">
+                  Uncheck to set a licensing window. Outside this window the course
+                  is hidden from learners and access is blocked.
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-course-available-from" className="block text-sm font-medium text-gray-700 mb-1">Available from</label>
+                    <input
+                      id="edit-course-available-from"
+                      type="date"
+                      value={editForm.availableFrom || ''}
+                      onChange={(e) => setEditForm((f) => ({ ...f, availableFrom: e.target.value || null }))}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    />
+                    <p className="mt-1 text-xs text-gray-400">Blank = available now.</p>
+                  </div>
+                  {!!editForm.availableUntil && (
+                    <div>
+                      <label htmlFor="edit-course-available-until" className="block text-sm font-medium text-gray-700 mb-1">Available until</label>
+                      <input
+                        id="edit-course-available-until"
+                        type="date"
+                        value={editForm.availableUntil || ''}
+                        onChange={(e) => setEditForm((f) => ({ ...f, availableUntil: e.target.value || null }))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      />
+                      <p className="mt-1 text-xs text-gray-400">Access is cut after this day.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

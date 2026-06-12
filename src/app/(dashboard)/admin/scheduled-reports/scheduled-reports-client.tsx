@@ -61,7 +61,7 @@ const reportTypeConfig: Record<string, { label: string; color: string; bg: strin
   skills_gap: { label: "Skills Gap", color: "text-purple-700", bg: "bg-purple-100" },
   engagement: { label: "Engagement", color: "text-orange-700", bg: "bg-orange-100" },
   learner_progress: { label: "Learner Progress", color: "text-teal-700", bg: "bg-teal-100" },
-  ilt_attendance: { label: "ILT Attendance", color: "text-rose-700", bg: "bg-rose-100" },
+  ilt_attendance: { label: "Webinar Attendance", color: "text-rose-700", bg: "bg-rose-100" },
   custom: { label: "Custom", color: "text-gray-700", bg: "bg-gray-100" },
 };
 
@@ -104,7 +104,7 @@ const reportTypes = [
   { value: "skills_gap", label: "Skills Gap" },
   { value: "engagement", label: "Engagement" },
   { value: "learner_progress", label: "Learner Progress" },
-  { value: "ilt_attendance", label: "ILT Attendance" },
+  { value: "ilt_attendance", label: "Webinar Attendance" },
   { value: "custom", label: "Custom" },
 ];
 
@@ -966,7 +966,8 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     >
                       <option value="all">All Roles</option>
-                      <option value="employee">Employee</option>
+                      <option value="instructor">Instructor</option>
+                      <option value="learner">Learner</option>
                       <option value="manager">Manager</option>
                       <option value="admin">Admin</option>
                     </select>

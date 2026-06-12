@@ -193,7 +193,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data, error } = await service
     .from("courses")
-    .update(updates)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
     .single();

@@ -31,10 +31,12 @@ export default async function LearnerDocumentsPage() {
     .select("*")
     .order("sort_order", { ascending: true });
 
-  // Fetch all documents ordered by most recently updated
+  // Org-wide documents (user_id IS NULL) plus this learner's own personal
+  // documents (e.g. course materials provisioned on enrollment).
   const { data: documentsData } = await service
     .from("documents")
     .select("*")
+    .or(`user_id.is.null,user_id.eq.${dbUser.id}`)
     .order("updated_at", { ascending: false });
 
   // Build folder list with document counts

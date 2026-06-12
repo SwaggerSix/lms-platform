@@ -86,10 +86,11 @@ export default async function DiscussionsPage() {
       id,
       title,
       body,
+      topic,
       upvotes,
       created_at,
       user:users!discussions_user_id_fkey(id, first_name, last_name),
-      course:courses!discussions_course_id_fkey(title)
+      course:courses!discussions_course_id_fkey(id, title)
     `
     )
     .is("parent_id", null)
@@ -149,7 +150,9 @@ export default async function DiscussionsPage() {
       author: `${authorFirst} ${authorLast}`.trim(),
       authorInitials: initials(authorFirst, authorLast),
       course: courseName,
+      courseId: t.course?.id ?? null,
       courseColor: courseColor(courseName),
+      topic: t.topic ?? null,
       timeAgo: timeAgo(t.created_at),
       replies: threadReplies.length,
       upvotes: t.upvotes ?? 0,
@@ -157,9 +160,22 @@ export default async function DiscussionsPage() {
     };
   });
 
+  // Published courses for the create form + course filter.
+  const { data: courseRows } = await service
+    .from("courses")
+    .select("id, title")
+    .eq("status", "published")
+    .order("title", { ascending: true });
+
+  const courseOptions = (courseRows ?? []).map((c: any) => ({
+    id: c.id,
+    title: c.title ?? "Untitled Course",
+  }));
+
   return (
     <DiscussionsClient
       threads={threads}
+      courseOptions={courseOptions}
       currentUserInitials={currentUserInitials}
       currentUserName={currentUserName}
     />

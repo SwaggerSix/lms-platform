@@ -640,8 +640,8 @@ export default function ILTSessionsClient({
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">ILT Session Management</h1>
-            <p className="mt-1 text-gray-500">Create, manage, and track instructor-led training sessions.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Webinars &amp; Open Learning Events</h1>
+            <p className="mt-1 text-gray-500">Post and manage webinars and open learning events — schedule, register attendees, and track attendance.</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}

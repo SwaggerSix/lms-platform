@@ -22,7 +22,16 @@ export async function GET(request: NextRequest) {
   const visibility = searchParams.get("visibility") as DocumentVisibility | null;
   const service = createServiceClient();
 
+  // Resolve the caller's internal id so personal documents only return to
+  // their owner (org-wide docs have user_id NULL).
+  const { data: caller } = await service
+    .from("users")
+    .select("id")
+    .eq("auth_id", user.id)
+    .single();
+
   let query = service.from("documents").select("*").order("updated_at", { ascending: false });
+  query = query.or(`user_id.is.null,user_id.eq.${caller?.id ?? "00000000-0000-0000-0000-000000000000"}`);
 
   if (folderId) {
     query = query.eq("folder_id", folderId);

@@ -53,13 +53,22 @@ function segmentLabel(segment: string): string {
   return segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Top-level route groups that have no index page — they organize sub-routes
+// but aren't themselves navigable, so their breadcrumb should not be a link.
+const NON_NAVIGABLE_HREFS = new Set(["/learn", "/manager", "/admin"]);
+
 function generateBreadcrumbs(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.map((segment, idx) => ({
-    label: segmentLabel(segment),
-    href: "/" + segments.slice(0, idx + 1).join("/"),
-    isLast: idx === segments.length - 1,
-  }));
+  return segments.map((segment, idx) => {
+    const href = "/" + segments.slice(0, idx + 1).join("/");
+    const isLast = idx === segments.length - 1;
+    return {
+      label: segmentLabel(segment),
+      href,
+      isLast,
+      clickable: !isLast && !NON_NAVIGABLE_HREFS.has(href),
+    };
+  });
 }
 
 interface HeaderProps {
@@ -186,17 +195,24 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 {idx > 0 && (
                   <ChevronRight className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />
                 )}
-                {crumb.isLast ? (
-                  <span className="font-medium text-gray-900" aria-current="page">
-                    {crumb.label}
-                  </span>
-                ) : (
+                {crumb.clickable ? (
                   <Link
                     href={crumb.href}
                     className="text-gray-500 hover:text-gray-700"
                   >
                     {crumb.label}
                   </Link>
+                ) : (
+                  <span
+                    className={
+                      crumb.isLast
+                        ? "font-medium text-gray-900"
+                        : "text-gray-500"
+                    }
+                    aria-current={crumb.isLast ? "page" : undefined}
+                  >
+                    {crumb.label}
+                  </span>
                 )}
               </li>
             ))}
