@@ -66,15 +66,14 @@ export async function POST(request: NextRequest) {
       }
       result = await gemsAdapter.testConnection(config as unknown as GemsConfig);
     } else if (provider === "sharepoint_rosters") {
-      const missing = (
-        [
-          "tenant_id",
-          "client_id",
-          "client_secret_encrypted",
-          "site_path",
-          "root_folder",
-        ] as const
-      ).filter((k) => !(config as Record<string, unknown>)[k]);
+      const cfg = config as Record<string, unknown>;
+      const required = ["tenant_id", "client_id", "site_path", "root_folder"];
+      if (cfg.auth_mode === "delegated") {
+        required.push("service_user_email", "service_user_password_encrypted");
+      } else {
+        required.push("client_secret_encrypted");
+      }
+      const missing = required.filter((k) => !cfg[k]);
       if (missing.length > 0) {
         return NextResponse.json({
           success: false,

@@ -101,8 +101,21 @@ const CREDENTIAL_FIELDS: Record<
   ],
   sharepoint_rosters: [
     { key: "tenant_id", label: "Azure AD Tenant ID", type: "text", placeholder: "30295520-84b7-447c-ba6d-3a2b11790cd4" },
-    { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Same SP as GEMS, with Graph Sites.Selected on the rosters site" },
-    { key: "client_secret_encrypted", label: "Client Secret", type: "password", placeholder: "Client secret from your IT" },
+    { key: "client_id", label: "Service Principal Client ID", type: "text", placeholder: "Same SP as GEMS" },
+    { key: "client_secret_encrypted", label: "Client Secret (App-only mode only)", type: "password", placeholder: "Leave blank for Delegated mode" },
+    {
+      key: "auth_mode",
+      label: "Auth Mode",
+      type: "select",
+      placeholder: "",
+      options: [
+        { value: "delegated", label: "Delegated (Service Account) — matches GEMS setup" },
+        { value: "app_only", label: "App-only (requires Sites.Selected Graph permission)" },
+      ],
+      help: "Use Delegated to reuse the same service account as GEMS. App-only requires IT to grant Graph Sites.Selected on the SharePoint site.",
+    },
+    { key: "service_user_email", label: "Service Account Email (Delegated mode only)", type: "text", placeholder: "svc_gemslms@gothamgovernment.com" },
+    { key: "service_user_password_encrypted", label: "Service Account Password (Delegated mode only)", type: "password", placeholder: "Same password as GEMS" },
     { key: "site_path", label: "SharePoint Site Path", type: "text", placeholder: "alishq.sharepoint.com:/sites/AMCIFileShare" },
     { key: "root_folder", label: "Root Folder", type: "text", placeholder: "_Courses" },
     { key: "archive_folder", label: "Archive Subfolder (optional)", type: "text", placeholder: "_Archive" },

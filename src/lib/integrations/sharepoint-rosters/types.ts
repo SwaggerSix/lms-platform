@@ -16,8 +16,19 @@ export interface SharePointRostersConfig {
   tenant_id: string;
   /** App registration client id (the same SP used for GEMS, with Graph permissions). */
   client_id: string;
-  /** Client secret (encrypted at rest). */
-  client_secret_encrypted: string;
+  /** Client secret (required for app_only mode; ignored in delegated mode). */
+  client_secret_encrypted?: string;
+  /**
+   * Auth mode. Defaults to "app_only" (client-credentials with Sites.Selected).
+   * Use "delegated" to authenticate as a service account user via ROPC; this
+   * mirrors the GEMS integration's pattern when the LMS app registration is
+   * public-client and only delegated Graph permissions are available.
+   */
+  auth_mode?: "app_only" | "delegated";
+  /** Delegated mode only: email/UPN of the designated service account user. */
+  service_user_email?: string;
+  /** Delegated mode only: password for the service account user (encrypted at rest). */
+  service_user_password_encrypted?: string;
   /**
    * SharePoint site host + path, e.g. "alishq.sharepoint.com:/sites/AMCIFileShare".
    * Used to resolve the site id via Microsoft Graph.
