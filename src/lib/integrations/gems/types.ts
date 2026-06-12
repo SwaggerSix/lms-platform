@@ -75,7 +75,9 @@ export interface GemsCustomer {
 
 export interface GemsInstructor {
   instructorId: number;
-  fullName: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
 }
 
