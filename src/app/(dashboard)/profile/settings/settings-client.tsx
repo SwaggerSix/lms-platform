@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
+import { TwoFactorCard } from "@/components/security/two-factor-card";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 
 /* ------------------------------------------------------------------ */
@@ -532,15 +533,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </div>
               </div>
 
-              {/* Two-Factor Authentication — backend support is not built yet,
-                  so don't show a button that implies it works. */}
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h2>
-                <p className="mt-1 text-sm text-gray-500">Add an extra layer of security to your account.</p>
-                <div className="mt-4 flex items-center gap-4">
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">Coming soon</span>
-                </div>
-              </div>
+              {/* Two-Factor Authentication */}
+              <TwoFactorCard />
             </div>
           )}
 

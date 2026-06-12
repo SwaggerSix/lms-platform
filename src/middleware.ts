@@ -187,6 +187,40 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(path)
   );
 
+  // Two-factor enforcement: a session whose user has a verified TOTP factor
+  // but which only completed password sign-in (aal1) may not use the app
+  // until the second factor is verified. API routes reject instead of
+  // redirect so the gate can't be bypassed by calling endpoints directly.
+  // getAuthenticatorAssuranceLevel reads the local session (no network call).
+  if (user) {
+    const { data: aal } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const mfaPending =
+      aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2";
+
+    if (mfaPending) {
+      if (pathname.startsWith("/api/") && !isPublicPath) {
+        return NextResponse.json(
+          { error: "Two-factor verification required" },
+          { status: 401 }
+        );
+      }
+      if (!pathname.startsWith("/api/") && pathname !== "/verify-2fa") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/verify-2fa";
+        return NextResponse.redirect(url);
+      }
+      if (pathname === "/verify-2fa") {
+        return finalize(supabaseResponse);
+      }
+    } else if (pathname === "/verify-2fa") {
+      // Fully verified (or no 2FA enabled) — nothing to do here.
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Redirect unauthenticated users to login
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();

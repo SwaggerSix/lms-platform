@@ -46,6 +46,15 @@ export default function LoginPage() {
         refresh_token: data.refresh_token,
       });
 
+      // Accounts with two-factor authentication enabled sign in at aal1 and
+      // must verify their authenticator code before reaching the app.
+      const { data: aal } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+        router.push("/verify-2fa");
+        return;
+      }
+
       router.push("/dashboard");
     } catch {
       setError("An unexpected error occurred. Please try again.");
