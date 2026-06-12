@@ -63,6 +63,10 @@ export function normalizeEvent(raw: GemsTrainingEvent): GemsEvent | null {
     max_capacity: course?.max || undefined,
     status: mapStatus(raw.courseStatus),
     instructor_email: raw.instructor?.email || undefined,
+    instructor_name:
+      raw.instructor?.fullName ||
+      [raw.instructor?.firstName, raw.instructor?.lastName].filter(Boolean).join(" ") ||
+      undefined,
     course_name: course?.productDescription || undefined,
     course_code: course?.productCode || undefined,
     enrolled_count: raw.noOfStudents || undefined,

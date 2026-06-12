@@ -147,6 +147,8 @@ export interface GemsEvent {
   max_capacity?: number;
   status?: "scheduled" | "in_progress" | "completed" | "cancelled";
   instructor_email?: string;
+  /** Instructor's display name from GEMS, used when no matching LMS user exists. */
+  instructor_name?: string;
   /** Course title — matched against LMS courses. */
   course_name?: string;
   /** GEMS course catalog code. */

@@ -31,7 +31,7 @@ export default async function IltSessionsLogPage() {
   const { data: rows } = await service
     .from("ilt_sessions")
     .select(
-      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, status, max_capacity, external_source, external_id, external_synced_at, course:courses(id, title, slug, metadata), instructor:users!ilt_sessions_instructor_id_fkey(id, first_name, last_name, email)"
+      "id, title, description, session_date, start_time, end_time, timezone, location_type, location_details, status, max_capacity, external_source, external_id, external_synced_at, instructor_name, instructor_email, course:courses(id, title, slug, metadata), instructor:users!ilt_sessions_instructor_id_fkey(id, first_name, last_name, email)"
     )
     .order("session_date", { ascending: false })
     .limit(500);
@@ -53,10 +53,13 @@ export default async function IltSessionsLogPage() {
     external_synced_at: r.external_synced_at ?? null,
     course_title: r.course?.title ?? null,
     course_code: (r.course?.metadata?.gems_course_code as string | undefined) ?? null,
-    instructor_name: r.instructor
-      ? `${r.instructor.first_name ?? ""} ${r.instructor.last_name ?? ""}`.trim() || null
-      : null,
-    instructor_email: r.instructor?.email ?? null,
+    instructor_name:
+      (r.instructor
+        ? `${r.instructor.first_name ?? ""} ${r.instructor.last_name ?? ""}`.trim()
+        : null) ||
+      r.instructor_name ||
+      null,
+    instructor_email: r.instructor?.email ?? r.instructor_email ?? null,
   }));
 
   return <IltSessionsLogClient initialSessions={sessions} />;
