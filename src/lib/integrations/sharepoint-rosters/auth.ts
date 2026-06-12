@@ -4,6 +4,7 @@ import {
   type Configuration,
 } from "@azure/msal-node";
 import type { SharePointRostersConfig } from "./types";
+import { decryptIfEncrypted } from "@/lib/security/secret-crypto";
 
 // ─────────────────────────────────────────────────────────────────
 // Microsoft Graph auth for the SharePoint roster integration.
@@ -43,7 +44,7 @@ function getConfidentialClient(config: SharePointRostersConfig): ConfidentialCli
       auth: {
         clientId: config.client_id,
         authority: `https://login.microsoftonline.com/${config.tenant_id}`,
-        clientSecret: config.client_secret_encrypted,
+        clientSecret: decryptIfEncrypted(config.client_secret_encrypted ?? ""),
       },
     };
     client = new ConfidentialClientApplication(msalConfig);
@@ -80,7 +81,7 @@ export async function getGraphAccessToken(config: SharePointRostersConfig): Prom
     result = await client.acquireTokenByUsernamePassword({
       scopes: [DELEGATED_SCOPE],
       username: config.service_user_email,
-      password: config.service_user_password_encrypted,
+      password: decryptIfEncrypted(config.service_user_password_encrypted),
     });
   } else {
     const client = getConfidentialClient(config);

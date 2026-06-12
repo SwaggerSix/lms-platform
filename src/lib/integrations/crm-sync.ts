@@ -1,4 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { assertSafeExternalUrl } from "@/lib/security/url-guard";
+import { decryptConfigSecrets } from "@/lib/security/secret-crypto";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -68,6 +70,7 @@ export class SalesforceAdapter implements CRMAdapter {
   async testConnection(config: IntegrationConfig): Promise<{ success: boolean; message: string }> {
     try {
       const instanceUrl = config.instance_url || config.base_url;
+    if (instanceUrl) assertSafeExternalUrl(instanceUrl);
       if (!instanceUrl) return { success: false, message: "Instance URL is required" };
 
       const response = await fetch(`${instanceUrl}/services/data/v59.0/`, {
@@ -88,6 +91,7 @@ export class SalesforceAdapter implements CRMAdapter {
 
   async fetchContacts(config: IntegrationConfig, limit = 500): Promise<CRMContact[]> {
     const instanceUrl = config.instance_url || config.base_url;
+    if (instanceUrl) assertSafeExternalUrl(instanceUrl);
     if (!instanceUrl) throw new Error("Instance URL is required for Salesforce");
 
     const query = encodeURIComponent(
@@ -122,6 +126,7 @@ export class SalesforceAdapter implements CRMAdapter {
 
   async fetchDeals(config: IntegrationConfig, limit = 200): Promise<CRMDeal[]> {
     const instanceUrl = config.instance_url || config.base_url;
+    if (instanceUrl) assertSafeExternalUrl(instanceUrl);
     if (!instanceUrl) throw new Error("Instance URL is required for Salesforce");
 
     const query = encodeURIComponent(
@@ -155,6 +160,7 @@ export class SalesforceAdapter implements CRMAdapter {
 
   async pushTrainingData(config: IntegrationConfig, data: TrainingDataPayload): Promise<{ success: boolean }> {
     const instanceUrl = config.instance_url || config.base_url;
+    if (instanceUrl) assertSafeExternalUrl(instanceUrl);
     if (!instanceUrl) throw new Error("Instance URL is required for Salesforce");
 
     // Push training data as a custom object or Task in Salesforce
@@ -329,6 +335,7 @@ export class CRMSync {
       return { success: false, message: "Integration not found" };
     }
 
+    integration.config = decryptConfigSecrets(integration.config as Record<string, unknown>);
     const adapter = this.getAdapter(integration.provider);
     return adapter.testConnection(integration.config as IntegrationConfig);
   }
@@ -343,6 +350,8 @@ export class CRMSync {
     if (intError || !integration) {
       throw new Error("Integration not found");
     }
+
+    integration.config = decryptConfigSecrets(integration.config as Record<string, unknown>);
 
     // Create sync log
     const { data: syncLog } = await this.supabase

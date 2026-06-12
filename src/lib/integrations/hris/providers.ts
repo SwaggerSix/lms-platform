@@ -8,6 +8,8 @@
  * simpler, config-driven interface for new provider implementations.
  */
 
+import { assertSafeExternalUrl } from "@/lib/security/url-guard";
+
 // ─── Types ───────────────────────────────────────────────────────
 
 export interface HRISProvider {
@@ -101,7 +103,10 @@ export class BambooHRProvider implements HRISProvider {
   }
 
   private getBaseUrl(config: HRISConfig): string {
-    if (config.api_url) return config.api_url;
+    if (config.api_url) {
+      assertSafeExternalUrl(config.api_url);
+      return config.api_url;
+    }
     const domain = config.company_domain;
     if (!domain) throw new Error("BambooHR requires api_url or company_domain");
     return `https://api.bamboohr.com/api/gateway.php/${domain}`;
@@ -147,6 +152,7 @@ export class GenericRESTProvider implements HRISProvider {
       if (!config.api_url) {
         return { success: false, message: "api_url is required" };
       }
+      assertSafeExternalUrl(config.api_url);
 
       const response = await fetch(config.api_url, {
         method: "GET",
@@ -173,6 +179,7 @@ export class GenericRESTProvider implements HRISProvider {
     if (!config.api_url) {
       throw new Error("api_url is required for Generic REST provider");
     }
+    assertSafeExternalUrl(config.api_url);
 
     const response = await fetch(config.api_url, {
       method: "GET",

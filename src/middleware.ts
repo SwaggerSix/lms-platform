@@ -54,16 +54,40 @@ export async function middleware(request: NextRequest) {
     if (!isExempt) {
       const origin = request.headers.get("origin");
       const referer = request.headers.get("referer");
-      const allowedOrigins = [
-        process.env.NEXT_PUBLIC_APP_URL,
-        "https://learn.gothamgovernment.com",
-        "https://learn.gothamculture.com",
-      ].filter(Boolean) as string[];
+      const allowedOrigins = new Set(
+        [
+          process.env.NEXT_PUBLIC_APP_URL,
+          "https://learn.gothamgovernment.com",
+          "https://learn.gothamculture.com",
+          // Same-host requests (covers Vercel preview URLs and local dev)
+          `${request.nextUrl.protocol}//${request.headers.get("host")}`,
+        ]
+          .filter(Boolean)
+          .map((o) => {
+            try {
+              return new URL(o as string).origin;
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean) as string[]
+      );
+
+      // Exact-origin comparison; startsWith would let
+      // https://learn.gothamculture.com.evil.com through.
+      const matchesAllowed = (value: string | null) => {
+        if (!value) return false;
+        try {
+          return allowedOrigins.has(new URL(value).origin);
+        } catch {
+          return false;
+        }
+      };
 
       // Block if origin is present and doesn't match any allowed origin
-      if (origin && !allowedOrigins.some((ao) => origin.startsWith(ao))) {
+      if (origin && !matchesAllowed(origin)) {
         // Check referer as fallback
-        if (!referer || !allowedOrigins.some((ao) => referer.startsWith(ao))) {
+        if (!matchesAllowed(referer)) {
           return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
       }

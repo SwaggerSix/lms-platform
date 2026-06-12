@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { decryptConfigSecrets } from "@/lib/security/secret-crypto";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -352,6 +353,7 @@ export class HRISSync {
       return { success: false, message: "Integration not found" };
     }
 
+    integration.config = decryptConfigSecrets(integration.config as Record<string, unknown>);
     const adapter = this.getAdapter(integration.provider);
     return adapter.testConnection(integration.config as IntegrationConfig);
   }
@@ -366,6 +368,8 @@ export class HRISSync {
     if (intError || !integration) {
       throw new Error("Integration not found");
     }
+
+    integration.config = decryptConfigSecrets(integration.config as Record<string, unknown>);
 
     // Create sync log entry
     const { data: syncLog } = await this.supabase

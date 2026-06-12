@@ -118,14 +118,18 @@ export function getTemplateVariables(): TemplateVariable[] {
  */
 export function generateVerificationCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded I, O, 0, 1 to avoid confusion
-  const generateGroup = () => {
+  // Cryptographically secure randomness — these codes are bearer credentials
+  // for public certificate verification, so they must not be guessable.
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const groups: string[] = [];
+  for (let g = 0; g < 3; g++) {
     let group = "";
     for (let i = 0; i < 4; i++) {
-      group += chars.charAt(Math.floor(Math.random() * chars.length));
+      group += chars.charAt(bytes[g * 4 + i] % chars.length);
     }
-    return group;
-  };
-  return `LMS-${generateGroup()}-${generateGroup()}-${generateGroup()}`;
+    groups.push(group);
+  }
+  return `LMS-${groups.join("-")}`;
 }
 
 /**
