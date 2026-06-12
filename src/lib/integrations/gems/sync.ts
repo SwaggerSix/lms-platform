@@ -245,6 +245,8 @@ async function upsertSession(
     meeting_url: event.meeting_url ?? null,
     max_capacity: event.max_capacity ?? 30,
     status: event.status ?? "scheduled",
+    instructor_name: event.instructor_name ?? null,
+    instructor_email: event.instructor_email ?? null,
     external_source: EXTERNAL_SOURCE,
     external_id: event.external_id,
     external_integration_id: integrationId,
