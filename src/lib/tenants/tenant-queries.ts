@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { resolveEnabledFeatures } from "@/lib/features/resolve";
 import { NextRequest } from "next/server";
 
 export interface TenantScope {
@@ -93,35 +94,16 @@ export async function getTenantScope(
 
 /**
  * Check if a feature is enabled for a tenant.
- * Falls back to platform_settings if no tenant or no tenant override.
+ *
+ * Precedence: tenant override → platform_settings → catalog default → true.
+ * Delegates to the shared resolver so the map/array normalization and default
+ * handling stay consistent with middleware enforcement and the admin UIs.
  */
 export async function isFeatureEnabled(
   tenantId: string | null,
   feature: string
 ): Promise<boolean> {
   const service = createServiceClient();
-
-  // Check tenant-level override first
-  if (tenantId) {
-    const { data: tenant } = await service
-      .from("tenants")
-      .select("features")
-      .eq("id", tenantId)
-      .single();
-
-    const tenantFeatures = tenant?.features as Record<string, boolean> | null;
-    if (tenantFeatures && feature in tenantFeatures) {
-      return tenantFeatures[feature];
-    }
-  }
-
-  // Fall back to platform settings
-  const { data: settings } = await service
-    .from("platform_settings")
-    .select("value")
-    .eq("key", "features")
-    .single();
-
-  const platformFeatures = settings?.value as Record<string, boolean> | null;
-  return platformFeatures?.[feature] ?? true;
+  const enabled = await resolveEnabledFeatures(service, tenantId);
+  return enabled[feature] ?? true;
 }

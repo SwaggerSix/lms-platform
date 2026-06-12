@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { isSuperAdminOnlyPath } from "@/lib/auth/roles";
+import { getFeatureForPath } from "@/lib/features/routes";
+import { resolveEnabledFeatures } from "@/lib/features/resolve";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -220,6 +222,53 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
+    }
+  }
+
+  // Per-tenant feature gating: block routes whose feature is disabled for the
+  // requesting user's tenant. Platform admins are never gated. Page requests
+  // are redirected to the dashboard; API requests get a 403.
+  const gatedFeature = user ? getFeatureForPath(pathname) : null;
+  if (user && gatedFeature) {
+    const serviceClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    const { data: profile } = await serviceClient
+      .from("users")
+      .select("id, role")
+      .eq("auth_id", user.id)
+      .single();
+
+    // Platform admins see everything regardless of tenant feature flags.
+    if (profile && profile.role !== "admin" && profile.role !== "super_admin") {
+      const { data: membership } = await serviceClient
+        .from("tenant_memberships")
+        .select("tenant_id")
+        .eq("user_id", profile.id)
+        .limit(1)
+        .single();
+
+      const enabled = await resolveEnabledFeatures(
+        serviceClient,
+        membership?.tenant_id ?? null
+      );
+
+      if (enabled[gatedFeature] === false) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            { error: "This feature is not enabled for your account." },
+            { status: 403 }
+          );
+        }
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard";
+        url.search = "";
+        url.searchParams.set("feature_disabled", gatedFeature);
+        return NextResponse.redirect(url);
+      }
     }
   }
 

@@ -255,17 +255,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       return next;
     });
 
-  // Load feature flags from platform settings
+  // Load the effective feature flags for the current user (resolved against
+  // their tenant, falling back to platform defaults).
   useEffect(() => {
     async function loadFeatures() {
       try {
-        const res = await fetch("/api/settings?key=features");
+        const res = await fetch("/api/features");
         if (res.ok) {
           const data = await res.json();
-          setEnabledFeatures(data.value || {});
+          setEnabledFeatures(data.features || {});
         }
       } catch {
-        // Default to all enabled if settings can't be loaded
+        // Default to all enabled if features can't be loaded
       }
     }
     loadFeatures();
