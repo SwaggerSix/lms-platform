@@ -2,6 +2,11 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateExternalIntegrationSchema } from "@/lib/validations";
+import {
+  encryptConfigSecrets,
+  maskConfigSecrets,
+  stripMaskedSecrets,
+} from "@/lib/security/secret-crypto";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("super_admin");
@@ -23,12 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // Mask sensitive fields
   const sanitized = {
     ...data,
-    config: {
-      ...data.config,
-      api_key_encrypted: (data.config as any)?.api_key_encrypted ? "••••••••" : undefined,
-      client_secret_encrypted: (data.config as any)?.client_secret_encrypted ? "••••••••" : undefined,
-      access_token: (data.config as any)?.access_token ? "••••••••" : undefined,
-    },
+    config: maskConfigSecrets(data.config as Record<string, unknown>),
   };
 
   return NextResponse.json({ integration: sanitized });
@@ -47,6 +47,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   // If config is being updated, merge with existing config to preserve encrypted fields
   if (validation.data.config) {
+    // Drop round-tripped "••••••••" placeholders so they never overwrite the
+    // stored secrets, then encrypt any newly supplied secret values.
+    validation.data.config = encryptConfigSecrets(stripMaskedSecrets(validation.data.config));
+
     const { data: existing } = await service
       .from("external_integrations")
       .select("config")
@@ -70,7 +74,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Failed to update integration" }, { status: 500 });
   }
 
-  return NextResponse.json({ integration: data });
+  return NextResponse.json({
+    integration: { ...data, config: maskConfigSecrets(data.config as Record<string, unknown>) },
+  });
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

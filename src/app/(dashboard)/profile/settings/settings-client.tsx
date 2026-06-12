@@ -531,15 +531,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </div>
               </div>
 
-              {/* Two-Factor Authentication */}
+              {/* Two-Factor Authentication — backend support is not built yet,
+                  so don't show a button that implies it works. */}
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h2>
                 <p className="mt-1 text-sm text-gray-500">Add an extra layer of security to your account.</p>
                 <div className="mt-4 flex items-center gap-4">
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700">Not enabled</span>
-                  <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                    Enable 2FA
-                  </button>
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">Coming soon</span>
                 </div>
               </div>
             </div>

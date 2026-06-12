@@ -6,6 +6,8 @@
  * catalogs into the LMS marketplace_courses table.
  */
 
+import { assertSafeExternalUrl } from "@/lib/security/url-guard";
+
 // ─── Types ───────────────────────────────────────────────────────
 
 export interface MarketplaceProvider {
@@ -313,6 +315,7 @@ export class GenericSCORMProvider implements MarketplaceProvider {
       if (!url) {
         return { success: false, message: "manifest_url or api_url is required" };
       }
+      assertSafeExternalUrl(url);
 
       const response = await fetch(url, {
         headers: config.api_key ? { Authorization: `Bearer ${config.api_key}` } : {},
@@ -337,6 +340,7 @@ export class GenericSCORMProvider implements MarketplaceProvider {
   async fetchCatalog(config: ProviderConfig): Promise<ExternalCourse[]> {
     const url = config.manifest_url || config.api_url;
     if (!url) throw new Error("manifest_url or api_url is required for SCORM provider");
+    assertSafeExternalUrl(url);
 
     const response = await fetch(url, {
       headers: config.api_key ? { Authorization: `Bearer ${config.api_key}` } : {},

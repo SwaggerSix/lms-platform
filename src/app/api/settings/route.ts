@@ -4,6 +4,11 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
 
+// Settings keys that any authenticated user may read. Everything else in
+// platform_settings (webhook URLs, integration configs with secrets, etc.)
+// requires admin.
+const PUBLIC_SETTINGS_KEYS = new Set(["features"]);
+
 export async function GET(request: NextRequest) {
   // Feature flags are readable by any authenticated user (needed for sidebar)
   const supabase = await createClient();
@@ -16,6 +21,11 @@ export async function GET(request: NextRequest) {
   const service = createServiceClient();
 
   if (key) {
+    if (!PUBLIC_SETTINGS_KEYS.has(key)) {
+      const auth = await authorize("admin");
+      if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
     const { data, error } = await service
       .from("platform_settings")
       .select("key, value")

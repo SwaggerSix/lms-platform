@@ -29,6 +29,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Cycle not found" }, { status: 404 });
   }
 
+  // Admins/managers see the full cycle. Other users must be a participant,
+  // and only see their own nominations — not everyone else's reviewers.
+  if (!["admin", "super_admin", "manager"].includes(auth.user.role)) {
+    const nominations = (data.nominations ?? []) as Array<{
+      subject_id?: string;
+      reviewer_id?: string;
+    }>;
+    const mine = nominations.filter(
+      (n) => n.subject_id === auth.user.id || n.reviewer_id === auth.user.id
+    );
+    if (mine.length === 0) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.json({ ...data, nominations: mine });
+  }
+
   return NextResponse.json(data);
 }
 

@@ -29,6 +29,19 @@ export async function GET(request: NextRequest) {
     .select("*")
     .order("requested_at", { ascending: false });
 
+  // Managers only see approvals they're the approver for, or that belong to
+  // their direct reports. Admins see everything.
+  if (auth.user.role === "manager") {
+    const { data: reports } = await service
+      .from("users")
+      .select("id")
+      .eq("manager_id", auth.user.id);
+    const reportIds = (reports ?? []).map((r) => r.id);
+    const scopes = [`approver_id.eq.${auth.user.id}`];
+    if (reportIds.length > 0) scopes.push(`learner_id.in.(${reportIds.join(",")})`);
+    query = query.or(scopes.join(","));
+  }
+
   if (status) {
     query = query.eq("status", status);
   }

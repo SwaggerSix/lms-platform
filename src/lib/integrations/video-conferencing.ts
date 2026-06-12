@@ -40,14 +40,16 @@ interface VCIntegration {
 // This uses AES-256-GCM with a key derived from an environment variable.
 
 const ENCRYPTION_KEY = process.env.VC_ENCRYPTION_KEY;
-if (!ENCRYPTION_KEY && process.env.NODE_ENV === "production") {
-  console.error("CRITICAL: VC_ENCRYPTION_KEY is not set. Video conferencing secrets will not be encrypted securely.");
-}
-const EFFECTIVE_ENCRYPTION_KEY = ENCRYPTION_KEY || "dev-only-key-not-for-production!!";
 
 function getEncryptionKey(): Buffer {
+  // Refuse to encrypt with a publicly-known key in production; the dev
+  // fallback exists only so local development works without configuration.
+  if (!ENCRYPTION_KEY && process.env.NODE_ENV === "production") {
+    throw new Error("VC_ENCRYPTION_KEY must be set in production");
+  }
+  const effectiveKey = ENCRYPTION_KEY || "dev-only-key-not-for-production!!";
   // Ensure we have a 32-byte key for AES-256
-  return crypto.createHash("sha256").update(EFFECTIVE_ENCRYPTION_KEY).digest();
+  return crypto.createHash("sha256").update(effectiveKey).digest();
 }
 
 export function encryptSecret(plaintext: string): string {

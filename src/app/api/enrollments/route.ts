@@ -26,6 +26,17 @@ export async function GET(request: NextRequest) {
   if (userId && userId !== profile.id && !["admin", "manager"].includes(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  // Managers may only query enrollments of their own direct reports.
+  if (userId && userId !== profile.id && profile.role === "manager") {
+    const { data: target } = await service
+      .from("users")
+      .select("manager_id")
+      .eq("id", userId)
+      .single();
+    if (!target || target.manager_id !== profile.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
   const status = searchParams.get("status");
   const courseId = searchParams.get("course_id");
 

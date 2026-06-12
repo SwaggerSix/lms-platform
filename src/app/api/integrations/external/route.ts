@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateBody, createExternalIntegrationSchema } from "@/lib/validations";
+import { encryptConfigSecrets, maskConfigSecrets } from "@/lib/security/secret-crypto";
 
 export async function GET(request: NextRequest) {
   const auth = await authorize("super_admin");
@@ -34,12 +35,7 @@ export async function GET(request: NextRequest) {
   // Strip sensitive config fields from response
   const sanitized = (data || []).map((item: any) => ({
     ...item,
-    config: {
-      ...item.config,
-      api_key_encrypted: item.config?.api_key_encrypted ? "••••••••" : undefined,
-      client_secret_encrypted: item.config?.client_secret_encrypted ? "••••••••" : undefined,
-      access_token: item.config?.access_token ? "••••••••" : undefined,
-    },
+    config: maskConfigSecrets(item.config),
   }));
 
   return NextResponse.json({ integrations: sanitized });
@@ -56,6 +52,10 @@ export async function POST(request: NextRequest) {
   const validation = validateBody(createExternalIntegrationSchema, body);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
 
+  if (validation.data.config) {
+    validation.data.config = encryptConfigSecrets(validation.data.config);
+  }
+
   const service = createServiceClient();
   const { data, error } = await service
     .from("external_integrations")
@@ -71,5 +71,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create integration" }, { status: 500 });
   }
 
-  return NextResponse.json({ integration: data }, { status: 201 });
+  return NextResponse.json(
+    { integration: { ...data, config: maskConfigSecrets(data.config) } },
+    { status: 201 }
+  );
 }
