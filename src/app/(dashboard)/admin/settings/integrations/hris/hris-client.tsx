@@ -433,11 +433,23 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                 <button
                   key={p.id}
                   onClick={() => {
+                    // Seed config with defaults for any "select" credential
+                    // field whose value is its first option. The
+                    // controlled <select> only fires onChange when the
+                    // user actively picks an option, so without seeding
+                    // the visually-selected value isn't actually stored.
+                    const seededConfig: Record<string, string> = {};
+                    (CREDENTIAL_FIELDS[p.id] ?? []).forEach((f) => {
+                      if (f.type === "select" && f.options?.[0]) {
+                        seededConfig[f.key] = f.options[0].value;
+                      }
+                    });
                     setNewIntegration((prev) => ({
                       ...prev,
                       provider: p.id,
                       type: p.type,
                       name: `${p.name} Integration`,
+                      config: { ...prev.config, ...seededConfig },
                     }));
                     setWizardStep("credentials");
                   }}
