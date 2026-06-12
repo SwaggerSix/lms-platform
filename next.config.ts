@@ -29,10 +29,9 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          {
-            key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://avatars.githubusercontent.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'self' https://www.youtube.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self'; upgrade-insecure-requests;",
-          },
+          // Content-Security-Policy is set per-request in src/middleware.ts so
+          // it can carry a nonce; defining it here too would emit conflicting
+          // duplicate headers (browsers enforce the intersection).
         ],
       },
     ];
