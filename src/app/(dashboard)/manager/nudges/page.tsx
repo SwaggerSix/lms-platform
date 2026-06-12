@@ -38,7 +38,8 @@ export default async function ManagerNudgesPage() {
       .select("*")
       .eq("is_active", true)
       .order("category", { ascending: true })
-      .order("title", { ascending: true }),
+      .order("title", { ascending: true })
+      .range(0, 4999),
   ]);
 
   return (
