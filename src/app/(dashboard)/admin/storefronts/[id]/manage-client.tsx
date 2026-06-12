@@ -1,0 +1,759 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronLeft, ExternalLink, Pencil, Plus, Trash2, Upload } from "lucide-react";
+
+interface Storefront {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  logo_url: string | null;
+  hero_image_url: string | null;
+  branding: { primary_color?: string; accent_color?: string };
+  contact_email: string | null;
+  announcement: string | null;
+  is_active: boolean;
+}
+
+interface Product {
+  id: string;
+  name: string | null;
+  description: string | null;
+  price: number;
+  discount_price: number | null;
+  category: string | null;
+  image_url: string | null;
+  sku: string | null;
+  status: string;
+  is_featured: boolean;
+  sales_count: number;
+}
+
+interface Order {
+  id: string;
+  order_number: string;
+  status: string;
+  customer_email: string | null;
+  customer_name: string | null;
+  total: number;
+  payment_method: string | null;
+  created_at: string;
+  items: { id: string; price: number; quantity: number; product: { name: string | null } | null }[];
+}
+
+const money = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+
+const emptyProductForm = {
+  name: "",
+  description: "",
+  price: "",
+  discount_price: "",
+  category: "",
+  image_url: "",
+  is_featured: false,
+  status: "active",
+};
+
+type Tab = "products" | "orders" | "import" | "settings" | "publish";
+
+export default function ManageStoreClient({ storeId }: { storeId: string }) {
+  const [store, setStore] = useState<Storefront | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [tab, setTab] = useState<Tab>("products");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  // Product form
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [productForm, setProductForm] = useState({ ...emptyProductForm });
+  const [saving, setSaving] = useState(false);
+
+  // Import
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
+
+  // Settings
+  const [settings, setSettings] = useState<Record<string, string | boolean>>({});
+
+  const notify = (kind: "ok" | "err", text: string) => {
+    setMessage({ kind, text });
+    setTimeout(() => setMessage(null), 4000);
+  };
+
+  const load = useCallback(async () => {
+    const [storesRes, productsRes, ordersRes] = await Promise.all([
+      fetch("/api/storefront/admin"),
+      fetch(`/api/storefront/admin/${storeId}/products`),
+      fetch(`/api/storefront/admin/${storeId}/orders`),
+    ]);
+    if (storesRes.ok) {
+      const data = await storesRes.json();
+      const s = (data.storefronts || []).find((x: Storefront) => x.id === storeId) || null;
+      setStore(s);
+      if (s) {
+        setSettings({
+          name: s.name,
+          tagline: s.tagline || "",
+          description: s.description || "",
+          logo_url: s.logo_url || "",
+          hero_image_url: s.hero_image_url || "",
+          contact_email: s.contact_email || "",
+          announcement: s.announcement || "",
+          primary_color: s.branding?.primary_color || "#0f172a",
+          accent_color: s.branding?.accent_color || "#2563eb",
+          is_active: s.is_active,
+        });
+      }
+    }
+    if (productsRes.ok) setProducts((await productsRes.json()).products || []);
+    if (ordersRes.ok) setOrders((await ordersRes.json()).orders || []);
+    setLoading(false);
+  }, [storeId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function saveProduct(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        ...(editingId && { product_id: editingId }),
+        name: productForm.name,
+        description: productForm.description || null,
+        price: parseFloat(productForm.price),
+        discount_price: productForm.discount_price ? parseFloat(productForm.discount_price) : null,
+        category: productForm.category || null,
+        image_url: productForm.image_url || "",
+        is_featured: productForm.is_featured,
+        status: productForm.status,
+      };
+      const res = await fetch(`/api/storefront/admin/${storeId}/products`, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notify("err", data.error || "Could not save the product");
+        return;
+      }
+      setShowProductForm(false);
+      setEditingId(null);
+      setProductForm({ ...emptyProductForm });
+      notify("ok", editingId ? "Product updated" : "Product added");
+      await load();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteProduct(p: Product) {
+    if (!confirm(`Remove "${p.name}" from the store?`)) return;
+    const res = await fetch(
+      `/api/storefront/admin/${storeId}/products?product_id=${p.id}`,
+      { method: "DELETE" }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      notify("err", data.error || "Could not remove the product");
+      return;
+    }
+    notify("ok", data.archived ? "Product hidden (it has past orders, so it was archived)" : "Product removed");
+    await load();
+  }
+
+  function startEdit(p: Product) {
+    setEditingId(p.id);
+    setProductForm({
+      name: p.name || "",
+      description: p.description || "",
+      price: String(p.price),
+      discount_price: p.discount_price != null ? String(p.discount_price) : "",
+      category: p.category || "",
+      image_url: p.image_url || "",
+      is_featured: p.is_featured,
+      status: p.status,
+    });
+    setShowProductForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleImport(file: File) {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const text = await file.text();
+      const res = await fetch(`/api/storefront/admin/${storeId}/import`, {
+        method: "POST",
+        headers: { "Content-Type": "text/csv" },
+        body: text,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportResult(`Import failed: ${data.error}`);
+        return;
+      }
+      const parts = [
+        `${data.created} added`,
+        `${data.updated} updated`,
+        ...(data.skipped?.length ? [`${data.skipped.length} skipped`] : []),
+        ...(data.errors?.length ? [`${data.errors.length} errors`] : []),
+      ];
+      setImportResult(`Done — ${parts.join(", ")}.`);
+      await load();
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function saveSettings(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/storefront/admin", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: storeId,
+          name: settings.name,
+          tagline: settings.tagline || null,
+          description: settings.description || null,
+          logo_url: settings.logo_url || "",
+          hero_image_url: settings.hero_image_url || "",
+          contact_email: settings.contact_email || "",
+          announcement: settings.announcement || null,
+          branding: {
+            primary_color: settings.primary_color as string,
+            accent_color: settings.accent_color as string,
+          },
+          is_active: Boolean(settings.is_active),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notify("err", data.error || "Could not save settings");
+        return;
+      }
+      notify("ok", "Settings saved");
+      await load();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="p-6 text-gray-500">Loading store…</div>;
+  if (!store) return <div className="p-6 text-gray-500">Store not found.</div>;
+
+  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "products", label: `Products (${products.length})` },
+    { key: "orders", label: `Orders (${orders.length})` },
+    { key: "import", label: "Import catalog" },
+    { key: "settings", label: "Settings" },
+    { key: "publish", label: "Put it on your website" },
+  ];
+
+  return (
+    <div className="p-6 max-w-5xl">
+      <Link href="/admin/storefronts" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-3">
+        <ChevronLeft className="h-4 w-4" /> All stores
+      </Link>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <h1 className="text-2xl font-bold">{store.name}</h1>
+        <a
+          href={`/store/${store.slug}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> View live store
+        </a>
+      </div>
+
+      {message && (
+        <div
+          className={`mb-4 rounded-lg px-4 py-2.5 text-sm ${
+            message.kind === "ok"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px ${
+              tab === t.key
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "products" && (
+        <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setProductForm({ ...emptyProductForm });
+                setShowProductForm((s) => !s);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4" /> Add product
+            </button>
+          </div>
+
+          {showProductForm && (
+            <form onSubmit={saveProduct} className="mb-6 rounded-xl border border-gray-200 p-5 bg-gray-50 space-y-3">
+              <div className="font-semibold">{editingId ? "Edit product" : "New product"}</div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input
+                    required
+                    value={productForm.name}
+                    onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <textarea
+                    rows={3}
+                    value={productForm.description}
+                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price ($)</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Sale price ($, optional)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={productForm.discount_price}
+                    onChange={(e) => setProductForm({ ...productForm, discount_price: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <input
+                    list={`categories-${storeId}`}
+                    value={productForm.category}
+                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                    placeholder="e.g. Communication"
+                  />
+                  <datalist id={`categories-${storeId}`}>
+                    {categories.map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Image web address (optional)</label>
+                  <input
+                    type="url"
+                    value={productForm.image_url}
+                    onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                    placeholder="https://…"
+                  />
+                </div>
+                <div className="flex items-center gap-5 sm:col-span-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={productForm.is_featured}
+                      onChange={(e) => setProductForm({ ...productForm, is_featured: e.target.checked })}
+                    />
+                    Featured (shown at the top of the store)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    Visibility
+                    <select
+                      value={productForm.status}
+                      onChange={(e) => setProductForm({ ...productForm, status: e.target.value })}
+                      className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                    >
+                      <option value="active">Visible in store</option>
+                      <option value="inactive">Hidden</option>
+                      <option value="coming_soon">Coming soon</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {saving ? "Saving…" : editingId ? "Save changes" : "Add product"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProductForm(false);
+                    setEditingId(null);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+
+          {products.length === 0 ? (
+            <div className="text-gray-500 py-12 text-center">
+              No products yet. Add one above, or use “Import catalog” to bring in your existing
+              store in one go.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-left text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Product</th>
+                    <th className="px-4 py-3 font-medium">Category</th>
+                    <th className="px-4 py-3 font-medium">Price</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Sales</th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {products.map((p) => (
+                    <tr key={p.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium max-w-xs truncate">{p.name}</td>
+                      <td className="px-4 py-3 text-gray-500">{p.category || "—"}</td>
+                      <td className="px-4 py-3">
+                        {p.discount_price != null ? (
+                          <>
+                            <span className="font-medium">{money(Number(p.discount_price))}</span>{" "}
+                            <span className="text-gray-400 line-through">{money(Number(p.price))}</span>
+                          </>
+                        ) : (
+                          money(Number(p.price))
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            p.status === "active"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : p.status === "coming_soon"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {p.status === "active" ? "Visible" : p.status === "coming_soon" ? "Coming soon" : "Hidden"}
+                        </span>
+                        {p.is_featured && (
+                          <span className="ml-1 text-xs px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-700">
+                            Featured
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500">{p.sales_count}</td>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <button
+                          onClick={() => startEdit(p)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600"
+                          aria-label="Edit"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteProduct(p)}
+                          className="p-1.5 text-gray-400 hover:text-red-600"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "orders" && (
+        <div>
+          {orders.length === 0 ? (
+            <div className="text-gray-500 py-12 text-center">No orders yet.</div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-left text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Order</th>
+                    <th className="px-4 py-3 font-medium">Customer</th>
+                    <th className="px-4 py-3 font-medium">Items</th>
+                    <th className="px-4 py-3 font-medium">Total</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {orders.map((o) => (
+                    <tr key={o.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-mono text-xs">{o.order_number}</td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium">{o.customer_name || "—"}</div>
+                        <div className="text-gray-500 text-xs">{o.customer_email}</div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 max-w-xs">
+                        {o.items.map((i) => i.product?.name || "Course").join(", ")}
+                      </td>
+                      <td className="px-4 py-3 font-medium">{money(Number(o.total))}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            o.status === "completed"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : o.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                        {o.payment_method === "test_mode" && (
+                          <span className="ml-1 text-xs px-2 py-1 rounded-full font-medium bg-gray-100 text-gray-600">
+                            test
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                        {new Date(o.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "import" && (
+        <div className="max-w-2xl">
+          <h2 className="font-semibold text-lg">Import your existing catalog</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Bring your whole catalog over from your current store in one step:
+          </p>
+          <ol className="mt-3 text-sm text-gray-600 list-decimal list-inside space-y-1.5">
+            <li>
+              In your current store&apos;s admin (Ecwid: <em>Catalog → Products → Export</em>;
+              Shopify: <em>Products → Export</em>), export your products as a <strong>CSV file</strong>.
+            </li>
+            <li>Upload that file below. Products are matched by name/SKU, so re-importing updates rather than duplicates.</li>
+            <li>Review the products in the Products tab and tidy up anything that needs it.</li>
+          </ol>
+          <label className="mt-6 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-10 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
+            <Upload className="h-7 w-7 text-gray-400" />
+            <span className="text-sm font-medium">
+              {importing ? "Importing…" : "Click to choose your CSV file"}
+            </span>
+            <span className="text-xs text-gray-500">Ecwid, Shopify, or spreadsheet exports (max 5 MB)</span>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              disabled={importing}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImport(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {importResult && (
+            <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 text-sm">
+              {importResult}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "settings" && (
+        <form onSubmit={saveSettings} className="max-w-2xl space-y-4">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-1">Store name</label>
+              <input
+                required
+                value={String(settings.name || "")}
+                onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-1">Tagline (big headline on the store)</label>
+              <input
+                value={String(settings.tagline || "")}
+                onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                rows={3}
+                value={String(settings.description || "")}
+                onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Main brand color</label>
+              <input
+                type="color"
+                value={String(settings.primary_color || "#0f172a")}
+                onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
+                className="h-10 w-full rounded-lg border border-gray-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Accent color (sale badges, banner)</label>
+              <input
+                type="color"
+                value={String(settings.accent_color || "#2563eb")}
+                onChange={(e) => setSettings({ ...settings, accent_color: e.target.value })}
+                className="h-10 w-full rounded-lg border border-gray-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Logo web address (optional)</label>
+              <input
+                type="url"
+                value={String(settings.logo_url || "")}
+                onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                placeholder="https://…"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Banner image web address (optional)</label>
+              <input
+                type="url"
+                value={String(settings.hero_image_url || "")}
+                onChange={(e) => setSettings({ ...settings, hero_image_url: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                placeholder="https://…"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Contact email (shown in footer)</label>
+              <input
+                type="email"
+                value={String(settings.contact_email || "")}
+                onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Announcement bar (optional)</label>
+              <input
+                value={String(settings.announcement || "")}
+                onChange={(e) => setSettings({ ...settings, announcement: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                placeholder="e.g. Spring sale — 20% off with code SPRING20"
+              />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={Boolean(settings.is_active)}
+              onChange={(e) => setSettings({ ...settings, is_active: e.target.checked })}
+            />
+            Store is open (uncheck to take the store offline temporarily)
+          </label>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save settings"}
+          </button>
+        </form>
+      )}
+
+      {tab === "publish" && (
+        <div className="max-w-2xl space-y-6 text-sm text-gray-700">
+          <div>
+            <h2 className="font-semibold text-lg text-gray-900">Option 1 — Link to the store (simplest)</h2>
+            <p className="mt-2">
+              On your website, point your “Store” menu link to this address:
+            </p>
+            <code className="mt-2 block rounded-lg bg-gray-100 px-4 py-3 font-mono text-xs break-all">
+              {typeof window !== "undefined" ? window.location.origin : ""}/store/{store.slug}
+            </code>
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg text-gray-900">Option 2 — Embed it inside your page</h2>
+            <p className="mt-2">
+              Paste this snippet into your website page (in WordPress, add a “Custom HTML” block)
+              and the store appears inside your existing site:
+            </p>
+            <code className="mt-2 block rounded-lg bg-gray-100 px-4 py-3 font-mono text-xs break-all whitespace-pre-wrap">
+              {`<iframe src="${typeof window !== "undefined" ? window.location.origin : ""}/store/${store.slug}" style="width:100%;min-height:1400px;border:0;" title="${store.name}"></iframe>`}
+            </code>
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg text-gray-900">Option 3 — Its own web address (recommended long-term)</h2>
+            <p className="mt-2">
+              A subdomain like <strong>store.gothamculture.com</strong> can point directly at this
+              store. That needs one DNS record added wherever your domain is managed — ask
+              whoever set up your website hosting, or we can walk through it together.
+            </p>
+          </div>
+          <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-amber-800">
+            <strong>Before going live:</strong> connect Stripe so real cards can be charged. Until
+            then the store runs in test mode (orders work, nothing is charged). See STORE_GUIDE.md
+            in the project, or ask your developer to set STRIPE_SECRET_KEY and
+            STRIPE_WEBHOOK_SECRET.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

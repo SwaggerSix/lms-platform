@@ -41,6 +41,7 @@ export async function middleware(request: NextRequest) {
   ) {
     // Paths exempt from origin checks (webhooks, crons, external callers)
     const csrfExemptPaths = [
+      "/api/storefront/webhook",
       "/api/workflows/webhook",
       "/api/teams/bot",
       "/api/xapi/statements",
@@ -73,6 +74,12 @@ export async function middleware(request: NextRequest) {
   // straight from an email link, with no redirect either way.
   const nudgeTokenPaths = ["/nudge/", "/api/nudge-respond", "/api/nudge-swap-link"];
   if (nudgeTokenPaths.some((p) => pathname.startsWith(p))) {
+    return supabaseResponse;
+  }
+
+  // Public storefronts: customers browse and buy without an LMS account,
+  // and logged-in staff can view the shops too (no dashboard redirect).
+  if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {
     return supabaseResponse;
   }
 

@@ -45,6 +45,7 @@ export function isSuperAdmin(role?: string | null): boolean {
 export const SUPER_ADMIN_ONLY_PREFIXES = [
   "/admin/tenants",
   "/admin/ecommerce",
+  "/admin/storefronts",
   "/admin/marketplace",
   "/admin/courses/ai-create",
   "/admin/analytics/predictive",

@@ -178,6 +178,7 @@ const navSections: NavSection[] = [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
       { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Sparkles },
       { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
+      { label: "Storefronts", href: "/admin/storefronts", icon: Store },
       { label: "Marketplace", href: "/admin/marketplace", icon: Store },
       { label: "Predictive Analytics", href: "/admin/analytics/predictive", icon: BrainCircuit },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
