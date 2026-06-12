@@ -5,8 +5,65 @@ import { isSuperAdminOnlyPath } from "@/lib/auth/roles";
 import { getFeatureForPath } from "@/lib/features/routes";
 import { resolveEnabledFeatures } from "@/lib/features/resolve";
 
+// Strict, nonce-based CSP. Inline scripts only execute when they carry the
+// per-request nonce that Next.js stamps onto its own tags; 'strict-dynamic'
+// lets those trusted scripts load further chunks. The https:/'unsafe-inline'
+// entries are fallbacks for legacy browsers that predate nonces and
+// 'strict-dynamic' — modern browsers ignore them when a nonce is present.
+function buildCsp(nonce: string | null): string {
+  const scriptSrc = nonce
+    ? `'self' 'nonce-${nonce}' 'strict-dynamic' https: 'unsafe-inline'`
+    : "'self' 'unsafe-inline'";
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://*.supabase.co https://avatars.githubusercontent.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+    "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "worker-src 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+
+  // Storefront pages are cached/ISR (revalidate: 60), so their HTML is
+  // rendered once and served to many requests — a per-request nonce can never
+  // match. They keep the legacy inline-permitting policy; everything else
+  // gets the strict nonce-based one.
+  const isCachedPath = pathname.startsWith("/store/");
+  const nonce = isCachedPath
+    ? null
+    : Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp(nonce);
+
+  // Snapshot fresh each time so cookie mutations made via request.cookies.set
+  // (which write through to request.headers) are carried into the forwarded
+  // request alongside the nonce headers.
+  const buildRequestHeaders = () => {
+    const headers = new Headers(request.headers);
+    if (nonce) {
+      // Next.js reads the nonce from the request's CSP header and applies it
+      // to every script tag it renders; x-nonce lets app code read it too.
+      headers.set("x-nonce", nonce);
+      headers.set("content-security-policy", csp);
+    }
+    return headers;
+  };
+
+  const finalize = (response: NextResponse) => {
+    response.headers.set("Content-Security-Policy", csp);
+    return response;
+  };
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: buildRequestHeaders() },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +77,9 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({
+            request: { headers: buildRequestHeaders() },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -32,8 +91,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   // CSRF: validate Origin header for state-changing requests to /api/ routes
   if (
@@ -100,13 +157,13 @@ export async function middleware(request: NextRequest) {
   // straight from an email link, with no redirect either way.
   const nudgeTokenPaths = ["/nudge/", "/api/nudge-respond", "/api/nudge-swap-link"];
   if (nudgeTokenPaths.some((p) => pathname.startsWith(p))) {
-    return supabaseResponse;
+    return finalize(supabaseResponse);
   }
 
   // Public storefronts: customers browse and buy without an LMS account,
   // and logged-in staff can view the shops too (no dashboard redirect).
   if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {
-    return supabaseResponse;
+    return finalize(supabaseResponse);
   }
 
   const publicPaths = [
@@ -272,7 +329,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return supabaseResponse;
+  return finalize(supabaseResponse);
 }
 
 export const config = {
