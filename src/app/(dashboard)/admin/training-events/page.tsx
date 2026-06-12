@@ -5,7 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import IltSessionsLogClient, { type SessionRow } from "./ilt-sessions-log-client";
 
 export const metadata: Metadata = {
-  title: "ILT Sessions | LMS Platform",
+  title: "ILT Session Log | LMS Platform",
   description: "Log of all instructor-led training sessions (imported from GEMS).",
 };
 
