@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
+import { sendOrderEmails } from "@/lib/storefront/fulfillment";
 
 // Stripe webhook: marks orders paid when Stripe confirms payment, then
 // fulfills them (sales counts, coupon usage, auto-enrollment for buyers who
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   const orderQuery = service
     .from("orders")
-    .select("id, status, customer_email, metadata")
+    .select("id, status, customer_email, metadata, status_history")
     .limit(1);
   const { data: orders } = orderId
     ? await orderQuery.eq("id", orderId)
@@ -60,12 +61,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
+  const completedAt = new Date().toISOString();
+  const history = Array.isArray((order as { status_history?: unknown }).status_history)
+    ? ((order as { status_history: unknown[] }).status_history as unknown[])
+    : [];
   await service
     .from("orders")
     .update({
       status: "completed",
       payment_intent_id: session.payment_intent || null,
-      updated_at: new Date().toISOString(),
+      status_history: [...history, { status: "completed", at: completedAt, by: "stripe" }],
+      updated_at: completedAt,
     })
     .eq("id", order.id);
 
@@ -129,6 +135,10 @@ export async function POST(request: NextRequest) {
       }
     }
   }
+
+  // Buyer confirmation + internal new-order notification.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+  await sendOrderEmails(service, order.id, appUrl);
 
   return NextResponse.json({ received: true });
 }

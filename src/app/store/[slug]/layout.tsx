@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { StoreHeader } from "./store-header";
 import type { Metadata } from "next";
 
@@ -13,12 +14,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const service = createServiceClient();
   const { data: store } = await service
     .from("storefronts")
-    .select("name, tagline")
+    .select("name, tagline, description, logo_url, hero_image_url")
     .eq("slug", slug)
     .single();
+  if (!store) return { title: "Store" };
+  const title = `${store.name} — Course Catalog`;
+  const description = store.tagline || store.description || undefined;
+  const ogImage = store.hero_image_url || store.logo_url || undefined;
   return {
-    title: store ? `${store.name} — Store` : "Store",
-    description: store?.tagline || undefined,
+    title,
+    description,
+    alternates: { canonical: `/store/${slug}` },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: ogImage ? [{ url: ogImage }] : undefined,
+    },
   };
 }
 
@@ -28,12 +40,14 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
 
   const { data: store } = await service
     .from("storefronts")
-    .select("id, slug, name, tagline, logo_url, branding, contact_email, announcement, is_active")
+    .select("id, slug, name, tagline, logo_url, branding, contact_email, announcement, is_active, analytics_measurement_id")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
   if (!store) notFound();
+
+  const gaId = store.analytics_measurement_id;
 
   const branding = (store.branding || {}) as { primary_color?: string; accent_color?: string };
   const primary = branding.primary_color || "#0f172a";
@@ -56,6 +70,17 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
         >
           {store.announcement}
         </div>
+      )}
+      {gaId && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-storefront" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
+          </Script>
+        </>
       )}
       <StoreHeader slug={store.slug} name={store.name} logoUrl={store.logo_url} />
       <main className="flex-1">{children}</main>

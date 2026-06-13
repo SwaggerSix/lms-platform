@@ -13,6 +13,8 @@ export interface CatalogProduct {
   discountPrice: number | null;
   imageUrl: string | null;
   category: string | null;
+  categories?: string[];
+  durationLabel?: string | null;
   isFeatured: boolean;
 }
 
@@ -59,11 +61,19 @@ export function ProductCard({ slug, product }: { slug: string; product: CatalogP
           <p className="mt-1.5 text-sm text-slate-600 line-clamp-2">{product.description}</p>
         )}
         <div className="mt-auto pt-4 flex items-baseline gap-2">
-          <span className="text-lg font-bold" style={{ color: "var(--store-primary)" }}>
-            {formatPrice(product.discountPrice ?? product.price)}
-          </span>
-          {onSale && (
-            <span className="text-sm text-slate-400 line-through">{formatPrice(product.price)}</span>
+          {product.price > 0 ? (
+            <>
+              <span className="text-lg font-bold" style={{ color: "var(--store-primary)" }}>
+                {formatPrice(product.discountPrice ?? product.price)}
+              </span>
+              {onSale && (
+                <span className="text-sm text-slate-400 line-through">{formatPrice(product.price)}</span>
+              )}
+            </>
+          ) : (
+            <span className="text-sm font-semibold" style={{ color: "var(--store-primary)" }}>
+              Contact us for pricing
+            </span>
           )}
         </div>
       </div>
@@ -71,12 +81,23 @@ export function ProductCard({ slug, product }: { slug: string; product: CatalogP
   );
 }
 
+const catsOf = (p: CatalogProduct): string[] =>
+  p.categories && p.categories.length ? p.categories : p.category ? [p.category] : [];
+
 export function CatalogClient({ slug, products }: { slug: string; products: CatalogProduct[] }) {
   const [category, setCategory] = useState<string | null>(null);
+  const [duration, setDuration] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   const categories = useMemo(
-    () => Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[],
+    () => Array.from(new Set(products.flatMap(catsOf))).sort(),
+    [products]
+  );
+  const durations = useMemo(
+    () =>
+      Array.from(
+        new Set(products.map((p) => p.durationLabel).filter(Boolean))
+      ).sort() as string[],
     [products]
   );
 
@@ -84,12 +105,13 @@ export function CatalogClient({ slug, products }: { slug: string; products: Cata
     const q = search.trim().toLowerCase();
     return products.filter(
       (p) =>
-        (!category || p.category === category) &&
+        (!category || catsOf(p).includes(category)) &&
+        (!duration || p.durationLabel === duration) &&
         (!q ||
           p.name.toLowerCase().includes(q) ||
           (p.description || "").toLowerCase().includes(q))
     );
-  }, [products, category, search]);
+  }, [products, category, duration, search]);
 
   const featured = filtered.filter((p) => p.isFeatured);
 
@@ -134,7 +156,36 @@ export function CatalogClient({ slug, products }: { slug: string; products: Cata
         </div>
       </div>
 
-      {featured.length > 0 && !category && !search && (
+      {durations.length > 0 && (
+        <div className="mt-4 flex gap-2 flex-wrap items-center">
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-400 mr-1">
+            Duration
+          </span>
+          <button
+            onClick={() => setDuration(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              !duration ? "text-white border-transparent" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+            style={!duration ? { backgroundColor: "var(--store-accent)" } : undefined}
+          >
+            Any
+          </button>
+          {durations.map((d) => (
+            <button
+              key={d}
+              onClick={() => setDuration(d === duration ? null : d)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                duration === d ? "text-white border-transparent" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+              style={duration === d ? { backgroundColor: "var(--store-accent)" } : undefined}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {featured.length > 0 && !category && !duration && !search && (
         <section className="mt-10">
           <h2 className="text-xl font-bold mb-4">Featured</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -153,7 +204,7 @@ export function CatalogClient({ slug, products }: { slug: string; products: Cata
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered
-              .filter((p) => !(featured.includes(p) && !category && !search))
+              .filter((p) => !(featured.includes(p) && !category && !duration && !search))
               .map((p) => (
                 <ProductCard key={p.id} slug={slug} product={p} />
               ))}

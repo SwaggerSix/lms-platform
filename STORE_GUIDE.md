@@ -88,3 +88,57 @@ options, simplest first:
 If a buyer's email matches an LMS account here, paid courses that are linked
 to LMS courses are **enrolled automatically** the moment payment completes —
 no manual roster work.
+
+## How orders work (B2B)
+
+These stores sell to **client organizations** that buy seats for their
+employees — not to individual self-registrants. At checkout the client gives
+their organization, contact, email, optional phone, **PO number**, and order
+notes, then pays by credit card (Stripe). After payment, both the client and
+your team get an order email, and your team follows up to collect the attendee
+roster and confirm scheduling.
+
+### Seat limits per course
+Each course can set a **minimum and maximum number of seats** (e.g. 10–25).
+Set these on a product under Products → edit. The store enforces them in the
+seat selector and again at checkout.
+
+### Managing orders (Orders tab)
+Click any order to expand it. You can change its **status** (pending,
+completed, cancelled, refunded…), issue a full or partial **refund** (processed
+through Stripe automatically when the order was paid by card), and keep
+**internal notes** your client never sees.
+
+### Reports tab
+Net revenue, order count, seats sold, refunds, and your **top courses** over a
+30/90/180/365-day window.
+
+### Volume discounts (off by default)
+Under **Volume discounts**, add tiers like "10+ seats → 10% off." They only
+apply once you switch them **on** in Settings → "Apply volume discounts." Each
+course line automatically gets the best tier it qualifies for.
+
+### Tax (off by default)
+Settings → "Charge tax on orders" with a rate and label. Leave it off for
+tax-exempt B2B/federal sales.
+
+### Abandoned-cart recovery
+If a client enters their email but doesn't finish, the platform emails them a
+one-click link to resume their cart (runs automatically a couple of times a
+day). Nothing to configure.
+
+### Customer order history
+Clients can review past orders at `/store/<slug>/orders` using their email plus
+any order number from a confirmation email — no account required.
+
+### Richer product pages
+Products support an **image gallery**, a **duration label** (used as a store
+filter), **delivery formats** (e.g. Virtual / Onsite), and a **scheduling &
+delivery** block (lead time, coordinator email/phone, notes).
+
+### Search-friendly & migration-ready
+Every product page has its own SEO/social metadata, both stores are in the
+sitemap, and legacy Ecwid product links of the form `…-p<number>` can 301 to
+the matching new product page (products carry their original Ecwid id when
+imported). Add a Google Analytics measurement ID under Settings to track
+storefront traffic.

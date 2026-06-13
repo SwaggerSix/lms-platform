@@ -18,7 +18,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
   const { data: products } = await service
     .from("products")
-    .select("id, name, description, price, discount_price, discount_ends_at, image_url, category, is_featured, sales_count")
+    .select("id, name, description, price, discount_price, discount_ends_at, image_url, category, categories, duration_label, is_featured, sales_count")
     .eq("storefront_id", store.id)
     .eq("status", "active")
     .order("sort_order")
@@ -36,6 +36,8 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         : null,
     imageUrl: p.image_url,
     category: p.category,
+    categories: Array.isArray(p.categories) && p.categories.length ? p.categories : p.category ? [p.category] : [],
+    durationLabel: p.duration_label,
     isFeatured: p.is_featured,
   }));
 

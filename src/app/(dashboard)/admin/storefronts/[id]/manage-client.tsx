@@ -16,6 +16,12 @@ interface Storefront {
   contact_email: string | null;
   announcement: string | null;
   is_active: boolean;
+  order_notify_email: string | null;
+  volume_discounts_enabled: boolean;
+  tax_enabled: boolean;
+  tax_rate: number;
+  tax_label: string | null;
+  analytics_measurement_id: string | null;
 }
 
 interface Product {
@@ -25,6 +31,9 @@ interface Product {
   price: number;
   discount_price: number | null;
   category: string | null;
+  duration_label: string | null;
+  min_participants: number | null;
+  max_participants: number | null;
   image_url: string | null;
   sku: string | null;
   status: string;
@@ -38,14 +47,31 @@ interface Order {
   status: string;
   customer_email: string | null;
   customer_name: string | null;
+  company_name: string | null;
+  customer_phone: string | null;
+  po_number: string | null;
+  order_notes: string | null;
+  admin_notes: string | null;
   total: number;
+  subtotal: number | null;
+  discount_amount: number | null;
+  tax_amount: number | null;
+  refunded_amount: number | null;
   payment_method: string | null;
+  payment_intent_id: string | null;
+  currency: string | null;
   created_at: string;
-  items: { id: string; price: number; quantity: number; product: { name: string | null } | null }[];
+  items: {
+    id: string;
+    price: number;
+    quantity: number;
+    product_name: string | null;
+    product: { name: string | null } | null;
+  }[];
 }
 
-const money = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+const money = (n: number, currency = "USD") =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
 
 const emptyProductForm = {
   name: "",
@@ -53,12 +79,15 @@ const emptyProductForm = {
   price: "",
   discount_price: "",
   category: "",
+  duration_label: "",
+  min_participants: "1",
+  max_participants: "",
   image_url: "",
   is_featured: false,
   status: "active",
 };
 
-type Tab = "products" | "orders" | "import" | "settings" | "publish";
+type Tab = "products" | "orders" | "import" | "settings" | "discounts" | "reports" | "publish";
 
 export default function ManageStoreClient({ storeId }: { storeId: string }) {
   const [store, setStore] = useState<Storefront | null>(null);
@@ -80,6 +109,29 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
 
   // Settings
   const [settings, setSettings] = useState<Record<string, string | boolean>>({});
+
+  // Orders
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [orderBusy, setOrderBusy] = useState<string | null>(null);
+
+  // Volume discount tiers
+  const [tiers, setTiers] = useState<{ id: string; min_seats: number; discount_percent: number; is_active: boolean }[]>([]);
+  const [newTier, setNewTier] = useState({ min_seats: "", discount_percent: "" });
+
+  // Reports
+  type Analytics = {
+    grossRevenue: number;
+    netRevenue: number;
+    refunded: number;
+    completedOrders: number;
+    totalOrders: number;
+    seatsSold: number;
+    statusCounts: Record<string, number>;
+    topCourses: { name: string; seats: number; revenue: number }[];
+    dailyRevenue: { date: string; revenue: number }[];
+  };
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [reportDays, setReportDays] = useState(90);
 
   const notify = (kind: "ok" | "err", text: string) => {
     setMessage({ kind, text });
@@ -108,6 +160,12 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
           primary_color: s.branding?.primary_color || "#0f172a",
           accent_color: s.branding?.accent_color || "#2563eb",
           is_active: s.is_active,
+          order_notify_email: s.order_notify_email || "",
+          volume_discounts_enabled: Boolean(s.volume_discounts_enabled),
+          tax_enabled: Boolean(s.tax_enabled),
+          tax_rate_percent: String(((s.tax_rate || 0) * 100).toFixed(4)).replace(/\.?0+$/, ""),
+          tax_label: s.tax_label || "Tax",
+          analytics_measurement_id: s.analytics_measurement_id || "",
         });
       }
     }
@@ -120,6 +178,12 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (tab === "discounts") loadTiers();
+    if (tab === "reports") loadAnalytics(reportDays);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, reportDays]);
+
   async function saveProduct(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -131,6 +195,9 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
         price: parseFloat(productForm.price),
         discount_price: productForm.discount_price ? parseFloat(productForm.discount_price) : null,
         category: productForm.category || null,
+        duration_label: productForm.duration_label || null,
+        min_participants: productForm.min_participants ? parseInt(productForm.min_participants) : 1,
+        max_participants: productForm.max_participants ? parseInt(productForm.max_participants) : null,
         image_url: productForm.image_url || "",
         is_featured: productForm.is_featured,
         status: productForm.status,
@@ -178,6 +245,9 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
       price: String(p.price),
       discount_price: p.discount_price != null ? String(p.discount_price) : "",
       category: p.category || "",
+      duration_label: p.duration_label || "",
+      min_participants: p.min_participants != null ? String(p.min_participants) : "1",
+      max_participants: p.max_participants != null ? String(p.max_participants) : "",
       image_url: p.image_url || "",
       is_featured: p.is_featured,
       status: p.status,
@@ -235,6 +305,12 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
             accent_color: settings.accent_color as string,
           },
           is_active: Boolean(settings.is_active),
+          order_notify_email: (settings.order_notify_email as string) || "",
+          volume_discounts_enabled: Boolean(settings.volume_discounts_enabled),
+          tax_enabled: Boolean(settings.tax_enabled),
+          tax_rate: Math.max(0, Math.min(1, (parseFloat(settings.tax_rate_percent as string) || 0) / 100)),
+          tax_label: (settings.tax_label as string) || "Tax",
+          analytics_measurement_id: (settings.analytics_measurement_id as string) || "",
         }),
       });
       const data = await res.json();
@@ -249,6 +325,64 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
     }
   }
 
+  async function updateOrder(
+    orderId: string,
+    patch: { status?: string; admin_notes?: string | null; refund_amount?: number }
+  ) {
+    setOrderBusy(orderId);
+    try {
+      const res = await fetch(`/api/storefront/admin/${storeId}/orders`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, ...patch }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notify("err", data.error || "Could not update the order");
+        return;
+      }
+      notify("ok", "Order updated");
+      await load();
+    } finally {
+      setOrderBusy(null);
+    }
+  }
+
+  async function loadTiers() {
+    const res = await fetch(`/api/storefront/admin/${storeId}/volume-tiers`);
+    if (res.ok) setTiers((await res.json()).tiers || []);
+  }
+
+  async function addTier(e: React.FormEvent) {
+    e.preventDefault();
+    const res = await fetch(`/api/storefront/admin/${storeId}/volume-tiers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        min_seats: parseInt(newTier.min_seats),
+        discount_percent: parseFloat(newTier.discount_percent),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      notify("err", data.error || "Could not add the tier");
+      return;
+    }
+    setNewTier({ min_seats: "", discount_percent: "" });
+    notify("ok", "Tier added");
+    loadTiers();
+  }
+
+  async function deleteTier(tierId: string) {
+    await fetch(`/api/storefront/admin/${storeId}/volume-tiers?tier_id=${tierId}`, { method: "DELETE" });
+    loadTiers();
+  }
+
+  async function loadAnalytics(days: number) {
+    const res = await fetch(`/api/storefront/admin/${storeId}/analytics?days=${days}`);
+    if (res.ok) setAnalytics(await res.json());
+  }
+
   if (loading) return <div className="p-6 text-gray-500">Loading store…</div>;
   if (!store) return <div className="p-6 text-gray-500">Store not found.</div>;
 
@@ -257,6 +391,8 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
   const tabs: { key: Tab; label: string }[] = [
     { key: "products", label: `Products (${products.length})` },
     { key: "orders", label: `Orders (${orders.length})` },
+    { key: "reports", label: "Reports" },
+    { key: "discounts", label: "Volume discounts" },
     { key: "import", label: "Import catalog" },
     { key: "settings", label: "Settings" },
     { key: "publish", label: "Put it on your website" },
@@ -392,6 +528,38 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                     placeholder="https://…"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Duration label (optional)</label>
+                  <input
+                    value={productForm.duration_label}
+                    onChange={(e) => setProductForm({ ...productForm, duration_label: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                    placeholder="e.g. 2 days, 90 minutes"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Min seats</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={productForm.min_participants}
+                      onChange={(e) => setProductForm({ ...productForm, min_participants: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Max seats (blank = no cap)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={productForm.max_participants}
+                      onChange={(e) => setProductForm({ ...productForm, max_participants: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                      placeholder="e.g. 25"
+                    />
+                  </div>
+                </div>
                 <div className="flex items-center gap-5 sm:col-span-2">
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -519,57 +687,256 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
           {orders.length === 0 ? (
             <div className="text-gray-500 py-12 text-center">No orders yet.</div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-gray-500">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Order</th>
-                    <th className="px-4 py-3 font-medium">Customer</th>
-                    <th className="px-4 py-3 font-medium">Items</th>
-                    <th className="px-4 py-3 font-medium">Total</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {orders.map((o) => (
-                    <tr key={o.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-mono text-xs">{o.order_number}</td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium">{o.customer_name || "—"}</div>
-                        <div className="text-gray-500 text-xs">{o.customer_email}</div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 max-w-xs">
-                        {o.items.map((i) => i.product?.name || "Course").join(", ")}
-                      </td>
-                      <td className="px-4 py-3 font-medium">{money(Number(o.total))}</td>
-                      <td className="px-4 py-3">
+            <div className="space-y-3">
+              {orders.map((o) => {
+                const open = expandedOrder === o.id;
+                const refundable = Number(o.total) - Number(o.refunded_amount || 0);
+                return (
+                  <div key={o.id} className="rounded-xl border border-gray-200">
+                    <button
+                      onClick={() => setExpandedOrder(open ? null : o.id)}
+                      className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-mono text-xs text-gray-500">{o.order_number}</div>
+                        <div className="font-medium truncate">{o.company_name || o.customer_name || o.customer_email}</div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="font-medium">{money(Number(o.total), o.currency || "USD")}</span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full font-medium ${
                             o.status === "completed"
                               ? "bg-emerald-100 text-emerald-700"
                               : o.status === "pending"
                                 ? "bg-amber-100 text-amber-700"
-                                : "bg-red-100 text-red-700"
+                                : o.status === "cancelled"
+                                  ? "bg-gray-200 text-gray-700"
+                                  : o.status === "partially_refunded"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-red-100 text-red-700"
                           }`}
                         >
-                          {o.status}
+                          {o.status.replace("_", " ")}
                         </span>
-                        {o.payment_method === "test_mode" && (
-                          <span className="ml-1 text-xs px-2 py-1 rounded-full font-medium bg-gray-100 text-gray-600">
-                            test
-                          </span>
+                        <span className="text-gray-400 text-xs whitespace-nowrap">
+                          {new Date(o.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </button>
+
+                    {open && (
+                      <div className="border-t border-gray-100 px-4 py-4 space-y-4 text-sm">
+                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
+                          <div><span className="text-gray-500">Contact:</span> {o.customer_name || "—"}</div>
+                          <div><span className="text-gray-500">Email:</span> {o.customer_email || "—"}</div>
+                          {o.customer_phone && <div><span className="text-gray-500">Phone:</span> {o.customer_phone}</div>}
+                          {o.po_number && <div><span className="text-gray-500">PO:</span> {o.po_number}</div>}
+                          {o.payment_method && <div><span className="text-gray-500">Payment:</span> {o.payment_method}</div>}
+                          {Number(o.refunded_amount) > 0 && (
+                            <div><span className="text-gray-500">Refunded:</span> {money(Number(o.refunded_amount), o.currency || "USD")}</div>
+                          )}
+                        </div>
+
+                        <div className="rounded-lg border border-gray-100 divide-y divide-gray-100">
+                          {o.items.map((i) => (
+                            <div key={i.id} className="flex justify-between px-3 py-2">
+                              <span>{i.product_name || i.product?.name || "Course"} <span className="text-gray-400">× {i.quantity} {i.quantity === 1 ? "seat" : "seats"}</span></span>
+                              <span className="text-gray-600">{money(Number(i.price) * i.quantity, o.currency || "USD")}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between px-3 py-2 text-gray-500">
+                            <span>Subtotal</span><span>{money(Number(o.subtotal ?? o.total), o.currency || "USD")}</span>
+                          </div>
+                          {Number(o.discount_amount) > 0 && (
+                            <div className="flex justify-between px-3 py-2 text-gray-500"><span>Discount</span><span>-{money(Number(o.discount_amount), o.currency || "USD")}</span></div>
+                          )}
+                          {Number(o.tax_amount) > 0 && (
+                            <div className="flex justify-between px-3 py-2 text-gray-500"><span>Tax</span><span>{money(Number(o.tax_amount), o.currency || "USD")}</span></div>
+                          )}
+                        </div>
+
+                        {o.order_notes && (
+                          <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-blue-900">
+                            <span className="font-medium">Client notes:</span> {o.order_notes}
+                          </div>
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                        {new Date(o.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <label className="text-gray-500">Status</label>
+                          <select
+                            defaultValue={o.status}
+                            disabled={orderBusy === o.id}
+                            onChange={(e) => updateOrder(o.id, { status: e.target.value })}
+                            className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                          >
+                            {["pending", "completed", "cancelled", "refunded", "partially_refunded", "failed"].map((s) => (
+                              <option key={s} value={s}>{s.replace("_", " ")}</option>
+                            ))}
+                          </select>
+                          {refundable > 0.001 && (
+                            <button
+                              disabled={orderBusy === o.id}
+                              onClick={() => {
+                                const input = prompt(`Refund amount (max ${refundable.toFixed(2)}):`, refundable.toFixed(2));
+                                if (input == null) return;
+                                const amt = parseFloat(input);
+                                if (!isFinite(amt) || amt <= 0) return;
+                                updateOrder(o.id, { refund_amount: amt });
+                              }}
+                              className="px-3 py-1.5 rounded-lg border border-red-300 text-red-700 text-sm hover:bg-red-50 disabled:opacity-60"
+                            >
+                              Refund
+                            </button>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-gray-500 mb-1">Internal notes</label>
+                          <textarea
+                            defaultValue={o.admin_notes || ""}
+                            rows={2}
+                            onBlur={(e) => {
+                              if (e.target.value !== (o.admin_notes || "")) {
+                                updateOrder(o.id, { admin_notes: e.target.value || null });
+                              }
+                            }}
+                            placeholder="Notes for your team (not shown to the client)…"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
+        </div>
+      )}
+
+      {tab === "reports" && (
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-2 mb-4">
+            <label className="text-sm text-gray-500">Window</label>
+            <select
+              value={reportDays}
+              onChange={(e) => setReportDays(parseInt(e.target.value))}
+              className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+            >
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+              <option value={180}>Last 180 days</option>
+              <option value={365}>Last 365 days</option>
+            </select>
+          </div>
+          {!analytics ? (
+            <div className="text-gray-500 py-12 text-center">Loading…</div>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Net revenue", value: money(analytics.netRevenue) },
+                  { label: "Orders", value: String(analytics.completedOrders) },
+                  { label: "Seats sold", value: String(analytics.seatsSold) },
+                  { label: "Refunded", value: money(analytics.refunded) },
+                ].map((c) => (
+                  <div key={c.label} className="rounded-xl border border-gray-200 p-4">
+                    <div className="text-xs text-gray-500">{c.label}</div>
+                    <div className="text-xl font-bold mt-1">{c.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Top courses</h3>
+                {analytics.topCourses.length === 0 ? (
+                  <div className="text-sm text-gray-500">No sales in this window yet.</div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-left text-gray-500">
+                        <tr>
+                          <th className="px-4 py-2 font-medium">Course</th>
+                          <th className="px-4 py-2 font-medium">Seats</th>
+                          <th className="px-4 py-2 font-medium">Revenue</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {analytics.topCourses.map((c) => (
+                          <tr key={c.name}>
+                            <td className="px-4 py-2">{c.name}</td>
+                            <td className="px-4 py-2">{c.seats}</td>
+                            <td className="px-4 py-2">{money(c.revenue)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "discounts" && (
+        <div className="max-w-2xl">
+          <h2 className="font-semibold text-lg">Volume (bulk seat) discounts</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Reward clients who book more seats. A course line gets the best tier it qualifies for.
+            {settings.volume_discounts_enabled
+              ? " These are currently ON."
+              : " These are currently OFF — turn them on under Settings to apply them at checkout."}
+          </p>
+
+          <form onSubmit={addTier} className="mt-4 flex flex-wrap items-end gap-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">Seats (minimum)</label>
+              <input
+                type="number"
+                min="2"
+                required
+                value={newTier.min_seats}
+                onChange={(e) => setNewTier({ ...newTier, min_seats: e.target.value })}
+                className="w-32 px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                placeholder="e.g. 10"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Discount %</label>
+              <input
+                type="number"
+                min="0.01"
+                max="100"
+                step="0.01"
+                required
+                value={newTier.discount_percent}
+                onChange={(e) => setNewTier({ ...newTier, discount_percent: e.target.value })}
+                className="w-32 px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                placeholder="e.g. 10"
+              />
+            </div>
+            <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+              Add tier
+            </button>
+          </form>
+
+          <div className="mt-5 space-y-2">
+            {tiers.length === 0 ? (
+              <div className="text-sm text-gray-500">No tiers yet.</div>
+            ) : (
+              tiers.map((t) => (
+                <div key={t.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-2.5 text-sm">
+                  <span>
+                    <strong>{t.discount_percent}%</strong> off when buying <strong>{t.min_seats}+</strong> seats
+                  </span>
+                  <button onClick={() => deleteTier(t.id)} className="text-gray-400 hover:text-red-600" aria-label="Delete tier">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
@@ -699,6 +1066,73 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
               />
             </div>
           </div>
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="font-semibold text-sm mb-3">Orders, payments &amp; commerce</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium mb-1">New-order notification email</label>
+                <input
+                  type="email"
+                  value={String(settings.order_notify_email || "")}
+                  onChange={(e) => setSettings({ ...settings, order_notify_email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  placeholder="Where new-order alerts go (defaults to contact email)"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium mb-1">Google Analytics measurement ID (optional)</label>
+                <input
+                  value={String(settings.analytics_measurement_id || "")}
+                  onChange={(e) => setSettings({ ...settings, analytics_measurement_id: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  placeholder="G-XXXXXXXXXX"
+                />
+              </div>
+            </div>
+
+            <label className="mt-4 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(settings.volume_discounts_enabled)}
+                onChange={(e) => setSettings({ ...settings, volume_discounts_enabled: e.target.checked })}
+              />
+              Apply volume (bulk seat) discounts at checkout (configure tiers under “Volume discounts”)
+            </label>
+
+            <label className="mt-3 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(settings.tax_enabled)}
+                onChange={(e) => setSettings({ ...settings, tax_enabled: e.target.checked })}
+              />
+              Charge tax on orders
+            </label>
+            {Boolean(settings.tax_enabled) && (
+              <div className="mt-3 grid grid-cols-2 gap-3 max-w-md">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tax rate (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    value={String(settings.tax_rate_percent || "")}
+                    onChange={(e) => setSettings({ ...settings, tax_rate_percent: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                    placeholder="e.g. 8.25"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tax label</label>
+                  <input
+                    value={String(settings.tax_label || "Tax")}
+                    onChange={(e) => setSettings({ ...settings, tax_label: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

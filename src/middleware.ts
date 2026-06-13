@@ -166,6 +166,12 @@ export async function middleware(request: NextRequest) {
     return finalize(supabaseResponse);
   }
 
+  // Public storefronts: customers browse and buy without an LMS account,
+  // and logged-in staff can view the shops too (no dashboard redirect).
+  if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {
+    return supabaseResponse;
+  }
+
   const publicPaths = [
     "/login",
     "/register",
