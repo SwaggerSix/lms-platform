@@ -41,6 +41,14 @@ export const BUCKET_MIME_TYPES: Record<StorageBucket, string[]> = {
     "image/png",
     "audio/mpeg",
     "audio/wav",
+    // Office documents for decks, learner/facilitator guides, and materials.
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+    "application/vnd.ms-powerpoint", // .ppt
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "application/vnd.ms-excel", // .xls
+    "text/plain",
   ],
   avatars: ["image/jpeg", "image/png", "image/webp"],
   branding: ["image/jpeg", "image/png", "image/svg+xml", "image/x-icon", "image/webp"],

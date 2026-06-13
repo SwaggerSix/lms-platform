@@ -27,6 +27,7 @@ export interface Skill {
   usersCount: number;
   avgProficiency: number;
   parentId?: string;
+  tags: string[];
 }
 
 export interface SkillsClientProps {
@@ -61,6 +62,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
     category: "Technical" as Skill["category"],
     description: "",
     parentId: "",
+    tagsText: "",
   });
 
   const filteredSkills = skills.filter((skill) => {
@@ -81,6 +83,12 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
     });
   };
 
+  const parseTags = (text: string): string[] =>
+    text
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
   const handleAddSkill = async () => {
     if (!newSkill.name.trim()) return;
     setSaving(true);
@@ -93,6 +101,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
           category: newSkill.category,
           description: newSkill.description,
           parent_id: newSkill.parentId || null,
+          tags: parseTags(newSkill.tagsText),
         }),
       });
       if (!res.ok) {
@@ -112,9 +121,10 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
           usersCount: 0,
           avgProficiency: 0,
           parentId: created.parent_id || undefined,
+          tags: created.tags ?? [],
         },
       ]);
-      setNewSkill({ name: "", category: "Technical", description: "", parentId: "" });
+      setNewSkill({ name: "", category: "Technical", description: "", parentId: "", tagsText: "" });
       setShowAddModal(false);
     } catch {
       toast.error("Failed to add skill");
@@ -135,6 +145,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
           name: editingSkill.name,
           category: editingSkill.category,
           description: editingSkill.description,
+          tags: editingSkill.tags ?? [],
         }),
       });
       if (!res.ok) {
@@ -146,7 +157,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
       setSkills((prev) =>
         prev.map((s) =>
           s.id === updated.id
-            ? { ...s, name: updated.name, category: updated.category || s.category, description: updated.description || s.description }
+            ? { ...s, name: updated.name, category: updated.category || s.category, description: updated.description || s.description, tags: updated.tags ?? s.tags }
             : s
         )
       );
@@ -245,6 +256,15 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
                     <div>
                       <p className="font-medium text-gray-900">{skill.name}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{skill.description}</p>
+                      {skill.tags && skill.tags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {skill.tags.map((tag) => (
+                            <span key={tag} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -370,6 +390,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea value={editingSkill.description} onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mapping Tags</label>
+                <input type="text" value={(editingSkill.tags ?? []).join(", ")} onChange={(e) => setEditingSkill({ ...editingSkill, tags: parseTags(e.target.value) })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
+                <p className="mt-1 text-xs text-gray-400">Tags used to map and group this skill.</p>
+              </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button onClick={() => setEditingSkill(null)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
@@ -415,6 +440,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mapping Tags</label>
+                <input type="text" value={newSkill.tagsText} onChange={(e) => setNewSkill({ ...newSkill, tagsText: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
+                <p className="mt-1 text-xs text-gray-400">Tags used to map and group this skill.</p>
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">

@@ -51,10 +51,12 @@ export default async function AdminDocumentsPage() {
     document_count: 0,
   }));
 
-  // Fetch documents with uploader join
+  // Fetch documents with uploader join (organization docs only — exclude
+  // learners' personal course-material copies, which carry a user_id).
   const { data: docRows } = await service
     .from("documents")
     .select("*, uploader:users!uploaded_by(id, first_name, last_name, email), folder:document_folders!folder_id(id, name)")
+    .is("user_id", null)
     .order("created_at", { ascending: false });
 
   const documents: DocumentWithUploader[] = (docRows ?? []).map((row: any) => {

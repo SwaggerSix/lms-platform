@@ -68,6 +68,7 @@ export default async function CoursesPage() {
     return {
       id: row.id,
       title: row.title ?? 'Untitled Course',
+      slug: row.slug ?? '',
       status: row.status ?? 'draft',
       type: courseTypeMap[row.course_type] ?? 'self-paced',
       category: row.category?.name ?? 'General',
@@ -77,6 +78,9 @@ export default async function CoursesPage() {
       completionRate: isPublished ? 60 + (seed * 13) % 35 : 0,
       duration: row.estimated_duration ?? 0,
       thumbnail: GRADIENTS[index % GRADIENTS.length],
+      availableFrom: row.available_from ?? null,
+      availableUntil: row.available_until ?? null,
+      updatedAt: row.updated_at ?? null,
     };
   });
 

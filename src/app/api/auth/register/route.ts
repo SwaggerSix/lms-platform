@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { isValidTimezone } from "@/lib/timezones";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { auth_id, email, first_name, last_name } = body;
+    const { auth_id, email, first_name, last_name, timezone } = body;
+    const safeTimezone =
+      typeof timezone === "string" && isValidTimezone(timezone) ? timezone : null;
 
     if (!auth_id || !email || !first_name || !last_name) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -40,6 +43,7 @@ export async function POST(request: NextRequest) {
           last_name: last_name.trim(),
           role: "learner",
           status: "active",
+          timezone: safeTimezone,
         },
         { onConflict: "auth_id" }
       )

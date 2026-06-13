@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { COMMON_TIMEZONES, detectTimezone } from "@/lib/timezones";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [timezone, setTimezone] = useState(() => detectTimezone());
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -61,6 +63,7 @@ export default function RegisterPage() {
             email,
             first_name: firstName,
             last_name: lastName,
+            timezone,
           }),
         });
 
@@ -156,6 +159,33 @@ export default function RegisterPage() {
             placeholder="you@company.com"
             className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="timezone"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
+            Timezone
+          </label>
+          <select
+            id="timezone"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            {!COMMON_TIMEZONES.some((t) => t.value === timezone) && (
+              <option value={timezone}>{timezone}</option>
+            )}
+            {COMMON_TIMEZONES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-400">
+            We use this to show session and deadline times in your local time.
+          </p>
         </div>
 
         <div>

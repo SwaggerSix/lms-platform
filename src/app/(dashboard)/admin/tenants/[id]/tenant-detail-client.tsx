@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MemberManager } from "@/components/tenants/member-manager";
 import { BrandingEditor } from "@/components/tenants/branding-editor";
+import { FeatureToggles } from "@/components/tenants/feature-toggles";
 
 interface TenantDetailProps {
   tenant: any;
@@ -14,7 +15,7 @@ interface TenantDetailProps {
   allUsers: any[];
 }
 
-type Tab = "overview" | "members" | "courses" | "branding" | "settings";
+type Tab = "overview" | "members" | "courses" | "branding" | "features" | "settings";
 
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-green-100 text-green-800",
@@ -52,6 +53,7 @@ export default function TenantDetailClient({
     { key: "members", label: "Members" },
     { key: "courses", label: "Courses" },
     { key: "branding", label: "Branding" },
+    { key: "features", label: "Features" },
     { key: "settings", label: "Settings" },
   ];
 
@@ -372,6 +374,9 @@ export default function TenantDetailClient({
           }}
         />
       )}
+
+      {/* Features Tab */}
+      {activeTab === "features" && <FeatureToggles tenantId={tenantData.id} />}
 
       {/* Settings Tab */}
       {activeTab === "settings" && (

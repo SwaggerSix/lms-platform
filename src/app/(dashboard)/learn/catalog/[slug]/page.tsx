@@ -101,6 +101,16 @@ export default async function CourseDetailPage({
     notFound();
   }
 
+  // Enforce the course availability window (client licensing). Outside the
+  // window the course is treated as not found.
+  const nowMs = Date.now();
+  if (
+    (courseRow.available_from && nowMs < new Date(courseRow.available_from).getTime()) ||
+    (courseRow.available_until && nowMs > new Date(courseRow.available_until).getTime())
+  ) {
+    notFound();
+  }
+
   const course = courseRow as any;
 
   // Fetch instructor info
@@ -290,6 +300,20 @@ export default async function CourseDetailPage({
   const skills: string[] = metadata.skills || course.tags || [];
   const learningOutcomes: string[] = metadata.learning_outcomes || metadata.learningOutcomes || [];
 
+  // Learner-facing course content artifacts (decks, guides, materials).
+  const { data: resourceRows } = await service
+    .from("course_resources")
+    .select("id, title, resource_type, file_url")
+    .eq("course_id", course.id)
+    .eq("audience", "learner")
+    .order("created_at", { ascending: true });
+  const resources = (resourceRows ?? []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    type: r.resource_type as string,
+    fileUrl: r.file_url as string,
+  }));
+
   const courseData: CourseData = {
     id: course.id,
     slug: course.slug,
@@ -316,7 +340,9 @@ export default async function CourseDetailPage({
     gradient: getGradient(categorySlug),
     skills,
     learningOutcomes,
+    optimalAudience: metadata.optimal_audience || metadata.optimalAudience || "",
     modules,
+    resources,
     reviews: metadata.reviews || [],
     relatedCourses,
   };

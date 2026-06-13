@@ -22,6 +22,7 @@ import { cn } from "@/utils/cn";
 import Link from "next/link";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -127,6 +128,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
+      <ObservationDevelopmentNotice />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

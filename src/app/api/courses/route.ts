@@ -16,7 +16,10 @@ export async function GET(request: NextRequest) {
   const { data: profile } = await service.from("users").select("id, role").eq("auth_id", user.id).single();
   const { searchParams } = new URL(request.url);
 
-  const status = searchParams.get("status") || "published";
+  // Only admins/instructors may browse non-published courses (drafts etc.).
+  const canSeeUnpublished = ["admin", "super_admin", "instructor"].includes(profile?.role ?? "");
+  const requestedStatus = searchParams.get("status") || "published";
+  const status = canSeeUnpublished ? requestedStatus : "published";
   const category = searchParams.get("category");
   const search = searchParams.get("search");
   const difficulty = searchParams.get("difficulty");
@@ -190,7 +193,7 @@ export async function PATCH(request: NextRequest) {
 
   const { data, error } = await service
     .from("courses")
-    .update(updates)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select()
     .single();

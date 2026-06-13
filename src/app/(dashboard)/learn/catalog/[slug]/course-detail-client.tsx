@@ -23,7 +23,8 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDuration, formatDate } from "@/utils/format";
 import { trackEvent } from "@/lib/analytics/track";
-import OfflineDownload from "@/components/pwa/offline-download";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { courseTypeDefinition } from "@/lib/course-type-info";
 
 export interface Lesson {
   id: string;
@@ -79,7 +80,9 @@ export interface CourseData {
   gradient: string;
   skills: string[];
   learningOutcomes: string[];
+  optimalAudience?: string;
   modules: Module[];
+  resources?: { id: string; title: string; type: string; fileUrl: string }[];
   reviews: Review[];
   relatedCourses: RelatedCourse[];
 }
@@ -231,7 +234,17 @@ export default function CourseDetailClient({
           </a>
           <div className="flex flex-wrap items-start gap-3">
             <DifficultyBadge difficulty={course.difficulty} />
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">{course.type}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
+              {course.type}
+              {courseTypeDefinition(course.type) && (
+                <InfoTooltip
+                  content={courseTypeDefinition(course.type)}
+                  label={`What "${course.type}" means`}
+                  side="bottom"
+                  iconClassName="text-white/80"
+                />
+              )}
+            </span>
           </div>
           <h1 className="mt-3 text-3xl font-bold md:text-4xl">{course.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">{course.shortDescription}</p>
@@ -260,6 +273,11 @@ export default function CourseDetailClient({
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900">About This Course</h2>
               <p className="mt-3 leading-relaxed text-gray-600">{course.fullDescription}</p>
+              {course.optimalAudience && (
+                <p className="mt-4 text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">Ideal for:</span> {course.optimalAudience}
+                </p>
+              )}
             </section>
 
             {/* Prerequisites */}
@@ -396,6 +414,34 @@ export default function CourseDetailClient({
               </div>
             </section>
 
+            {/* Course Materials */}
+            {course.resources && course.resources.length > 0 && (
+              <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-semibold text-gray-900">Course Materials</h2>
+                <ul className="mt-4 divide-y divide-gray-100">
+                  {course.resources.map((r) => (
+                    <li key={r.id} className="flex items-center justify-between gap-3 py-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-gray-900">{r.title}</p>
+                        <p className="text-xs capitalize text-gray-400">
+                          {r.type.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <a
+                        href={r.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        Download
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Instructor */}
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900">Your Instructor</h2>
@@ -406,7 +452,7 @@ export default function CourseDetailClient({
                 <div>
                   <h3 className="font-semibold text-gray-900">{course.instructor.name}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                    {course.instructor.bio}
+                    {course.instructor.bio || "This instructor hasn't added a bio yet."}
                   </p>
                 </div>
               </div>
@@ -511,13 +557,6 @@ export default function CourseDetailClient({
                         style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
                       />
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <OfflineDownload
-                      courseId={course.id || course.slug}
-                      slug={course.slug}
-                      title={course.title}
-                    />
                   </div>
                 </>
               )}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { trackEvent } from "@/lib/analytics/track";
+import { formatZonedTime, timezoneAbbrev } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import type { ILTSessionStatus, ILTLocationType, AttendanceStatus } from "@/types/database";
@@ -27,6 +28,7 @@ export interface LearnerSession {
   course_title: string;
   session_title: string;
   instructor_name: string;
+  instructor_bio?: string;
   session_date: string;
   start_time: string;
   end_time: string;
@@ -46,6 +48,8 @@ export interface LearnerSession {
 
 export interface ILTSessionsClientProps {
   sessions: LearnerSession[];
+  /** Viewer's timezone (IANA). When set, session times are shown in it. */
+  userTimeZone?: string | null;
 }
 
 const TABS = [
@@ -239,7 +243,7 @@ function MeetingPasswordDisplay({ password }: { password: string }) {
 
 // ─── Main Component ──────────────────────────────────────────────
 
-export default function ILTSessionsClient({ sessions: initialSessions }: ILTSessionsClientProps) {
+export default function ILTSessionsClient({ sessions: initialSessions, userTimeZone }: ILTSessionsClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
   const [sessions, setSessions] = useState(initialSessions);
 
@@ -303,7 +307,7 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
           <h1 className="text-2xl font-bold text-gray-900">Webinars</h1>
           <InfoTooltip content={getHelp("learn.ilt-sessions").details} label="About Webinars" side="bottom" />
         </div>
-        <p className="mt-1 text-gray-500">View upcoming sessions, register, and review past attendance.</p>
+        <p className="mt-1 text-gray-500">Browse open learning events and webinars, register, and review past attendance.</p>
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200">
@@ -403,7 +407,9 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                            {session.start_time} - {session.end_time} ({session.timezone.replace("America/", "")})
+                            {userTimeZone
+                              ? `${formatZonedTime(session.session_date, session.start_time, session.timezone, userTimeZone)} - ${formatZonedTime(session.session_date, session.end_time, session.timezone, userTimeZone)} (${timezoneAbbrev(userTimeZone, new Date(session.session_date))})`
+                              : `${session.start_time} - ${session.end_time} (${session.timezone.replace("America/", "")})`}
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <LocationIcon className="h-3.5 w-3.5 flex-shrink-0" />
@@ -414,6 +420,13 @@ export default function ILTSessionsClient({ sessions: initialSessions }: ILTSess
                           <div className="flex items-center gap-1.5 text-xs text-gray-500">
                             <User className="h-3.5 w-3.5 flex-shrink-0" />
                             {session.instructor_name}
+                            {session.instructor_bio && (
+                              <InfoTooltip
+                                content={session.instructor_bio}
+                                label={`About ${session.instructor_name}`}
+                                side="top"
+                              />
+                            )}
                           </div>
                         </div>
                       </div>

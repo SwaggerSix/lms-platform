@@ -359,3 +359,37 @@ export function mentorshipMatch(params: {
     text: `Hi ${params.recipientName}, ${params.role === "mentor" ? `${params.otherName} has been paired with you for mentorship.` : `${params.otherName} will be your mentor.`} View it at ${params.link}.`,
   };
 }
+
+export function mentorshipSessionScheduled(params: {
+  recipientName: string;
+  otherName: string;
+  whenText: string;
+  durationMinutes: number;
+  meetingUrl?: string | null;
+  googleUrl: string;
+  outlookUrl: string;
+  icsUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Mentoring session scheduled</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">Hi ${params.recipientName},</p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      Your mentoring session with <strong>${params.otherName}</strong> is scheduled for
+      <strong>${params.whenText}</strong> (${params.durationMinutes} minutes).
+    </p>
+    ${params.meetingUrl ? `<p style="margin:0 0 16px;color:#374151;font-size:14px;">Meeting link: <a href="${params.meetingUrl}">${params.meetingUrl}</a></p>` : ""}
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;">Add it to your calendar:</p>
+    <p style="margin:0 0 16px;font-size:14px;">
+      <a href="${params.googleUrl}" style="color:#4f46e5;margin-right:14px;">Google Calendar</a>
+      <a href="${params.outlookUrl}" style="color:#4f46e5;margin-right:14px;">Outlook</a>
+      <a href="${params.icsUrl}" style="color:#4f46e5;">Apple / iCal</a>
+    </p>
+    ${button("View Mentorship", params.icsUrl.replace(/\/api\/.*$/, "/learn/mentorship"))}
+  `;
+  return {
+    subject: `Mentoring session with ${params.otherName} — ${params.whenText}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.recipientName}, your mentoring session with ${params.otherName} is scheduled for ${params.whenText} (${params.durationMinutes} min).${params.meetingUrl ? ` Meeting: ${params.meetingUrl}.` : ""} Add to calendar — Google: ${params.googleUrl} | Outlook: ${params.outlookUrl} | iCal: ${params.icsUrl}`,
+  };
+}

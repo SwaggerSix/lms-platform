@@ -13,10 +13,32 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+const SIDEBAR_COLLAPSED_KEY = "lms:sidebar:collapsed";
+
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Restore the user's sidebar collapse preference
+  useEffect(() => {
+    try {
+      setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
+    } catch {
+      // Ignore unavailable storage
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, prev ? "0" : "1");
+      } catch {
+        // Ignore unavailable storage
+      }
+      return !prev;
+    });
+  };
 
   // Close mobile sidebar on navigation
   useEffect(() => {
@@ -53,10 +75,7 @@ export default function AppShell({ children }: AppShellProps) {
       <div className="flex h-screen overflow-hidden bg-gray-50">
         {/* Desktop sidebar */}
         <div className="hidden lg:flex">
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          />
+          <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
         </div>
 
         {/* Mobile sidebar overlay */}
@@ -73,10 +92,7 @@ export default function AppShell({ children }: AppShellProps) {
               aria-hidden="true"
             />
             <div className="relative z-50 flex">
-              <Sidebar
-                collapsed={false}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-              />
+              <Sidebar collapsed={false} />
               <button
                 onClick={() => setMobileOpen(false)}
                 className="ml-1 mt-3 rounded-full bg-gray-900/80 p-1.5 text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900"

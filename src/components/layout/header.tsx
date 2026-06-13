@@ -12,7 +12,6 @@ import {
   User,
   LogOut,
   Settings,
-  X,
   HelpCircle,
 } from "lucide-react";
 import { useRealtimeSubscription } from "@/hooks/use-realtime";
@@ -34,15 +33,42 @@ function relativeTime(dateStr: string): string {
   return diffDays === 1 ? "Yesterday" : `${diffDays}d ago`;
 }
 
+// Path segments whose auto-generated label would be wrong or unreadable.
+const SEGMENT_LABELS: Record<string, string> = {
+  "ilt-sessions": "ILT Sessions",
+  "training-events": "ILT Session Log",
+  "ai-create": "AI Course Creator",
+  sso: "SSO",
+  xapi: "xAPI / LRS",
+  hris: "HRIS",
+  ecommerce: "eCommerce",
+  faq: "FAQ",
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function segmentLabel(segment: string): string {
+  if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
+  if (UUID_RE.test(segment)) return "Details";
+  return segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Top-level route groups that have no index page — they organize sub-routes
+// but aren't themselves navigable, so their breadcrumb should not be a link.
+const NON_NAVIGABLE_HREFS = new Set(["/learn", "/manager", "/admin"]);
+
 function generateBreadcrumbs(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.map((segment, idx) => ({
-    label: segment
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase()),
-    href: "/" + segments.slice(0, idx + 1).join("/"),
-    isLast: idx === segments.length - 1,
-  }));
+  return segments.map((segment, idx) => {
+    const href = "/" + segments.slice(0, idx + 1).join("/");
+    const isLast = idx === segments.length - 1;
+    return {
+      label: segmentLabel(segment),
+      href,
+      isLast,
+      clickable: !isLast && !NON_NAVIGABLE_HREFS.has(href),
+    };
+  });
 }
 
 interface HeaderProps {
@@ -169,17 +195,24 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 {idx > 0 && (
                   <ChevronRight className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />
                 )}
-                {crumb.isLast ? (
-                  <span className="font-medium text-gray-900" aria-current="page">
-                    {crumb.label}
-                  </span>
-                ) : (
+                {crumb.clickable ? (
                   <Link
                     href={crumb.href}
                     className="text-gray-500 hover:text-gray-700"
                   >
                     {crumb.label}
                   </Link>
+                ) : (
+                  <span
+                    className={
+                      crumb.isLast
+                        ? "font-medium text-gray-900"
+                        : "text-gray-500"
+                    }
+                    aria-current={crumb.isLast ? "page" : undefined}
+                  >
+                    {crumb.label}
+                  </span>
                 )}
               </li>
             ))}
@@ -264,6 +297,11 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto" role="list">
+                {notifications.length === 0 && (
+                  <p className="px-4 py-8 text-center text-sm text-gray-500">
+                    You&apos;re all caught up — no notifications yet.
+                  </p>
+                )}
                 {notifications.slice(0, 10).map((notif) => (
                   <div
                     key={notif.id}
@@ -342,15 +380,17 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 <User className="h-4 w-4" aria-hidden="true" />
                 Profile
               </Link>
-              <Link
-                href="/admin/settings"
-                onClick={() => setUserOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
-                role="menuitem"
-              >
-                <Settings className="h-4 w-4" aria-hidden="true" />
-                Settings
-              </Link>
+              {(authUser?.role === "admin" || authUser?.role === "super_admin") && (
+                <Link
+                  href="/admin/settings"
+                  onClick={() => setUserOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                  role="menuitem"
+                >
+                  <Settings className="h-4 w-4" aria-hidden="true" />
+                  Settings
+                </Link>
+              )}
               <div className="border-t border-gray-100">
                 <button
                   onClick={async () => {

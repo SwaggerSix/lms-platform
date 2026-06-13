@@ -245,10 +245,12 @@ export default async function DashboardPage() {
         .select(`
           id,
           title,
+          slug,
           description,
           estimated_duration,
           course_type,
           created_by,
+          metadata,
           instructor:users!courses_created_by_fkey ( first_name, last_name )
         `)
         .eq("status", "published")
@@ -323,7 +325,11 @@ export default async function DashboardPage() {
   ).map((course: any, index: number) => {
     const hash = hashCode(course.id);
     const enrolled = 100 + (hash % 800);
-    const rating = 4.5 + ((hash % 5) / 10);
+    // Only show a rating when the course actually has reviews — never fabricate
+    // one for newly created/never-deployed courses.
+    const meta = course.metadata || {};
+    const reviewCount = meta.review_count ?? meta.reviewCount ?? 0;
+    const rating = reviewCount > 0 ? Math.round((meta.rating ?? 0) * 10) / 10 : 0;
     const instructor = course.instructor
       ? `${course.instructor.first_name} ${course.instructor.last_name}`
       : "Instructor";
@@ -331,11 +337,12 @@ export default async function DashboardPage() {
     return {
       id: course.id,
       title: course.title ?? "Untitled Course",
+      slug: course.slug ?? "",
       description: course.description ?? "",
       thumbnail: SPOTLIGHT_GRADIENTS[index % SPOTLIGHT_GRADIENTS.length],
       instructor,
       enrolled,
-      rating: Math.round(rating * 10) / 10,
+      rating,
       duration: formatDuration(course.estimated_duration ?? 60),
       type: COURSE_TYPE_LABELS[course.course_type] ?? course.course_type,
       badge: SPOTLIGHT_BADGES[index] ?? "New",

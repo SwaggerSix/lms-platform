@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import AssignmentsClient from "./assignments-client";
-import type { Assignment, Course, TeamMemberOption } from "./assignments-client";
+import type { Assignment, Course, TeamMemberOption, PathOption } from "./assignments-client";
 import { formatDuration } from "@/utils/format";
 
 export const metadata: Metadata = {
@@ -153,6 +153,20 @@ export default async function AssignmentsPage() {
     category: c.category?.name ?? COURSE_TYPE_LABELS[c.course_type] ?? "General",
   }));
 
+  // Fetch published learning paths for the assignment modal
+  const { data: pathsData } = await service
+    .from("learning_paths")
+    .select("id, title, estimated_duration, items:learning_path_items(id)")
+    .eq("status", "published")
+    .order("title", { ascending: true });
+
+  const paths: PathOption[] = (pathsData ?? []).map((p: any) => ({
+    id: p.id,
+    name: p.title ?? "Untitled Path",
+    duration: formatDuration(p.estimated_duration),
+    courseCount: Array.isArray(p.items) ? p.items.length : 0,
+  }));
+
   // Map team members for the modal
   const teamMembers: TeamMemberOption[] = (teamMembersData ?? []).map(
     (u: any) => ({
@@ -166,6 +180,7 @@ export default async function AssignmentsPage() {
       assignments={assignments}
       courses={courses}
       teamMembers={teamMembers}
+      paths={paths}
     />
   );
 }

@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
+import { provisionCourseMaterials } from "@/lib/services/course-materials";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -25,6 +26,17 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get("user_id");
   if (userId && userId !== profile.id && !["admin", "manager"].includes(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // Managers may only query enrollments of their own direct reports.
+  if (userId && userId !== profile.id && profile.role === "manager") {
+    const { data: target } = await service
+      .from("users")
+      .select("manager_id")
+      .eq("id", userId)
+      .single();
+    if (!target || target.manager_id !== profile.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
   const status = searchParams.get("status");
   const courseId = searchParams.get("course_id");
@@ -186,9 +198,21 @@ export async function POST(request: NextRequest) {
   // Check if the course requires approval for enrollment
   const { data: course } = await service
     .from("courses")
-    .select("enrollment_type")
+    .select("enrollment_type, available_from, available_until")
     .eq("id", validation.data.course_id)
     .single();
+
+  // Block enrollment outside the course's availability window (client licensing).
+  const enrollNow = Date.now();
+  if (
+    (course?.available_from && enrollNow < new Date(course.available_from).getTime()) ||
+    (course?.available_until && enrollNow > new Date(course.available_until).getTime())
+  ) {
+    return NextResponse.json(
+      { error: "This course is not currently available." },
+      { status: 403 }
+    );
+  }
 
   if (course?.enrollment_type === "approval" && !["admin", "manager"].includes(profile.role)) {
     // Check for an existing pending request
@@ -274,6 +298,10 @@ export async function POST(request: NextRequest) {
     console.error("Enrollments API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+
+  // Copy the course's learner materials into the user's Documents (persists
+  // for future access). Best-effort.
+  await provisionCourseMaterials(service, targetUserId, validation.data.course_id);
 
   // Award points for enrollment
   await service.from("points_ledger").insert({

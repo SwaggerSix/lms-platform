@@ -244,14 +244,18 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
               }}
               className="shadow-lg rounded overflow-hidden"
             >
-              <div
+              {/* Rendered via <img> so the SVG can never execute scripts,
+                  regardless of what the template contains. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`data:image/svg+xml;base64,${Buffer.from(svgString).toString("base64")}`}
+                alt={`Certificate for ${certData.learner_name}`}
                 style={{
                   transform: "scale(0.65)",
                   transformOrigin: "top left",
                   width: designData.dimensions.width,
                   height: designData.dimensions.height,
                 }}
-                dangerouslySetInnerHTML={{ __html: svgString }}
               />
             </div>
           </div>

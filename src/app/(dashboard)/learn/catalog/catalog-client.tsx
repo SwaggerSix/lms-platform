@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration, formatNumber } from "@/utils/format";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { courseTypeDefinition } from "@/lib/course-type-info";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type CourseType = "Video" | "Interactive" | "Document" | "Blended";
@@ -328,6 +330,13 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                       <span className="text-sm text-gray-600">{type}</span>
+                      {courseTypeDefinition(type) && (
+                        <InfoTooltip
+                          content={courseTypeDefinition(type)}
+                          label={`What "${type}" means`}
+                          side="right"
+                        />
+                      )}
                     </label>
                   ))}
                 </div>

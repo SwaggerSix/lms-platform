@@ -18,6 +18,7 @@ import { cn } from "@/utils/cn";
 import Link from "next/link";
 import { PageIntro } from "@/components/ui/page-intro";
 import { getHelp } from "@/lib/help-content";
+import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -135,6 +136,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <ObservationDevelopmentNotice />
       {/* Header */}
       <PageIntro
         title={getHelp("learn.observations").title}

@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
   const service = createServiceClient();
   const { searchParams } = new URL(request.url);
   const courseId = searchParams.get("course_id");
+  const topic = searchParams.get("topic");
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
   const offset = (page - 1) * limit;
@@ -27,13 +28,16 @@ export async function GET(request: NextRequest) {
   // Query top-level threads (parent_id IS NULL)
   let query = service
     .from("discussions")
-    .select("id, title, body, course_id, user_id, upvotes, is_pinned, created_at, updated_at, author:users!discussions_user_id_fkey(first_name, last_name)", { count: "exact" })
+    .select("id, title, body, course_id, topic, user_id, upvotes, is_pinned, created_at, updated_at, author:users!discussions_user_id_fkey(first_name, last_name)", { count: "exact" })
     .is("parent_id", null)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (courseId) {
     query = query.eq("course_id", courseId);
+  }
+  if (topic) {
+    query = query.eq("topic", topic);
   }
 
   const { data: threads, error, count } = await query;
@@ -102,7 +106,7 @@ export async function POST(request: NextRequest) {
 
   // ---- Create a new top-level discussion thread ----
   if (action === "create_thread") {
-    const { title, body: threadBody, course } = body;
+    const { title, body: threadBody, course, course_id, topic } = body;
 
     if (!title || !threadBody) {
       return NextResponse.json(
@@ -111,9 +115,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optionally resolve course name to course_id
-    let courseId: string | null = null;
-    if (course) {
+    // Prefer an explicit course_id; fall back to resolving a course name.
+    let courseId: string | null = course_id ?? null;
+    if (!courseId && course) {
       const { data: courseRow } = await service
         .from("courses")
         .select("id")
@@ -130,6 +134,7 @@ export async function POST(request: NextRequest) {
         title,
         body: threadBody,
         course_id: courseId,
+        topic: topic || null,
         parent_id: null,
         upvotes: 0,
         is_pinned: false,

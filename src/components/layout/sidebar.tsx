@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
@@ -15,8 +15,10 @@ import {
   Award,
   Trophy,
   MessageSquare,
+  MessagesSquare,
   Users,
   ClipboardList,
+  ClipboardCheck,
   ShieldCheck,
   BarChart3,
   UserCog,
@@ -41,22 +43,24 @@ import {
   CalendarDays,
   CheckSquare,
   Clock,
+  History,
   KeyRound,
   Zap,
   ShoppingCart,
+  ShoppingBag,
   Bot,
   Heart,
-  Microscope,
   Puzzle,
   Store,
+  BookMarked,
   BrainCircuit,
   Network,
   Globe,
   Eye,
   Workflow,
-  Headset,
   Link2,
   TrendingUp,
+  Wand2,
   MessageSquareMore,
 } from "lucide-react";
 import { useLocale } from "next-intl";
@@ -80,7 +84,6 @@ interface NavSection {
   bgClass?: string;
 }
 
-// All nav sections including new features
 const navSections: NavSection[] = [
   {
     items: [
@@ -90,35 +93,10 @@ const navSections: NavSection[] = [
     roles: ["learner", "manager", "instructor", "admin", "super_admin"],
   },
   {
-    header: "LEARNER",
-    items: [
-      { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
-      { label: "My Courses", href: "/learn/my-courses", icon: Library },
-      { label: "Learning Paths", href: "/learn/paths", icon: Route },
-      { label: "Certifications", href: "/learn/certifications", icon: Award },
-      { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification" },
-      { label: "Discussions", href: "/learn/discussions", icon: MessageSquare, featureKey: "social_learning" },
-      { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
-      { label: "Documents", href: "/learn/documents", icon: FolderOpen },
-      { label: "Knowledge Base", href: "/learn/knowledge-base", icon: HelpCircle },
-      { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
-      { label: "Transcript", href: "/learn/transcript", icon: FileText },
-      { label: "Shop", href: "/shop", icon: ShoppingCart, featureKey: "ecommerce" },
-      { label: "AI Chat", href: "/learn/chat", icon: Bot, featureKey: "ai_chat" },
-      { label: "Mentorship", href: "/learn/mentorship", icon: Heart, featureKey: "mentorship" },
-      { label: "Microlearning", href: "/learn/microlearning", icon: Puzzle, featureKey: "microlearning" },
-      { label: "Marketplace", href: "/learn/marketplace", icon: Store, featureKey: "marketplace" },
-      { label: "360 Feedback", href: "/learn/feedback", icon: MessageSquare, featureKey: "feedback_360" },
-      { label: "Observations", href: "/learn/observations", icon: Eye, featureKey: "observations" },
-      { label: "Evaluations", href: "/learn/evaluations", icon: ClipboardList, featureKey: "evaluations" },
-      { label: "Nudges", href: "/learn/nudges", icon: Zap, featureKey: "nudges" },
-    ],
-    roles: ["learner", "manager", "admin", "super_admin"],
-  },
-  {
     header: "INSTRUCTOR",
     items: [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "My Bio", href: "/instructor/bio", icon: User },
       { label: "Messages", href: "/learn/messages", icon: Mail },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
@@ -127,45 +105,99 @@ const navSections: NavSection[] = [
     bgClass: "bg-gray-800/30",
   },
   {
-    header: "MANAGEMENT",
+    header: "Learning",
+    items: [
+      { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen },
+      { label: "My Courses", href: "/learn/my-courses", icon: Library },
+      { label: "Learning Paths", href: "/learn/paths", icon: Route },
+      { label: "Certifications", href: "/learn/certifications", icon: Award },
+      { label: "Transcript", href: "/learn/transcript", icon: FileText },
+      { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
+      { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification" },
+      { label: "Discussions", href: "/learn/discussions", icon: MessageSquare, featureKey: "social_learning" },
+      { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
+      { label: "Documents", href: "/learn/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/learn/knowledge-base", icon: BookMarked },
+      { label: "AI Chat", href: "/learn/chat", icon: Bot, featureKey: "ai_chat" },
+      { label: "Mentorship", href: "/learn/mentorship", icon: Heart, featureKey: "mentorship" },
+      { label: "Microlearning", href: "/learn/microlearning", icon: Puzzle, featureKey: "microlearning" },
+      { label: "Marketplace", href: "/learn/marketplace", icon: Store, featureKey: "marketplace" },
+      { label: "Shop", href: "/shop", icon: ShoppingCart, featureKey: "ecommerce" },
+      { label: "360 Feedback", href: "/learn/feedback", icon: MessagesSquare, featureKey: "feedback_360" },
+      { label: "Observations", href: "/learn/observations", icon: Eye, featureKey: "observations" },
+      { label: "Evaluations", href: "/learn/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
+      { label: "Nudges", href: "/learn/nudges", icon: Zap, featureKey: "nudges" },
+    ],
+    roles: ["learner", "manager", "admin", "super_admin"],
+  },
+  {
+    // Instructors don't see the Learning or Administration sections, so this
+    // section carries their day-to-day links. Admins reach the same pages via
+    // the Administration sections, which keeps the sidebar free of duplicates.
+    header: "Instructor",
+    items: [
+      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },
+    ],
+    roles: ["instructor"],
+    bgClass: "bg-gray-800/30",
+  },
+  {
+    header: "Management",
     items: [
       { label: "My Team", href: "/manager/team", icon: Users },
       { label: "Approvals", href: "/manager/approvals", icon: CheckSquare },
       { label: "Assignments", href: "/manager/assignments", icon: ClipboardList },
-      { label: "Nudges", href: "/manager/nudges", icon: Zap },
       { label: "Compliance", href: "/manager/compliance", icon: ShieldCheck },
       { label: "Team Skills", href: "/manager/skills", icon: BarChart3 },
       { label: "Team Analytics", href: "/manager/analytics", icon: TrendingUp },
+      { label: "Nudges", href: "/manager/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["manager", "admin", "super_admin"],
     bgClass: "bg-gray-800/30",
   },
   {
-    header: "ADMINISTRATION",
+    header: "Admin · People & Courses",
     items: [
       { label: "Users", href: "/admin/users", icon: UserCog },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap },
-      { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays },
-      { label: "ILT Sessions", href: "/admin/training-events", icon: ClipboardList },
+      { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion },
       { label: "Certifications", href: "/admin/certifications", icon: Medal },
+      { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
+    ],
+    roles: ["admin", "super_admin"],
+    bgClass: "bg-gray-800/60",
+  },
+  {
+    header: "Admin · Governance",
+    items: [
       { label: "Compliance", href: "/admin/compliance", icon: Scale },
       { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
       { label: "Skills", href: "/admin/skills", icon: Sparkles },
-      { label: "Gamification", href: "/admin/gamification", icon: Gamepad2 },
-      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
-      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
       { label: "Reports", href: "/admin/reports", icon: PieChart },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
-      { label: "360 Feedback", href: "/admin/feedback", icon: MessageSquare },
-      { label: "Mentorship", href: "/admin/mentorship", icon: Heart },
-      { label: "Observations", href: "/admin/observations", icon: Eye },
-      { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardList },
-      { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle },
-      { label: "Nudges", href: "/admin/nudges", icon: Zap },
+    ],
+    roles: ["admin", "super_admin"],
+    bgClass: "bg-gray-800/60",
+  },
+  {
+    header: "Admin · Engagement",
+    items: [
+      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },
+      { label: "Gamification", href: "/admin/gamification", icon: Gamepad2, featureKey: "gamification" },
+      { label: "360 Feedback", href: "/admin/feedback", icon: MessagesSquare, featureKey: "feedback_360" },
+      { label: "Mentorship", href: "/admin/mentorship", icon: Heart, featureKey: "mentorship" },
+      { label: "Observations", href: "/admin/observations", icon: Eye, featureKey: "observations" },
+      { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
+      { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle, featureKey: "microlearning" },
+      { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["admin", "super_admin"],
     bgClass: "bg-gray-800/60",
@@ -173,13 +205,13 @@ const navSections: NavSection[] = [
   {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
     // cross-organization concerns and are hidden from client Admins.
-    header: "Super Admin",
+    header: "Platform",
     items: [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
-      { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Sparkles },
+      { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Wand2 },
       { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
       { label: "Storefronts", href: "/admin/storefronts", icon: Store },
-      { label: "Marketplace", href: "/admin/marketplace", icon: Store },
+      { label: "Marketplace", href: "/admin/marketplace", icon: ShoppingBag },
       { label: "Predictive Analytics", href: "/admin/analytics/predictive", icon: BrainCircuit },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
       { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
@@ -196,35 +228,57 @@ const navSections: NavSection[] = [
   },
 ];
 
+const COLLAPSED_SECTIONS_KEY = "lms:sidebar:collapsed-sections";
+
 interface SidebarProps {
   collapsed: boolean;
-  onToggle: () => void;
-  onClose?: () => void;
+  /** When omitted (e.g. in the mobile overlay) the collapse toggle is hidden. */
+  onToggle?: () => void;
 }
 
-export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, boolean> | null>(null);
 
-  const toggleSection = (header: string) =>
-    setCollapsedSections((prev) => ({ ...prev, [header]: !prev[header] }));
   const { user } = useAuth();
   const locale = useLocale();
   const currentRole: Role = (user?.role as Role) ?? "learner";
 
-  // Load feature flags from platform settings
+  // Restore per-section collapse preferences
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(COLLAPSED_SECTIONS_KEY);
+      if (stored) setCollapsedSections(JSON.parse(stored));
+    } catch {
+      // Ignore corrupt/unavailable storage
+    }
+  }, []);
+
+  const toggleSection = (header: string) =>
+    setCollapsedSections((prev) => {
+      const next = { ...prev, [header]: !prev[header] };
+      try {
+        localStorage.setItem(COLLAPSED_SECTIONS_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore unavailable storage
+      }
+      return next;
+    });
+
+  // Load the effective feature flags for the current user (resolved against
+  // their tenant, falling back to platform defaults).
   useEffect(() => {
     async function loadFeatures() {
       try {
-        const res = await fetch("/api/settings?key=features");
+        const res = await fetch("/api/features");
         if (res.ok) {
           const data = await res.json();
-          setEnabledFeatures(data.value || {});
+          setEnabledFeatures(data.features || {});
         }
       } catch {
-        // Default to all enabled if settings can't be loaded
+        // Default to all enabled if features can't be loaded
       }
     }
     loadFeatures();
@@ -244,20 +298,38 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
     ? `${(user.first_name || "?")[0]}${(user.last_name || "?")[0]}`
     : "?";
 
-  const filteredSections = navSections
-    .filter((section) => section.roles.includes(currentRole))
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => {
-        // If no featureKey, always show
-        if (!item.featureKey) return true;
-        // If features haven't loaded yet, show everything (avoid flash of missing items)
-        if (!enabledFeatures) return true;
-        // Check if the feature is enabled (default to true if not explicitly disabled)
-        return enabledFeatures[item.featureKey] !== false;
-      }),
-    }))
-    .filter((section) => section.items.length > 0);
+  const filteredSections = useMemo(
+    () =>
+      navSections
+        .filter((section) => section.roles.includes(currentRole))
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) => {
+            // If no featureKey, always show
+            if (!item.featureKey) return true;
+            // If features haven't loaded yet, show everything (avoid flash of missing items)
+            if (!enabledFeatures) return true;
+            // Check if the feature is enabled (default to true if not explicitly disabled)
+            return enabledFeatures[item.featureKey] !== false;
+          }),
+        }))
+        .filter((section) => section.items.length > 0),
+    [currentRole, enabledFeatures]
+  );
+
+  // Highlight only the most specific match so parent routes (e.g. /admin/settings)
+  // don't light up alongside their children (e.g. /admin/settings/sso).
+  const activeHref = useMemo(() => {
+    let best = "";
+    for (const section of filteredSections) {
+      for (const item of section.items) {
+        const matches =
+          pathname === item.href || pathname.startsWith(item.href + "/");
+        if (matches && item.href.length > best.length) best = item.href;
+      }
+    }
+    return best;
+  }, [filteredSections, pathname]);
 
   return (
     <aside
@@ -285,7 +357,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
 
           return (
           <div
-            key={sectionIdx}
+            key={section.header ?? sectionIdx}
             role="group"
             aria-label={section.header || "Main"}
             className={cn(
@@ -315,9 +387,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
             <ul role="list" className="space-y-0.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                const isActive = item.href === activeHref;
 
                 return (
                   <li key={item.href}>
@@ -424,19 +494,21 @@ export default function Sidebar({ collapsed, onToggle, onClose }: SidebarProps) 
       </div>
 
       {/* Collapse toggle */}
-      <div className="border-t border-gray-800 p-3">
-        <button
-          onClick={onToggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex w-full items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-5 w-5" aria-hidden="true" />
-          ) : (
-            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-          )}
-        </button>
-      </div>
+      {onToggle && (
+        <div className="border-t border-gray-800 p-3">
+          <button
+            onClick={onToggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="flex w-full items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

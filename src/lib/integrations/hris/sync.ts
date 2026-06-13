@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { decryptConfigSecrets } from "@/lib/security/secret-crypto";
 import { getHRISProvider, type HRISConfig, type HRISEmployee } from "./providers";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -35,6 +36,8 @@ export async function syncHRISUsers(
   if (intError || !integration) {
     throw new Error(`Integration not found: ${integrationId}`);
   }
+
+  integration.config = decryptConfigSecrets(integration.config as Record<string, unknown>);
 
   if (!integration.is_active) {
     throw new Error(`Integration ${integrationId} is not active`);

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   if (activeOnly) query = query.eq("is_active", true);
   if (category) query = query.eq("category", category);
 
-  const { data, error } = await query;
+  const { data, error } = await query.range(0, 4999);
   if (error) {
     console.error("Nudge actions GET error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

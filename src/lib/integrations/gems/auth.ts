@@ -4,6 +4,7 @@ import {
   type Configuration,
 } from "@azure/msal-node";
 import type { GemsConfig } from "./types";
+import { decryptIfEncrypted } from "@/lib/security/secret-crypto";
 
 // ─────────────────────────────────────────────────────────────────
 // GEMS auth — Azure AD bearer tokens.
@@ -42,7 +43,7 @@ function getConfidentialClient(config: GemsConfig): ConfidentialClientApplicatio
       auth: {
         clientId: config.client_id,
         authority: `https://login.microsoftonline.com/${config.tenant_id}`,
-        clientSecret: config.client_secret_encrypted,
+        clientSecret: decryptIfEncrypted(config.client_secret_encrypted),
       },
     };
     client = new ConfidentialClientApplication(msalConfig);
@@ -93,7 +94,7 @@ export async function getAccessToken(config: GemsConfig): Promise<string> {
     result = await client.acquireTokenByUsernamePassword({
       scopes,
       username: config.service_user_email,
-      password: config.service_user_password_encrypted,
+      password: decryptIfEncrypted(config.service_user_password_encrypted),
     });
   } else {
     const client = getConfidentialClient(config);

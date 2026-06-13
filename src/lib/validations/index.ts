@@ -33,6 +33,8 @@ export const createCourseSchema = z.object({
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
   published_at: z.string().nullable().optional(),
+  available_from: z.string().nullable().optional(),
+  available_until: z.string().nullable().optional(),
   short_description: z.string().max(500).optional(),
   passing_score: z.number().int().min(0).max(100).optional(),
   max_attempts: z.number().int().positive().optional(),
@@ -165,6 +167,7 @@ export const createSkillSchema = z.object({
   category: z.string().max(200).optional(),
   description: z.string().max(2000).optional(),
   parent_id: z.string().uuid().optional().nullable(),
+  tags: z.array(z.string().max(50)).max(50).optional(),
 });
 
 // Discussions
@@ -173,6 +176,8 @@ export const createDiscussionSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   body: z.string().min(1).max(10000).optional(),
   course: z.string().optional(),
+  course_id: z.string().uuid().optional().nullable(),
+  topic: z.string().max(50).optional().nullable(),
   thread_id: z.string().uuid().optional(),
   post_id: z.string().uuid().optional(),
 });

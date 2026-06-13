@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { createClient } from "@/lib/supabase/client";
+import { TwoFactorCard } from "@/components/security/two-factor-card";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 
 /* ------------------------------------------------------------------ */
@@ -122,6 +123,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
+          bio,
           preferences: { ...getCurrentPreferences(), bio },
         }),
       });
@@ -216,7 +218,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferences: prefs }),
+        body: JSON.stringify({ preferences: prefs, timezone }),
       });
       if (!res.ok) {
         const { error } = await res.json();
@@ -532,16 +534,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               </div>
 
               {/* Two-Factor Authentication */}
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h2>
-                <p className="mt-1 text-sm text-gray-500">Add an extra layer of security to your account.</p>
-                <div className="mt-4 flex items-center gap-4">
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700">Not enabled</span>
-                  <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                    Enable 2FA
-                  </button>
-                </div>
-              </div>
+              <TwoFactorCard />
             </div>
           )}
 

@@ -20,6 +20,7 @@ import {
   Loader2,
   AlertTriangle,
   Search,
+  UserPlus,
 } from 'lucide-react';
 
 export interface PathCourse {
@@ -45,6 +46,13 @@ interface AvailableCourse {
   title: string;
   estimated_duration: number | null;
   course_type: string;
+}
+
+interface AssignableUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
 }
 
 interface PathFormData {
@@ -104,7 +112,22 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<LearningPath | null>(null);
 
+  // Assign learners
+  const [assignPath, setAssignPath] = useState<LearningPath | null>(null);
+  const [assignableUsers, setAssignableUsers] = useState<AssignableUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [assigning, setAssigning] = useState(false);
+
   const toast = useToast();
+
+  // Total time is auto-calculated from the durations of the selected courses.
+  const totalDuration = formData.selectedCourseIds.reduce((sum, cid) => {
+    const avail = availableCourses.find((c) => c.id === cid);
+    const existing = editingPath?.courses.find((c) => c.id === cid);
+    return sum + (avail?.estimated_duration ?? existing?.duration ?? 0);
+  }, 0);
 
   const fetchAvailableCourses = useCallback(async () => {
     setLoadingCourses(true);
@@ -195,7 +218,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             title: formData.title,
             description: formData.description,
             status: formData.status,
-            estimated_duration: formData.estimated_duration || null,
+            estimated_duration: totalDuration,
             items,
           }),
         });
@@ -227,9 +250,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   title: formData.title,
                   description: formData.description,
                   status: formData.status,
-                  totalDuration:
-                    formData.estimated_duration ||
-                    selectedCourses.reduce((sum, c) => sum + c.duration, 0),
+                  totalDuration,
                   courseCount: selectedCourses.length,
                   courses: selectedCourses,
                 }
@@ -248,7 +269,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             slug: slugify(formData.title),
             description: formData.description,
             status: formData.status,
-            estimated_duration: formData.estimated_duration || null,
+            estimated_duration: totalDuration,
             items,
           }),
         });
@@ -279,9 +300,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             courseCount: selectedCourses.length,
             enrolled: 0,
             status: formData.status,
-            totalDuration:
-              formData.estimated_duration ||
-              selectedCourses.reduce((sum, c) => sum + c.duration, 0),
+            totalDuration,
             courses: selectedCourses,
           },
           ...prev,
@@ -315,6 +334,89 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
       setDeleting(null);
       setDeleteConfirm(null);
     }
+  };
+
+  const fetchAssignableUsers = useCallback(async (search: string) => {
+    setLoadingUsers(true);
+    try {
+      const params = new URLSearchParams({ status: 'active', limit: '50' });
+      if (search.trim()) params.set('search', search.trim());
+      const res = await fetch(`/api/users?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAssignableUsers(data.users ?? []);
+      }
+    } catch {
+      // Users will show as empty
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, []);
+
+  // Fetch users when the assign modal is open; debounce search changes
+  useEffect(() => {
+    if (!assignPath) return;
+    const t = setTimeout(() => fetchAssignableUsers(userSearch), 250);
+    return () => clearTimeout(t);
+  }, [assignPath, userSearch, fetchAssignableUsers]);
+
+  const openAssignModal = (path: LearningPath) => {
+    setAssignPath(path);
+    setSelectedUserIds([]);
+    setUserSearch('');
+    setAssignableUsers([]);
+  };
+
+  const closeAssignModal = () => {
+    setAssignPath(null);
+    setSelectedUserIds([]);
+    setUserSearch('');
+  };
+
+  const toggleUser = (userId: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleAssign = async () => {
+    if (!assignPath || selectedUserIds.length === 0) return;
+    setAssigning(true);
+    try {
+      const res = await fetch('/api/paths/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path_id: assignPath.id, user_ids: selectedUserIds }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Failed to assign learners');
+        return;
+      }
+      const result = await res.json();
+      const count = result.enrolled_count ?? 0;
+      const skipped = selectedUserIds.length - count;
+      setPaths((prev) =>
+        prev.map((p) =>
+          p.id === assignPath.id ? { ...p, enrolled: p.enrolled + count } : p
+        )
+      );
+      toast.success(
+        skipped > 0
+          ? `Assigned ${count} learner${count === 1 ? '' : 's'} (${skipped} already enrolled)`
+          : `Assigned ${count} learner${count === 1 ? '' : 's'}`
+      );
+      closeAssignModal();
+    } catch {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const userLabel = (u: AssignableUser) => {
+    const name = [u.first_name, u.last_name].filter(Boolean).join(' ').trim();
+    return name || u.email;
   };
 
   const filteredAvailableCourses = availableCourses.filter((c) =>
@@ -379,6 +481,20 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <button
+                  title={path.status === 'published' ? 'Assign learners' : 'Publish the path to assign learners'}
+                  className={cn(
+                    'rounded-lg p-2 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600',
+                    path.status !== 'published' && 'opacity-40 pointer-events-none'
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openAssignModal(path);
+                  }}
+                  disabled={path.status !== 'published'}
+                >
+                  <UserPlus className="h-4 w-4" />
+                </button>
                 <button
                   className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                   onClick={(e) => {
@@ -488,15 +604,15 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Duration (minutes)</label>
-              <input
-                type="number"
-                min={0}
-                value={formData.estimated_duration || ''}
-                onChange={(e) => setFormData({ ...formData, estimated_duration: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                placeholder="0"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Time (auto-calculated)</label>
+              <div className="flex h-[38px] items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span>{totalDuration > 0 ? formatDuration(totalDuration) : '—'}</span>
+              </div>
+              <p className="mt-1 text-xs text-gray-400">
+                Sum of the {formData.selectedCourseIds.length} selected course
+                {formData.selectedCourseIds.length === 1 ? '' : 's'}.
+              </p>
             </div>
           </div>
 
@@ -667,6 +783,113 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           >
             {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
             {deleting ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Assign Learners Modal */}
+      <Modal
+        isOpen={!!assignPath}
+        onClose={closeAssignModal}
+        title={assignPath ? `Assign Learners — ${assignPath.title}` : 'Assign Learners'}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Select learners to enroll in this path. They will also be enrolled in all of its courses.
+          </p>
+
+          {/* Selected users as chips */}
+          {selectedUserIds.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedUserIds.map((uid) => {
+                const u = assignableUsers.find((x) => x.id === uid);
+                return (
+                  <span
+                    key={uid}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+                  >
+                    {u ? userLabel(u) : 'Selected user'}
+                    <button
+                      type="button"
+                      onClick={() => toggleUser(uid)}
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-indigo-200 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {/* User search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Search by name or email..."
+            />
+          </div>
+
+          {/* User list */}
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
+            {loadingUsers ? (
+              <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Loading users...
+              </div>
+            ) : assignableUsers.length === 0 ? (
+              <div className="py-6 text-center text-sm text-gray-400">
+                {userSearch ? 'No users match your search.' : 'No active users found.'}
+              </div>
+            ) : (
+              assignableUsers.map((u) => {
+                const isSelected = selectedUserIds.includes(u.id);
+                return (
+                  <label
+                    key={u.id}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors',
+                      isSelected && 'bg-indigo-50/50'
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleUser(u.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{userLabel(u)}</p>
+                      <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                    </div>
+                  </label>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+          <button
+            onClick={closeAssignModal}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            disabled={assigning || selectedUserIds.length === 0}
+            onClick={handleAssign}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            {assigning && <Loader2 className="h-4 w-4 animate-spin" />}
+            {assigning
+              ? 'Assigning...'
+              : `Assign${selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ''}`}
           </button>
         </div>
       </Modal>
