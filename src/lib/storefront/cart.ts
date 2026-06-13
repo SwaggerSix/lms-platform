@@ -10,7 +10,9 @@ export interface StoreCartItem {
   name: string;
   price: number;
   imageUrl: string | null;
-  quantity: number;
+  quantity: number; // number of employee seats
+  minSeats?: number;
+  maxSeats?: number | null;
 }
 
 const cartKey = (storeSlug: string) => `storefront-cart:${storeSlug}`;
@@ -32,6 +34,13 @@ function writeCart(storeSlug: string, items: StoreCartItem[]) {
   window.dispatchEvent(new CustomEvent(CART_EVENT, { detail: { storeSlug } }));
 }
 
+// Replace the whole cart for a store (used when restoring an abandoned cart
+// from a recovery link).
+export function setCartItems(storeSlug: string, items: StoreCartItem[]) {
+  if (typeof window === "undefined") return;
+  writeCart(storeSlug, items);
+}
+
 export function useStoreCart(storeSlug: string) {
   const [items, setItems] = useState<StoreCartItem[]>([]);
 
@@ -47,16 +56,17 @@ export function useStoreCart(storeSlug: string) {
   }, [storeSlug]);
 
   const addItem = useCallback(
-    (item: Omit<StoreCartItem, "quantity">, quantity = 1) => {
+    (item: Omit<StoreCartItem, "quantity">, quantity?: number) => {
+      const seats = quantity ?? item.minSeats ?? 1;
       const current = readCart(storeSlug);
       const existing = current.find((i) => i.productId === item.productId);
       const next = existing
         ? current.map((i) =>
             i.productId === item.productId
-              ? { ...i, quantity: i.quantity + quantity }
+              ? { ...i, quantity: i.quantity + seats }
               : i
           )
-        : [...current, { ...item, quantity }];
+        : [...current, { ...item, quantity: seats }];
       writeCart(storeSlug, next);
     },
     [storeSlug]

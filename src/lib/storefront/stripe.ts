@@ -109,6 +109,17 @@ export async function retrieveCheckoutSession(
   );
 }
 
+// Refunds a payment intent, optionally a partial amount (in cents). Returns
+// the Stripe refund id. Throws on failure so the caller can surface the error.
+export async function refundPayment(
+  paymentIntentId: string,
+  amountCents?: number
+): Promise<{ id: string; status: string }> {
+  const params: Record<string, string> = { payment_intent: paymentIntentId };
+  if (amountCents && amountCents > 0) params.amount = String(amountCents);
+  return stripeRequest<{ id: string; status: string }>("/refunds", params);
+}
+
 // Verifies a Stripe webhook signature (Stripe-Signature header) against
 // STRIPE_WEBHOOK_SECRET. Returns the parsed event or null if invalid.
 export function verifyWebhookSignature(

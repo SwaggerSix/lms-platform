@@ -9,7 +9,21 @@ const productSchema = z.object({
   price: z.number().min(0).max(999999),
   discount_price: z.number().min(0).max(999999).nullable().optional(),
   category: z.string().max(120).nullable().optional(),
+  categories: z.array(z.string().max(120)).max(20).optional(),
+  duration_label: z.string().max(80).nullable().optional(),
+  delivery_formats: z.array(z.string().max(60)).max(10).optional(),
   image_url: z.string().url().nullable().optional().or(z.literal("")),
+  image_urls: z.array(z.string().url()).max(10).optional(),
+  logistics: z
+    .object({
+      lead_time: z.string().max(200).optional(),
+      coordinator_email: z.string().max(200).optional(),
+      coordinator_phone: z.string().max(60).optional(),
+      notes: z.string().max(2000).optional(),
+    })
+    .optional(),
+  min_participants: z.number().int().min(1).max(10000).optional(),
+  max_participants: z.number().int().min(1).max(10000).nullable().optional(),
   sku: z.string().max(80).nullable().optional(),
   status: z.enum(["active", "inactive", "coming_soon"]).optional(),
   is_featured: z.boolean().optional(),

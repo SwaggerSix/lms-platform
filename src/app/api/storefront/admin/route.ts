@@ -23,6 +23,13 @@ const storefrontSchema = z.object({
   contact_email: z.string().email().nullable().optional().or(z.literal("")),
   announcement: z.string().max(300).nullable().optional(),
   is_active: z.boolean().optional(),
+  // B2B commerce settings
+  order_notify_email: z.string().email().nullable().optional().or(z.literal("")),
+  volume_discounts_enabled: z.boolean().optional(),
+  tax_enabled: z.boolean().optional(),
+  tax_rate: z.number().min(0).max(1).optional(),
+  tax_label: z.string().max(40).optional(),
+  analytics_measurement_id: z.string().max(40).nullable().optional().or(z.literal("")),
 });
 
 export async function GET() {
@@ -122,6 +129,12 @@ export async function PUT(request: NextRequest) {
       logo_url: parsed.data.logo_url || null,
       hero_image_url: parsed.data.hero_image_url || null,
       contact_email: parsed.data.contact_email || null,
+      ...("order_notify_email" in parsed.data && {
+        order_notify_email: parsed.data.order_notify_email || null,
+      }),
+      ...("analytics_measurement_id" in parsed.data && {
+        analytics_measurement_id: parsed.data.analytics_measurement_id || null,
+      }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
