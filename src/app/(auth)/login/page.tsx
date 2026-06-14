@@ -55,7 +55,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/dashboard");
+      const redirect = new URLSearchParams(window.location.search).get("redirect");
+      router.push(redirect && redirect.startsWith("/") ? redirect : "/dashboard");
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {

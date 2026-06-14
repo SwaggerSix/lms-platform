@@ -271,6 +271,46 @@ export function iltSessionReminder(params: {
   };
 }
 
+export function classInvitation(params: {
+  className: string;
+  courseName?: string;
+  inviterName?: string;
+  invitedRole?: "learner" | "instructor" | "observer";
+  startDate?: string;
+  acceptUrl: string;
+  isNewUser?: boolean;
+  portalName?: string;
+}): EmailTemplate {
+  const roleLabel =
+    params.invitedRole === "instructor"
+      ? "an instructor"
+      : params.invitedRole === "observer"
+      ? "an observer"
+      : "a participant";
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You're invited to ${params.className}</h2>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      ${params.inviterName ? `<strong>${params.inviterName}</strong> has invited you` : "You've been invited"}
+      to join <strong>${params.className}</strong>${params.courseName ? ` (${params.courseName})` : ""}
+      as ${roleLabel}.
+    </p>
+    ${params.startDate ? `<p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">The class begins on <strong>${params.startDate}</strong>.</p>` : ""}
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      Everything for this class — sessions, materials, and assessments — lives in one place once you join.
+    </p>
+    ${button(params.isNewUser ? "Accept & Create Account" : "Accept Invitation", params.acceptUrl)}
+    <p style="margin:16px 0 0;color:#6b7280;font-size:12px;">
+      ${params.isNewUser ? "You'll be asked to set up a quick account, then you'll be enrolled automatically." : "If you weren't expecting this invitation, you can ignore this email."}
+    </p>
+  `;
+
+  return {
+    subject: `Invitation: ${params.className}`,
+    html: baseLayout(content, params.portalName),
+    text: `You've been invited to join ${params.className}${params.courseName ? ` (${params.courseName})` : ""} as ${roleLabel}. Accept your invitation: ${params.acceptUrl}`,
+  };
+}
+
 export function scheduledReportDelivery(params: {
   recipientName: string;
   reportName: string;

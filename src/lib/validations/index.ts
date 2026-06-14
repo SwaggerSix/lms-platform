@@ -378,6 +378,28 @@ export const acceptInviteSchema = z.object({
   token: z.string().min(1),
 });
 
+// Classes (cohorts / dated offerings of a course)
+export const createClassSchema = z.object({
+  course_id: z.string().uuid(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(5000).optional().nullable(),
+  start_date: z.string().optional().nullable(),
+  end_date: z.string().optional().nullable(),
+  timezone: z.string().max(100).optional(),
+  instructor_id: z.string().uuid().optional().nullable(),
+  max_capacity: z.number().int().positive().optional().nullable(),
+  status: z.enum(["draft", "scheduled", "in_progress", "completed", "cancelled"]).optional(),
+  enrollment_type: z.enum(["open", "invite", "approval"]).optional(),
+});
+
+export const updateClassSchema = createClassSchema.partial();
+
+// Invite one or more participants to a class
+export const classInviteSchema = z.object({
+  emails: z.array(z.string().email()).min(1).max(200),
+  role: z.enum(["learner", "instructor", "observer"]).default("learner"),
+});
+
 // Workflow Automation
 export const createWorkflowSchema = z.object({
   name: z.string().min(1).max(200),
