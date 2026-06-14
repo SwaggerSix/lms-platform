@@ -273,7 +273,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                   )}
                 </div>
                 <a
-                  href={m.file_url}
+                  href={`/api/course-resources/${m.id}/download`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
