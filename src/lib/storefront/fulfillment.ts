@@ -97,20 +97,20 @@ export async function inviteAndEnroll(
     console.error("inviteAndEnroll failed for order", orderId, err);
 
     // Best-effort: record that manual intervention is needed
-    await service
+    const { error: metaUpdateErr } = await service
       .from("orders")
       .update({
         metadata: { ...(existingMetadata ?? {}), enrollment_status: "pending" },
         updated_at: new Date().toISOString(),
       })
-      .eq("id", orderId)
-      .catch((updateErr: unknown) =>
-        console.error(
-          "Could not stamp enrollment_status=pending on order",
-          orderId,
-          updateErr
-        )
+      .eq("id", orderId);
+    if (metaUpdateErr) {
+      console.error(
+        "Could not stamp enrollment_status=pending on order",
+        orderId,
+        metaUpdateErr
       );
+    }
 
     return "pending";
   }
