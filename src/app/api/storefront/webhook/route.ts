@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
-import { sendOrderEmails } from "@/lib/storefront/fulfillment";
+import { sendOrderEmails, inviteAndEnroll } from "@/lib/storefront/fulfillment";
 
 // Stripe webhook: marks orders paid when Stripe confirms payment, then
 // fulfills them (sales counts, coupon usage, auto-enrollment for buyers who
-// already have an LMS account with the same email).
+// already have an LMS account with the same email, or invite + enroll for
+// buyers who do not).
 
 export async function POST(request: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
 
   const orderQuery = service
     .from("orders")
-    .select("id, status, customer_email, metadata, status_history")
+    .select("id, status, customer_email, customer_name, metadata, status_history")
     .limit(1);
   const { data: orders } = orderId
     ? await orderQuery.eq("id", orderId)
@@ -109,23 +110,28 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Auto-enroll buyers who already have an LMS account with this email
+  // Auto-enroll existing buyers; invite + enroll new buyers
+  let enrollmentStatus: "enrolled" | "invited" | "pending" | null = null;
+
   if (order.customer_email) {
-    const { data: user } = await service
+    const courseIds = (items || [])
+      .map((i) => i.course_id)
+      .filter((id): id is string => Boolean(id));
+
+    const { data: existingUser } = await service
       .from("users")
       .select("id")
       .eq("email", order.customer_email)
       .single();
-    if (user) {
-      const courseIds = (items || [])
-        .map((i) => i.course_id)
-        .filter((id): id is string => Boolean(id));
+
+    if (existingUser) {
+      // Buyer already has an LMS account â enroll directly
       for (const courseId of courseIds) {
         await service
           .from("enrollments")
           .upsert(
             {
-              user_id: user.id,
+              user_id: existingUser.id,
               course_id: courseId,
               status: "active",
               enrolled_at: new Date().toISOString(),
@@ -133,12 +139,23 @@ export async function POST(request: NextRequest) {
             { onConflict: "user_id,course_id", ignoreDuplicates: true }
           );
       }
+      enrollmentStatus = "enrolled";
+    } else {
+      // New buyer â send Auth invite, create user row, and enroll
+      enrollmentStatus = await inviteAndEnroll(
+        service,
+        order.id,
+        (order.metadata as Record<string, unknown> | null),
+        order.customer_email,
+        (order as { customer_name?: string | null }).customer_name ?? null,
+        courseIds
+      );
     }
   }
 
-  // Buyer confirmation + internal new-order notification.
+  // Buyer confirmation + internal new-order notification (with enrollment badge)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
-  await sendOrderEmails(service, order.id, appUrl);
+  await sendOrderEmails(service, order.id, appUrl, enrollmentStatus);
 
   return NextResponse.json({ received: true });
 }
