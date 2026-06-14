@@ -169,6 +169,7 @@ const navSections: NavSection[] = [
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion },
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck },
+      { label: "Exam Grading", href: "/admin/assessments/grading", icon: CheckSquare },
       { label: "Certifications", href: "/admin/certifications", icon: Medal },
       { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],

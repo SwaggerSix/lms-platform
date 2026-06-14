@@ -49,28 +49,56 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
   }
 
-  // Grade the assessment
+  // Grade the assessment. Auto-graded: option-based (multiple_choice,
+  // multi_select, true_false) and fill_blank (string match). Essay answers are
+  // queued for manual grading.
   let totalPoints = 0;
   let earnedPoints = 0;
-  const gradedAnswers = answers.map((answer: { question_id: string; selected_options: number[] }) => {
+  let needsGrading = false;
+  const gradedAnswers = (answers as Array<{
+    question_id: string;
+    selected_options?: number[];
+    text_answer?: string;
+  }>).map((answer) => {
     const question = assessment.questions.find((q: { id: string }) => q.id === answer.question_id);
-    if (!question) return { ...answer, is_correct: false };
+    if (!question) return { question_id: answer.question_id, is_correct: false, awarded_points: 0 };
 
-    totalPoints += question.points;
-    const correctOptions = question.options
+    const points = question.points ?? 0;
+    totalPoints += points;
+    const type = question.question_type;
+    const base = {
+      question_id: answer.question_id,
+      question_text: question.question_text,
+      question_type: type,
+      points,
+    };
+
+    if (type === "essay") {
+      needsGrading = true;
+      return { ...base, text_answer: answer.text_answer ?? "", is_correct: null, awarded_points: null };
+    }
+
+    if (type === "fill_blank") {
+      const correct = String(question.correct_answer ?? "").trim().toLowerCase();
+      const given = String(answer.text_answer ?? "").trim().toLowerCase();
+      const isCorrect = correct.length > 0 && given === correct;
+      if (isCorrect) earnedPoints += points;
+      return { ...base, text_answer: answer.text_answer ?? "", is_correct: isCorrect, awarded_points: isCorrect ? points : 0 };
+    }
+
+    // Option-based grading.
+    const correctOptions = (question.options ?? [])
       .map((opt: { is_correct: boolean }, idx: number) => (opt.is_correct ? idx : -1))
       .filter((idx: number) => idx >= 0);
-
-    const isCorrect =
-      JSON.stringify(answer.selected_options.sort()) === JSON.stringify(correctOptions.sort());
-
-    if (isCorrect) earnedPoints += question.points;
-
-    return { ...answer, is_correct: isCorrect };
+    const selected = (answer.selected_options ?? []).slice().sort();
+    const isCorrect = JSON.stringify(selected) === JSON.stringify(correctOptions.slice().sort());
+    if (isCorrect) earnedPoints += points;
+    return { ...base, selected_options: answer.selected_options ?? [], is_correct: isCorrect, awarded_points: isCorrect ? points : 0 };
   });
 
   const score = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0;
-  const passed = score >= assessment.passing_score;
+  // Pending manual grading → not yet passed; final result set when graded.
+  const passed = needsGrading ? false : score >= assessment.passing_score;
 
   const { data: attempt, error } = await service
     .from("assessment_attempts")
@@ -82,6 +110,7 @@ export async function POST(request: NextRequest) {
       answers: gradedAnswers,
       time_spent,
       class_id: class_id ?? null,
+      needs_grading: needsGrading,
       completed_at: new Date().toISOString(),
     })
     .select()
@@ -103,7 +132,7 @@ export async function POST(request: NextRequest) {
   });
 
   // Bonus for perfect score
-  if (score === 100) {
+  if (score === 100 && !needsGrading) {
     await service.from("points_ledger").insert({
       user_id: profile.id,
       action_type: "perfect_score",
