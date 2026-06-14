@@ -4,7 +4,7 @@ import { orderConfirmation, orderNotification, type OrderEmailData } from "./ema
 
 // Sends the buyer confirmation and the internal new-order notification for a
 // completed storefront order. Safe to call more than once (Stripe retries
-// webhooks) â it only sends when the order is in a completed state, and the
+// webhooks) — it only sends when the order is in a completed state, and the
 // caller guards against double-fulfilment.
 
 /**
@@ -12,8 +12,8 @@ import { orderConfirmation, orderNotification, type OrderEmailData } from "./ema
  * creates their `users` row, and enrolls them in the purchased courses.
  *
  * Returns:
- *   'invited'  â invite sent, user row created, enrollments upserted
- *   'pending'  â something failed; admin must create the account manually
+ *   'invited'  — invite sent, user row created, enrollments upserted
+ *   'pending'  — something failed; admin must create the account manually
  */
 export async function inviteAndEnroll(
   service: SupabaseClient,
@@ -21,7 +21,8 @@ export async function inviteAndEnroll(
   existingMetadata: Record<string, unknown> | null,
   customerEmail: string,
   customerName: string | null,
-  courseIds: string[]
+  courseIds: string[],
+  storefrontId: string | null
 ): Promise<"invited" | "pending"> {
   // Split display name into first / last
   const trimmed = (customerName ?? "").trim();
@@ -76,6 +77,7 @@ export async function inviteAndEnroll(
           course_id: courseId,
           status: "active",
           enrolled_at: now,
+          storefront_id: storefrontId,
         },
         { onConflict: "user_id,course_id", ignoreDuplicates: true }
       );
