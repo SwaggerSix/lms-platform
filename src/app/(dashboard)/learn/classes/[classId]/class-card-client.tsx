@@ -41,6 +41,16 @@ interface Exam {
   question_count: number | null;
 }
 
+interface Survey {
+  id: string;
+  name: string;
+  level: number | null;
+  provider: string | null;
+  status: "pending" | "completed" | "expired";
+  due_at: string | null;
+  completed_at: string | null;
+}
+
 interface ClassData {
   class: {
     id: string;
@@ -56,6 +66,7 @@ interface ClassData {
   sessions: Session[];
   materials: Material[];
   exams: Exam[];
+  surveys: Survey[];
   participant_count: number;
   can_manage: boolean;
 }
@@ -100,7 +111,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
     return <div className="mx-auto max-w-4xl px-4 py-16 text-center text-gray-500">Class not found.</div>;
   }
 
-  const { class: cls, course, sessions, materials, exams, participant_count } = data;
+  const { class: cls, course, sessions, materials, exams, surveys, participant_count } = data;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -268,9 +279,43 @@ export default function ClassCardClient({ classId }: { classId: string }) {
         )}
       </Section>
 
-      {/* Surveys (coming soon) */}
-      <Section icon={<ClipboardList className="h-4 w-4" />} title="Surveys" count={0}>
-        <Empty>Surveys will appear here once enabled for this class.</Empty>
+      {/* Surveys — SurveyCraft-backed training evaluations for this class's course */}
+      <Section icon={<ClipboardList className="h-4 w-4" />} title="Surveys" count={surveys.length}>
+        {surveys.length === 0 ? (
+          <Empty>No surveys assigned yet. They appear here when triggered for this class.</Empty>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {surveys.map((s) => {
+              const done = s.status === "completed";
+              return (
+                <li key={s.id} className="flex items-center justify-between py-2.5">
+                  <div>
+                    <p className="text-sm text-gray-700">{s.name}</p>
+                    <p className="text-xs text-gray-400">
+                      {done
+                        ? `Completed${s.completed_at ? ` ${new Date(s.completed_at).toLocaleDateString()}` : ""}`
+                        : s.due_at
+                        ? `Due ${new Date(s.due_at).toLocaleDateString()}`
+                        : "Pending"}
+                    </p>
+                  </div>
+                  {done ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+                      <CheckCircle2 className="h-4 w-4" /> Submitted
+                    </span>
+                  ) : (
+                    <Link
+                      href="/learn/evaluations"
+                      className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
+                    >
+                      Take survey
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </Section>
     </div>
   );

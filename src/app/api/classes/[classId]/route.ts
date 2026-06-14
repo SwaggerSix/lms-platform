@@ -59,6 +59,7 @@ export async function GET(
     { data: assessments },
     { data: participants },
     { data: enrollment },
+    { data: surveyAssignments },
   ] = await Promise.all([
     service
       .from("ilt_sessions")
@@ -85,6 +86,14 @@ export async function GET(
       .eq("course_id", courseId)
       .eq("user_id", profile.id)
       .maybeSingle(),
+    // SurveyCraft-backed surveys surface as the caller's evaluation assignments
+    // for this class's course.
+    service
+      .from("evaluation_assignments")
+      .select("id, status, due_at, completed_at, template:evaluation_templates(name, level, external_provider)")
+      .eq("course_id", courseId)
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   // The caller's session registrations within this class.
@@ -162,6 +171,18 @@ export async function GET(
     })),
     materials,
     exams: assessments ?? [],
+    surveys: (surveyAssignments ?? []).map((a) => {
+      const t = Array.isArray(a.template) ? a.template[0] : (a.template as any);
+      return {
+        id: a.id,
+        name: t?.name ?? "Survey",
+        level: t?.level ?? null,
+        provider: t?.external_provider ?? null,
+        status: a.status,
+        due_at: a.due_at,
+        completed_at: a.completed_at,
+      };
+    }),
     participants: roster,
     participant_count: roster.filter((p) => p.role === "learner").length,
     my_participation: myParticipation ?? null,
