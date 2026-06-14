@@ -493,7 +493,13 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                             disabled={!!loadingAction}
                             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                           >
-                            <Edit className="h-3.5 w-3.5" /> Edit
+                            <Edit className="h-3.5 w-3.5" /> Settings
+                          </button>
+                          <button
+                            onClick={() => { setOpenMenu(null); router.push(`/admin/assessments/${assessment.id}/edit`); }}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            <ListChecks className="h-3.5 w-3.5" /> Edit Questions
                           </button>
                           <button
                             onClick={() => { setOpenMenu(null); openAiQuizModal(assessment.id); }}
