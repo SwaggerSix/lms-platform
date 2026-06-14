@@ -38,8 +38,11 @@ export default async function AdminClassesPage() {
       .order("first_name", { ascending: true }),
   ]);
 
+  const isAdmin = ["admin", "super_admin"].includes(profile.role);
+
   return (
     <AdminClassesClient
+      isAdmin={isAdmin}
       courses={courses ?? []}
       instructors={(instructors ?? []).map((i) => ({
         id: i.id,

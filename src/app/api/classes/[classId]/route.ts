@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
-import { validateBody, updateClassSchema } from "@/lib/validations";
+import { validateBody, updateClassSchema, stripContractFieldsForNonAdmin } from "@/lib/validations";
 
 /**
  * GET /api/classes/[classId]
@@ -51,6 +51,7 @@ export async function GET(
     .maybeSingle();
 
   const isStaff = ["admin", "super_admin", "instructor"].includes(profile.role);
+  const isAdmin = ["admin", "super_admin"].includes(profile.role);
   const canSeeFacilitator = isStaff || myParticipation?.role === "instructor";
 
   const [
@@ -152,6 +153,14 @@ export async function GET(
       instructor_name: instructor ? `${instructor.first_name} ${instructor.last_name}` : null,
       instructor_bio: instructor?.bio ?? null,
     },
+    // Contract details are admin-only.
+    contract: isAdmin
+      ? {
+          number: cls.contract_number ?? null,
+          url: cls.contract_url ?? null,
+          file_name: cls.contract_file_name ?? null,
+        }
+      : null,
     course: course
       ? {
           id: course.id,
@@ -206,10 +215,12 @@ export async function PATCH(
   const validation = validateBody(updateClassSchema, body);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
 
+  const updates = stripContractFieldsForNonAdmin(validation.data, auth.user.role);
+
   const service = createServiceClient();
   const { data, error } = await service
     .from("classes")
-    .update({ ...validation.data, updated_at: new Date().toISOString() })
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq("id", classId)
     .select()
     .single();

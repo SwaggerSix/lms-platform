@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink } from "lucide-react";
+import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature } from "lucide-react";
 
 interface Course { id: string; title: string }
 interface Instructor { id: string; name: string }
@@ -14,6 +14,9 @@ interface ClassRow {
   status: string;
   start_date: string | null;
   participant_count: number;
+  contract_number?: string | null;
+  contract_url?: string | null;
+  contract_file_name?: string | null;
 }
 
 interface Invitation {
@@ -25,9 +28,11 @@ interface Invitation {
 }
 
 export default function AdminClassesClient({
+  isAdmin,
   courses,
   instructors,
 }: {
+  isAdmin: boolean;
   courses: Course[];
   instructors: Instructor[];
 }) {
@@ -36,6 +41,7 @@ export default function AdminClassesClient({
   const [creating, setCreating] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [inviteFor, setInviteFor] = useState<string | null>(null);
+  const [contractFor, setContractFor] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     course_id: "",
@@ -44,6 +50,9 @@ export default function AdminClassesClient({
     end_date: "",
     instructor_id: "",
     max_capacity: "",
+    contract_number: "",
+    contract_url: "",
+    contract_file_name: "",
   });
 
   const load = useCallback(async () => {
@@ -68,11 +77,18 @@ export default function AdminClassesClient({
           end_date: form.end_date || null,
           instructor_id: form.instructor_id || null,
           max_capacity: form.max_capacity ? Number(form.max_capacity) : null,
+          ...(isAdmin
+            ? {
+                contract_number: form.contract_number || null,
+                contract_url: form.contract_url || null,
+                contract_file_name: form.contract_file_name || null,
+              }
+            : {}),
         }),
       });
       if (res.ok) {
         setShowForm(false);
-        setForm({ course_id: "", title: "", start_date: "", end_date: "", instructor_id: "", max_capacity: "" });
+        setForm({ course_id: "", title: "", start_date: "", end_date: "", instructor_id: "", max_capacity: "", contract_number: "", contract_url: "", contract_file_name: "" });
         await load();
       }
     } finally {
@@ -141,6 +157,25 @@ export default function AdminClassesClient({
             <label className="mb-1 block text-xs font-medium text-gray-700">Max capacity</label>
             <input type="number" min={1} value={form.max_capacity} onChange={(e) => setForm({ ...form, max_capacity: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
           </div>
+          {isAdmin && (
+            <>
+              <div className="sm:col-span-2 mt-1 flex items-center gap-2 text-xs font-semibold text-gray-500">
+                <FileSignature className="h-3.5 w-3.5" /> Contract (admin only)
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Contract number</label>
+                <input value={form.contract_number} onChange={(e) => setForm({ ...form, contract_number: e.target.value })} placeholder="e.g. GGS-2026-0142" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Contract file name (optional)</label>
+                <input value={form.contract_file_name} onChange={(e) => setForm({ ...form, contract_file_name: e.target.value })} placeholder="e.g. MSA - Acme Corp.pdf" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs font-medium text-gray-700">SharePoint link to contract</label>
+                <input type="url" value={form.contract_url} onChange={(e) => setForm({ ...form, contract_url: e.target.value })} placeholder="https://yourorg.sharepoint.com/sites/.../contract.pdf" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              </div>
+            </>
+          )}
           <div className="sm:col-span-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600">Cancel</button>
             <button type="submit" disabled={creating} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
@@ -168,9 +203,25 @@ export default function AdminClassesClient({
                     {c.start_date && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(c.start_date).toLocaleDateString()}</span>}
                     <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{c.participant_count} enrolled</span>
                     <span className="capitalize text-gray-400">{c.status.replace("_", " ")}</span>
+                    {isAdmin && c.contract_number && (
+                      <span className="inline-flex items-center gap-1 text-gray-500"><FileSignature className="h-3.5 w-3.5" />{c.contract_number}</span>
+                    )}
+                    {isAdmin && c.contract_url && (
+                      <a href={c.contract_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+                        <ExternalLink className="h-3.5 w-3.5" /> Contract
+                      </a>
+                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  {isAdmin && (
+                    <button
+                      onClick={() => setContractFor(contractFor === c.id ? null : c.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                    >
+                      <FileSignature className="h-3.5 w-3.5" /> Contract
+                    </button>
+                  )}
                   <button
                     onClick={() => setInviteFor(inviteFor === c.id ? null : c.id)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
@@ -182,11 +233,77 @@ export default function AdminClassesClient({
                   </Link>
                 </div>
               </div>
+              {isAdmin && contractFor === c.id && (
+                <ContractPanel klass={c} onClose={() => setContractFor(null)} onSaved={load} />
+              )}
               {inviteFor === c.id && <InvitePanel classId={c.id} onClose={() => setInviteFor(null)} />}
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ContractPanel({
+  klass,
+  onClose,
+  onSaved,
+}: {
+  klass: ClassRow;
+  onClose: () => void;
+  onSaved: () => void | Promise<void>;
+}) {
+  const [number, setNumber] = useState(klass.contract_number ?? "");
+  const [url, setUrl] = useState(klass.contract_url ?? "");
+  const [fileName, setFileName] = useState(klass.contract_file_name ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/classes/${klass.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contract_number: number || null,
+          contract_url: url || null,
+          contract_file_name: fileName || null,
+        }),
+      });
+      if (res.ok) {
+        await onSaved();
+        onClose();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to save contract.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+          <FileSignature className="h-3.5 w-3.5" /> Contract (admin only)
+        </p>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+      </div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Contract number" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        <input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="File name (optional)" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="SharePoint link to contract" className="rounded-lg border border-gray-300 px-3 py-2 text-sm sm:col-span-2" />
+      </div>
+      <div className="mt-2 flex items-center gap-2">
+        <button onClick={save} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save contract
+        </button>
+        {error && <span className="text-xs text-red-600">{error}</span>}
+      </div>
     </div>
   );
 }

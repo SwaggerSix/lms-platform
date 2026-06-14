@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
-import { validateBody, createClassSchema } from "@/lib/validations";
+import { validateBody, createClassSchema, stripContractFieldsForNonAdmin } from "@/lib/validations";
 
 /**
  * GET /api/classes
@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const isAdmin = ["admin", "super_admin"].includes(profile.role);
   const classes = (rows ?? []).map((c) => {
     const rawCourse = c.course as any;
     const course = Array.isArray(rawCourse) ? rawCourse[0] : rawCourse;
@@ -111,6 +112,14 @@ export async function GET(request: NextRequest) {
       max_capacity: c.max_capacity,
       participant_count: participantCount[c.id] ?? 0,
       next_session: nextSession[c.id] ?? null,
+      // Contract details are admin-only.
+      ...(isAdmin
+        ? {
+            contract_number: c.contract_number ?? null,
+            contract_url: c.contract_url ?? null,
+            contract_file_name: c.contract_file_name ?? null,
+          }
+        : {}),
     };
   });
 
@@ -129,20 +138,25 @@ export async function POST(request: NextRequest) {
   const validation = validateBody(createClassSchema, body);
   if (!validation.success) return NextResponse.json({ error: validation.error }, { status: 400 });
 
+  const data = stripContractFieldsForNonAdmin(validation.data, auth.user.role);
+
   const service = createServiceClient();
-  const { data, error } = await service
+  const { data: created, error } = await service
     .from("classes")
     .insert({
-      course_id: validation.data.course_id,
-      title: validation.data.title,
-      description: validation.data.description ?? null,
-      start_date: validation.data.start_date ?? null,
-      end_date: validation.data.end_date ?? null,
-      timezone: validation.data.timezone ?? "America/New_York",
-      instructor_id: validation.data.instructor_id ?? null,
-      max_capacity: validation.data.max_capacity ?? null,
-      status: validation.data.status ?? "scheduled",
-      enrollment_type: validation.data.enrollment_type ?? "invite",
+      course_id: data.course_id,
+      title: data.title,
+      description: data.description ?? null,
+      start_date: data.start_date ?? null,
+      end_date: data.end_date ?? null,
+      timezone: data.timezone ?? "America/New_York",
+      instructor_id: data.instructor_id ?? null,
+      max_capacity: data.max_capacity ?? null,
+      status: data.status ?? "scheduled",
+      enrollment_type: data.enrollment_type ?? "invite",
+      contract_number: data.contract_number ?? null,
+      contract_url: data.contract_url ?? null,
+      contract_file_name: data.contract_file_name ?? null,
       created_by: auth.user.id,
     })
     .select()
@@ -153,5 +167,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  return NextResponse.json({ class: data }, { status: 201 });
+  return NextResponse.json({ class: created }, { status: 201 });
 }

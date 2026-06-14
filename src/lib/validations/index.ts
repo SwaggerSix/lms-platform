@@ -390,7 +390,25 @@ export const createClassSchema = z.object({
   max_capacity: z.number().int().positive().optional().nullable(),
   status: z.enum(["draft", "scheduled", "in_progress", "completed", "cancelled"]).optional(),
   enrollment_type: z.enum(["open", "invite", "approval"]).optional(),
+  // Contract link (admin-only; stripped server-side for non-admins).
+  contract_number: z.string().max(200).optional().nullable(),
+  contract_url: z.string().url().max(2000).optional().nullable(),
+  contract_file_name: z.string().max(300).optional().nullable(),
 });
+
+const CONTRACT_FIELDS = ["contract_number", "contract_url", "contract_file_name"] as const;
+
+// Strip contract fields from a class payload unless the caller is an admin.
+// Contracts are commercially sensitive — only admins may set/change them.
+export function stripContractFieldsForNonAdmin<T extends Record<string, unknown>>(
+  data: T,
+  role: string
+): T {
+  if (role === "admin" || role === "super_admin") return data;
+  const copy = { ...data };
+  for (const f of CONTRACT_FIELDS) delete copy[f];
+  return copy;
+}
 
 export const updateClassSchema = createClassSchema.partial();
 

@@ -469,6 +469,11 @@ export interface Class {
   max_capacity: number | null;
   status: ClassStatus;
   enrollment_type: ClassEnrollmentType;
+  // Commercial contract link (admin-only). contract_url points at the contract
+  // document in SharePoint.
+  contract_number: string | null;
+  contract_url: string | null;
+  contract_file_name: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
