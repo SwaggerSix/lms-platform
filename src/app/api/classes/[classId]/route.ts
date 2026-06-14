@@ -160,6 +160,7 @@ export async function GET(
       status: cls.status,
       enrollment_type: cls.enrollment_type,
       max_capacity: cls.max_capacity,
+      instructor_id: cls.instructor_id ?? null,
       instructor_name: instructor ? `${instructor.first_name} ${instructor.last_name}` : null,
       instructor_bio: instructor?.bio ?? null,
     },

@@ -7,6 +7,7 @@ import {
   Loader2, GraduationCap, Download, CheckCircle2, ClipboardList,
   FileSignature, ExternalLink,
 } from "lucide-react";
+import RatingWidget from "@/components/ratings/rating-widget";
 
 interface Session {
   id: string;
@@ -55,11 +56,13 @@ interface Survey {
 interface ClassData {
   class: {
     id: string;
+    course_id: string;
     title: string;
     description: string | null;
     start_date: string | null;
     end_date: string | null;
     status: string;
+    instructor_id: string | null;
     instructor_name: string | null;
     instructor_bio: string | null;
   };
@@ -350,6 +353,14 @@ export default function ClassCardClient({ classId }: { classId: string }) {
           </ul>
         )}
       </Section>
+
+      {/* Rate this class — course + instructor five-star rating */}
+      <RatingWidget
+        courseId={cls.course_id}
+        classId={cls.id}
+        instructorId={cls.instructor_id}
+        instructorName={cls.instructor_name}
+      />
     </div>
   );
 }
