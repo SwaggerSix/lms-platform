@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
   const orderQuery = service
     .from("orders")
-    .select("id, status, customer_email, customer_name, metadata, status_history")
+    .select("id, status, customer_email, customer_name, metadata, status_history, storefront_id")
     .limit(1);
   const { data: orders } = orderId
     ? await orderQuery.eq("id", orderId)
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existingUser) {
-      // Buyer already has an LMS account â enroll directly
+      // Buyer already has an LMS account — enroll directly
       for (const courseId of courseIds) {
         await service
           .from("enrollments")
@@ -135,20 +135,22 @@ export async function POST(request: NextRequest) {
               course_id: courseId,
               status: "active",
               enrolled_at: new Date().toISOString(),
+              storefront_id: (order as { storefront_id?: string | null }).storefront_id ?? null,
             },
             { onConflict: "user_id,course_id", ignoreDuplicates: true }
           );
       }
       enrollmentStatus = "enrolled";
     } else {
-      // New buyer â send Auth invite, create user row, and enroll
+      // New buyer — send Auth invite, create user row, and enroll
       enrollmentStatus = await inviteAndEnroll(
         service,
         order.id,
         (order.metadata as Record<string, unknown> | null),
         order.customer_email,
         (order as { customer_name?: string | null }).customer_name ?? null,
-        courseIds
+        courseIds,
+        (order as { storefront_id?: string | null }).storefront_id ?? null
       );
     }
   }
