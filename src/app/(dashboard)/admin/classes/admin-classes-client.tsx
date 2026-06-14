@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature } from "lucide-react";
+import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature, FileQuestion } from "lucide-react";
 
 interface Course { id: string; title: string }
 interface Instructor { id: string; name: string }
@@ -42,6 +42,7 @@ export default function AdminClassesClient({
   const [showForm, setShowForm] = useState(false);
   const [inviteFor, setInviteFor] = useState<string | null>(null);
   const [contractFor, setContractFor] = useState<string | null>(null);
+  const [examsFor, setExamsFor] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     course_id: "",
@@ -223,6 +224,12 @@ export default function AdminClassesClient({
                     </button>
                   )}
                   <button
+                    onClick={() => setExamsFor(examsFor === c.id ? null : c.id)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                  >
+                    <FileQuestion className="h-3.5 w-3.5" /> Exams
+                  </button>
+                  <button
                     onClick={() => setInviteFor(inviteFor === c.id ? null : c.id)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
                   >
@@ -236,10 +243,85 @@ export default function AdminClassesClient({
               {isAdmin && contractFor === c.id && (
                 <ContractPanel klass={c} onClose={() => setContractFor(null)} onSaved={load} />
               )}
+              {examsFor === c.id && <ExamsPanel classId={c.id} onClose={() => setExamsFor(null)} />}
               {inviteFor === c.id && <InvitePanel classId={c.id} onClose={() => setInviteFor(null)} />}
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function ExamsPanel({ classId, onClose }: { classId: string; onClose: () => void }) {
+  const [items, setItems] = useState<{ id: string; title: string; status: string; deployed: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const res = await fetch(`/api/classes/${classId}/assessments`);
+    if (res.ok) setItems((await res.json()).assessments ?? []);
+    setLoading(false);
+  }, [classId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggle = async (assessmentId: string, deployed: boolean) => {
+    setBusy(assessmentId);
+    try {
+      if (deployed) {
+        await fetch(`/api/classes/${classId}/assessments?assessment_id=${assessmentId}`, { method: "DELETE" });
+      } else {
+        await fetch(`/api/classes/${classId}/assessments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assessment_id: assessmentId }),
+        });
+      }
+      await load();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const anyDeployed = items.some((i) => i.deployed);
+
+  return (
+    <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+          <FileQuestion className="h-3.5 w-3.5" /> Exams for this class
+        </p>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+      </div>
+      {loading ? (
+        <div className="py-4 text-center text-gray-400"><Loader2 className="mx-auto h-4 w-4 animate-spin" /></div>
+      ) : items.length === 0 ? (
+        <p className="py-2 text-xs text-gray-400">This class's course has no assessments yet.</p>
+      ) : (
+        <>
+          <p className="mb-2 text-[11px] text-gray-500">
+            {anyDeployed
+              ? "Only the ticked exams are shown to this class."
+              : "Nothing deployed — all of the course's exams are shown to this class by default."}
+          </p>
+          <ul className="space-y-1">
+            {items.map((a) => (
+              <li key={a.id} className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm">
+                <span className="text-gray-700">{a.title} <span className="text-[10px] capitalize text-gray-400">· {a.status}</span></span>
+                <label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={a.deployed}
+                    disabled={busy === a.id}
+                    onChange={() => toggle(a.id, a.deployed)}
+                  />
+                  Deploy
+                </label>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );

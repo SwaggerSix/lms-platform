@@ -301,7 +301,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                   </p>
                 </div>
                 <Link
-                  href={`/learn/assessments/${e.id}`}
+                  href={`/learn/assessments/${e.id}?class_id=${cls.id}`}
                   className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
                 >
                   Start

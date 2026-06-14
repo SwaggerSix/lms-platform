@@ -61,6 +61,7 @@ export async function GET(
     { data: participants },
     { data: enrollment },
     { data: surveyAssignments },
+    { data: deployedAssessments },
   ] = await Promise.all([
     service
       .from("ilt_sessions")
@@ -95,7 +96,16 @@ export async function GET(
       .eq("course_id", courseId)
       .eq("user_id", profile.id)
       .order("created_at", { ascending: false }),
+    // Exams deployed specifically to this class (if any).
+    service.from("class_assessments").select("assessment_id").eq("class_id", classId),
   ]);
+
+  // If exams are deployed to this class, surface only those; otherwise fall back
+  // to all of the course's assessments.
+  const deployedIds = new Set((deployedAssessments ?? []).map((d) => d.assessment_id));
+  const examList = deployedIds.size > 0
+    ? (assessments ?? []).filter((a) => deployedIds.has(a.id))
+    : (assessments ?? []);
 
   // The caller's session registrations within this class.
   const sessionIds = (sessions ?? []).map((s) => s.id);
@@ -179,7 +189,7 @@ export async function GET(
       my_registration: regMap[s.id] ?? null,
     })),
     materials,
-    exams: assessments ?? [],
+    exams: examList,
     surveys: (surveyAssignments ?? []).map((a) => {
       const t = Array.isArray(a.template) ? a.template[0] : (a.template as any);
       return {
