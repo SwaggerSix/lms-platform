@@ -62,6 +62,7 @@ import {
   TrendingUp,
   Wand2,
   MessageSquareMore,
+  Bug,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
@@ -182,6 +183,7 @@ const navSections: NavSection[] = [
       { label: "Reports", href: "/admin/reports", icon: PieChart },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
+      { label: "Error Log", href: "/admin/settings/error-log", icon: Bug },
     ],
     roles: ["admin", "super_admin"],
     bgClass: "bg-gray-800/60",

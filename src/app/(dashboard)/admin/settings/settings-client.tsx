@@ -51,7 +51,7 @@ export interface SettingsData {
 
 const webhookEvents = ["user.created", "user.updated", "course.completed", "enrollment.created", "certificate.issued", "quiz.submitted"];
 
-const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations", "Automation", "Audit Log"] as const;
+const tabs = ["General", "Branding", "Email", "Features", "API", "Integrations", "Automation", "Audit Log", "Error Log"] as const;
 
 export default function SettingsClient({ data }: { data: SettingsData }) {
   const toast = useToast();
@@ -573,6 +573,23 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
             >
               View Audit Log
+            </a>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "Error Log" && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Error Log</h3>
+              <p className="mt-1 text-xs text-gray-500">Monitor runtime errors captured across the platform and mark them resolved as you address them to keep the tool running at a high level.</p>
+            </div>
+            <a
+              href="/admin/settings/error-log"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              View Error Log
             </a>
           </div>
         </div>
