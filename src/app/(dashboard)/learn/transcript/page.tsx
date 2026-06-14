@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import TranscriptClient from "./transcript-client";
-import type { TranscriptRecord, TranscriptUser } from "./transcript-client";
+import type { TranscriptRecord, TranscriptUser, TranscriptExam } from "./transcript-client";
 
 export const metadata: Metadata = {
   title: "Transcript | LMS Platform",
@@ -89,5 +89,40 @@ export default async function TranscriptPage() {
     };
   });
 
-  return <TranscriptClient user={transcriptUser} records={records} />;
+  // Fetch examination attempts and aggregate to best score per assessment.
+  const { data: attempts } = await service
+    .from("assessment_attempts")
+    .select("assessment_id, score, passed, completed_at, assessment:assessments(title, course:courses(title))")
+    .eq("user_id", profile.id)
+    .order("completed_at", { ascending: false });
+
+  const examMap = new Map<string, TranscriptExam>();
+  for (const a of attempts ?? []) {
+    const rawA = a.assessment as any;
+    const assessment = Array.isArray(rawA) ? rawA[0] : rawA;
+    const rawC = assessment?.course as any;
+    const course = Array.isArray(rawC) ? rawC[0] : rawC;
+    const score = a.score != null ? Number(a.score) : null;
+    const existing = examMap.get(a.assessment_id);
+    if (!existing) {
+      examMap.set(a.assessment_id, {
+        id: a.assessment_id,
+        title: assessment?.title ?? "Examination",
+        course_title: course?.title ?? null,
+        best_score: score,
+        passed: !!a.passed,
+        attempts: 1,
+        last_attempt: a.completed_at ?? null,
+      });
+    } else {
+      existing.attempts += 1;
+      if (score != null && (existing.best_score == null || score > existing.best_score)) {
+        existing.best_score = score;
+      }
+      existing.passed = existing.passed || !!a.passed;
+    }
+  }
+  const exams: TranscriptExam[] = Array.from(examMap.values());
+
+  return <TranscriptClient user={transcriptUser} records={records} exams={exams} />;
 }

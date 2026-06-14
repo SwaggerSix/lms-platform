@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { assessment_id, answers, time_spent } = body;
+  const { assessment_id, answers, time_spent, class_id } = body;
 
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       passed,
       answers: gradedAnswers,
       time_spent,
+      class_id: class_id ?? null,
       completed_at: new Date().toISOString(),
     })
     .select()
