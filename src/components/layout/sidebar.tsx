@@ -200,6 +200,7 @@ const navSections: NavSection[] = [
       { label: "Mentorship", href: "/admin/mentorship", icon: Heart, featureKey: "mentorship" },
       { label: "Observations", href: "/admin/observations", icon: Eye, featureKey: "observations" },
       { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
+      { label: "Evaluation Insights", href: "/admin/evaluations/insights", icon: PieChart, featureKey: "evaluations" },
       { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle, featureKey: "microlearning" },
       { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
     ],
