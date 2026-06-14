@@ -4,13 +4,121 @@ import { orderConfirmation, orderNotification, type OrderEmailData } from "./ema
 
 // Sends the buyer confirmation and the internal new-order notification for a
 // completed storefront order. Safe to call more than once (Stripe retries
-// webhooks) — it only sends when the order is in a completed state, and the
+// webhooks) â it only sends when the order is in a completed state, and the
 // caller guards against double-fulfilment.
+
+/**
+ * Invites a new buyer (no existing LMS account) via Supabase Auth invite,
+ * creates their `users` row, and enrolls them in the purchased courses.
+ *
+ * Returns:
+ *   'invited'  â invite sent, user row created, enrollments upserted
+ *   'pending'  â something failed; admin must create the account manually
+ */
+export async function inviteAndEnroll(
+  service: SupabaseClient,
+  orderId: string,
+  existingMetadata: Record<string, unknown> | null,
+  customerEmail: string,
+  customerName: string | null,
+  courseIds: string[]
+): Promise<"invited" | "pending"> {
+  // Split display name into first / last
+  const trimmed = (customerName ?? "").trim();
+  const spaceIdx = trimmed.indexOf(" ");
+  const firstName = spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx);
+  const lastName = spaceIdx === -1 ? "" : trimmed.slice(spaceIdx + 1).trim();
+
+  try {
+    // 1. Send the Auth invite
+    const { data: inviteData, error: inviteError } =
+      await service.auth.admin.inviteUserByEmail(customerEmail, {
+        data: { first_name: firstName, last_name: lastName },
+      });
+
+    if (inviteError || !inviteData?.user) {
+      throw inviteError ?? new Error("inviteUserByEmail returned no user");
+    }
+
+    const authId = inviteData.user.id;
+    const now = new Date().toISOString();
+
+    // 2. Upsert the public users row so the LMS can find it
+    const { data: upserted, error: upsertError } = await service
+      .from("users")
+      .upsert(
+        {
+          auth_id: authId,
+          email: customerEmail,
+          first_name: firstName,
+          last_name: lastName,
+          role: "learner",
+          status: "active",
+          created_at: now,
+          updated_at: now,
+        },
+        { onConflict: "email" }
+      )
+      .select("id")
+      .single();
+
+    if (upsertError || !upserted) {
+      throw upsertError ?? new Error("users upsert returned no row");
+    }
+
+    const userId: string = upserted.id;
+
+    // 3. Enroll in each purchased course
+    for (const courseId of courseIds) {
+      await service.from("enrollments").upsert(
+        {
+          user_id: userId,
+          course_id: courseId,
+          status: "active",
+          enrolled_at: now,
+        },
+        { onConflict: "user_id,course_id", ignoreDuplicates: true }
+      );
+    }
+
+    // 4. Stamp the order metadata so the history is self-describing
+    await service
+      .from("orders")
+      .update({
+        metadata: { ...(existingMetadata ?? {}), enrollment_status: "invited" },
+        updated_at: now,
+      })
+      .eq("id", orderId);
+
+    return "invited";
+  } catch (err) {
+    console.error("inviteAndEnroll failed for order", orderId, err);
+
+    // Best-effort: record that manual intervention is needed
+    await service
+      .from("orders")
+      .update({
+        metadata: { ...(existingMetadata ?? {}), enrollment_status: "pending" },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .catch((updateErr: unknown) =>
+        console.error(
+          "Could not stamp enrollment_status=pending on order",
+          orderId,
+          updateErr
+        )
+      );
+
+    return "pending";
+  }
+}
 
 export async function sendOrderEmails(
   service: SupabaseClient,
   orderId: string,
-  appUrl: string
+  appUrl: string,
+  enrollmentStatus?: "enrolled" | "invited" | "pending" | null
 ): Promise<void> {
   const { data: order } = await service
     .from("orders")
@@ -64,6 +172,7 @@ export async function sendOrderEmails(
     total: Number(order.total ?? 0),
     currency: order.currency || "USD",
     manageUrl: `${appUrl}/admin/storefronts/${order.storefront_id}`,
+    enrollmentStatus: enrollmentStatus ?? null,
   };
 
   // Buyer confirmation
