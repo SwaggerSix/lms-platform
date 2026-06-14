@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { reportClientError } from "@/lib/report-client-error";
 
 export default function DashboardError({
   error,
@@ -14,6 +15,7 @@ export default function DashboardError({
 }) {
   useEffect(() => {
     console.error(error);
+    reportClientError(error, { boundary: "dashboard" });
   }, [error]);
 
   return (

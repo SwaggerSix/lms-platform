@@ -600,6 +600,29 @@ export interface EvaluationTemplate {
   updated_at: string;
 }
 
+export type ErrorSource = "api" | "server" | "client" | "cron";
+export type ErrorSeverity = "error" | "warning" | "fatal";
+
+export interface ErrorLog {
+  id: string;
+  source: ErrorSource;
+  severity: ErrorSeverity;
+  message: string;
+  stack: string | null;
+  path: string | null;
+  method: string | null;
+  status_code: number | null;
+  digest: string | null;
+  context: Record<string, unknown> | null;
+  user_id: string | null;
+  user_agent: string | null;
+  resolved: boolean;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_notes: string | null;
+  created_at: string;
+}
+
 export interface TranscriptEntry {
   course_title: string;
   course_type: CourseType;
