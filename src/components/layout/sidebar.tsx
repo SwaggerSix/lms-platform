@@ -217,6 +217,7 @@ const navSections: NavSection[] = [
       { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Wand2 },
       { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
       { label: "Storefronts", href: "/admin/storefronts", icon: Store },
+      { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
       { label: "Marketplace", href: "/admin/marketplace", icon: ShoppingBag },
       { label: "Predictive Analytics", href: "/admin/analytics/predictive", icon: BrainCircuit },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
