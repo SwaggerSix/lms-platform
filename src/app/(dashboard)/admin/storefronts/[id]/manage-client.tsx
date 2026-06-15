@@ -38,6 +38,7 @@ interface Product {
   sku: string | null;
   status: string;
   is_featured: boolean;
+  listed_in_storefront: boolean;
   sales_count: number;
 }
 
@@ -85,6 +86,7 @@ const emptyProductForm = {
   image_url: "",
   is_featured: false,
   status: "active",
+  listed_in_storefront: true,
 };
 
 type Tab = "products" | "orders" | "import" | "settings" | "discounts" | "reports" | "publish";
@@ -201,6 +203,7 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
         image_url: productForm.image_url || "",
         is_featured: productForm.is_featured,
         status: productForm.status,
+        listed_in_storefront: productForm.listed_in_storefront,
       };
       const res = await fetch(`/api/storefront/admin/${storeId}/products`, {
         method: editingId ? "PUT" : "POST",
@@ -251,6 +254,7 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
       image_url: p.image_url || "",
       is_featured: p.is_featured,
       status: p.status,
+      listed_in_storefront: p.listed_in_storefront ?? true,
     });
     setShowProductForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -568,6 +572,14 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                       onChange={(e) => setProductForm({ ...productForm, is_featured: e.target.checked })}
                     />
                     Featured (shown at the top of the store)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={productForm.listed_in_storefront}
+                      onChange={(e) => setProductForm({ ...productForm, listed_in_storefront: e.target.checked })}
+                    />
+                    Offer in the online store
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     Visibility

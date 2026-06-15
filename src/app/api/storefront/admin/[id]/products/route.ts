@@ -27,6 +27,7 @@ const productSchema = z.object({
   sku: z.string().max(80).nullable().optional(),
   status: z.enum(["active", "inactive", "coming_soon"]).optional(),
   is_featured: z.boolean().optional(),
+  listed_in_storefront: z.boolean().optional(),
   course_id: z.string().uuid().nullable().optional(),
 });
 
