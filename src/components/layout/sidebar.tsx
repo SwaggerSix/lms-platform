@@ -125,6 +125,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
       { label: "My Bio", href: "/instructor/bio", icon: User },
+      { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
       { label: "Messages", href: "/learn/messages", icon: Mail },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
@@ -139,6 +140,7 @@ const navSections: NavSection[] = [
     header: "Instructor",
     items: [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
       { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },
@@ -172,6 +174,7 @@ const navSections: NavSection[] = [
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck, featureKey: "assessments" },
       { label: "Exam Grading", href: "/admin/assessments/grading", icon: CheckSquare, featureKey: "assessments" },
       { label: "Certifications", href: "/admin/certifications", icon: Medal, featureKey: "certifications" },
+      { label: "Instructor Certifications", href: "/admin/instructor-certifications", icon: ShieldCheck },
       { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],
     roles: ["admin", "super_admin"],
