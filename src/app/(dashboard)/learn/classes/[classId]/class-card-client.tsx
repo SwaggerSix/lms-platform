@@ -78,6 +78,14 @@ interface ClassData {
     nasba_delivery_method?: string | null;
   } | null;
   contract: { number: string | null; url: string | null; file_name: string | null } | null;
+  instructor: {
+    id: string | null;
+    name: string;
+    title: string | null;
+    bio: string | null;
+    avatar_url: string | null;
+    certifications: { name: string; credential_type: string; issuing_body: string | null; issuing_state: string | null }[];
+  } | null;
   sessions: Session[];
   materials: Material[];
   exams: Exam[];
@@ -126,7 +134,8 @@ export default function ClassCardClient({ classId }: { classId: string }) {
     return <div className="mx-auto max-w-4xl px-4 py-16 text-center text-gray-500">Class not found.</div>;
   }
 
-  const { class: cls, course, contract, sessions, materials, exams, surveys, participant_count } = data;
+  const { class: cls, course, contract, instructor, sessions, materials, exams, surveys, participant_count } = data;
+  const initials = instructor?.name.split(" ").map((p) => p[0]).slice(0, 2).join("") ?? "";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -162,6 +171,37 @@ export default function ClassCardClient({ classId }: { classId: string }) {
           </span>
         </div>
       </div>
+
+      {/* Instructor cameo */}
+      {instructor && (
+        <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold text-gray-900">Your instructor</h2>
+          <div className="flex items-start gap-4">
+            {instructor.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={instructor.avatar_url} alt={instructor.name} className="h-16 w-16 shrink-0 rounded-full object-cover" />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900">{instructor.name}</p>
+              {instructor.title && <p className="text-sm text-gray-500">{instructor.title}</p>}
+              {instructor.certifications.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {instructor.certifications.map((c, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                      {c.credential_type === "nasba" ? "NASBA" : c.credential_type.toUpperCase()} · {c.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {instructor.bio && <p className="mt-2 text-sm leading-relaxed text-gray-600">{instructor.bio}</p>}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* NASBA CPE certification */}
       {course?.nasba_certified && (

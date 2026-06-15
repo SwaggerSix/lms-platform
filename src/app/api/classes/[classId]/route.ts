@@ -28,7 +28,7 @@ export async function GET(
 
   const { data: cls, error: clsErr } = await service
     .from("classes")
-    .select("*, course:courses(id, title, slug, description, thumbnail_url, course_type, difficulty_level, estimated_duration, passing_score, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level, nasba_prerequisites, nasba_advance_prep, nasba_delivery_method), instructor:users!classes_instructor_id_fkey(first_name, last_name, bio)")
+    .select("*, course:courses(id, title, slug, description, thumbnail_url, course_type, difficulty_level, estimated_duration, passing_score, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level, nasba_prerequisites, nasba_advance_prep, nasba_delivery_method), instructor:users!classes_instructor_id_fkey(first_name, last_name, bio, avatar_url, job_title)")
     .eq("id", classId)
     .single();
 
@@ -41,6 +41,16 @@ export async function GET(
   const rawInstructor = cls.instructor as any;
   const instructor = Array.isArray(rawInstructor) ? rawInstructor[0] : rawInstructor;
   const courseId = cls.course_id;
+
+  // Instructor cameo: their active professional credentials (e.g. NASBA).
+  const { data: instructorCerts } = cls.instructor_id
+    ? await service
+        .from("instructor_certifications")
+        .select("name, credential_type, issuing_body, issuing_state")
+        .eq("user_id", cls.instructor_id)
+        .eq("status", "active")
+        .order("created_at", { ascending: true })
+    : { data: [] as { name: string; credential_type: string; issuing_body: string | null; issuing_state: string | null }[] };
 
   // The caller's own participation in this class.
   const { data: myParticipation } = await service
@@ -164,6 +174,21 @@ export async function GET(
       instructor_name: instructor ? `${instructor.first_name} ${instructor.last_name}` : null,
       instructor_bio: instructor?.bio ?? null,
     },
+    instructor: instructor
+      ? {
+          id: cls.instructor_id,
+          name: `${instructor.first_name} ${instructor.last_name}`,
+          title: instructor.job_title ?? null,
+          bio: instructor.bio ?? null,
+          avatar_url: instructor.avatar_url ?? null,
+          certifications: (instructorCerts ?? []).map((c) => ({
+            name: c.name,
+            credential_type: c.credential_type,
+            issuing_body: c.issuing_body,
+            issuing_state: c.issuing_state,
+          })),
+        }
+      : null,
     // Contract details are admin-only.
     contract: isAdmin
       ? {
