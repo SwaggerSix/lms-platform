@@ -1,6 +1,11 @@
 -- ============================================================
 -- Partner Portal → LMS instructor sync
 -- ============================================================
+-- NOTE: the users.external_* provenance columns below were applied
+-- manually to the live LMS project on 2026-06-15. They had been
+-- missing, so the instructor "My Bio" page's user query errored and
+-- redirected instructors to the dashboard.
+-- ============================================================
 -- The gC Partner Portal is the system of record for subcontractor
 -- master profiles. Subcontractors become LMS instructors via a
 -- one-way sync: each portal profile is mirrored into a users row
@@ -22,17 +27,21 @@
 ALTER TABLE external_integrations
   DROP CONSTRAINT IF EXISTS external_integrations_provider_check;
 
+-- Keep every provider that other integrations already register (gems,
+-- sharepoint_rosters, …) — rewriting the list without them breaks the
+-- constraint against existing rows — and add 'partner_portal'.
 ALTER TABLE external_integrations
   ADD CONSTRAINT external_integrations_provider_check
-  CHECK (provider IN ('bamboohr', 'workday', 'adp', 'salesforce', 'hubspot', 'gems', 'partner_portal', 'custom_webhook'));
+  CHECK (provider IN ('bamboohr', 'workday', 'adp', 'salesforce', 'hubspot', 'gems', 'sharepoint_rosters', 'partner_portal', 'custom_webhook'));
 
--- Allow 'directory' as an integration type (a people/profile source).
+-- Allow 'directory' as an integration type (a people/profile source), while
+-- preserving the existing types ('documents' for the SharePoint roster source).
 ALTER TABLE external_integrations
   DROP CONSTRAINT IF EXISTS external_integrations_type_check;
 
 ALTER TABLE external_integrations
   ADD CONSTRAINT external_integrations_type_check
-  CHECK (type IN ('hris', 'crm', 'hr_system', 'scheduling', 'directory'));
+  CHECK (type IN ('hris', 'crm', 'hr_system', 'scheduling', 'documents', 'directory'));
 
 -- 2. Provenance / idempotency keys on users.
 --    external_source identifies the origin system ('partner_portal');
