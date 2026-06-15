@@ -14,6 +14,8 @@ interface ClassRow {
   status: string;
   start_date: string | null;
   participant_count: number;
+  nasba_certified?: boolean;
+  nasba_cpe_credits?: number | null;
   contract_number?: string | null;
   contract_url?: string | null;
   contract_file_name?: string | null;
@@ -43,6 +45,7 @@ export default function AdminClassesClient({
   const [inviteFor, setInviteFor] = useState<string | null>(null);
   const [contractFor, setContractFor] = useState<string | null>(null);
   const [examsFor, setExamsFor] = useState<string | null>(null);
+  const [nasbaOnly, setNasbaOnly] = useState(false);
 
   const [form, setForm] = useState({
     course_id: "",
@@ -57,10 +60,11 @@ export default function AdminClassesClient({
   });
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/classes");
+    setLoading(true);
+    const res = await fetch(`/api/classes${nasbaOnly ? "?nasba=true" : ""}`);
     if (res.ok) setClasses((await res.json()).classes ?? []);
     setLoading(false);
-  }, []);
+  }, [nasbaOnly]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -104,12 +108,18 @@ export default function AdminClassesClient({
           <h1 className="text-2xl font-bold text-gray-900">Classes</h1>
           <p className="mt-1 text-sm text-gray-500">Schedule classes and invite participants.</p>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          <Plus className="h-4 w-4" /> New Class
-        </button>
+        <div className="flex items-center gap-3">
+          <label className="inline-flex items-center gap-1.5 text-sm text-gray-600">
+            <input type="checkbox" checked={nasbaOnly} onChange={(e) => setNasbaOnly(e.target.checked)} />
+            NASBA certified only
+          </label>
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            <Plus className="h-4 w-4" /> New Class
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -204,6 +214,11 @@ export default function AdminClassesClient({
                     {c.start_date && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(c.start_date).toLocaleDateString()}</span>}
                     <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{c.participant_count} enrolled</span>
                     <span className="capitalize text-gray-400">{c.status.replace("_", " ")}</span>
+                    {c.nasba_certified && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                        NASBA{c.nasba_cpe_credits != null ? ` · ${c.nasba_cpe_credits} CPE` : ""}
+                      </span>
+                    )}
                     {isAdmin && c.contract_number && (
                       <span className="inline-flex items-center gap-1 text-gray-500"><FileSignature className="h-3.5 w-3.5" />{c.contract_number}</span>
                     )}

@@ -66,7 +66,17 @@ interface ClassData {
     instructor_name: string | null;
     instructor_bio: string | null;
   };
-  course: { title: string; slug: string } | null;
+  course: {
+    title: string;
+    slug: string;
+    nasba_certified?: boolean;
+    nasba_cpe_credits?: number | null;
+    nasba_field_of_study?: string | null;
+    nasba_knowledge_level?: string | null;
+    nasba_prerequisites?: string | null;
+    nasba_advance_prep?: string | null;
+    nasba_delivery_method?: string | null;
+  } | null;
   contract: { number: string | null; url: string | null; file_name: string | null } | null;
   sessions: Session[];
   materials: Material[];
@@ -152,6 +162,28 @@ export default function ClassCardClient({ classId }: { classId: string }) {
           </span>
         </div>
       </div>
+
+      {/* NASBA CPE certification */}
+      {course?.nasba_certified && (
+        <section className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+            <ClipboardCheck className="h-4 w-4 text-emerald-600" />
+            NASBA CPE
+            {course.nasba_cpe_credits != null && (
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                {course.nasba_cpe_credits} CPE credits
+              </span>
+            )}
+          </h2>
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            {course.nasba_field_of_study && <Field label="Field of study" value={course.nasba_field_of_study} />}
+            {course.nasba_knowledge_level && <Field label="Knowledge level" value={course.nasba_knowledge_level} />}
+            {course.nasba_delivery_method && <Field label="Delivery method" value={course.nasba_delivery_method} />}
+            {course.nasba_prerequisites && <Field label="Prerequisites" value={course.nasba_prerequisites} />}
+            {course.nasba_advance_prep && <Field label="Advance preparation" value={course.nasba_advance_prep} />}
+          </dl>
+        </section>
+      )}
 
       {/* Contract — admins only (the API omits this for everyone else) */}
       {contract && (contract.number || contract.url) && (
@@ -384,4 +416,13 @@ function Section({
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-2 text-sm text-gray-400">{children}</p>;
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs text-gray-400">{label}</dt>
+      <dd className="text-gray-700">{value}</dd>
+    </div>
+  );
 }

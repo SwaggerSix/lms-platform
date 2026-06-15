@@ -59,6 +59,17 @@ export interface CategoryOption {
   name: string;
 }
 
+const NASBA_EMPTY = {
+  nasba_certified: false,
+  nasba_cpe_credits: "",
+  nasba_field_of_study: "",
+  nasba_knowledge_level: "",
+  nasba_prerequisites: "",
+  nasba_advance_prep: "",
+  nasba_delivery_method: "",
+};
+const NASBA_LEVELS = ["Basic", "Overview", "Intermediate", "Advanced", "Update"];
+
 // The UI uses hyphenated type values; the API/DB expects underscored course_type.
 const TYPE_TO_DB: Record<CourseItem['type'], string> = {
   'self-paced': 'self_paced',
@@ -109,16 +120,36 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   // Edit modal state
   const [editModal, setEditModal] = useState<CourseItem | null>(null);
   const [editForm, setEditForm] = useState<Partial<CourseItem>>({});
+  const [nasbaForm, setNasbaForm] = useState(NASBA_EMPTY);
 
   // Archive confirmation state
   const [archiveConfirm, setArchiveConfirm] = useState<CourseItem | null>(null);
 
   // --- Action handlers ---
 
-  const handleEdit = useCallback((course: CourseItem) => {
+  const handleEdit = useCallback(async (course: CourseItem) => {
     setOpenMenu(null);
     setEditModal(course);
     setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty, availableFrom: course.availableFrom ? course.availableFrom.slice(0, 10) : null, availableUntil: course.availableUntil ? course.availableUntil.slice(0, 10) : null });
+    setNasbaForm(NASBA_EMPTY);
+    // Load current NASBA values for this course.
+    try {
+      const res = await fetch(`/api/courses/${course.slug}`);
+      if (res.ok) {
+        const c = await res.json();
+        setNasbaForm({
+          nasba_certified: !!c.nasba_certified,
+          nasba_cpe_credits: c.nasba_cpe_credits != null ? String(c.nasba_cpe_credits) : "",
+          nasba_field_of_study: c.nasba_field_of_study ?? "",
+          nasba_knowledge_level: c.nasba_knowledge_level ?? "",
+          nasba_prerequisites: c.nasba_prerequisites ?? "",
+          nasba_advance_prep: c.nasba_advance_prep ?? "",
+          nasba_delivery_method: c.nasba_delivery_method ?? "",
+        });
+      }
+    } catch {
+      // Non-fatal: leave NASBA fields blank if the fetch fails.
+    }
   }, []);
 
   const handleEditSubmit = useCallback(async () => {
@@ -145,6 +176,15 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           : null;
       }
 
+      // NASBA fields
+      payload.nasba_certified = nasbaForm.nasba_certified;
+      payload.nasba_cpe_credits = nasbaForm.nasba_cpe_credits ? Number(nasbaForm.nasba_cpe_credits) : null;
+      payload.nasba_field_of_study = nasbaForm.nasba_field_of_study || null;
+      payload.nasba_knowledge_level = nasbaForm.nasba_knowledge_level || null;
+      payload.nasba_prerequisites = nasbaForm.nasba_prerequisites || null;
+      payload.nasba_advance_prep = nasbaForm.nasba_advance_prep || null;
+      payload.nasba_delivery_method = nasbaForm.nasba_delivery_method || null;
+
       const res = await fetch('/api/courses', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +207,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
     } finally {
       setLoadingAction(null);
     }
-  }, [editModal, editForm, categoryOptions]);
+  }, [editModal, editForm, nasbaForm, categoryOptions]);
 
   const handleDuplicate = useCallback(async (course: CourseItem) => {
     setOpenMenu(null);
@@ -635,6 +675,61 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 </div>
               </div>
             </div>
+            {/* NASBA CPE certification */}
+            <div className="mt-5 rounded-lg border border-gray-200 p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                <input
+                  type="checkbox"
+                  checked={nasbaForm.nasba_certified}
+                  onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_certified: e.target.checked })}
+                />
+                NASBA CPE certified
+              </label>
+              {nasbaForm.nasba_certified && (
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">CPE credits</label>
+                    <input type="number" min={0} step="0.5" value={nasbaForm.nasba_cpe_credits}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_cpe_credits: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. 8" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Field of study (NASBA domain)</label>
+                    <input value={nasbaForm.nasba_field_of_study}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_field_of_study: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. Accounting" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Knowledge level</label>
+                    <select value={nasbaForm.nasba_knowledge_level}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_knowledge_level: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                      <option value="">—</option>
+                      {NASBA_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Delivery method</label>
+                    <input value={nasbaForm.nasba_delivery_method}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_delivery_method: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. Group Live" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Prerequisites</label>
+                    <input value={nasbaForm.nasba_prerequisites}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_prerequisites: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. None" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Advance preparation</label>
+                    <input value={nasbaForm.nasba_advance_prep}
+                      onChange={(e) => setNasbaForm({ ...nasbaForm, nasba_advance_prep: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. None" />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="mt-6 flex items-center justify-end gap-3">
               <button
                 onClick={() => { setEditModal(null); setEditForm({}); }}

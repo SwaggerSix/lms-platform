@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
   const courseId = searchParams.get("course_id");
   const status = searchParams.get("status");
   const mine = searchParams.get("mine") === "true";
+  const nasbaOnly = searchParams.get("nasba") === "true";
 
   // When "mine", restrict to the classes this user is a participant of.
   let allowedClassIds: string[] | null = null;
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   let query = service
     .from("classes")
-    .select("*, course:courses(title, slug, thumbnail_url), instructor:users!classes_instructor_id_fkey(first_name, last_name)")
+    .select("*, course:courses(title, slug, thumbnail_url, nasba_certified, nasba_cpe_credits, nasba_field_of_study), instructor:users!classes_instructor_id_fkey(first_name, last_name)")
     .order("start_date", { ascending: true, nullsFirst: false });
 
   if (courseId) query = query.eq("course_id", courseId);
@@ -112,6 +113,9 @@ export async function GET(request: NextRequest) {
       max_capacity: c.max_capacity,
       participant_count: participantCount[c.id] ?? 0,
       next_session: nextSession[c.id] ?? null,
+      nasba_certified: !!course?.nasba_certified,
+      nasba_cpe_credits: course?.nasba_cpe_credits ?? null,
+      nasba_field_of_study: course?.nasba_field_of_study ?? null,
       // Contract details are admin-only.
       ...(isAdmin
         ? {
@@ -123,7 +127,8 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  return NextResponse.json({ classes, total: classes.length });
+  const filtered = nasbaOnly ? classes.filter((c) => c.nasba_certified) : classes;
+  return NextResponse.json({ classes: filtered, total: filtered.length });
 }
 
 /**

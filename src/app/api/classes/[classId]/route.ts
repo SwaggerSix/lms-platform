@@ -28,7 +28,7 @@ export async function GET(
 
   const { data: cls, error: clsErr } = await service
     .from("classes")
-    .select("*, course:courses(id, title, slug, description, thumbnail_url, course_type, difficulty_level, estimated_duration, passing_score), instructor:users!classes_instructor_id_fkey(first_name, last_name, bio)")
+    .select("*, course:courses(id, title, slug, description, thumbnail_url, course_type, difficulty_level, estimated_duration, passing_score, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level, nasba_prerequisites, nasba_advance_prep, nasba_delivery_method), instructor:users!classes_instructor_id_fkey(first_name, last_name, bio)")
     .eq("id", classId)
     .single();
 
@@ -183,6 +183,13 @@ export async function GET(
           difficulty_level: course.difficulty_level,
           estimated_duration: course.estimated_duration,
           passing_score: course.passing_score,
+          nasba_certified: !!course.nasba_certified,
+          nasba_cpe_credits: course.nasba_cpe_credits ?? null,
+          nasba_field_of_study: course.nasba_field_of_study ?? null,
+          nasba_knowledge_level: course.nasba_knowledge_level ?? null,
+          nasba_prerequisites: course.nasba_prerequisites ?? null,
+          nasba_advance_prep: course.nasba_advance_prep ?? null,
+          nasba_delivery_method: course.nasba_delivery_method ?? null,
         }
       : null,
     sessions: (sessions ?? []).map((s) => ({

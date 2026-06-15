@@ -39,6 +39,14 @@ export const createCourseSchema = z.object({
   passing_score: z.number().int().min(0).max(100).optional(),
   max_attempts: z.number().int().positive().optional(),
   difficulty_level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+  // NASBA CPE certification (applicable to accounting/finance offerings)
+  nasba_certified: z.boolean().optional(),
+  nasba_cpe_credits: z.number().min(0).max(999).optional().nullable(),
+  nasba_field_of_study: z.string().max(200).optional().nullable(),
+  nasba_knowledge_level: z.enum(["Basic", "Overview", "Intermediate", "Advanced", "Update"]).optional().nullable(),
+  nasba_prerequisites: z.string().max(2000).optional().nullable(),
+  nasba_advance_prep: z.string().max(2000).optional().nullable(),
+  nasba_delivery_method: z.string().max(200).optional().nullable(),
 });
 
 export const updateCourseSchema = createCourseSchema.partial().extend({
