@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
+import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS } from "@/lib/integrations/partner-portal/sync";
 
 /**
  * GET /api/profile — return the authenticated user's full profile.
@@ -49,7 +50,7 @@ export async function PATCH(request: NextRequest) {
   // Look up internal user id
   const { data: profile } = await service
     .from("users")
-    .select("id")
+    .select("id, external_source")
     .eq("auth_id", authUser.id)
     .single();
 
@@ -60,7 +61,17 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json();
 
   // Only allow self-editable fields
-  const allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio", "timezone"];
+  let allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio", "timezone"];
+
+  // Portal-owned fields are read-only for subcontractors synced from the
+  // partner portal — the portal is the system of record, so a later sync must
+  // never be clobbered by a local edit. Drop them from the allow-list.
+  if (profile.external_source === EXTERNAL_SOURCE) {
+    allowedFields = allowedFields.filter(
+      (f) => !(PORTAL_OWNED_USER_FIELDS as readonly string[]).includes(f)
+    );
+  }
+
   const sanitized = Object.fromEntries(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
   );

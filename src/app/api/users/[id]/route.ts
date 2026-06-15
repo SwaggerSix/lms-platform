@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS } from "@/lib/integrations/partner-portal/sync";
 
 export async function PATCH(
   request: NextRequest,
@@ -40,7 +41,24 @@ export async function PATCH(
   }
 
   // Mass assignment fix: whitelist allowed fields
-  const allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
+  let allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
+
+  // For subcontractors synced from the partner portal, the portal owns the
+  // identity/content fields (name, email, bio, avatar). Admins can still
+  // manage LMS-local concerns — role, status, org, manager — but edits to
+  // portal-owned fields are dropped so the next sync isn't clobbered.
+  const { data: target } = await service
+    .from("users")
+    .select("external_source")
+    .eq("id", id)
+    .single();
+
+  if (target?.external_source === EXTERNAL_SOURCE) {
+    allowedFields = allowedFields.filter(
+      (f) => !(PORTAL_OWNED_USER_FIELDS as readonly string[]).includes(f)
+    );
+  }
+
   const sanitized = Object.fromEntries(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
   );
