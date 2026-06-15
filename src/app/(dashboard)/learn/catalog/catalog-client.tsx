@@ -43,6 +43,14 @@ export interface CatalogCourse {
 const CATEGORIES = ["Technology", "Leadership", "Business", "Compliance", "Soft Skills"];
 const COURSE_TYPES: CourseType[] = ["Video", "Interactive", "Document", "Blended"];
 const DIFFICULTIES: Difficulty[] = ["Beginner", "Intermediate", "Advanced"];
+
+/** Derive a 1–2 character monogram from a course title for the generated cover. */
+function coverMonogram(title: string): string {
+  const words = (title || "").replace(/[^a-zA-Z0-9 ]/g, " ").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "★";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
 const SORT_OPTIONS = [
   { label: "Most Popular", value: "popular" },
   { label: "Newest", value: "newest" },
@@ -376,14 +384,26 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     href={`/learn/catalog/${course.slug}`}
                     className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                   >
-                    {/* Thumbnail */}
+                    {/* Cover — generated, original art (gradient + monogram + category) */}
                     <div
                       className={cn(
-                        "relative flex h-40 items-center justify-center bg-gradient-to-br",
+                        "relative flex h-40 flex-col justify-between overflow-hidden bg-gradient-to-br p-4",
                         course.gradient
                       )}
                     >
-                      <BookOpen className="h-12 w-12 text-white/60" />
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute -bottom-6 -right-2 select-none text-[110px] font-black leading-none text-white/10"
+                      >
+                        {coverMonogram(course.title)}
+                      </span>
+                      <span className="z-10 inline-flex w-fit items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                        <BookOpen className="h-3 w-3" />
+                        {course.category}
+                      </span>
+                      <h4 className="z-10 line-clamp-2 pr-10 text-base font-bold leading-snug text-white drop-shadow-sm">
+                        {course.title}
+                      </h4>
                       {course.hasUnmetPrerequisites && (
                         <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                           <Lock className="h-3 w-3" />
