@@ -6,7 +6,7 @@ import { rateLimit } from "@/lib/rate-limit";
 
 // GET: list campaigns with enrollment counts.
 export async function GET(_request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -47,7 +47,7 @@ export async function GET(_request: NextRequest) {
 
 // POST: create a campaign and its ordered items.
 export async function POST(request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`nudge-campaign-create-${auth.user.id}`, 20, 60000);

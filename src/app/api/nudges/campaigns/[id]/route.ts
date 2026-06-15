@@ -9,7 +9,7 @@ async function loadCampaign(service: ReturnType<typeof createServiceClient>, id:
 
 // GET: a campaign with its items and enrollments.
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;
@@ -44,7 +44,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
 // DELETE: remove a campaign (linked assignments are completed first).
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { id } = await params;

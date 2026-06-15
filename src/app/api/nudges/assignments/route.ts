@@ -9,7 +9,7 @@ const SELECT_WITH_ACTION =
 
 // GET: assignments created by the manager (or all, for admins).
 export async function GET(request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
 // POST: assign a nudge to an employee.
 export async function POST(request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const rl = await rateLimit(`nudge-assign-${auth.user.id}`, 60, 60000);

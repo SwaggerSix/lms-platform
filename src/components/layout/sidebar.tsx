@@ -127,6 +127,7 @@ const navSections: NavSection[] = [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
       { label: "My Bio", href: "/instructor/bio", icon: User },
       { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
+      { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
       { label: "Messages", href: "/learn/messages", icon: Mail },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
@@ -142,6 +143,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
       { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
+      { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
       { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
       { label: "Documents", href: "/admin/documents", icon: FolderOpen },
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },

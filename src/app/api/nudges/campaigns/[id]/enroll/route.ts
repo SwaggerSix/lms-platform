@@ -5,7 +5,7 @@ import { validateBody, enrollNudgeCampaignSchema } from "@/lib/validations";
 
 // POST: enroll an employee in a campaign, creating the first assignment.
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const { id: campaignId } = await params;
