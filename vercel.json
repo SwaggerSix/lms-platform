@@ -32,6 +32,10 @@
       "schedule": "0 */6 * * *"
     },
     {
+      "path": "/api/cron/partner-portal-sync",
+      "schedule": "20 * * * *"
+    },
+    {
       "path": "/api/cron/sharepoint-roster-sync",
       "schedule": "30 */6 * * *"
     },

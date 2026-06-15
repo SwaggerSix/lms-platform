@@ -19,7 +19,7 @@ export default async function InstructorBioPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role, first_name, last_name, bio, preferences")
+    .select("id, role, first_name, last_name, bio, preferences, external_source")
     .eq("auth_id", user.id)
     .single();
   if (!dbUser) redirect("/login");
@@ -34,6 +34,7 @@ export default async function InstructorBioPage() {
     <BioClient
       initialBio={initialBio}
       name={`${dbUser.first_name ?? ""} ${dbUser.last_name ?? ""}`.trim()}
+      locked={dbUser.external_source === "partner_portal"}
     />
   );
 }
