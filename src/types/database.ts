@@ -447,6 +447,65 @@ export interface ILTAttendance {
   session?: ILTSession;
 }
 
+// ============================================
+// Classes (cohorts / dated offerings of a course)
+// ============================================
+
+export type ClassStatus = "draft" | "scheduled" | "in_progress" | "completed" | "cancelled";
+export type ClassEnrollmentType = "open" | "invite" | "approval";
+export type ClassRole = "learner" | "instructor" | "observer";
+export type ClassParticipantStatus = "active" | "removed" | "completed";
+export type ClassInvitationStatus = "pending" | "accepted" | "revoked" | "expired";
+
+export interface Class {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  timezone: string;
+  instructor_id: string | null;
+  max_capacity: number | null;
+  status: ClassStatus;
+  enrollment_type: ClassEnrollmentType;
+  // Commercial contract link (admin-only). contract_url points at the contract
+  // document in SharePoint.
+  contract_number: string | null;
+  contract_url: string | null;
+  contract_file_name: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  course?: Course;
+  instructor?: User;
+}
+
+export interface ClassParticipant {
+  id: string;
+  class_id: string;
+  user_id: string;
+  role: ClassRole;
+  status: ClassParticipantStatus;
+  enrolled_at: string;
+  invited_by: string | null;
+  user?: User;
+}
+
+export interface ClassInvitation {
+  id: string;
+  class_id: string;
+  email: string;
+  invited_role: ClassRole;
+  token: string;
+  status: ClassInvitationStatus;
+  expires_at: string | null;
+  accepted_at: string | null;
+  accepted_by: string | null;
+  invited_by: string | null;
+  created_at: string;
+}
+
 export interface Conversation {
   id: string;
   type: ConversationType;

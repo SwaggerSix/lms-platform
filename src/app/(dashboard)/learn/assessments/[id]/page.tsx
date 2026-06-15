@@ -7,10 +7,13 @@ import AssessmentEmbedClient from "./assessment-embed-client";
 
 export default async function AssessmentTakingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ class_id?: string }>;
 }) {
   const { id } = await params;
+  const { class_id: classId } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -99,13 +102,16 @@ export default async function AssessmentTakingPage({
       question_text: q.question_text,
       question_type: q.question_type ?? "multiple_choice",
       points: q.points ?? 1,
-      options: Array.isArray(q.options)
-        ? q.options
-        : [{ label: "A", value: "Option A" }],
+      // Normalize option shape: builder stores { text, is_correct }; older data
+      // may use { label, value }. Expose a stable display value to the client.
+      options: (Array.isArray(q.options) ? q.options : []).map((o: any, i: number) => ({
+        label: String.fromCharCode(65 + i),
+        value: o?.text ?? o?.value ?? o?.label ?? "",
+      })),
       sequence_order: q.sequence_order ?? 0,
     })),
     previousAttemptCount: attemptsResult.count ?? 0,
   };
 
-  return <AssessmentTakingClient data={data} />;
+  return <AssessmentTakingClient data={data} classId={classId ?? null} />;
 }

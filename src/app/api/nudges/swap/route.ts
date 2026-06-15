@@ -5,7 +5,7 @@ import { swapAssignmentAction } from "@/lib/nudges/server";
 
 // POST: swap an assignment's action for a different one in the same category.
 export async function POST(request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   let body: { assignmentId?: string };

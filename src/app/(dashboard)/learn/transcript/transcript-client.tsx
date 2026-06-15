@@ -33,6 +33,16 @@ export interface TranscriptRecord {
   certificate_id: string | null;
 }
 
+export interface TranscriptExam {
+  id: string;
+  title: string;
+  course_title: string | null;
+  best_score: number | null;
+  passed: boolean;
+  attempts: number;
+  last_attempt: string | null;
+}
+
 export interface TranscriptUser {
   name: string;
   employee_id: string;
@@ -46,6 +56,7 @@ export interface TranscriptUser {
 export interface TranscriptPageProps {
   user: TranscriptUser;
   records: TranscriptRecord[];
+  exams?: TranscriptExam[];
 }
 
 const COURSE_TYPE_CONFIG: Record<CourseType, { label: string; color: string }> = {
@@ -63,7 +74,7 @@ function getYear(dateStr: string): number {
   return new Date(dateStr).getFullYear();
 }
 
-export default function TranscriptClient({ user, records }: TranscriptPageProps) {
+export default function TranscriptClient({ user, records, exams = [] }: TranscriptPageProps) {
   const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "in_progress">("all");
   const [typeFilter, setTypeFilter] = useState<CourseType | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
@@ -502,6 +513,58 @@ export default function TranscriptClient({ user, records }: TranscriptPageProps)
                 <p className="mt-1 text-sm text-gray-500">Try adjusting your filters to see results.</p>
               </div>
             )}
+          </div>
+
+          {/* Examination Results */}
+          <div className="mt-8">
+            <div className="flex items-center justify-between rounded-t-xl border border-gray-200 bg-gray-100 px-4 py-3">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                <FileText className="h-5 w-5 text-indigo-600" /> Examination Results
+              </h2>
+              <span className="text-sm text-gray-600">{exams.length} exam{exams.length === 1 ? "" : "s"}</span>
+            </div>
+            <div className="overflow-x-auto rounded-b-xl border border-t-0 border-gray-200 bg-white">
+              {exams.length === 0 ? (
+                <p className="px-4 py-8 text-center text-sm text-gray-400">No examinations taken yet.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-4 py-3">Examination</th>
+                      <th className="px-4 py-3">Course</th>
+                      <th className="px-4 py-3">Best Score</th>
+                      <th className="px-4 py-3">Result</th>
+                      <th className="px-4 py-3">Attempts</th>
+                      <th className="px-4 py-3">Last Attempt</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {exams.map((ex) => (
+                      <tr key={ex.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-900">{ex.title}</td>
+                        <td className="px-4 py-3 text-gray-600">{ex.course_title ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {ex.best_score != null ? `${Math.round(ex.best_score)}%` : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {ex.passed ? (
+                            <span className="inline-flex items-center gap-1 text-green-700">
+                              <CheckCircle2 className="h-4 w-4" /> Passed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-red-700">
+                              <XCircle className="h-4 w-4" /> Not passed
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{ex.attempts}</td>
+                        <td className="px-4 py-3 text-gray-600">{formatDate(ex.last_attempt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
 
           {/* Print footer */}

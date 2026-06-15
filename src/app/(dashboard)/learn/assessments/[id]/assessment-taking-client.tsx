@@ -45,11 +45,12 @@ export interface AssessmentData {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export default function AssessmentTakingClient({ data }: { data: AssessmentData }) {
+export default function AssessmentTakingClient({ data, classId = null }: { data: AssessmentData; classId?: string | null }) {
   const { assessment, questions } = data;
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Value is a string for single-choice/text questions, or string[] for multi-select.
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
   const [timeLeft, setTimeLeft] = useState<number | null>(
     assessment.time_limit ? assessment.time_limit * 60 : null
@@ -59,7 +60,12 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const question = questions[currentQuestion];
-  const answeredCount = Object.keys(answers).length;
+  const isAnswered = (qid: string) => {
+    const v = answers[qid];
+    if (Array.isArray(v)) return v.length > 0;
+    return v !== undefined && v !== "";
+  };
+  const answeredCount = questions.filter((q) => isAnswered(q.id)).length;
   const unansweredCount = questions.length - answeredCount;
 
   // Timer - only run when there is a time limit
@@ -87,6 +93,14 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   }, []);
 
+  const toggleMultiAnswer = useCallback((questionId: string, value: string) => {
+    setAnswers((prev) => {
+      const cur = Array.isArray(prev[questionId]) ? (prev[questionId] as string[]) : [];
+      const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+      return { ...prev, [questionId]: next };
+    });
+  }, []);
+
   const toggleFlag = useCallback((questionId: string) => {
     setFlagged((prev) => {
       const next = new Set(prev);
@@ -100,14 +114,23 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      // Convert answers from Record<questionId, optionValue> to the API format
-      const formattedAnswers = Object.entries(answers).map(([questionId, selectedValue]) => {
+      // Convert answers to the API format, by question type.
+      const formattedAnswers = Object.entries(answers).map(([questionId, value]) => {
         const q = questions.find((question) => question.id === questionId);
-        const optionIndex = q?.options.findIndex((opt) => opt.value === selectedValue) ?? -1;
-        return {
-          question_id: questionId,
-          selected_options: optionIndex >= 0 ? [optionIndex] : [],
-        };
+        const type = q?.question_type ?? "multiple_choice";
+        if (type === "essay" || type === "fill_blank") {
+          return { question_id: questionId, text_answer: Array.isArray(value) ? "" : value };
+        }
+        if (type === "multi_select") {
+          const values = Array.isArray(value) ? value : [value];
+          const indexes = values
+            .map((v) => q?.options.findIndex((opt) => opt.value === v) ?? -1)
+            .filter((i) => i >= 0);
+          return { question_id: questionId, selected_options: indexes };
+        }
+        // single-choice (multiple_choice, true_false)
+        const optionIndex = q?.options.findIndex((opt) => opt.value === value) ?? -1;
+        return { question_id: questionId, selected_options: optionIndex >= 0 ? [optionIndex] : [] };
       });
 
       const res = await fetch("/api/assessments/submit", {
@@ -116,6 +139,7 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
         body: JSON.stringify({
           assessment_id: assessment.id,
           answers: formattedAnswers,
+          class_id: classId ?? undefined,
           time_spent: assessment.time_limit && timeLeft !== null ? assessment.time_limit * 60 - timeLeft : undefined,
         }),
       });
@@ -254,40 +278,66 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
             {question.question_text}
           </h2>
 
-          {/* Answer Options */}
+          {/* Answer area — varies by question type */}
           <div className="mt-6 space-y-3">
-            {question.options.map((option, idx) => {
-              const isSelected = answers[question.id] === option.value;
-              return (
-                <label
-                  key={idx}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-all",
-                    isSelected
-                      ? "border-indigo-600 bg-indigo-50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name={`q-${question.id}`}
-                    checked={isSelected}
-                    onChange={() => selectAnswer(question.id, option.value)}
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className={cn("text-sm", isSelected ? "font-medium text-indigo-900" : "text-gray-700")}>
-                    {option.value}
-                  </span>
-                </label>
-              );
-            })}
+            {question.question_type === "essay" ? (
+              <textarea
+                value={(answers[question.id] as string) ?? ""}
+                onChange={(e) => selectAnswer(question.id, e.target.value)}
+                rows={6}
+                placeholder="Type your answer…"
+                className="w-full rounded-lg border-2 border-gray-200 p-4 text-sm focus:border-indigo-500 focus:outline-none"
+              />
+            ) : question.question_type === "fill_blank" ? (
+              <input
+                type="text"
+                value={(answers[question.id] as string) ?? ""}
+                onChange={(e) => selectAnswer(question.id, e.target.value)}
+                placeholder="Type your answer…"
+                className="w-full rounded-lg border-2 border-gray-200 p-4 text-sm focus:border-indigo-500 focus:outline-none"
+              />
+            ) : (
+              question.options.map((option, idx) => {
+                const isMulti = question.question_type === "multi_select";
+                const cur = answers[question.id];
+                const isSelected = isMulti
+                  ? Array.isArray(cur) && cur.includes(option.value)
+                  : cur === option.value;
+                return (
+                  <label
+                    key={idx}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-all",
+                      isSelected
+                        ? "border-indigo-600 bg-indigo-50"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    )}
+                  >
+                    <input
+                      type={isMulti ? "checkbox" : "radio"}
+                      name={`q-${question.id}`}
+                      checked={isSelected}
+                      onChange={() =>
+                        isMulti
+                          ? toggleMultiAnswer(question.id, option.value)
+                          : selectAnswer(question.id, option.value)
+                      }
+                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className={cn("text-sm", isSelected ? "font-medium text-indigo-900" : "text-gray-700")}>
+                      {option.value}
+                    </span>
+                  </label>
+                );
+              })
+            )}
           </div>
         </div>
 
         {/* ---- Question Number Pills ---- */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           {questions.map((q, idx) => {
-            const isAnswered = answers[q.id] !== undefined;
+            const answered = isAnswered(q.id);
             const isFlagged = flagged.has(q.id);
             const isCurrent = idx === currentQuestion;
             return (
@@ -299,7 +349,7 @@ export default function AssessmentTakingClient({ data }: { data: AssessmentData 
                   isCurrent && "ring-2 ring-indigo-600 ring-offset-2",
                   isFlagged && !isCurrent
                     ? "bg-yellow-100 text-yellow-700"
-                    : isAnswered
+                    : answered
                     ? "bg-blue-100 text-blue-700"
                     : "bg-gray-100 text-gray-500"
                 )}

@@ -37,7 +37,21 @@ export async function GET(request: NextRequest) {
     .order("session_date", { ascending: true });
 
   if (tenantScope) {
-    query = query.in("course_id", tenantScope.courseIds);
+    // A tenant sees its own course-scoped sessions plus any shared webinars it
+    // has opted into.
+    const { data: optins } = await service
+      .from("shared_webinar_optins")
+      .select("session_id")
+      .eq("tenant_id", tenantScope.tenantId)
+      .eq("opted_in", true);
+    const sharedIds = (optins ?? []).map((o) => o.session_id);
+
+    const orParts: string[] = [];
+    if (tenantScope.courseIds.length) orParts.push(`course_id.in.(${tenantScope.courseIds.join(",")})`);
+    if (sharedIds.length) orParts.push(`id.in.(${sharedIds.join(",")})`);
+    query = orParts.length
+      ? query.or(orParts.join(","))
+      : query.eq("id", "00000000-0000-0000-0000-000000000000"); // tenant sees none
   }
 
   if (status) {
@@ -128,6 +142,8 @@ export async function POST(request: NextRequest) {
     meeting_id: null,
     meeting_password: null,
     meeting_settings: body.meeting_settings || {},
+    is_free: body.is_free ?? false,
+    is_shared: body.is_shared ?? false,
   };
 
   // If a meeting provider is specified, try to auto-create the meeting
@@ -335,7 +351,7 @@ export async function PATCH(request: NextRequest) {
       "timezone", "location_type", "location_details", "meeting_url",
       "max_capacity", "instructor_id", "status",
       "meeting_provider", "meeting_id", "meeting_password", "meeting_settings",
-      "recording_url",
+      "recording_url", "is_free", "is_shared",
     ];
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };

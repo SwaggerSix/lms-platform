@@ -27,6 +27,14 @@ const productSchema = z.object({
   sku: z.string().max(80).nullable().optional(),
   status: z.enum(["active", "inactive", "coming_soon"]).optional(),
   is_featured: z.boolean().optional(),
+  listed_in_storefront: z.boolean().optional(),
+  nasba_certified: z.boolean().optional(),
+  nasba_cpe_credits: z.number().min(0).max(999).nullable().optional(),
+  nasba_field_of_study: z.string().max(200).nullable().optional(),
+  nasba_knowledge_level: z.enum(["Basic", "Overview", "Intermediate", "Advanced", "Update"]).nullable().optional(),
+  nasba_prerequisites: z.string().max(2000).nullable().optional(),
+  nasba_advance_prep: z.string().max(2000).nullable().optional(),
+  nasba_delivery_method: z.string().max(200).nullable().optional(),
   course_id: z.string().uuid().nullable().optional(),
 });
 

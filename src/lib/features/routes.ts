@@ -16,6 +16,15 @@ interface RouteFeature {
 
 // Page routes (under the (dashboard) route group).
 const PAGE_ROUTES: RouteFeature[] = [
+  { prefix: "/learn/catalog", feature: "courses" },
+  { prefix: "/learn/my-courses", feature: "courses" },
+  { prefix: "/learn/player", feature: "courses" },
+  { prefix: "/learn/transcript", feature: "courses" },
+  { prefix: "/learn/classes", feature: "classes" },
+  { prefix: "/learn/assessments", feature: "assessments" },
+  { prefix: "/learn/certifications", feature: "certifications" },
+  { prefix: "/learn/documents", feature: "documents" },
+  { prefix: "/learn/knowledge-base", feature: "knowledge_base" },
   { prefix: "/learn/achievements", feature: "gamification" },
   { prefix: "/learn/discussions", feature: "social_learning" },
   { prefix: "/learn/messages", feature: "social_learning" },
@@ -35,6 +44,9 @@ const PAGE_ROUTES: RouteFeature[] = [
 
 // API routes.
 const API_ROUTES: RouteFeature[] = [
+  { prefix: "/api/classes", feature: "classes" },
+  { prefix: "/api/assessments", feature: "assessments" },
+  { prefix: "/api/ratings", feature: "course_ratings" },
   { prefix: "/api/gamification", feature: "gamification" },
   { prefix: "/api/discussions", feature: "social_learning" },
   { prefix: "/api/messages", feature: "social_learning" },

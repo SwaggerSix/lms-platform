@@ -412,12 +412,15 @@ export default function DocumentsClient({
                             Acknowledged
                           </span>
                         )}
-                        <button
+                        <a
+                          href={`/api/documents/${doc.id}/download`}
+                          target="_blank"
+                          rel="noreferrer"
                           className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                           title="Download"
                         >
                           <Download className="h-4 w-4" />
-                        </button>
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -504,12 +507,15 @@ export default function DocumentsClient({
                       ) : (
                         <div className="flex-1" />
                       )}
-                      <button
+                      <a
+                        href={`/api/documents/${doc.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
                         className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                         title="Download"
                       >
                         <Download className="h-4 w-4" />
-                      </button>
+                      </a>
                     </div>
                   </div>
                 );

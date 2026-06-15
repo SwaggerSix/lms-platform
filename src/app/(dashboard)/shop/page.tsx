@@ -18,6 +18,7 @@ export default async function ShopPage({
     .from("products")
     .select("*, course:courses(id, title, short_description, thumbnail_url, difficulty_level, estimated_duration, category:categories(id, name))")
     .eq("status", "active")
+    .eq("listed_in_storefront", true)
     .eq("is_featured", true)
     .order("sales_count", { ascending: false })
     .limit(4);
@@ -27,6 +28,7 @@ export default async function ShopPage({
     .from("products")
     .select("*, course:courses(id, title, short_description, thumbnail_url, difficulty_level, estimated_duration, category:categories(id, name))", { count: "exact" })
     .eq("status", "active")
+    .eq("listed_in_storefront", true)
     .range(offset, offset + limit - 1);
 
   if (params.category) query = query.eq("course.category_id", params.category);

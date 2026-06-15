@@ -159,6 +159,8 @@ export default function ILTSessionsClient({
     auto_create_meeting: true,
     max_capacity: 30,
     instructor: "",
+    is_free: false,
+    is_shared: false,
   });
   const [sendingInvites, setSendingInvites] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
@@ -230,6 +232,8 @@ export default function ILTSessionsClient({
           auto_create_meeting: formData.auto_create_meeting,
           max_capacity: formData.max_capacity,
           instructor_id: formData.instructor || null,
+          is_free: formData.is_free,
+          is_shared: formData.is_shared,
         }),
       });
 
@@ -278,6 +282,8 @@ export default function ILTSessionsClient({
         auto_create_meeting: true,
         max_capacity: 30,
         instructor: "",
+        is_free: false,
+        is_shared: false,
       });
     } catch (err) {
       console.error("Error creating session:", err);
@@ -1130,6 +1136,24 @@ export default function ILTSessionsClient({
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="flex flex-col gap-2 rounded-lg border border-gray-200 p-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_free}
+                      onChange={(e) => setFormData({ ...formData, is_free: e.target.checked })}
+                    />
+                    Free webinar (no cost)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_shared}
+                      onChange={(e) => setFormData({ ...formData, is_shared: e.target.checked })}
+                    />
+                    Offer to all client instances (they opt in)
+                  </label>
                 </div>
               </div>
             </div>

@@ -38,6 +38,7 @@ interface Product {
   sku: string | null;
   status: string;
   is_featured: boolean;
+  listed_in_storefront: boolean;
   sales_count: number;
 }
 
@@ -85,7 +86,16 @@ const emptyProductForm = {
   image_url: "",
   is_featured: false,
   status: "active",
+  listed_in_storefront: true,
+  nasba_certified: false,
+  nasba_cpe_credits: "",
+  nasba_field_of_study: "",
+  nasba_knowledge_level: "",
+  nasba_prerequisites: "",
+  nasba_advance_prep: "",
+  nasba_delivery_method: "",
 };
+const NASBA_LEVELS = ["Basic", "Overview", "Intermediate", "Advanced", "Update"];
 
 type Tab = "products" | "orders" | "import" | "settings" | "discounts" | "reports" | "publish";
 
@@ -201,6 +211,14 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
         image_url: productForm.image_url || "",
         is_featured: productForm.is_featured,
         status: productForm.status,
+        listed_in_storefront: productForm.listed_in_storefront,
+        nasba_certified: productForm.nasba_certified,
+        nasba_cpe_credits: productForm.nasba_cpe_credits ? Number(productForm.nasba_cpe_credits) : null,
+        nasba_field_of_study: productForm.nasba_field_of_study || null,
+        nasba_knowledge_level: productForm.nasba_knowledge_level || null,
+        nasba_prerequisites: productForm.nasba_prerequisites || null,
+        nasba_advance_prep: productForm.nasba_advance_prep || null,
+        nasba_delivery_method: productForm.nasba_delivery_method || null,
       };
       const res = await fetch(`/api/storefront/admin/${storeId}/products`, {
         method: editingId ? "PUT" : "POST",
@@ -251,6 +269,14 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
       image_url: p.image_url || "",
       is_featured: p.is_featured,
       status: p.status,
+      listed_in_storefront: p.listed_in_storefront ?? true,
+      nasba_certified: (p as any).nasba_certified ?? false,
+      nasba_cpe_credits: (p as any).nasba_cpe_credits != null ? String((p as any).nasba_cpe_credits) : "",
+      nasba_field_of_study: (p as any).nasba_field_of_study ?? "",
+      nasba_knowledge_level: (p as any).nasba_knowledge_level ?? "",
+      nasba_prerequisites: (p as any).nasba_prerequisites ?? "",
+      nasba_advance_prep: (p as any).nasba_advance_prep ?? "",
+      nasba_delivery_method: (p as any).nasba_delivery_method ?? "",
     });
     setShowProductForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -570,6 +596,14 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                     Featured (shown at the top of the store)
                   </label>
                   <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={productForm.listed_in_storefront}
+                      onChange={(e) => setProductForm({ ...productForm, listed_in_storefront: e.target.checked })}
+                    />
+                    Offer in the online store
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
                     Visibility
                     <select
                       value={productForm.status}
@@ -581,6 +615,29 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                       <option value="coming_soon">Coming soon</option>
                     </select>
                   </label>
+                </div>
+                <div className="sm:col-span-2 rounded-lg border border-gray-200 p-3">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                    <input
+                      type="checkbox"
+                      checked={productForm.nasba_certified}
+                      onChange={(e) => setProductForm({ ...productForm, nasba_certified: e.target.checked })}
+                    />
+                    NASBA CPE certified
+                  </label>
+                  {productForm.nasba_certified && (
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <input value={productForm.nasba_cpe_credits} onChange={(e) => setProductForm({ ...productForm, nasba_cpe_credits: e.target.value })} type="number" min={0} step="0.5" placeholder="CPE credits" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                      <input value={productForm.nasba_field_of_study} onChange={(e) => setProductForm({ ...productForm, nasba_field_of_study: e.target.value })} placeholder="Field of study (NASBA domain)" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                      <select value={productForm.nasba_knowledge_level} onChange={(e) => setProductForm({ ...productForm, nasba_knowledge_level: e.target.value })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                        <option value="">Knowledge level…</option>
+                        {NASBA_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      <input value={productForm.nasba_delivery_method} onChange={(e) => setProductForm({ ...productForm, nasba_delivery_method: e.target.value })} placeholder="Delivery method" className="rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+                      <input value={productForm.nasba_prerequisites} onChange={(e) => setProductForm({ ...productForm, nasba_prerequisites: e.target.value })} placeholder="Prerequisites" className="rounded-lg border border-gray-300 px-3 py-2 text-sm sm:col-span-2" />
+                      <input value={productForm.nasba_advance_prep} onChange={(e) => setProductForm({ ...productForm, nasba_advance_prep: e.target.value })} placeholder="Advance preparation" className="rounded-lg border border-gray-300 px-3 py-2 text-sm sm:col-span-2" />
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2">

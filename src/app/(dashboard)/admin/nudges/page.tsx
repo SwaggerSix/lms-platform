@@ -21,7 +21,7 @@ export default async function AdminNudgesPage() {
     .eq("auth_id", user.id)
     .single();
   if (!dbUser) redirect("/login");
-  if (!["admin", "super_admin"].includes(dbUser.role)) redirect("/dashboard");
+  if (!["admin", "super_admin", "instructor"].includes(dbUser.role)) redirect("/dashboard");
 
   const [actionsRes, campaignsRes] = await Promise.all([
     service.from("nudge_actions").select("*").order("created_at", { ascending: false }).range(0, 4999),

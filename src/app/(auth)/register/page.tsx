@@ -11,7 +11,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("email") ?? "";
+  });
   const [timezone, setTimezone] = useState(() => detectTimezone());
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,7 +79,8 @@ export default function RegisterPage() {
         }
       }
 
-      router.push("/dashboard");
+      const redirect = new URLSearchParams(window.location.search).get("redirect");
+      router.push(redirect && redirect.startsWith("/") ? redirect : "/dashboard");
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {

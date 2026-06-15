@@ -7,7 +7,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 
 // POST: upload a nudge action image to the public 'nudge-images' bucket.
 export async function POST(request: NextRequest) {
-  const auth = await authorize("manager", "admin", "super_admin");
+  const auth = await authorize("instructor", "manager", "admin", "super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   let form: FormData;

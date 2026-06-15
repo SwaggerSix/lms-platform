@@ -21,6 +21,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
     .select("id, name, description, price, discount_price, discount_ends_at, image_url, category, categories, duration_label, is_featured, sales_count")
     .eq("storefront_id", store.id)
     .eq("status", "active")
+    .eq("listed_in_storefront", true)
     .order("sort_order")
     .order("name");
 
