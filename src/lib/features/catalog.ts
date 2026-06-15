@@ -31,12 +31,16 @@ export type FeatureCategory =
 
 export const FEATURE_CATALOG: FeatureDefinition[] = [
   // Learning
+  { key: "courses", name: "Courses & Catalog", description: "Course catalog, enrollment, and the learner course experience", category: "Learning", defaultEnabled: true },
+  { key: "classes", name: "Classes (Cohorts)", description: "Scheduled class deliveries with sessions, materials, and rosters", category: "Learning", defaultEnabled: true },
   { key: "learning_paths", name: "Learning Paths", description: "Guided, sequenced course journeys", category: "Learning", defaultEnabled: true },
+  { key: "certifications", name: "Certifications", description: "Certificates and certification tracking", category: "Learning", defaultEnabled: true },
   { key: "microlearning", name: "Microlearning", description: "Bite-sized lessons and daily learning", category: "Learning", defaultEnabled: true },
   { key: "ilt_sessions", name: "ILT Sessions", description: "Instructor-led training sessions and scheduling", category: "Learning", defaultEnabled: true },
   { key: "content_authoring", name: "Content Authoring", description: "In-app course and content authoring tools", category: "Learning", defaultEnabled: true },
 
   // Assessment
+  { key: "assessments", name: "Exams & Assessments", description: "Quizzes and examinations with grading", category: "Assessment", defaultEnabled: true },
   { key: "evaluations", name: "Evaluations", description: "Post-training evaluation surveys (Kirkpatrick L1–L4)", category: "Assessment", defaultEnabled: true },
   { key: "observations", name: "Observations", description: "Observation checklists and on-the-job assessments", category: "Assessment", defaultEnabled: true },
   { key: "feedback_360", name: "360° Feedback", description: "Multi-rater 360-degree feedback", category: "Assessment", defaultEnabled: true },
@@ -44,7 +48,7 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   // Engagement
   { key: "gamification", name: "Gamification", description: "Points, badges, and leaderboards", category: "Engagement", defaultEnabled: true },
   { key: "skills_tracking", name: "Skills Tracking", description: "Skills engine and competency frameworks", category: "Engagement", defaultEnabled: true },
-  { key: "course_ratings", name: "Course Ratings", description: "Let learners rate and review courses", category: "Engagement", defaultEnabled: true },
+  { key: "course_ratings", name: "Course Ratings", description: "Let learners rate and review courses and instructors", category: "Engagement", defaultEnabled: true },
   { key: "nudges", name: "Nudges", description: "Behavioral nudges and reminders", category: "Engagement", defaultEnabled: true },
 
   // Social
@@ -60,6 +64,8 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   { key: "predictive_analytics", name: "Predictive Analytics", description: "Recommendations and predictive insights", category: "AI & Analytics", defaultEnabled: true },
 
   // Platform
+  { key: "documents", name: "Documents", description: "Document repository and personal documents", category: "Platform", defaultEnabled: true },
+  { key: "knowledge_base", name: "Knowledge Base", description: "Knowledge base articles", category: "Platform", defaultEnabled: true },
   { key: "self_registration", name: "Self-Registration", description: "Allow users to create their own accounts", category: "Platform", defaultEnabled: false },
 ];
 
