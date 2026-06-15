@@ -145,6 +145,8 @@ export default function CreateCoursePage() {
   const [availableFrom, setAvailableFrom] = useState("");
   const [availableUntil, setAvailableUntil] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   // Load real categories so admins pick (and manage) actual category records.
   useEffect(() => {
@@ -268,6 +270,17 @@ export default function CreateCoursePage() {
         throw new Error(err.error || 'Failed to create course');
       }
 
+      const created = await res.json().catch(() => null);
+      if (coverFile && created?.slug) {
+        try {
+          const fd = new FormData();
+          fd.append('file', coverFile);
+          const coverRes = await fetch(`/api/courses/${created.slug}/cover`, { method: 'POST', body: fd });
+          if (!coverRes.ok) throw new Error('cover upload failed');
+        } catch {
+          toast.error('Course created, but the cover image failed to upload. You can add it later from Edit.');
+        }
+      }
       toast.success(status === 'published' ? 'Course published successfully!' : 'Draft saved successfully!');
       router.push('/admin/courses');
     } catch (err: unknown) {
@@ -276,6 +289,31 @@ export default function CreateCoursePage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const ALLOWED_COVER = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const handleCoverSelect = (file: File | null) => {
+    if (!file) return;
+    if (!ALLOWED_COVER.includes(file.type)) {
+      toast.error('Unsupported image type. Use JPEG, PNG, WebP, or GIF.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image exceeds 5MB.');
+      return;
+    }
+    setCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setCoverFile(file);
+  };
+  const handleCoverClear = () => {
+    setCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setCoverFile(null);
   };
 
   const handleTitleChange = (val: string) => {
@@ -531,14 +569,38 @@ export default function CreateCoursePage() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Thumbnail</label>
-              <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
-                <div className="text-center">
-                  <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400">PNG, JPG, GIF up to 5MB</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Cover image</label>
+              {coverPreview ? (
+                <div className="relative h-40 w-full overflow-hidden rounded-lg border border-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={handleCoverClear}
+                    className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-red-600 shadow-sm hover:bg-white"
+                  >
+                    <X className="h-3.5 w-3.5" /> Remove
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <label className="flex h-40 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:bg-gray-100">
+                  <div className="text-center">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-500">Click to upload</p>
+                    <p className="text-xs text-gray-400">PNG, JPG, WebP, GIF up to 5MB</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="sr-only"
+                    onChange={(e) => {
+                      handleCoverSelect(e.target.files?.[0] ?? null);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              )}
+              <p className="mt-1 text-xs text-gray-400">Optional. If omitted, a cover is generated automatically.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags</label>
