@@ -63,6 +63,7 @@ import {
   Wand2,
   MessageSquareMore,
   Bug,
+  Video,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
@@ -169,6 +170,7 @@ const navSections: NavSection[] = [
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap, featureKey: "courses" },
       { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
+      { label: "Shared Webinars", href: "/admin/shared-webinars", icon: Video, featureKey: "ilt_sessions" },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch, featureKey: "learning_paths" },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion, featureKey: "assessments" },
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck, featureKey: "assessments" },
