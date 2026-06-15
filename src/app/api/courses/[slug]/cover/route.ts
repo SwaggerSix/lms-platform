@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { buildProvenanceColumns, emptyProvenanceColumns } from "@/lib/courses/cover-provenance";
 
 const BUCKET = "course-images";
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -116,9 +117,18 @@ export async function POST(
   const { data: pub } = service.storage.from(BUCKET).getPublicUrl(path);
   const url = pub.publicUrl;
 
+  // Optional provenance (licensing audit trail). Free-text; normalized server-side.
+  const provenance = buildProvenanceColumns({
+    sourceUrl: form.get("source_url")?.toString() ?? null,
+    sourceName: form.get("source_name")?.toString() ?? null,
+    license: form.get("license")?.toString() ?? null,
+    attribution: form.get("attribution")?.toString() ?? null,
+    origin: form.get("origin")?.toString() ?? null,
+  });
+
   const { error: updateError } = await service
     .from("courses")
-    .update({ thumbnail_url: url, updated_at: new Date().toISOString() })
+    .update({ thumbnail_url: url, ...provenance, updated_at: new Date().toISOString() })
     .eq("id", course.id);
   if (updateError) {
     // Roll back the just-uploaded object so we don't leave an orphan.
@@ -163,7 +173,7 @@ export async function DELETE(
 
   const { error: updateError } = await service
     .from("courses")
-    .update({ thumbnail_url: null, updated_at: new Date().toISOString() })
+    .update({ thumbnail_url: null, ...emptyProvenanceColumns(), updated_at: new Date().toISOString() })
     .eq("id", course.id);
   if (updateError) {
     console.error("Course cover delete error:", updateError.message);

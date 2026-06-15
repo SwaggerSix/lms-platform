@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   Sparkles,
   FolderOpen,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -368,6 +369,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
+          </a>
+          <a
+            href="/admin/courses/cover-import"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <ImageIcon className="h-4 w-4" />
+            Bulk images
           </a>
           <a
             href="/admin/courses/new"
