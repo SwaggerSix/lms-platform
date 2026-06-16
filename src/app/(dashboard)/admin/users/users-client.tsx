@@ -16,6 +16,7 @@ import {
   Edit,
   UserX,
   KeyRound,
+  Send,
   X,
   Filter,
   Trash2,
@@ -280,6 +281,30 @@ export default function UsersClient({ users, organizations = [], currentUserRole
     }
   };
 
+  const handleResendInvite = async (userId: string) => {
+    setOpenMenu(null);
+    const user = userList.find((u) => u.id === userId);
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/users/${userId}/resend-invite`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend invitation');
+      if (data.emailed) {
+        toast.success(`Invitation re-sent to ${user.email}`);
+      } else if (data.action_link) {
+        await navigator.clipboard?.writeText(data.action_link).catch(() => {});
+        toast.success('Email not configured — invitation link copied to clipboard to share manually');
+      } else {
+        toast.success('Invitation re-sent');
+      }
+    } catch (err: any) {
+      toast.error(err.message ?? 'Failed to resend invitation');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleResetPassword = async (userId: string) => {
     setOpenMenu(null);
     if (!confirm('Are you sure you want to send a password reset email to this user?')) return;
@@ -434,6 +459,9 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                         </button>
                         <button onClick={() => handleDeactivate(user.id)} disabled={isSubmitting || user.status === 'inactive'} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                           <UserX className="h-3.5 w-3.5" /> Deactivate
+                        </button>
+                        <button onClick={() => handleResendInvite(user.id)} disabled={isSubmitting} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                          <Send className="h-3.5 w-3.5" /> Resend Invitation
                         </button>
                         <button onClick={() => handleResetPassword(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                           <KeyRound className="h-3.5 w-3.5" /> Reset Password

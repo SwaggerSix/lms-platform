@@ -311,6 +311,29 @@ export function classInvitation(params: {
   };
 }
 
+export function accountInvitation(params: {
+  name: string;
+  actionUrl: string;
+  inviterName?: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You're invited to ${params.portalName ?? "LearnHub"}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">Hi ${params.name},</p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      ${params.inviterName ? `${params.inviterName} has set up` : "An administrator has set up"} an account for you.
+      Click below to set your password and sign in.
+    </p>
+    ${button("Set your password", params.actionUrl)}
+    <p style="margin:16px 0 0;color:#6b7280;font-size:12px;">If you weren't expecting this, you can ignore this email. This link expires for security.</p>
+  `;
+  return {
+    subject: `Your ${params.portalName ?? "LearnHub"} account invitation`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.name}, an account has been created for you on ${params.portalName ?? "LearnHub"}. Set your password and sign in: ${params.actionUrl}`,
+  };
+}
+
 export function scheduledReportDelivery(params: {
   recipientName: string;
   reportName: string;
