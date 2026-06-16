@@ -17,6 +17,9 @@ import {
   UserX,
   KeyRound,
   Send,
+  Copy,
+  Check,
+  Mail,
   X,
   Filter,
   Trash2,
@@ -76,6 +79,8 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   const [deptFilter, setDeptFilter] = useState('All Departments');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ email: string; link: string; emailed: boolean } | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -290,18 +295,22 @@ export default function UsersClient({ users, organizations = [], currentUserRole
       const res = await fetch(`/api/users/${userId}/resend-invite`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to resend invitation');
-      if (data.emailed) {
-        toast.success(`Invitation re-sent to ${user.email}`);
-      } else if (data.action_link) {
-        await navigator.clipboard?.writeText(data.action_link).catch(() => {});
-        toast.success('Email not configured — invitation link copied to clipboard to share manually');
-      } else {
-        toast.success('Invitation re-sent');
-      }
+      setInviteResult({ email: data.email ?? user.email, link: data.action_link, emailed: !!data.emailed });
     } catch (err: any) {
       toast.error(err.message ?? 'Failed to resend invitation');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!inviteResult?.link) return;
+    try {
+      await navigator.clipboard.writeText(inviteResult.link);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy — select the link and copy manually');
     }
   };
 
@@ -553,6 +562,43 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invitation link modal */}
+      {inviteResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setInviteResult(null)}>
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Invitation for {inviteResult.email}</h2>
+              <button onClick={() => setInviteResult(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+              {inviteResult.emailed ? (
+                <><Mail className="h-4 w-4 text-green-600" /> Emailed to {inviteResult.email}. You can also copy the link below to share directly.</>
+              ) : (
+                <><AlertTriangle className="h-4 w-4 text-amber-500" /> Email wasn&apos;t sent (email delivery isn&apos;t configured). Copy this link and share it with the user.</>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={inviteResult.link}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+              />
+              <button
+                onClick={copyInviteLink}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+              >
+                {inviteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {inviteCopied ? 'Copied' : 'Copy link'}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-gray-400">This link lets the user set their password and sign in. It expires for security, so resend if it lapses.</p>
           </div>
         </div>
       )}

@@ -49,7 +49,8 @@ export async function POST(
   return NextResponse.json({
     success: true,
     emailed: emailed.success,
-    // Fallback for the admin to share manually only when email delivery failed.
-    ...(emailed.success ? {} : { action_link: actionUrl }),
+    email: user.email,
+    // Always returned so the admin can copy/share the invite link directly.
+    action_link: actionUrl,
   });
 }
