@@ -1,0 +1,13 @@
+-- Fix the SECURITY DEFINER view flagged by the Supabase security advisor
+-- (lint 0010_security_definer_view, ERROR level).
+--
+-- Postgres views run as SECURITY DEFINER by default, meaning they execute with
+-- the privileges of the view owner (postgres) and bypass the querying user's
+-- RLS. The evaluation_report_rows reporting view is only ever queried through
+-- the service-role client with authorization enforced in application code
+-- (src/app/api/evaluations/reports/route.ts and the admin evaluation insights
+-- page), so switching it to security_invoker is safe: service-role queries are
+-- unaffected, and we remove the surface where an authenticated PostgREST caller
+-- could read the underlying tables through the view while bypassing their own
+-- row-level security.
+ALTER VIEW public.evaluation_report_rows SET (security_invoker = true);
