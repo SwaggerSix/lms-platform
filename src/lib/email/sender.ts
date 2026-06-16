@@ -14,6 +14,8 @@
 
 import { Resend } from "resend";
 import type { EmailTemplate } from "./templates";
+import { createServiceClient } from "@/lib/supabase/service";
+import { decryptIfEncrypted } from "@/lib/security/secret-crypto";
 
 export interface EmailMessage extends EmailTemplate {
   to: string | string[];
@@ -32,22 +34,50 @@ export interface EmailTransport {
 }
 
 // ============================================================================
+// Resolved email configuration (DB-first, env fallback)
+// ============================================================================
+
+// Email settings can be configured in-app (Admin → Email Settings), stored in
+// platform_settings[key='email'] as { from, api_key (encrypted) }. We fall back
+// to RESEND_API_KEY / EMAIL_FROM env vars. Cached briefly to avoid a DB read
+// on every send.
+let _cfgCache: { apiKey: string | null; from: string | null; at: number } | null = null;
+const CFG_TTL_MS = 30_000;
+
+export function invalidateEmailConfigCache() {
+  _cfgCache = null;
+}
+
+export async function resolveEmailConfig(): Promise<{ apiKey: string | null; from: string | null }> {
+  if (_cfgCache && Date.now() - _cfgCache.at < CFG_TTL_MS) {
+    return { apiKey: _cfgCache.apiKey, from: _cfgCache.from };
+  }
+  let apiKey: string | null = process.env.RESEND_API_KEY || null;
+  let from: string | null = process.env.EMAIL_FROM || null;
+  try {
+    const service = createServiceClient();
+    const { data } = await service.from("platform_settings").select("value").eq("key", "email").maybeSingle();
+    const v = (data?.value ?? {}) as { api_key?: string; from?: string };
+    if (v.api_key) {
+      try { apiKey = decryptIfEncrypted(v.api_key); } catch { /* keep env */ }
+    }
+    if (v.from) from = v.from;
+  } catch {
+    // DB unavailable — fall back to env.
+  }
+  _cfgCache = { apiKey, from, at: Date.now() };
+  return { apiKey, from };
+}
+
+// ============================================================================
 // Standalone sendEmail function (recommended)
 // ============================================================================
 
-let _resend: Resend | null = null;
-function getResend() {
-  if (!_resend) {
-    _resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
-  }
-  return _resend;
-}
-
 /**
- * Send an email using Resend in production, or log to console in development.
- *
- * In production, requires RESEND_API_KEY to be set.
- * In development, if RESEND_API_KEY is missing, logs the email to console instead.
+ * Send an email via Resend, using in-app Email Settings if configured, else the
+ * RESEND_API_KEY/EMAIL_FROM env vars. If no API key is available, returns a
+ * failure (so callers can surface "email not configured"); in development it
+ * logs the email and reports success instead.
  */
 export async function sendEmail({
   to,
@@ -64,11 +94,19 @@ export async function sendEmail({
   from?: string;
   replyTo?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
-  const fromAddress =
-    from || process.env.EMAIL_FROM || "LMS Platform <noreply@example.com>";
+  const cfg = await resolveEmailConfig();
+  const fromAddress = from || cfg.from || "LMS Platform <noreply@example.com>";
+
+  if (!cfg.apiKey) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("DEV EMAIL (no key configured):", { to, subject, htmlPreview: html.substring(0, 200) });
+      return { success: true, id: "dev-mock" };
+    }
+    return { success: false, error: "Email delivery is not configured" };
+  }
 
   try {
-    const { data, error } = await getResend().emails.send({
+    const { data, error } = await new Resend(cfg.apiKey).emails.send({
       from: fromAddress,
       to: Array.isArray(to) ? to : [to],
       subject,
@@ -85,17 +123,6 @@ export async function sendEmail({
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("Email send failed:", message);
-
-    // In development, log instead of failing hard
-    if (process.env.NODE_ENV === "development") {
-      console.log("DEV EMAIL:", {
-        to,
-        subject,
-        htmlPreview: html.substring(0, 200),
-      });
-      return { success: true, id: "dev-mock" };
-    }
-
     return { success: false, error: message };
   }
 }
