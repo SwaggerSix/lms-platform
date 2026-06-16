@@ -23,21 +23,28 @@ interface Result {
   results: RowResult[];
 }
 
-const TEMPLATE_HEADERS = ["course_id", "slug", "image_url", "source_name", "license", "attribution", "origin"];
+const TEMPLATE_HEADERS = ["course_id", "slug", "image_url", "filename", "source_name", "license", "attribution", "origin"];
 const TEMPLATE_SAMPLE = [
-  "", "introduction-to-leadership", "https://images.example.com/leadership.jpg",
+  "", "introduction-to-leadership", "https://images.example.com/leadership.jpg", "",
   "Unsplash", "CC0", "", "cc0",
+];
+const TEMPLATE_SAMPLE_FILE = [
+  "", "ethics-and-compliance", "", "ethics.png",
+  "AI-generated", "Original (AI-generated)", "", "original_ai",
 ];
 
 export default function CoverImportClient() {
   const [file, setFile] = useState<File | null>(null);
   const [applyDuplicates, setApplyDuplicates] = useState(true);
+  const [images, setImages] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const downloadTemplate = () => {
-    const csv = TEMPLATE_HEADERS.join(",") + "\n" + TEMPLATE_SAMPLE.map((c) => `"${c}"`).join(",") + "\n";
+    const csv = TEMPLATE_HEADERS.join(",") + "\n"
+      + TEMPLATE_SAMPLE.map((c) => `"${c}"`).join(",") + "\n"
+      + TEMPLATE_SAMPLE_FILE.map((c) => `"${c}"`).join(",") + "\n";
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -55,6 +62,7 @@ export default function CoverImportClient() {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("applyDuplicates", applyDuplicates ? "true" : "false");
+      images.forEach((img) => fd.append("images", img));
       const res = await fetch("/api/courses/cover-import", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Import failed."); return; }
@@ -90,8 +98,10 @@ export default function CoverImportClient() {
       <div className="mt-4 rounded-lg border border-gray-100 bg-gray-50 p-4 text-xs text-gray-500">
         <p className="font-medium text-gray-700">Columns</p>
         <p className="mt-1">
-          <code>course_id</code> (UUID) <em>or</em> <code>slug</code> to identify the course · <code>image_url</code> (public http/https) ·
-          <code> source_name</code>, <code>license</code>, <code>attribution</code>, <code>origin</code> for provenance. Only JPEG/PNG/WebP/GIF, under 5MB.
+          <code>course_id</code> (UUID) <em>or</em> <code>slug</code> to identify the course. For the image, give either an
+          <code> image_url</code> (public http/https) <em>or</em> a <code>filename</code> that matches one of the image files you
+          upload below. Plus <code>source_name</code>, <code>license</code>, <code>attribution</code>, <code>origin</code> for
+          provenance. Only JPEG/PNG/WebP/GIF, under 5MB.
         </p>
       </div>
 
@@ -107,6 +117,23 @@ export default function CoverImportClient() {
             onChange={(e) => { setFile(e.target.files?.[0] ?? null); setResult(null); setError(null); }}
           />
         </label>
+      </div>
+
+      <div className="mt-4">
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm hover:bg-gray-50">
+          <Upload className="h-4 w-4 text-indigo-500" />
+          <span className="font-medium text-gray-700">
+            {images.length ? `${images.length} image file${images.length > 1 ? "s" : ""} attached` : "Attach image files (optional) — for rows that use a filename"}
+          </span>
+          <input
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
+          />
+        </label>
+        <p className="mt-1 text-xs text-gray-400">Rows with a <code>filename</code> use these; rows with an <code>image_url</code> are fetched from the web.</p>
       </div>
 
       <label className="mt-4 flex items-center gap-2 text-sm text-gray-700">

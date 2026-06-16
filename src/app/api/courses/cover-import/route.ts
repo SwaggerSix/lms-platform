@@ -80,6 +80,12 @@ export async function POST(request: NextRequest) {
   }
   const applyDuplicates = (formData.get("applyDuplicates")?.toString() ?? "true") !== "false";
 
+  // Optional image files uploaded alongside the sheet; rows reference them by `filename`.
+  const uploadedByName = new Map<string, File>();
+  for (const v of formData.getAll("images")) {
+    if (v instanceof File && v.name) uploadedByName.set(v.name.toLowerCase(), v);
+  }
+
   let wb: XLSX.WorkBook;
   try {
     wb = XLSX.read(Buffer.from(await file.arrayBuffer()), { type: "buffer" });
@@ -102,15 +108,12 @@ export async function POST(request: NextRequest) {
     const courseId = pick(row, "course_id", "courseid", "id");
     const slug = pick(row, "slug");
     const imageUrl = pick(row, "image_url", "imageurl", "url", "image");
+    const filename = pick(row, "filename", "file_name", "image_file", "file");
     const ident = courseId || slug;
 
-    if (!ident && !imageUrl) { skipped++; continue; } // blank row
-    if (!imageUrl) {
-      results.push({ row: rowNum, course: ident || "(none)", status: "error", detail: "Missing image_url" });
-      continue;
-    }
-    if (!/^https?:\/\//i.test(imageUrl)) {
-      results.push({ row: rowNum, course: ident || "(none)", status: "error", detail: "image_url must be http(s)" });
+    if (!ident && !imageUrl && !filename) { skipped++; continue; } // blank row
+    if (!imageUrl && !filename) {
+      results.push({ row: rowNum, course: ident || "(none)", status: "error", detail: "Provide image_url or filename" });
       continue;
     }
 
@@ -123,20 +126,38 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    // Fetch + validate the image.
+    // Acquire image bytes — from an uploaded file (by filename) or by fetching the URL.
     let bytes: Uint8Array;
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 20000);
-      const resp = await fetch(imageUrl, { signal: ctrl.signal, redirect: "follow" });
-      clearTimeout(t);
-      if (!resp.ok) throw new Error(`fetch ${resp.status}`);
-      const ab = await resp.arrayBuffer();
-      if (ab.byteLength > MAX_BYTES) throw new Error("image exceeds 5MB");
+    if (filename) {
+      const f = uploadedByName.get(filename.toLowerCase());
+      if (!f) {
+        results.push({ row: rowNum, course: course.title, status: "error", detail: `No uploaded file named "${filename}"` });
+        continue;
+      }
+      const ab = await f.arrayBuffer();
+      if (ab.byteLength > MAX_BYTES) {
+        results.push({ row: rowNum, course: course.title, status: "error", detail: "Image exceeds 5MB" });
+        continue;
+      }
       bytes = new Uint8Array(ab);
-    } catch (e) {
-      results.push({ row: rowNum, course: course.title, status: "error", detail: `Could not fetch image (${e instanceof Error ? e.message : "error"})` });
-      continue;
+    } else {
+      if (!/^https?:\/\//i.test(imageUrl)) {
+        results.push({ row: rowNum, course: course.title, status: "error", detail: "image_url must be http(s)" });
+        continue;
+      }
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 20000);
+        const resp = await fetch(imageUrl, { signal: ctrl.signal, redirect: "follow" });
+        clearTimeout(t);
+        if (!resp.ok) throw new Error(`fetch ${resp.status}`);
+        const ab = await resp.arrayBuffer();
+        if (ab.byteLength > MAX_BYTES) throw new Error("image exceeds 5MB");
+        bytes = new Uint8Array(ab);
+      } catch (e) {
+        results.push({ row: rowNum, course: course.title, status: "error", detail: `Could not fetch image (${e instanceof Error ? e.message : "error"})` });
+        continue;
+      }
     }
     const mime = detectMime(bytes);
     if (!mime || !ALLOWED.includes(mime)) {
@@ -154,7 +175,7 @@ export async function POST(request: NextRequest) {
     const url = service.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
     const provenance = buildProvenanceColumns({
-      sourceUrl: pick(row, "source_url", "sourceurl") || imageUrl,
+      sourceUrl: pick(row, "source_url", "sourceurl") || (filename ? "" : imageUrl),
       sourceName: pick(row, "source_name", "sourcename", "source"),
       license: pick(row, "license"),
       attribution: pick(row, "attribution", "credit"),

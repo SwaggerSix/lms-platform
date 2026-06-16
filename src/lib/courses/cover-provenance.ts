@@ -85,6 +85,7 @@ export const IMPORT_TEMPLATE_HEADERS = [
   "course_id",
   "slug",
   "image_url",
+  "filename",
   "source_name",
   "license",
   "attribution",
