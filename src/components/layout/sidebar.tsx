@@ -193,6 +193,7 @@ const navSections: NavSection[] = [
       { label: "Reports", href: "/admin/reports", icon: PieChart },
       { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
+      { label: "Email Settings", href: "/admin/settings/email", icon: Mail },
       { label: "Error Log", href: "/admin/settings/error-log", icon: Bug },
     ],
     roles: ["admin", "super_admin"],
