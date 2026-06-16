@@ -21,7 +21,7 @@ export default async function ManagerAnalyticsPage() {
     .eq("auth_id", user.id)
     .single();
 
-  if (!dbUser || !["admin", "manager"].includes(dbUser.role)) {
+  if (!dbUser || !["admin", "super_admin", "manager"].includes(dbUser.role)) {
     redirect("/dashboard");
   }
 

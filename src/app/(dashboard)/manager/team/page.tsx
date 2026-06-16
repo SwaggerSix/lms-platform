@@ -26,7 +26,7 @@ export default async function TeamPage() {
     .single();
   if (!dbUser) redirect("/login");
 
-  if (!["admin", "manager"].includes(dbUser.role)) {
+  if (!["admin", "super_admin", "manager"].includes(dbUser.role)) {
     redirect("/dashboard");
   }
 

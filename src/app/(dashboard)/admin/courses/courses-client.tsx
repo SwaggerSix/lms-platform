@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   Sparkles,
   FolderOpen,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -121,6 +122,8 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   const [editModal, setEditModal] = useState<CourseItem | null>(null);
   const [editForm, setEditForm] = useState<Partial<CourseItem>>({});
   const [nasbaForm, setNasbaForm] = useState(NASBA_EMPTY);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
 
   // Archive confirmation state
   const [archiveConfirm, setArchiveConfirm] = useState<CourseItem | null>(null);
@@ -132,6 +135,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
     setEditModal(course);
     setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty, availableFrom: course.availableFrom ? course.availableFrom.slice(0, 10) : null, availableUntil: course.availableUntil ? course.availableUntil.slice(0, 10) : null });
     setNasbaForm(NASBA_EMPTY);
+    setCoverUrl(null);
     // Load current NASBA values for this course.
     try {
       const res = await fetch(`/api/courses/${course.slug}`);
@@ -146,6 +150,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           nasba_advance_prep: c.nasba_advance_prep ?? "",
           nasba_delivery_method: c.nasba_delivery_method ?? "",
         });
+        setCoverUrl(c.thumbnail_url ?? null);
       }
     } catch {
       // Non-fatal: leave NASBA fields blank if the fetch fails.
@@ -208,6 +213,47 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       setLoadingAction(null);
     }
   }, [editModal, editForm, nasbaForm, categoryOptions]);
+
+  const handleCoverUpload = useCallback(
+    async (file: File) => {
+      if (!editModal) return;
+      setCoverUploading(true);
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch(`/api/courses/${editModal.slug}/cover`, { method: 'POST', body: fd });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Upload failed');
+        }
+        const { url } = await res.json();
+        setCoverUrl(url);
+        toast.success('Cover image updated');
+      } catch (err) {
+        console.error(err);
+        toast.error(err instanceof Error ? err.message : 'Failed to upload cover image');
+      } finally {
+        setCoverUploading(false);
+      }
+    },
+    [editModal, toast]
+  );
+
+  const handleCoverRemove = useCallback(async () => {
+    if (!editModal) return;
+    setCoverUploading(true);
+    try {
+      const res = await fetch(`/api/courses/${editModal.slug}/cover`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to remove cover image');
+      setCoverUrl(null);
+      toast.success('Cover image removed');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to remove cover image');
+    } finally {
+      setCoverUploading(false);
+    }
+  }, [editModal, toast]);
 
   const handleDuplicate = useCallback(async (course: CourseItem) => {
     setOpenMenu(null);
@@ -323,6 +369,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
+          </a>
+          <a
+            href="/admin/courses/cover-import"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <ImageIcon className="h-4 w-4" />
+            Bulk images
           </a>
           <a
             href="/admin/courses/new"
@@ -568,6 +621,59 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                   onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 />
+              </div>
+
+              {/* Cover image (licensed). Falls back to generated cover art when empty. */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cover image
+                  <span className="ml-1 font-normal text-gray-400">(optional — falls back to generated art)</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                    {coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coverUrl} alt="Course cover" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-300">
+                        <BookOpen className="h-6 w-6" aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label
+                      className={cn(
+                        'inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50',
+                        coverUploading && 'pointer-events-none opacity-60'
+                      )}
+                    >
+                      {coverUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                      {coverUrl ? 'Replace image' : 'Upload image'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="sr-only"
+                        disabled={coverUploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleCoverUpload(file);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                    {coverUrl && (
+                      <button
+                        type="button"
+                        onClick={handleCoverRemove}
+                        disabled={coverUploading}
+                        className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-700 disabled:opacity-60"
+                      >
+                        <X className="h-3.5 w-3.5" /> Remove
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-400">JPEG, PNG, WebP, or GIF · up to 5MB</p>
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
