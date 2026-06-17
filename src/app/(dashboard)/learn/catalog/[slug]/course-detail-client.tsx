@@ -25,6 +25,7 @@ import { formatDuration, formatDate } from "@/utils/format";
 import { trackEvent } from "@/lib/analytics/track";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { courseTypeDefinition } from "@/lib/course-type-info";
+import { CourseCover } from "@/components/course/course-cover";
 
 export interface Lesson {
   id: string;
@@ -54,6 +55,7 @@ export interface RelatedCourse {
   title: string;
   instructor: string;
   gradient: string;
+  thumbnailUrl: string | null;
   rating: number;
   duration: number;
 }
@@ -78,6 +80,7 @@ export interface CourseData {
   language: string;
   hasCertificate: boolean;
   gradient: string;
+  thumbnailUrl: string | null;
   skills: string[];
   learningOutcomes: string[];
   optimalAudience?: string;
@@ -223,9 +226,15 @@ export default function CourseDetailClient({
         </div>
       )}
 
-      {/* Hero */}
-      <div className={cn("bg-gradient-to-r px-6 py-12 text-white", course.gradient)}>
-        <div className="mx-auto max-w-7xl">
+      {/* Hero — stored cover image when present, else the category gradient. */}
+      <CourseCover
+        thumbnailUrl={course.thumbnailUrl}
+        title={course.title}
+        gradientClassName={cn("bg-gradient-to-r", course.gradient)}
+        className="px-6 py-12 text-white"
+        eager
+      >
+        <div className="relative z-10 mx-auto max-w-7xl">
           <a
             href="/learn/catalog"
             className="mb-4 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white"
@@ -263,7 +272,7 @@ export default function CourseDetailClient({
             </span>
           </div>
         </div>
-      </div>
+      </CourseCover>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
@@ -620,14 +629,15 @@ export default function CourseDetailClient({
                 href={`/learn/catalog/${rc.slug}`}
                 className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div
-                  className={cn(
-                    "flex h-32 items-center justify-center bg-gradient-to-br",
-                    rc.gradient
-                  )}
+                <CourseCover
+                  thumbnailUrl={rc.thumbnailUrl}
+                  title={rc.title}
+                  gradientClassName={cn("bg-gradient-to-br", rc.gradient)}
+                  className="flex h-32 items-center justify-center"
+                  scrim={false}
                 >
-                  <BookOpen className="h-10 w-10 text-white/60" />
-                </div>
+                  {!rc.thumbnailUrl && <BookOpen className="h-10 w-10 text-white/60" />}
+                </CourseCover>
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600">
                     {rc.title}

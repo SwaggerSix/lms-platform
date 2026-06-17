@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
-import { isProvenanceDocumented } from "@/lib/courses/cover-provenance";
+import { isProvenanceDocumented, storefrontNames, type EmbeddedProductRef } from "@/lib/courses/cover-provenance";
 import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
@@ -32,17 +32,14 @@ export async function GET(_request: NextRequest) {
     thumbnail_url: string | null; cover_source_url: string | null; cover_source_name: string | null;
     cover_license: string | null; cover_attribution: string | null; cover_origin: string | null;
     updated_at: string | null;
-    products: Array<{ storefront: { name?: string | null } | null }> | null;
+    // `products` embeds as a single object (or null) because products.course_id
+    // carries a UNIQUE constraint, so PostgREST treats it as a to-one relation.
+    // Older code assumed an array; storefrontNames() normalizes either shape.
+    products: EmbeddedProductRef | EmbeddedProductRef[] | null;
   };
   const rows = ((data ?? []) as unknown as LogRow[]).filter((c) => (c.thumbnail_url ?? "").trim().length > 0);
 
-  const storefrontOf = (c: LogRow): string => {
-    const products = c.products ?? [];
-    const names = Array.from(
-      new Set(products.map((p) => p.storefront?.name).filter((n): n is string => !!n))
-    );
-    return names.join(", ");
-  };
+  const storefrontOf = (c: LogRow): string => storefrontNames(c.products);
 
   const aoa: (string | number)[][] = [[
     "Course Title", "Course ID", "Slug", "Status", "Storefront",
@@ -63,7 +60,7 @@ export async function GET(_request: NextRequest) {
       c.cover_license ?? "",
       c.cover_attribution ?? "",
       c.cover_origin ?? "",
-      isProvenanceDocumented(c) ? "Yes" : "NEEDS REVIEW",
+      isProvenanceDocumented(c) ? "Yes" : "No",
       c.updated_at ? new Date(c.updated_at).toISOString().slice(0, 10) : "",
     ]);
   }

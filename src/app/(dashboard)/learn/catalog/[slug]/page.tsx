@@ -264,7 +264,7 @@ export default async function CourseDetailPage({
   // Fetch related courses (same category, excluding current)
   const { data: relatedRows } = await service
     .from("courses")
-    .select("slug, title, created_by, estimated_duration, metadata, categories(slug)")
+    .select("slug, title, created_by, estimated_duration, metadata, thumbnail_url, categories(slug)")
     .eq("category_id", course.category_id)
     .neq("id", course.id)
     .eq("status", "published")
@@ -287,6 +287,7 @@ export default async function CourseDetailPage({
         ? `${rcInstructor.first_name || ""} ${rcInstructor.last_name || ""}`.trim()
         : "Instructor",
       gradient: getGradient(rcCatSlug),
+      thumbnailUrl: rc.thumbnail_url ?? null,
       rating: rc.metadata?.rating || 0,
       duration: rc.estimated_duration || 0,
     });
@@ -338,6 +339,7 @@ export default async function CourseDetailPage({
     language: metadata.language || "English",
     hasCertificate: metadata.has_certificate ?? true,
     gradient: getGradient(categorySlug),
+    thumbnailUrl: course.thumbnail_url ?? null,
     skills,
     learningOutcomes,
     optimalAudience: metadata.optimal_audience || metadata.optimalAudience || "",

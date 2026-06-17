@@ -34,6 +34,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+import { CourseCover } from '@/components/course/course-cover';
 
 export interface CourseItem {
   id: string;
@@ -47,7 +48,10 @@ export interface CourseItem {
   enrolled: number;
   completionRate: number;
   duration: number;
+  /** Fallback gradient classes used when there is no stored cover image. */
   thumbnail: string;
+  /** Stored cover image URL (courses.thumbnail_url); null → gradient fallback. */
+  coverUrl: string | null;
   /** Availability window for client licensing (ISO strings; null = unbounded). */
   availableFrom: string | null;
   availableUntil: string | null;
@@ -200,7 +204,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       setCourses((prev) =>
         prev.map((c) =>
           c.id === editModal.id
-            ? { ...c, ...editForm, category: categoryName ?? c.category } as CourseItem
+            ? { ...c, ...editForm, category: categoryName ?? c.category, coverUrl } as CourseItem
             : c
         )
       );
@@ -288,6 +292,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         completionRate: 0,
         duration: course.duration,
         thumbnail: course.thumbnail,
+        coverUrl: course.coverUrl,
         availableFrom: null,
         availableUntil: null,
         updatedAt: new Date().toISOString(),
@@ -462,16 +467,24 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {paginatedCourses.map((course) => (
             <div key={course.id} className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-              <div className={cn('relative h-36', course.thumbnail)}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <BookOpen className="h-10 w-10 text-white/50" />
-                </div>
-                <div className="absolute right-3 top-3 flex gap-1.5">
+              <CourseCover
+                thumbnailUrl={course.coverUrl}
+                title={course.title}
+                gradientClassName={course.thumbnail}
+                className="h-36"
+                scrim={false}
+              >
+                {!course.coverUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <BookOpen className="h-10 w-10 text-white/50" />
+                  </div>
+                )}
+                <div className="absolute right-3 top-3 z-10 flex gap-1.5">
                   <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[course.status])}>
                     {course.status}
                   </span>
                 </div>
-              </div>
+              </CourseCover>
               <div className="p-4">
                 <div className="flex items-center gap-2">
                   <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium capitalize', typeBadge[course.type])}>
@@ -543,9 +556,15 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center', course.thumbnail)}>
-                        <BookOpen className="h-4 w-4 text-white/70" />
-                      </div>
+                      <CourseCover
+                        thumbnailUrl={course.coverUrl}
+                        title={course.title}
+                        gradientClassName={course.thumbnail}
+                        className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center"
+                        scrim={false}
+                      >
+                        {!course.coverUrl && <BookOpen className="h-4 w-4 text-white/70" />}
+                      </CourseCover>
                       <div>
                         <p className="text-sm font-medium text-gray-900">{course.title}</p>
                         <p className="text-xs text-gray-400">{course.category}</p>

@@ -144,6 +144,7 @@ export default async function CourseCatalogPage() {
     estimated_duration: number | null;
     enrollment_type: string;
     created_at: string;
+    thumbnail_url: string | null;
     category: { name: string } | null;
   };
   type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
@@ -235,6 +236,7 @@ export default async function CourseCatalogPage() {
       enrolledCount: 500 + ((i * 137) % 5000),
       category: mapCategory(c.category?.name ?? null),
       gradient: GRADIENTS[i % GRADIENTS.length],
+      thumbnailUrl: c.thumbnail_url ?? null,
       createdAt: c.created_at,
       hasUnmetPrerequisites,
       requiresApproval: c.enrollment_type === "approval",

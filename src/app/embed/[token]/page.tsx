@@ -142,12 +142,42 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
 
           {widget.widget_type === "course_card" && content && (
             <div className="course-card">
-              <div className="course-gradient">
-                <div className="course-title">{(content as any).title}</div>
-                {(content as any).description && (
-                  <div className="course-desc">{(content as any).description}</div>
-                )}
-              </div>
+              {(content as any).thumbnail_url ? (
+                <div
+                  className="course-gradient"
+                  style={{
+                    position: "relative",
+                    backgroundImage: `url("${(content as any).thumbnail_url}")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  {/* Dark scrim keeps the title readable over the photo. */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.15))",
+                    }}
+                  />
+                  <div className="course-title" style={{ position: "relative" }}>
+                    {(content as any).title}
+                  </div>
+                  {(content as any).description && (
+                    <div className="course-desc" style={{ position: "relative" }}>
+                      {(content as any).description}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="course-gradient">
+                  <div className="course-title">{(content as any).title}</div>
+                  {(content as any).description && (
+                    <div className="course-desc">{(content as any).description}</div>
+                  )}
+                </div>
+              )}
               <div className="course-footer">
                 {(content as any).difficulty_level && (
                   <span className="badge">{(content as any).difficulty_level}</span>

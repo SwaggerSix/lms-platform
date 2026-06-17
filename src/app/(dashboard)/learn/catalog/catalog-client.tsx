@@ -17,6 +17,8 @@ import { cn } from "@/utils/cn";
 import { formatDuration, formatNumber } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { courseTypeDefinition } from "@/lib/course-type-info";
+import { CourseCover } from "@/components/course/course-cover";
+import { hasCoverImage } from "@/lib/courses/cover-image";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type CourseType = "Video" | "Interactive" | "Document" | "Blended";
@@ -35,6 +37,7 @@ export interface CatalogCourse {
   enrolledCount: number;
   category: string;
   gradient: string;
+  thumbnailUrl: string | null;
   createdAt: string;
   hasUnmetPrerequisites?: boolean;
   requiresApproval?: boolean;
@@ -384,19 +387,22 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     href={`/learn/catalog/${course.slug}`}
                     className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                   >
-                    {/* Cover — generated, original art (gradient + monogram + category) */}
-                    <div
-                      className={cn(
-                        "relative flex h-40 flex-col justify-between overflow-hidden bg-gradient-to-br p-4",
-                        course.gradient
-                      )}
+                    {/* Cover — stored image when present, else generated art
+                        (gradient + monogram + category). */}
+                    <CourseCover
+                      thumbnailUrl={course.thumbnailUrl}
+                      title={course.title}
+                      gradientClassName={cn("bg-gradient-to-br", course.gradient)}
+                      className="flex h-40 flex-col justify-between p-4"
                     >
-                      <span
-                        aria-hidden
-                        className="pointer-events-none absolute -bottom-6 -right-2 select-none text-[110px] font-black leading-none text-white/10"
-                      >
-                        {coverMonogram(course.title)}
-                      </span>
+                      {!hasCoverImage(course.thumbnailUrl) && (
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -bottom-6 -right-2 select-none text-[110px] font-black leading-none text-white/10"
+                        >
+                          {coverMonogram(course.title)}
+                        </span>
+                      )}
                       <span className="z-10 inline-flex w-fit items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
                         <BookOpen className="h-3 w-3" />
                         {course.category}
@@ -405,18 +411,18 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                         {course.title}
                       </h4>
                       {course.hasUnmetPrerequisites && (
-                        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                           <Lock className="h-3 w-3" />
                           Prerequisites required
                         </div>
                       )}
                       {course.requiresApproval && !course.hasUnmetPrerequisites && (
-                        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                           <Lock className="h-3 w-3" />
                           Approval required
                         </div>
                       )}
-                    </div>
+                    </CourseCover>
                     {/* Content */}
                     <div className="p-5">
                       <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600">

@@ -59,7 +59,7 @@ export default async function MyCoursesPage() {
   const { data: enrollments, error } = await service
     .from("enrollments")
     .select(
-      "*, course:courses(title, slug, estimated_duration, course_type)"
+      "*, course:courses(title, slug, estimated_duration, course_type, thumbnail_url)"
     )
     .eq("user_id", dbUser.id)
     .order("enrolled_at", { ascending: false })
@@ -82,6 +82,7 @@ export default async function MyCoursesPage() {
       dueDate: row.due_date ?? null,
       duration: course?.estimated_duration ?? 0,
       gradient: GRADIENTS[index % GRADIENTS.length],
+      thumbnailUrl: course?.thumbnail_url ?? null,
       completedAt: row.completed_at ?? null,
     };
   });
