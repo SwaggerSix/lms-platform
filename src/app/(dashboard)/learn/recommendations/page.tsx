@@ -56,6 +56,7 @@ function toCourse(row: any, index: number, reason: string): RecommendedCourse {
     rating: 4.5 + (index % 5) * 0.1, // synthetic rating since no ratings table
     enrolledCount: Number(row.enrolled_count?.[0]?.count ?? row._enrolled_count ?? 0),
     gradient: pickGradient(index),
+    thumbnailUrl: row.thumbnail_url ?? null,
     reason,
   };
 }
@@ -257,6 +258,7 @@ export default async function RecommendationsPage() {
       rating: 4.5 + (aiGlobalIndex % 5) * 0.1,
       enrolledCount: Number(course.enrolled_count?.[0]?.count ?? 0),
       gradient: pickGradient(aiGlobalIndex),
+      thumbnailUrl: course.thumbnail_url ?? null,
       reason: pick.reason,
       score: pick.score,
       difficulty_level: course.difficulty_level ?? null,
@@ -319,6 +321,7 @@ export default async function RecommendationsPage() {
                   rating: 4.5,
                   enrolledCount: Number(c.enrolled_count?.[0]?.count ?? 0),
                   gradient: pickGradient(idx + 10), // offset to vary colors
+                  thumbnailUrl: c.thumbnail_url ?? null,
                   reason: pc.reason,
                   difficulty_level: pc.difficulty_level ?? null,
                   order: pc.order,

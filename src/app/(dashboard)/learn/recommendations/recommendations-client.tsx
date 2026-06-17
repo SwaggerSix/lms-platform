@@ -18,6 +18,7 @@ import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { CourseCover } from "@/components/course/course-cover";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -32,6 +33,7 @@ export interface RecommendedCourse {
   rating: number;
   enrolledCount: number;
   gradient: string;
+  thumbnailUrl: string | null;
   reason: string;
 }
 
@@ -90,14 +92,15 @@ function CourseCard({ course }: { course: RecommendedCourse }) {
       href={`/learn/catalog/${course.slug}`}
       className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
     >
-      <div
-        className={cn(
-          "flex h-32 items-center justify-center bg-gradient-to-br",
-          course.gradient
-        )}
+      <CourseCover
+        thumbnailUrl={course.thumbnailUrl}
+        title={course.title}
+        gradientClassName={cn("bg-gradient-to-br", course.gradient)}
+        className="flex h-32 items-center justify-center"
+        scrim={false}
       >
-        <BookOpen className="h-10 w-10 text-white/60" />
-      </div>
+        {!course.thumbnailUrl && <BookOpen className="h-10 w-10 text-white/60" />}
+      </CourseCover>
       <div className="p-4">
         {/* Why recommended tag */}
         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-600">
@@ -138,14 +141,15 @@ function AiCourseCard({ course }: { course: AiRecommendation }) {
         <Zap className="h-2.5 w-2.5" />
         AI Pick
       </div>
-      <div
-        className={cn(
-          "flex h-32 items-center justify-center bg-gradient-to-br",
-          course.gradient
-        )}
+      <CourseCover
+        thumbnailUrl={course.thumbnailUrl}
+        title={course.title}
+        gradientClassName={cn("bg-gradient-to-br", course.gradient)}
+        className="flex h-32 items-center justify-center"
+        scrim={false}
       >
-        <BookOpen className="h-10 w-10 text-white/60" />
-      </div>
+        {!course.thumbnailUrl && <BookOpen className="h-10 w-10 text-white/60" />}
+      </CourseCover>
       <div className="p-4">
         <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
           <Sparkles className="h-3 w-3" />
@@ -561,14 +565,15 @@ export default function RecommendationsClient({
                       href={`/learn/catalog/${item.course.slug}`}
                       className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 transition-colors hover:bg-gray-100 md:min-w-[300px]"
                     >
-                      <div
-                        className={cn(
-                          "flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br",
-                          item.course.gradient
-                        )}
+                      <CourseCover
+                        thumbnailUrl={item.course.thumbnailUrl}
+                        title={item.course.title}
+                        gradientClassName={cn("bg-gradient-to-br", item.course.gradient)}
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
+                        scrim={false}
                       >
-                        <BookOpen className="h-5 w-5 text-white/80" />
-                      </div>
+                        {!item.course.thumbnailUrl && <BookOpen className="h-5 w-5 text-white/80" />}
+                      </CourseCover>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-gray-900">
                           {item.course.title}

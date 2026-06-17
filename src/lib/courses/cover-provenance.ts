@@ -80,6 +80,25 @@ export function isProvenanceDocumented(cols: {
   return hasLicense && hasSource;
 }
 
+/**
+ * A `products` embed as returned by PostgREST when selecting from `courses`.
+ * Because `products.course_id` is UNIQUE, PostgREST treats it as a to-one
+ * relationship and returns a single object (or null) — not an array. We accept
+ * either shape and normalize, so the cover log can't blow up on `.map`.
+ */
+export type EmbeddedProductRef = { storefront: { name?: string | null } | null };
+
+/** Comma-joined, de-duplicated storefront names for a course's product embed. */
+export function storefrontNames(
+  products: EmbeddedProductRef | EmbeddedProductRef[] | null | undefined
+): string {
+  const list = Array.isArray(products) ? products : products ? [products] : [];
+  const names = Array.from(
+    new Set(list.map((p) => p?.storefront?.name).filter((n): n is string => !!n))
+  );
+  return names.join(", ");
+}
+
 /** Column headers for the bulk-import spreadsheet template. */
 export const IMPORT_TEMPLATE_HEADERS = [
   "course_id",

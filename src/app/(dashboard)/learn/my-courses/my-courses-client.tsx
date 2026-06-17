@@ -6,6 +6,7 @@ import { cn } from "@/utils/cn";
 import { formatDate, formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { CourseCover } from "@/components/course/course-cover";
 
 export interface MyCourse {
   id: string;
@@ -18,6 +19,7 @@ export interface MyCourse {
   dueDate: string | null;
   duration: number;
   gradient: string;
+  thumbnailUrl: string | null;
   completedAt: string | null;
 }
 
@@ -106,15 +108,16 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                   key={course.id}
                   className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
                 >
-                  {/* Thumbnail */}
-                  <div
-                    className={cn(
-                      "flex h-32 items-center justify-center bg-gradient-to-br",
-                      course.gradient
-                    )}
+                  {/* Cover — stored image when present, else gradient. */}
+                  <CourseCover
+                    thumbnailUrl={course.thumbnailUrl}
+                    title={course.title}
+                    gradientClassName={cn("bg-gradient-to-br", course.gradient)}
+                    className="flex h-32 items-center justify-center"
+                    scrim={false}
                   >
-                    <BookOpen className="h-10 w-10 text-white/60" />
-                  </div>
+                    {!course.thumbnailUrl && <BookOpen className="h-10 w-10 text-white/60" />}
+                  </CourseCover>
 
                   <div className="p-5">
                     <h3 className="font-semibold text-gray-900">{course.title}</h3>
