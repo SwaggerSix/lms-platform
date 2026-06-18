@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { refundPayment, isStripeConfigured } from "@/lib/storefront/stripe";
+import { enqueueOrderRefunded } from "@/lib/integrations/qbo-sync";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -124,5 +125,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (error || !updated) {
     return NextResponse.json({ error: "Could not update the order" }, { status: 400 });
   }
+
+  // Capture the refund for QuickBooks (Refund Receipt / Credit Memo). Posts the
+  // INCREMENTAL refund amount (this step), with the cumulative refunded total
+  // used only to keep partial-refund events idempotent. Non-fatal — never block
+  // the refund response on the QB enqueue.
+  if (body.refund_amount && body.refund_amount > 0) {
+    await enqueueOrderRefunded(
+      service,
+      body.order_id,
+      body.refund_amount,
+      Number(updated.refunded_amount ?? 0)
+    );
+  }
+
   return NextResponse.json({ order: updated });
 }

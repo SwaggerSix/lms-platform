@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
 import { sendOrderEmails, inviteAndEnroll } from "@/lib/storefront/fulfillment";
+import { enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
 
 // Stripe webhook: marks orders paid when Stripe confirms payment, then
 // fulfills them (sales counts, coupon usage, auto-enrollment for buyers who
@@ -158,6 +159,11 @@ export async function POST(request: NextRequest) {
   // Buyer confirmation + internal new-order notification (with enrollment badge)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   await sendOrderEmails(service, order.id, appUrl, enrollmentStatus);
+
+  // Capture the sale for QuickBooks (Customer upsert + Sales Receipt). The QB
+  // Bridge posts it later; this only enqueues. Non-fatal — a failure here must
+  // never break order completion, so it logs/stamps and continues.
+  await enqueueOrderCompleted(service, order.id);
 
   return NextResponse.json({ received: true });
 }
