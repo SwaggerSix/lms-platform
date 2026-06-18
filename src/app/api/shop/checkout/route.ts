@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, checkoutSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { enqueueInstructorPayout } from "@/lib/integrations/qbo-sync";
 import {
   calculateOrderTotal,
   validateCoupon,
@@ -159,7 +160,14 @@ export async function POST(request: NextRequest) {
     }));
 
   if (payouts.length > 0) {
-    await service.from("instructor_payouts").insert(payouts);
+    const { data: insertedPayouts } = await service
+      .from("instructor_payouts")
+      .insert(payouts)
+      .select("id");
+    // Capture each payout as a QuickBooks Vendor + Bill (AP). Non-fatal.
+    for (const p of insertedPayouts || []) {
+      await enqueueInstructorPayout(service, p.id);
+    }
   }
 
   // Clear cart
