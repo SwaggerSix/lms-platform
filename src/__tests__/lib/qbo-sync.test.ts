@@ -94,18 +94,34 @@ describe("buildSalesReceiptEvent", () => {
 });
 
 describe("buildRefundReceiptEvent", () => {
-  it("carries the refunded amount and a refund-amount-scoped idempotency key", () => {
-    const e = buildRefundReceiptEvent(order, "gothamculture", 250);
+  it("posts the incremental amount with a cumulative-scoped idempotency key", () => {
+    // First (and only so far) refund of 250 → cumulative is also 250.
+    const e = buildRefundReceiptEvent(order, "gothamculture", 250, 250);
     expect(e.eventType).toBe("refund_receipt");
     expect(e.amount).toBe(250);
     expect(e.qbClass).toBe("gothamCulture");
     expect(e.idempotencyKey).toBe("order:ord-1:refund:250.00");
   });
 
-  it("rounds the amount to cents", () => {
-    const e = buildRefundReceiptEvent(order, null, 33.335);
+  it("rounds the incremental amount to cents", () => {
+    const e = buildRefundReceiptEvent(order, null, 33.335, 33.335);
     expect(e.amount).toBe(33.34);
-    expect(e.idempotencyKey).toBe("order:ord-1:refund:33.34");
+  });
+
+  it("does not double-count across partial refunds (regression)", () => {
+    // $200 then $300 against the same order. Each event must post its OWN
+    // incremental amount — not the running total — while staying distinct.
+    const first = buildRefundReceiptEvent(order, null, 200, 200);
+    const second = buildRefundReceiptEvent(order, null, 300, 500);
+
+    expect(first.amount).toBe(200);
+    expect(second.amount).toBe(300);
+    // Posted total = 200 + 300 = 500, matching the cumulative actually refunded.
+    expect(first.amount + second.amount).toBe(500);
+    // Distinct idempotency keys (cumulative figure differs) so both enqueue.
+    expect(first.idempotencyKey).toBe("order:ord-1:refund:200.00");
+    expect(second.idempotencyKey).toBe("order:ord-1:refund:500.00");
+    expect(first.idempotencyKey).not.toBe(second.idempotencyKey);
   });
 });
 

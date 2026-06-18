@@ -210,19 +210,26 @@ export function buildSalesReceiptEvent(
 }
 
 /**
- * refund (refunded_amount) -> Credit Memo / Refund Receipt.
- * `refundAmount` is the cumulative refunded total at the time of the event;
- * the idempotency key includes it so distinct partial refunds each enqueue.
+ * refund -> Credit Memo / Refund Receipt.
+ *
+ * A Refund Receipt represents a SINGLE refund transaction, so its `amount` must
+ * be the *incremental* amount refunded in this step — never the running total,
+ * or partial refunds would re-post earlier refunds and overstate the credit.
+ * The cumulative refunded total is used only to make the idempotency key unique
+ * per partial refund (each refund advances the cumulative figure), so distinct
+ * partials each enqueue exactly once while a retry of the same refund collides.
  */
 export function buildRefundReceiptEvent(
   order: OrderRecord,
   storefrontSlug: string | null,
-  refundAmount: number
+  refundAmount: number,
+  cumulativeRefunded: number
 ): QbRefundReceiptEvent {
   const amount = round(refundAmount);
+  const cumulative = round(cumulativeRefunded);
   return {
     eventType: "refund_receipt",
-    idempotencyKey: `order:${order.id}:refund:${amount.toFixed(2)}`,
+    idempotencyKey: `order:${order.id}:refund:${cumulative.toFixed(2)}`,
     localType: "refund",
     localId: order.id,
     qbClass: classForStorefront(storefrontSlug),
@@ -367,13 +374,16 @@ export async function enqueueOrderCompleted(
 }
 
 /**
- * Enqueue a Refund Receipt / Credit Memo for an order refund. `refundAmount`
- * is the cumulative refunded total. Non-fatal.
+ * Enqueue a Refund Receipt / Credit Memo for an order refund. `refundAmount` is
+ * the INCREMENTAL amount refunded in this step (the value posted to QuickBooks);
+ * `cumulativeRefunded` is the running refunded total, used only to keep the
+ * idempotency key distinct across partial refunds. Non-fatal.
  */
 export async function enqueueOrderRefunded(
   service: SupabaseClient,
   orderId: string,
-  refundAmount: number
+  refundAmount: number,
+  cumulativeRefunded: number
 ): Promise<void> {
   try {
     if (!refundAmount || refundAmount <= 0) return;
@@ -397,7 +407,12 @@ export async function enqueueOrderRefunded(
       slug = store?.slug ?? null;
     }
 
-    const event = buildRefundReceiptEvent(order as OrderRecord, slug, refundAmount);
+    const event = buildRefundReceiptEvent(
+      order as OrderRecord,
+      slug,
+      refundAmount,
+      cumulativeRefunded
+    );
     await enqueueQbEvent(service, event);
     // We do not flip qb_sync_status here: the original sales receipt may still
     // be 'queued'/'synced'. The refund event carries its own idempotency key.

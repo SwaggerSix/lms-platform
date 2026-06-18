@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, checkoutSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
-import { enqueueInstructorPayout } from "@/lib/integrations/qbo-sync";
+import { enqueueInstructorPayout, enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
 import {
   calculateOrderTotal,
   validateCoupon,
@@ -115,6 +115,12 @@ export async function POST(request: NextRequest) {
   if (itemsError) {
     console.error("Order items error:", itemsError.message);
   }
+
+  // Capture the completed order as a QuickBooks Sales Receipt (revenue, AR).
+  // This path auto-completes the order without going through the Stripe webhook,
+  // so it must book revenue here — otherwise the instructor-payout Bill below
+  // would post AP with no matching revenue (a one-sided ledger). Non-fatal.
+  await enqueueOrderCompleted(service, order.id);
 
   // Update coupon usage
   if (coupon) {
