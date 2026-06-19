@@ -136,6 +136,12 @@ const VENDOR_QUEUE_ROW = {
   payload: { eventType: "vendor_bill", localType: "payout", localId: "pay-1" },
 };
 
+const REFUND_QUEUE_ROW = {
+  id: "9f1b3c2d-7a4e-4c8b-9f2a-1d6e3b5c7a90",
+  event_type: "refund_receipt",
+  payload: { eventType: "refund_receipt", localType: "refund", localId: "ord-1" },
+};
+
 describe("applyAckResult — synced", () => {
   it("marks the queue row synced, upserts entity map, and writes back to orders", async () => {
     const { calls, client } = makeServiceMock(SALES_QUEUE_ROW);
@@ -169,6 +175,49 @@ describe("applyAckResult — synced", () => {
       qb_sync_status: "synced",
     });
     expect(orderWrite?.payload.qb_synced_at).toBeTruthy();
+  });
+
+  it("sales_receipt sets orders.qb_object_id", async () => {
+    const { calls, client } = makeServiceMock(SALES_QUEUE_ROW);
+    await applyAckResult(client, {
+      id: SALES_QUEUE_ROW.id,
+      status: "synced",
+      qbType: "SalesReceipt",
+      qbTxnId: "SR-100",
+    });
+    const orderWrite = calls.find((c) => c.table === "orders");
+    expect(orderWrite?.payload.qb_object_id).toBe("SR-100");
+    expect(orderWrite?.payload.qb_object_type).toBe("SalesReceipt");
+  });
+
+  it("refund_receipt does NOT overwrite orders.qb_object_id but still upserts the refund into qb_entity_map", async () => {
+    const { calls, client } = makeServiceMock(REFUND_QUEUE_ROW);
+    const ok = await applyAckResult(client, {
+      id: REFUND_QUEUE_ROW.id,
+      status: "synced",
+      qbType: "RefundReceipt",
+      qbTxnId: "RF-200",
+    });
+    expect(ok).toBe(true);
+
+    // Order row is touched (synced timestamp) but its QB ids are NOT changed —
+    // the original sales-receipt id must survive the refund ack.
+    const orderWrite = calls.find((c) => c.table === "orders");
+    expect(orderWrite).toBeDefined();
+    expect(orderWrite?.payload.qb_sync_status).toBe("synced");
+    expect(orderWrite?.payload.qb_synced_at).toBeTruthy();
+    expect("qb_object_id" in orderWrite!.payload).toBe(false);
+    expect("qb_object_type" in orderWrite!.payload).toBe(false);
+
+    // The refund is still recorded separately in qb_entity_map under 'refund'.
+    const map = calls.find((c) => c.table === "qb_entity_map");
+    expect(map?.op).toBe("upsert");
+    expect(map?.payload).toMatchObject({
+      local_type: "refund",
+      local_id: "ord-1",
+      qb_type: "RefundReceipt",
+      qb_txnid: "RF-200",
+    });
   });
 
   it("writes vendor_bill back to instructor_payouts", async () => {
