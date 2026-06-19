@@ -138,7 +138,7 @@ export default function TenantDetailClient({
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold"
-            style={{ backgroundColor: tenantData.primary_color || "#4f46e5" }}
+            style={{ backgroundColor: tenantData.primary_color || "#91C53C" }}
           >
             {tenantData.name.charAt(0).toUpperCase()}
           </div>
@@ -365,8 +365,8 @@ export default function TenantDetailClient({
             name: tenantData.name,
             logoUrl: tenantData.logo_url,
             faviconUrl: tenantData.favicon_url,
-            primaryColor: tenantData.primary_color || "#4f46e5",
-            secondaryColor: tenantData.secondary_color || "#7c3aed",
+            primaryColor: tenantData.primary_color || "#91C53C",
+            secondaryColor: tenantData.secondary_color || "#F0A800",
             loginBg: (tenantData.branding as any)?.login_bg || "",
             heroText: (tenantData.branding as any)?.hero_text || "",
             footerText: (tenantData.branding as any)?.footer_text || "",

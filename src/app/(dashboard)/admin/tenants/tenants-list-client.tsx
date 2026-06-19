@@ -133,7 +133,7 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                        style={{ backgroundColor: tenant.primary_color || "#4f46e5" }}
+                        style={{ backgroundColor: tenant.primary_color || "#91C53C" }}
                       >
                         {tenant.name.charAt(0).toUpperCase()}
                       </div>

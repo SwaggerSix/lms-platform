@@ -234,7 +234,7 @@ export function renderCertificateToSVG(design: DesignData, data: CertificateData
 
   // Pattern overlay
   if (bg.pattern && bg.pattern !== "none" && bg.pattern !== "custom") {
-    svg += getPatternDefs(bg.pattern, border.color || "#4f46e5");
+    svg += getPatternDefs(bg.pattern, border.color || "#91C53C");
   }
 
   // Border
@@ -357,10 +357,10 @@ export function renderCertificateToPDF(design: DesignData, data: CertificateData
       transition: background 0.2s;
     }
     .btn-print {
-      background: #4f46e5;
+      background: #91C53C;
       color: #fff;
     }
-    .btn-print:hover { background: #4338ca; }
+    .btn-print:hover { background: #739E2D; }
     .btn-close {
       background: #e5e7eb;
       color: #374151;
@@ -391,7 +391,7 @@ export function getPresetTemplate(preset: "classic" | "modern" | "elegant" | "co
     background: { color: "#ffffff", image_url: null, pattern: "none" },
     dimensions: { width: baseWidth, height: baseHeight, orientation: "landscape" },
     elements: [],
-    border: { enabled: true, color: "#4f46e5", width: 3, style: "double", padding: 20 },
+    border: { enabled: true, color: "#91C53C", width: 3, style: "double", padding: 20 },
   };
 
   switch (preset) {
@@ -420,16 +420,16 @@ export function getPresetTemplate(preset: "classic" | "modern" | "elegant" | "co
       return {
         ...baseDesign,
         background: { color: "#ffffff", image_url: null, pattern: "modern" },
-        border: { enabled: true, color: "#4f46e5", width: 2, style: "solid", padding: 16 },
+        border: { enabled: true, color: "#91C53C", width: 2, style: "solid", padding: 16 },
         elements: [
-          { type: "shape", id: "accent-bar", shape: "rectangle", x: 0, y: 0, width: 8, height: 816, fillColor: "#4f46e5", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
-          { type: "text", id: "header", content: "CERTIFICATE", x: 528, y: 80, fontSize: 14, fontFamily: "sans-serif", fontWeight: "bold", color: "#4f46e5", align: "center" },
+          { type: "shape", id: "accent-bar", shape: "rectangle", x: 0, y: 0, width: 8, height: 816, fillColor: "#91C53C", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
+          { type: "text", id: "header", content: "CERTIFICATE", x: 528, y: 80, fontSize: 14, fontFamily: "sans-serif", fontWeight: "bold", color: "#91C53C", align: "center" },
           { type: "text", id: "title", content: "{{course_name}}", x: 528, y: 160, fontSize: 34, fontFamily: "sans-serif", fontWeight: "bold", color: "#111827", align: "center" },
-          { type: "line", id: "divider", x1: 428, y1: 200, x2: 628, y2: 200, strokeColor: "#4f46e5", strokeWidth: 3 },
+          { type: "line", id: "divider", x1: 428, y1: 200, x2: 628, y2: 200, strokeColor: "#91C53C", strokeWidth: 3 },
           { type: "text", id: "subtitle", content: "Awarded to", x: 528, y: 260, fontSize: 14, fontFamily: "sans-serif", color: "#6b7280", align: "center" },
           { type: "text", id: "recipient", content: "{{learner_name}}", x: 528, y: 320, fontSize: 30, fontFamily: "sans-serif", fontWeight: "bold", color: "#111827", align: "center" },
           { type: "text", id: "body", content: "for the successful completion of all course requirements", x: 528, y: 390, fontSize: 14, fontFamily: "sans-serif", color: "#6b7280", align: "center" },
-          { type: "text", id: "score-label", content: "Score: {{score}}", x: 528, y: 440, fontSize: 16, fontFamily: "sans-serif", fontWeight: "bold", color: "#4f46e5", align: "center" },
+          { type: "text", id: "score-label", content: "Score: {{score}}", x: 528, y: 440, fontSize: 16, fontFamily: "sans-serif", fontWeight: "bold", color: "#91C53C", align: "center" },
           { type: "text", id: "date", content: "{{issue_date}}", x: 260, y: 560, fontSize: 14, fontFamily: "sans-serif", color: "#374151", align: "center" },
           { type: "text", id: "date-label", content: "Date Issued", x: 260, y: 585, fontSize: 11, fontFamily: "sans-serif", color: "#9ca3af", align: "center" },
           { type: "text", id: "expiry", content: "{{expiry_date}}", x: 528, y: 560, fontSize: 14, fontFamily: "sans-serif", color: "#374151", align: "center" },
@@ -466,18 +466,18 @@ export function getPresetTemplate(preset: "classic" | "modern" | "elegant" | "co
       return {
         ...baseDesign,
         background: { color: "#ffffff", image_url: null, pattern: "none" },
-        border: { enabled: true, color: "#1e3a5f", width: 2, style: "solid", padding: 16 },
+        border: { enabled: true, color: "#53585C", width: 2, style: "solid", padding: 16 },
         elements: [
-          { type: "shape", id: "header-bg", shape: "rectangle", x: 0, y: 0, width: 1056, height: 140, fillColor: "#1e3a5f", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
+          { type: "shape", id: "header-bg", shape: "rectangle", x: 0, y: 0, width: 1056, height: 140, fillColor: "#53585C", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
           { type: "image", id: "logo", url: "{{company_logo}}", x: 40, y: 30, width: 160, height: 80 },
           { type: "text", id: "company-header", content: "{{company_name}}", x: 528, y: 70, fontSize: 24, fontFamily: "sans-serif", fontWeight: "bold", color: "#ffffff", align: "center" },
           { type: "text", id: "cert-type", content: "PROFESSIONAL CERTIFICATE", x: 528, y: 105, fontSize: 12, fontFamily: "sans-serif", color: "#94a3b8", align: "center" },
-          { type: "text", id: "title", content: "{{course_name}}", x: 528, y: 220, fontSize: 30, fontFamily: "sans-serif", fontWeight: "bold", color: "#1e3a5f", align: "center" },
-          { type: "line", id: "divider", x1: 350, y1: 255, x2: 706, y2: 255, strokeColor: "#1e3a5f", strokeWidth: 2 },
+          { type: "text", id: "title", content: "{{course_name}}", x: 528, y: 220, fontSize: 30, fontFamily: "sans-serif", fontWeight: "bold", color: "#53585C", align: "center" },
+          { type: "line", id: "divider", x1: 350, y1: 255, x2: 706, y2: 255, strokeColor: "#53585C", strokeWidth: 2 },
           { type: "text", id: "awarded-to", content: "This certifies that", x: 528, y: 300, fontSize: 14, fontFamily: "sans-serif", color: "#64748b", align: "center" },
           { type: "text", id: "recipient", content: "{{learner_name}}", x: 528, y: 360, fontSize: 28, fontFamily: "sans-serif", fontWeight: "bold", color: "#1e293b", align: "center" },
           { type: "text", id: "desc", content: "has successfully met all requirements for certification", x: 528, y: 410, fontSize: 14, fontFamily: "sans-serif", color: "#64748b", align: "center" },
-          { type: "text", id: "score", content: "Score: {{score}}", x: 528, y: 460, fontSize: 16, fontFamily: "sans-serif", fontWeight: "bold", color: "#1e3a5f", align: "center" },
+          { type: "text", id: "score", content: "Score: {{score}}", x: 528, y: 460, fontSize: 16, fontFamily: "sans-serif", fontWeight: "bold", color: "#53585C", align: "center" },
           { type: "text", id: "issue-date", content: "Issue Date: {{issue_date}}", x: 300, y: 560, fontSize: 13, fontFamily: "sans-serif", color: "#475569", align: "center" },
           { type: "text", id: "expiry-date", content: "Valid Until: {{expiry_date}}", x: 756, y: 560, fontSize: 13, fontFamily: "sans-serif", color: "#475569", align: "center" },
           { type: "line", id: "sig-line-left", x1: 180, y1: 640, x2: 420, y2: 640, strokeColor: "#cbd5e1", strokeWidth: 1 },
@@ -486,7 +486,7 @@ export function getPresetTemplate(preset: "classic" | "modern" | "elegant" | "co
           { type: "text", id: "sig-label-right", content: "Date", x: 756, y: 660, fontSize: 11, fontFamily: "sans-serif", color: "#94a3b8", align: "center" },
           { type: "text", id: "credential", content: "Credential: {{credential_id}}", x: 528, y: 720, fontSize: 11, fontFamily: "monospace", color: "#94a3b8", align: "center" },
           { type: "text", id: "verify", content: "Verify: {{verification_url}}", x: 528, y: 750, fontSize: 10, fontFamily: "sans-serif", color: "#94a3b8", align: "center" },
-          { type: "shape", id: "footer-bar", shape: "rectangle", x: 0, y: 790, width: 1056, height: 26, fillColor: "#1e3a5f", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
+          { type: "shape", id: "footer-bar", shape: "rectangle", x: 0, y: 790, width: 1056, height: 26, fillColor: "#53585C", strokeColor: "transparent", strokeWidth: 0, opacity: 1 },
         ],
       };
 

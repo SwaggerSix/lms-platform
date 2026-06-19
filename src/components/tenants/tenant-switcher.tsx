@@ -81,7 +81,7 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
             ) : (
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                style={{ backgroundColor: currentTenant.primary_color || "#4f46e5" }}
+                style={{ backgroundColor: currentTenant.primary_color || "#91C53C" }}
               >
                 {currentTenant.name.charAt(0).toUpperCase()}
               </div>
@@ -136,7 +136,7 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
                 ) : (
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                    style={{ backgroundColor: tenant.primary_color || "#4f46e5" }}
+                    style={{ backgroundColor: tenant.primary_color || "#91C53C" }}
                   >
                     {tenant.name.charAt(0).toUpperCase()}
                   </div>

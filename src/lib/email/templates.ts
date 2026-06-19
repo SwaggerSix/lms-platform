@@ -24,7 +24,7 @@ function baseLayout(content: string, portalName: string = "LearnHub"): string {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
           <!-- Header -->
           <tr>
-            <td style="background-color:#4f46e5;padding:24px 32px;">
+            <td style="background-color:#91C53C;padding:24px 32px;">
               <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">${portalName}</h1>
             </td>
           </tr>
@@ -53,7 +53,7 @@ function baseLayout(content: string, portalName: string = "LearnHub"): string {
 function button(text: string, url: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;">
     <tr>
-      <td style="background-color:#4f46e5;border-radius:6px;">
+      <td style="background-color:#91C53C;border-radius:6px;">
         <a href="${url}" style="display:inline-block;padding:12px 24px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">${text}</a>
       </td>
     </tr>
@@ -107,7 +107,7 @@ export function approvalRequest(params: {
     <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
       <strong>${params.learnerName}</strong> has requested enrollment in <strong>${params.courseName}</strong> and needs your approval.
     </p>
-    ${params.reason ? `<div style="padding:12px 16px;background-color:#f9fafb;border-radius:6px;border-left:4px solid #4f46e5;margin:0 0 16px;"><p style="margin:0;color:#374151;font-size:13px;"><strong>Reason:</strong> ${params.reason}</p></div>` : ""}
+    ${params.reason ? `<div style="padding:12px 16px;background-color:#f9fafb;border-radius:6px;border-left:4px solid #91C53C;margin:0 0 16px;"><p style="margin:0;color:#374151;font-size:13px;"><strong>Reason:</strong> ${params.reason}</p></div>` : ""}
     ${button("Review Request", params.approvalUrl)}
   `;
 
@@ -186,7 +186,7 @@ export function certificationExpiry(params: {
   renewalUrl: string;
   portalName?: string;
 }): EmailTemplate {
-  const urgency = params.daysRemaining <= 7 ? "#dc2626" : params.daysRemaining <= 30 ? "#d97706" : "#4f46e5";
+  const urgency = params.daysRemaining <= 7 ? "#dc2626" : params.daysRemaining <= 30 ? "#F0A800" : "#91C53C";
   const content = `
     <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Certification Expiring Soon</h2>
     <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">
@@ -408,7 +408,7 @@ export function mentorshipMatch(params: {
     <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
       ${intro}
     </p>
-    ${params.goals ? `<div style="padding:12px 16px;background-color:#f9fafb;border-radius:6px;border-left:4px solid #4f46e5;margin:0 0 16px;"><p style="margin:0;color:#374151;font-size:13px;"><strong>Goals:</strong> ${params.goals}</p></div>` : ""}
+    ${params.goals ? `<div style="padding:12px 16px;background-color:#f9fafb;border-radius:6px;border-left:4px solid #91C53C;margin:0 0 16px;"><p style="margin:0;color:#374151;font-size:13px;"><strong>Goals:</strong> ${params.goals}</p></div>` : ""}
     ${button("Open Mentorship", params.link)}
     <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">Reach out to your match soon to schedule a first session.</p>
   `;
@@ -444,9 +444,9 @@ export function mentorshipSessionScheduled(params: {
     ${params.meetingUrl ? `<p style="margin:0 0 16px;color:#374151;font-size:14px;">Meeting link: <a href="${params.meetingUrl}">${params.meetingUrl}</a></p>` : ""}
     <p style="margin:0 0 8px;color:#374151;font-size:14px;">Add it to your calendar:</p>
     <p style="margin:0 0 16px;font-size:14px;">
-      <a href="${params.googleUrl}" style="color:#4f46e5;margin-right:14px;">Google Calendar</a>
-      <a href="${params.outlookUrl}" style="color:#4f46e5;margin-right:14px;">Outlook</a>
-      <a href="${params.icsUrl}" style="color:#4f46e5;">Apple / iCal</a>
+      <a href="${params.googleUrl}" style="color:#739E2D;margin-right:14px;">Google Calendar</a>
+      <a href="${params.outlookUrl}" style="color:#739E2D;margin-right:14px;">Outlook</a>
+      <a href="${params.icsUrl}" style="color:#739E2D;">Apple / iCal</a>
     </p>
     ${button("View Mentorship", params.icsUrl.replace(/\/api\/.*$/, "/learn/mentorship"))}
   `;

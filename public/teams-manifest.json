@@ -21,7 +21,7 @@
     "outline": "icons/outline-32x32.png",
     "color": "icons/color-192x192.png"
   },
-  "accentColor": "#4F46E5",
+  "accentColor": "#91C53C",
   "configurableTabs": [
     {
       "configurationUrl": "https://learn.gothamgovernment.com/embed/teams-config",
