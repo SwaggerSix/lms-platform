@@ -3,6 +3,9 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { gatherReconciliation } from "@/lib/integrations/qb-reconcile";
 
+// Always hits the DB (live reconciliation summary); never statically cached.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/admin/qb-sync-status — QuickBooks sync health summary for ops/admin.
  *

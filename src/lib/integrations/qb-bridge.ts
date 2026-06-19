@@ -221,17 +221,25 @@ export async function applyAckResult(
       (payload.eventType === "sales_receipt" || payload.eventType === "refund_receipt") &&
       localId
     ) {
+      // The order row's qb_object_id should hold the ORIGINAL sales-receipt
+      // TxnID for the lifetime of the order. A refund_receipt is a separate QB
+      // transaction (tracked under its own local_type='refund' key in
+      // qb_entity_map, upserted above), so on a refund ack we must NOT overwrite
+      // qb_object_id / qb_object_type — that would replace the sales-receipt id
+      // with the refund's TxnID. We still stamp qb_synced_at to record that the
+      // order's QB activity advanced. sales_receipt keeps setting the ids.
+      const orderUpdate: Record<string, unknown> = {
+        qb_sync_status: "synced",
+        qb_synced_at: syncedAt,
+        qb_error: null,
+      };
+      if (payload.eventType === "sales_receipt") {
+        orderUpdate.qb_object_id = result.qbTxnId ?? null;
+        orderUpdate.qb_object_type = result.qbType ?? "SalesReceipt";
+      }
       const { error } = await service
         .from("orders")
-        .update({
-          qb_object_id: result.qbTxnId ?? null,
-          qb_object_type:
-            result.qbType ??
-            (payload.eventType === "sales_receipt" ? "SalesReceipt" : "RefundReceipt"),
-          qb_sync_status: "synced",
-          qb_synced_at: syncedAt,
-          qb_error: null,
-        })
+        .update(orderUpdate)
         .eq("id", localId);
       if (error) {
         console.error("[qb-bridge ack] order write-back failed", localId, error.message);

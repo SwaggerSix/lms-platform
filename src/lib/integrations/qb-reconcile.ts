@@ -170,6 +170,17 @@ export function buildReconciliationSummary(
   const payouts = buildSourceDrift(payoutRows, nowMs, false);
 
   // ── Best-effort money check ──
+  //
+  // INTENDED DRIFT SIGNAL — NOT A BUG. This tie-out compares completed-order
+  // revenue in the trailing window against the total of only SYNCED
+  // sales-receipt queue payloads. An order that just completed but whose
+  // sales-receipt event hasn't been pulled/acked by the Bridge yet counts in
+  // `completedRevenue` but not in `syncedReceiptTotal`, so `difference` will be
+  // transiently nonzero (and may briefly exceed tolerance → `mismatch`) until
+  // the Bridge catches up. That's by design: this is the lag/drift signal we
+  // want surfaced. On-call should expect small transient differences within the
+  // window and only investigate a mismatch that PERSISTS across runs (i.e. the
+  // receipt never syncs), not one that clears on the next reconciliation.
   let moneyCheck: MoneyCheck | null = null;
   if (money) {
     const completedRevenue = round2(
