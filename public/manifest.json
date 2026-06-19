@@ -4,8 +4,8 @@
   "description": "Enterprise Learning Management System",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4f46e5",
+  "background_color": "#FBFCFA",
+  "theme_color": "#91C53C",
   "orientation": "any",
   "icons": [
     { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },

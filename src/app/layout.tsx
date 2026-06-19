@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Geist } from "next/font/google";
 import "./globals.css";
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
 import { BrandProvider } from "@/components/providers/brand-provider";
 import { ToastContainer } from "@/components/ui/toast";
 import ServiceWorkerRegister from "@/components/pwa/service-worker-register";
@@ -28,13 +35,13 @@ export default async function RootLayout({
   const messages = (await import(`../messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale} dir={direction}>
+    <html lang={locale} dir={direction} className={geist.variable}>
       <head>
-        <meta name="theme-color" content="#005089" />
+        <meta name="theme-color" content="#91C53C" />
         <link rel="icon" href="/learnhub-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="antialiased">
+      <body className={`${geist.variable} antialiased`}>
         <I18nProvider locale={locale} messages={messages}>
           <BrandProvider>
             {children}

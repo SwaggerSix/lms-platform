@@ -502,7 +502,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <div className="flex-1 h-1.5 rounded-full bg-gray-100">
-                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#4f46e5' }} />
+                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#91C53C' }} />
                   </div>
                 </div>
                 {course.updatedAt && (
@@ -581,7 +581,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-20 rounded-full bg-gray-100">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#4f46e5' }} />
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#91C53C' }} />
                       </div>
                       <span className="text-xs text-gray-500">{formatPercent(course.completionRate)}</span>
                     </div>

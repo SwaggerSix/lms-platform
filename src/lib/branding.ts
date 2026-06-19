@@ -45,7 +45,7 @@ export interface BrandingConfig {
 }
 
 /**
- * Default branding — LearnHub indigo theme.
+ * Default branding — gothamCulture green theme (light shell).
  */
 export const defaultBranding: BrandingConfig = {
   portalName: "LearnHub",
@@ -53,19 +53,19 @@ export const defaultBranding: BrandingConfig = {
   logoUrl: null,
   faviconUrl: null,
 
-  primaryColor: "#4f46e5",      // indigo-600
-  primaryHoverColor: "#4338ca", // indigo-700
-  primaryLightColor: "#eef2ff", // indigo-50
-  primaryTextColor: "#4338ca",  // indigo-700
+  primaryColor: "#91C53C",      // brand green
+  primaryHoverColor: "#739E2D", // green dark
+  primaryLightColor: "#F1F7E4", // green wash
+  primaryTextColor: "#739E2D",  // green dark (readable on light)
 
-  sidebarBg: "#111827",         // gray-900
-  sidebarText: "#9ca3af",       // gray-400
-  sidebarActiveBg: "rgba(79, 70, 229, 0.2)", // indigo-600/20
-  sidebarActiveText: "#818cf8", // indigo-400
+  sidebarBg: "#FBFCFA",         // page canvas (light shell)
+  sidebarText: "#495057",       // gray 600 body
+  sidebarActiveBg: "#F1F7E4",   // green wash
+  sidebarActiveText: "#739E2D", // green dark
 
   loginBgStyle: "gradient",
   loginBgImageUrl: null,
-  loginBgColor: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+  loginBgColor: "linear-gradient(135deg, #F1F7E4 0%, #FBFCFA 100%)",
 
   supportEmail: "support@learnhub.gov",
   footerText: "© {year} LearnHub. All rights reserved.",
@@ -91,52 +91,69 @@ export function brandingToCSSVars(config: BrandingConfig): Record<string, string
  * Preset brand themes for quick selection.
  */
 export const brandPresets: Record<string, Partial<BrandingConfig>> = {
+  // The exact gothamCulture brand tokens. All presets use a light shell;
+  // they differ only in the primary/accent hue, kept brand-coherent.
   indigo: {
-    primaryColor: "#4f46e5",
-    primaryHoverColor: "#4338ca",
-    primaryLightColor: "#eef2ff",
-    primaryTextColor: "#4338ca",
-    sidebarBg: "#111827",
-    sidebarActiveText: "#818cf8",
-  },
-  blue: {
-    primaryColor: "#2563eb",
-    primaryHoverColor: "#1d4ed8",
-    primaryLightColor: "#eff6ff",
-    primaryTextColor: "#1d4ed8",
-    sidebarBg: "#0f172a",
-    sidebarActiveText: "#60a5fa",
+    primaryColor: "#91C53C",
+    primaryHoverColor: "#739E2D",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#739E2D",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#739E2D",
   },
   green: {
-    primaryColor: "#059669",
-    primaryHoverColor: "#047857",
-    primaryLightColor: "#ecfdf5",
-    primaryTextColor: "#047857",
-    sidebarBg: "#022c22",
-    sidebarActiveText: "#34d399",
+    primaryColor: "#91C53C",
+    primaryHoverColor: "#739E2D",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#739E2D",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#739E2D",
   },
+  // Gold accent variant — brand secondary hue on the same light shell.
+  blue: {
+    primaryColor: "#F0A800",
+    primaryHoverColor: "#C78A00",
+    primaryLightColor: "#FDF3DA",
+    primaryTextColor: "#946700",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#FDF3DA",
+    sidebarActiveText: "#946700",
+  },
+  // Charcoal/neutral variant — for a more muted brand chrome.
   red: {
-    primaryColor: "#dc2626",
-    primaryHoverColor: "#b91c1c",
-    primaryLightColor: "#fef2f2",
-    primaryTextColor: "#b91c1c",
-    sidebarBg: "#1c1917",
-    sidebarActiveText: "#f87171",
+    primaryColor: "#53585C",
+    primaryHoverColor: "#3F4346",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#53585C",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#739E2D",
   },
+  // Deeper green variant.
   purple: {
-    primaryColor: "#7c3aed",
-    primaryHoverColor: "#6d28d9",
-    primaryLightColor: "#f5f3ff",
-    primaryTextColor: "#6d28d9",
-    sidebarBg: "#1e1b4b",
-    sidebarActiveText: "#a78bfa",
+    primaryColor: "#739E2D",
+    primaryHoverColor: "#5C7E24",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#5C7E24",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#5C7E24",
   },
   teal: {
-    primaryColor: "#0d9488",
-    primaryHoverColor: "#0f766e",
-    primaryLightColor: "#f0fdfa",
-    primaryTextColor: "#0f766e",
-    sidebarBg: "#042f2e",
-    sidebarActiveText: "#2dd4bf",
+    primaryColor: "#91C53C",
+    primaryHoverColor: "#739E2D",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#739E2D",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#739E2D",
   },
 };

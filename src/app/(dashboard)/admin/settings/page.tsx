@@ -18,7 +18,7 @@ const defaultGeneral = {
 };
 
 const defaultBranding = {
-  primaryColor: "#4f46e5",
+  primaryColor: "#91C53C",
   accentColor: "#06b6d4",
 };
 

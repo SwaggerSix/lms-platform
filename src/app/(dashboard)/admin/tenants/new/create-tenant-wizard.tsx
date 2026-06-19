@@ -17,8 +17,8 @@ export default function CreateTenantWizard() {
     slug: "",
     domain: "",
     plan: "starter",
-    primary_color: "#4f46e5",
-    secondary_color: "#7c3aed",
+    primary_color: "#91C53C",
+    secondary_color: "#F0A800",
     max_users: "",
     max_courses: "",
   });

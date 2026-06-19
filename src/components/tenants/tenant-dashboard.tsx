@@ -101,7 +101,7 @@ export function TenantDashboard({ tenantId }: TenantDashboardProps) {
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold"
-          style={{ backgroundColor: stats.primary_color || "#4f46e5" }}
+          style={{ backgroundColor: stats.primary_color || "#91C53C" }}
         >
           {stats.name.charAt(0).toUpperCase()}
         </div>
@@ -178,7 +178,7 @@ export function TenantDashboard({ tenantId }: TenantDashboardProps) {
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${Math.min(userUsage, 100)}%`,
-                  backgroundColor: userUsage > 90 ? "#ef4444" : userUsage > 70 ? "#f59e0b" : "#4f46e5",
+                  backgroundColor: userUsage > 90 ? "#ef4444" : userUsage > 70 ? "#f59e0b" : "#91C53C",
                 }}
               />
             </div>
@@ -196,7 +196,7 @@ export function TenantDashboard({ tenantId }: TenantDashboardProps) {
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${Math.min(courseUsage, 100)}%`,
-                  backgroundColor: courseUsage > 90 ? "#ef4444" : courseUsage > 70 ? "#f59e0b" : "#4f46e5",
+                  backgroundColor: courseUsage > 90 ? "#ef4444" : courseUsage > 70 ? "#f59e0b" : "#91C53C",
                 }}
               />
             </div>
@@ -242,7 +242,7 @@ export function TenantDashboard({ tenantId }: TenantDashboardProps) {
                 <div
                   className="h-20"
                   style={{
-                    background: `linear-gradient(135deg, ${stats.primary_color || "#4f46e5"}, ${stats.primary_color || "#4f46e5"}88)`,
+                    background: `linear-gradient(135deg, ${stats.primary_color || "#91C53C"}, ${stats.primary_color || "#91C53C"}88)`,
                   }}
                 >
                   {tc.is_featured && (

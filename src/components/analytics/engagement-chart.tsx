@@ -172,8 +172,8 @@ export default function EngagementChart({
         {/* Gradient area */}
         <defs>
           <linearGradient id="engagementGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.2} />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+            <stop offset="0%" stopColor="#91C53C" stopOpacity={0.2} />
+            <stop offset="100%" stopColor="#91C53C" stopOpacity={0} />
           </linearGradient>
         </defs>
         <path d={areaPath} fill="url(#engagementGradient)" />
@@ -182,7 +182,7 @@ export default function EngagementChart({
         <path
           d={linePath}
           fill="none"
-          stroke="#6366f1"
+          stroke="#91C53C"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -195,8 +195,8 @@ export default function EngagementChart({
               cx={p.x}
               cy={p.y}
               r={hoveredIndex === i ? 5 : 3}
-              fill={hoveredIndex === i ? "#6366f1" : "white"}
-              stroke="#6366f1"
+              fill={hoveredIndex === i ? "#91C53C" : "white"}
+              stroke="#91C53C"
               strokeWidth={2}
               className="cursor-pointer transition-all"
               onMouseEnter={() => setHoveredIndex(i)}

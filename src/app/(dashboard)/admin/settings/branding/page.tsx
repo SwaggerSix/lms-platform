@@ -343,7 +343,7 @@ export default function BrandingSettingsPage() {
                 type="text"
                 value={draft.loginBgColor}
                 onChange={(e) => update({ loginBgColor: e.target.value })}
-                placeholder="linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)"
+                placeholder="linear-gradient(135deg, #F1F7E4 0%, #FBFCFA 100%)"
                 className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm font-mono text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>

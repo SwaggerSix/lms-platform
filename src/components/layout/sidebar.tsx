@@ -133,7 +133,7 @@ const navSections: NavSection[] = [
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
     ],
     roles: ["instructor", "admin", "super_admin"],
-    bgClass: "bg-gray-800/30",
+    bgClass: "bg-[#F8F9FA]",
   },
   {
     // Instructors don't see the Learning or Administration sections, so this
@@ -149,7 +149,7 @@ const navSections: NavSection[] = [
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },
     ],
     roles: ["instructor"],
-    bgClass: "bg-gray-800/30",
+    bgClass: "bg-[#F8F9FA]",
   },
   {
     header: "Management",
@@ -163,7 +163,7 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/manager/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["manager", "admin", "super_admin"],
-    bgClass: "bg-gray-800/30",
+    bgClass: "bg-[#F8F9FA]",
   },
   {
     header: "Admin · People & Courses",
@@ -182,7 +182,7 @@ const navSections: NavSection[] = [
       { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-gray-800/60",
+    bgClass: "bg-[#F1F7E4]/50",
   },
   {
     header: "Admin · Governance",
@@ -197,7 +197,7 @@ const navSections: NavSection[] = [
       { label: "Error Log", href: "/admin/settings/error-log", icon: Bug },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-gray-800/60",
+    bgClass: "bg-[#F1F7E4]/50",
   },
   {
     header: "Admin · Engagement",
@@ -215,7 +215,7 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-gray-800/60",
+    bgClass: "bg-[#F1F7E4]/50",
   },
   {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
@@ -235,7 +235,7 @@ const navSections: NavSection[] = [
       { label: "Teams", href: "/admin/settings/integrations/teams", icon: MessageSquareMore },
     ],
     roles: ["super_admin"],
-    bgClass: "bg-indigo-900/30",
+    bgClass: "bg-[#FDF3DA]",
   },
   // Settings always sits at the very bottom of the sidebar.
   {
@@ -351,12 +351,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       aria-label="Main navigation"
       className={cn(
-        "flex h-full flex-col bg-gray-900 text-white transition-all duration-300",
+        "flex h-full flex-col bg-[#FBFCFA] text-[#495057] border-r border-[#DEE2E6] transition-all duration-300",
         collapsed ? "w-[68px]" : "w-64"
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-800 bg-white px-3">
+      <div className="flex h-16 items-center border-b border-[#DEE2E6] bg-white px-3">
         {collapsed ? (
           <img src="/learnhub-icon.svg" alt="LearnHub" className="h-9 w-9 shrink-0" />
         ) : (
@@ -386,7 +386,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 type="button"
                 onClick={() => toggleSection(section.header!)}
                 aria-expanded={!isSectionCollapsed}
-                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[#739E2D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
               >
                 <span>{section.header}</span>
                 {isSectionCollapsed ? (
@@ -397,7 +397,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </button>
             )}
             {section.header && collapsed && (
-              <div className="my-3 border-t border-gray-800" aria-hidden="true" />
+              <div className="my-3 border-t border-[#DEE2E6]" aria-hidden="true" />
             )}
             {!isSectionCollapsed && (
             <ul role="list" className="space-y-0.5">
@@ -414,16 +414,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        "focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900",
+                        "focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]",
                         isActive
-                          ? "bg-indigo-600/20 text-indigo-400"
-                          : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                          ? "bg-[#F1F7E4] text-[#739E2D]"
+                          : "text-[#6C757D] hover:bg-[#F1F7E4] hover:text-[#739E2D]"
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-5 w-5 shrink-0",
-                          isActive ? "text-indigo-400" : "text-gray-500 group-hover:text-white"
+                          isActive ? "text-[#739E2D]" : "text-[#6C757D] group-hover:text-[#739E2D]"
                         )}
                         aria-hidden="true"
                       />
@@ -440,7 +440,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </nav>
 
       {/* User area */}
-      <div className="border-t border-gray-800 p-3">
+      <div className="border-t border-[#DEE2E6] p-3">
         <div className="relative" data-user-menu>
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -448,39 +448,39 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             aria-expanded={userMenuOpen}
             aria-haspopup="true"
             className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-gray-800",
-              "focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900",
+              "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-[#F1F7E4]",
+              "focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]",
               collapsed && "justify-center"
             )}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold" aria-hidden="true">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#91C53C] text-xs font-bold text-white" aria-hidden="true">
               {initials}
             </div>
             {!collapsed && (
               <>
                 <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-[#495057]">
                     {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[#6C757D]">
                     {roleLabel(currentRole)}
                   </p>
                 </div>
-                <ChevronDown className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                <ChevronDown className="h-4 w-4 text-[#6C757D]" aria-hidden="true" />
               </>
             )}
           </button>
 
           {userMenuOpen && (
             <div
-              className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+              className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-[#DEE2E6] bg-white py-1 shadow-xl"
               role="menu"
               aria-label="User menu"
             >
               <Link
                 href="/profile"
                 onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:bg-[#F1F7E4] focus:text-[#739E2D] focus:outline-none"
                 role="menuitem"
               >
                 <User className="h-4 w-4" aria-hidden="true" />
@@ -493,7 +493,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   await supabase.auth.signOut();
                   window.location.href = "/login";
                 }}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:bg-[#F1F7E4] focus:text-[#739E2D] focus:outline-none"
                 role="menuitem"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -505,17 +505,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Language selector */}
-      <div className="border-t border-gray-800 px-3 py-2">
+      <div className="border-t border-[#DEE2E6] px-3 py-2">
         <LanguageSelector currentLocale={locale} compact={collapsed} />
       </div>
 
       {/* Collapse toggle */}
       {onToggle && (
-        <div className="border-t border-gray-800 p-3">
+        <div className="border-t border-[#DEE2E6] p-3">
           <button
             onClick={onToggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="flex w-full items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
           >
             {collapsed ? (
               <ChevronRight className="h-5 w-5" aria-hidden="true" />

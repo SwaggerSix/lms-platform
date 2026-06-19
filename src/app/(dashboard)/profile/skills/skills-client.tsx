@@ -244,10 +244,10 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                 return <line key={idx} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#e5e7eb" strokeWidth={1} />;
               })}
               {/* Data polygon */}
-              <path d={dataPath} fill="rgba(99, 102, 241, 0.2)" stroke="#6366f1" strokeWidth={2} />
+              <path d={dataPath} fill="rgba(145, 197, 60, 0.2)" stroke="#91C53C" strokeWidth={2} />
               {/* Data points */}
               {dataPoints.map((p, idx) => (
-                <circle key={idx} cx={p.x} cy={p.y} r={4} fill="#6366f1" />
+                <circle key={idx} cx={p.x} cy={p.y} r={4} fill="#91C53C" />
               ))}
             </svg>
             {/* Labels */}

@@ -96,7 +96,7 @@ function defaultLineElement(): LineElement {
     y1: 400,
     x2: 856,
     y2: 400,
-    strokeColor: "#4f46e5",
+    strokeColor: "#91C53C",
     strokeWidth: 2,
   };
 }
@@ -110,8 +110,8 @@ function defaultShapeElement(): ShapeElement {
     y: 100,
     width: 200,
     height: 100,
-    fillColor: "#e0e7ff",
-    strokeColor: "#4f46e5",
+    fillColor: "#F1F7E4",
+    strokeColor: "#91C53C",
     strokeWidth: 1,
     opacity: 1,
   };
@@ -306,7 +306,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
     .wrapper svg { width: 100%; height: 100%; }
     .actions { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
     .actions button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .btn-print { background: #4f46e5; color: #fff; }
+    .btn-print { background: #91C53C; color: #fff; }
     .btn-close { background: #e5e7eb; color: #374151; }
   </style>
 </head>

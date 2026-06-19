@@ -90,12 +90,12 @@ function handleDownloadPDF(cert: Certificate, userName: string) {
       <style>
         @media print { body { margin: 0; } }
         body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #fff; }
-        .certificate { width: 800px; padding: 60px; border: 8px double #4f46e5; text-align: center; position: relative; }
-        .certificate::before { content: ''; position: absolute; inset: 8px; border: 2px solid #c7d2fe; pointer-events: none; }
-        .header { font-size: 14px; text-transform: uppercase; letter-spacing: 4px; color: #6366f1; margin-bottom: 10px; }
-        .title { font-size: 36px; color: #1e1b4b; margin: 20px 0 10px; }
+        .certificate { width: 800px; padding: 60px; border: 8px double #91C53C; text-align: center; position: relative; }
+        .certificate::before { content: ''; position: absolute; inset: 8px; border: 2px solid #cde3a4; pointer-events: none; }
+        .header { font-size: 14px; text-transform: uppercase; letter-spacing: 4px; color: #739E2D; margin-bottom: 10px; }
+        .title { font-size: 36px; color: #49641d; margin: 20px 0 10px; }
         .subtitle { font-size: 16px; color: #6b7280; margin-bottom: 30px; }
-        .recipient { font-size: 28px; color: #1e1b4b; border-bottom: 2px solid #4f46e5; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
+        .recipient { font-size: 28px; color: #49641d; border-bottom: 2px solid #91C53C; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
         .course { font-size: 18px; color: #374151; margin: 15px 0; }
         .details { display: flex; justify-content: space-around; margin-top: 40px; font-size: 13px; color: #6b7280; }
         .details div { text-align: center; }
