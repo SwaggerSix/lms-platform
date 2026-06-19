@@ -143,7 +143,7 @@ export async function applyAckResult(
   // Look up the queue row so we can read its payload (local id / event type).
   const { data: row, error: fetchErr } = await service
     .from("qb_sync_queue")
-    .select("id, event_type, payload")
+    .select("id, event_type, payload, idempotency_key")
     .eq("id", result.id)
     .maybeSingle();
 
@@ -178,15 +178,25 @@ export async function applyAckResult(
   const payload = (row.payload ?? {}) as QbEvent;
   const localType = entityMapType(payload.localType);
   const localId = payload.localId;
+  const idempotencyKey = (row as QueueRow).idempotency_key;
 
-  // Best-effort: upsert qb_entity_map. Never fatal.
-  if (localType && localId) {
+  // Each partial refund is a distinct QB refund_receipt. The order's local id is
+  // shared across all of them, so keying the entity-map row on local_id would
+  // make a second partial refund overwrite the first refund's qb_txnid (unique
+  // on local_type,local_id). The queue row's idempotency_key is
+  // `order:<id>:refund:<cumulative>` — unique per partial refund — so use it as
+  // the entity-map local_id for refunds. order/payout keep their natural id.
+  const entityMapLocalId = localType === "refund" ? idempotencyKey : localId;
+
+  // Best-effort: upsert qb_entity_map. Never fatal. Skip entirely when there is
+  // no qbType to record — we never store an empty qb_type.
+  if (localType && entityMapLocalId && result.qbType) {
     try {
       const { error } = await service.from("qb_entity_map").upsert(
         {
           local_type: localType,
-          local_id: localId,
-          qb_type: result.qbType ?? "",
+          local_id: entityMapLocalId,
+          qb_type: result.qbType,
           qb_listid: result.qbListId ?? null,
           qb_txnid: result.qbTxnId ?? null,
           updated_at: syncedAt,
