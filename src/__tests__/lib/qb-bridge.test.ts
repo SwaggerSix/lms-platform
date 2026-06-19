@@ -127,18 +127,28 @@ function makeServiceMock(queueRow: any) {
 const SALES_QUEUE_ROW = {
   id: "86cce9ef-c21d-46e9-90d9-b79bb7992ea9",
   event_type: "sales_receipt",
+  idempotency_key: "order:ord-1:sales_receipt",
   payload: { eventType: "sales_receipt", localType: "order", localId: "ord-1" },
 };
 
 const VENDOR_QUEUE_ROW = {
   id: "40b002e7-db48-43c2-9b2d-ea492342803f",
   event_type: "vendor_bill",
+  idempotency_key: "payout:pay-1:vendor_bill",
   payload: { eventType: "vendor_bill", localType: "payout", localId: "pay-1" },
 };
 
 const REFUND_QUEUE_ROW = {
   id: "9f1b3c2d-7a4e-4c8b-9f2a-1d6e3b5c7a90",
   event_type: "refund_receipt",
+  idempotency_key: "order:ord-1:refund:500",
+  payload: { eventType: "refund_receipt", localType: "refund", localId: "ord-1" },
+};
+
+const SECOND_REFUND_QUEUE_ROW = {
+  id: "2c4d6e8a-1b3d-4f5a-8c7b-9d0e1f2a3b4c",
+  event_type: "refund_receipt",
+  idempotency_key: "order:ord-1:refund:900",
   payload: { eventType: "refund_receipt", localType: "refund", localId: "ord-1" },
 };
 
@@ -209,15 +219,65 @@ describe("applyAckResult — synced", () => {
     expect("qb_object_id" in orderWrite!.payload).toBe(false);
     expect("qb_object_type" in orderWrite!.payload).toBe(false);
 
-    // The refund is still recorded separately in qb_entity_map under 'refund'.
+    // The refund is still recorded separately in qb_entity_map under 'refund',
+    // keyed on the queue row's idempotency_key (unique per partial refund) so a
+    // later partial refund cannot overwrite this one's TxnID.
     const map = calls.find((c) => c.table === "qb_entity_map");
     expect(map?.op).toBe("upsert");
     expect(map?.payload).toMatchObject({
       local_type: "refund",
-      local_id: "ord-1",
+      local_id: REFUND_QUEUE_ROW.idempotency_key,
       qb_type: "RefundReceipt",
       qb_txnid: "RF-200",
     });
+  });
+
+  it("keys each partial refund's entity-map row on its own idempotency_key", async () => {
+    const first = makeServiceMock(REFUND_QUEUE_ROW);
+    await applyAckResult(first.client, {
+      id: REFUND_QUEUE_ROW.id,
+      status: "synced",
+      qbType: "RefundReceipt",
+      qbTxnId: "RF-200",
+    });
+    const second = makeServiceMock(SECOND_REFUND_QUEUE_ROW);
+    await applyAckResult(second.client, {
+      id: SECOND_REFUND_QUEUE_ROW.id,
+      status: "synced",
+      qbType: "RefundReceipt",
+      qbTxnId: "RF-201",
+    });
+
+    const firstMap = first.calls.find((c) => c.table === "qb_entity_map");
+    const secondMap = second.calls.find((c) => c.table === "qb_entity_map");
+    // Distinct local_ids → the second refund does NOT overwrite the first.
+    expect(firstMap?.payload.local_id).toBe(REFUND_QUEUE_ROW.idempotency_key);
+    expect(secondMap?.payload.local_id).toBe(SECOND_REFUND_QUEUE_ROW.idempotency_key);
+    expect(firstMap?.payload.local_id).not.toBe(secondMap?.payload.local_id);
+    expect(firstMap?.payload.qb_txnid).toBe("RF-200");
+    expect(secondMap?.payload.qb_txnid).toBe("RF-201");
+  });
+
+  it("skips the entity-map upsert when qbType is absent (never stores an empty qb_type), still marks synced + stamps the source row", async () => {
+    const { calls, client } = makeServiceMock(SALES_QUEUE_ROW);
+    const ok = await applyAckResult(client, {
+      id: SALES_QUEUE_ROW.id,
+      status: "synced",
+      qbTxnId: "TXN-NO-TYPE",
+    });
+    expect(ok).toBe(true);
+
+    // Queue row still marked synced.
+    const queueUpdate = calls.find((c) => c.table === "qb_sync_queue" && c.op === "update");
+    expect(queueUpdate?.payload.status).toBe("synced");
+
+    // Source row still stamped.
+    const orderWrite = calls.find((c) => c.table === "orders");
+    expect(orderWrite).toBeDefined();
+    expect(orderWrite?.payload.qb_sync_status).toBe("synced");
+
+    // No entity-map upsert with an empty qb_type.
+    expect(calls.find((c) => c.table === "qb_entity_map")).toBeUndefined();
   });
 
   it("writes vendor_bill back to instructor_payouts", async () => {
