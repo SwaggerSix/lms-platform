@@ -56,12 +56,12 @@ export const defaultBranding: BrandingConfig = {
   primaryColor: "#91C53C",      // brand green
   primaryHoverColor: "#739E2D", // green dark
   primaryLightColor: "#F1F7E4", // green wash
-  primaryTextColor: "#739E2D",  // green dark (readable on light)
+  primaryTextColor: "#49641D",  // deep green — AA text contrast on light/wash
 
   sidebarBg: "#FBFCFA",         // page canvas (light shell)
   sidebarText: "#495057",       // gray 600 body
   sidebarActiveBg: "#F1F7E4",   // green wash
-  sidebarActiveText: "#739E2D", // green dark
+  sidebarActiveText: "#49641D", // deep green — AA text contrast on wash
 
   loginBgStyle: "gradient",
   loginBgImageUrl: null,
@@ -91,30 +91,34 @@ export function brandingToCSSVars(config: BrandingConfig): Record<string, string
  * Preset brand themes for quick selection.
  */
 export const brandPresets: Record<string, Partial<BrandingConfig>> = {
-  // The exact gothamCulture brand tokens. All presets use a light shell;
-  // they differ only in the primary/accent hue, kept brand-coherent.
-  indigo: {
-    primaryColor: "#91C53C",
-    primaryHoverColor: "#739E2D",
-    primaryLightColor: "#F1F7E4",
-    primaryTextColor: "#739E2D",
-    sidebarBg: "#FBFCFA",
-    sidebarText: "#495057",
-    sidebarActiveBg: "#F1F7E4",
-    sidebarActiveText: "#739E2D",
-  },
+  // gothamCulture brand presets. All use the same light shell and differ
+  // only in the primary hue. Each key is named for the hue it applies and
+  // every preset has a UNIQUE primaryColor — the branding UI both labels
+  // buttons by key and marks the active one by primaryColor equality, so
+  // duplicate colors would mislabel buttons and highlight several at once.
+  // Text/active-text tokens are kept dark enough to clear WCAG AA (4.5:1)
+  // on their light backgrounds.
   green: {
     primaryColor: "#91C53C",
     primaryHoverColor: "#739E2D",
     primaryLightColor: "#F1F7E4",
-    primaryTextColor: "#739E2D",
+    primaryTextColor: "#49641D",
     sidebarBg: "#FBFCFA",
     sidebarText: "#495057",
     sidebarActiveBg: "#F1F7E4",
-    sidebarActiveText: "#739E2D",
+    sidebarActiveText: "#49641D",
   },
-  // Gold accent variant — brand secondary hue on the same light shell.
-  blue: {
+  forest: {
+    primaryColor: "#739E2D",
+    primaryHoverColor: "#5C7E24",
+    primaryLightColor: "#F1F7E4",
+    primaryTextColor: "#49641D",
+    sidebarBg: "#FBFCFA",
+    sidebarText: "#495057",
+    sidebarActiveBg: "#F1F7E4",
+    sidebarActiveText: "#49641D",
+  },
+  gold: {
     primaryColor: "#F0A800",
     primaryHoverColor: "#C78A00",
     primaryLightColor: "#FDF3DA",
@@ -124,36 +128,14 @@ export const brandPresets: Record<string, Partial<BrandingConfig>> = {
     sidebarActiveBg: "#FDF3DA",
     sidebarActiveText: "#946700",
   },
-  // Charcoal/neutral variant — for a more muted brand chrome.
-  red: {
+  charcoal: {
     primaryColor: "#53585C",
     primaryHoverColor: "#3F4346",
-    primaryLightColor: "#F1F7E4",
-    primaryTextColor: "#53585C",
+    primaryLightColor: "#EEF0F1",
+    primaryTextColor: "#3F4346",
     sidebarBg: "#FBFCFA",
     sidebarText: "#495057",
-    sidebarActiveBg: "#F1F7E4",
-    sidebarActiveText: "#739E2D",
-  },
-  // Deeper green variant.
-  purple: {
-    primaryColor: "#739E2D",
-    primaryHoverColor: "#5C7E24",
-    primaryLightColor: "#F1F7E4",
-    primaryTextColor: "#5C7E24",
-    sidebarBg: "#FBFCFA",
-    sidebarText: "#495057",
-    sidebarActiveBg: "#F1F7E4",
-    sidebarActiveText: "#5C7E24",
-  },
-  teal: {
-    primaryColor: "#91C53C",
-    primaryHoverColor: "#739E2D",
-    primaryLightColor: "#F1F7E4",
-    primaryTextColor: "#739E2D",
-    sidebarBg: "#FBFCFA",
-    sidebarText: "#495057",
-    sidebarActiveBg: "#F1F7E4",
-    sidebarActiveText: "#739E2D",
+    sidebarActiveBg: "#EEF0F1",
+    sidebarActiveText: "#3F4346",
   },
 };

@@ -4,13 +4,24 @@
  * gothamCulture brand theme
  * ================================================
  * The app historically used Tailwind's `indigo` (and companion
- * `purple`/`violet`) palettes for all brand chrome — primary buttons,
+ * `purple`/`violet`) palettes for brand chrome — primary buttons,
  * active nav, links, focus rings, gradients. Rather than rewrite every
- * call site, we re-map those palettes onto the gothamCulture green
+ * call site, we re-map those palettes onto the gothamCulture brand
  * family here. Class NAMES are unchanged (e.g. `bg-indigo-600`); only
- * the resolved VALUES move to brand green. Anchors:
- *   indigo-600 = #91C53C (primary)   indigo-700 = #739E2D (hover/dark)
- *   indigo-50  = #F1F7E4 (green wash)
+ * the resolved VALUES move.
+ *
+ *   indigo  -> brand GREEN  (primary).  indigo-600 = #91C53C, 700 = #739E2D
+ *   purple  -> brand GOLD   (secondary)
+ *   violet  -> brand GOLD   (secondary)
+ *
+ * Why purple/violet map to GOLD rather than to the same green as indigo:
+ * these palettes are NOT used only as indigo partners — they also encode
+ * *distinct* meaning across the app (status badges like role/category/
+ * rating chips, and decorative cover palettes that cycle hues for variety).
+ * Folding them onto the same green as indigo made those distinct states
+ * render identically and flattened two-tone gradients. Mapping them onto
+ * the brand's secondary (gold) keeps them on-brand while preserving the
+ * visual distinction from green and the two-tone in indigo/purple gradients.
  * Semantic palettes (red/amber/emerald/etc.) are left untouched.
  */
 @theme {
@@ -26,31 +37,30 @@
   --color-indigo-900: #49641d;
   --color-indigo-950: #2f4112;
 
-  /* Companion palettes used only as gradient/accent partners to indigo;
-     fold them into the same green family so no purple chrome remains. */
-  --color-purple-50: #f1f7e4;
-  --color-purple-100: #e3efc9;
-  --color-purple-200: #cde3a4;
-  --color-purple-300: #b6d779;
-  --color-purple-400: #a3cd57;
-  --color-purple-500: #91c53c;
-  --color-purple-600: #739e2d;
-  --color-purple-700: #5c7e24;
-  --color-purple-800: #49641d;
-  --color-purple-900: #3a5017;
-  --color-purple-950: #243210;
+  /* Secondary brand palette (gold). Anchored at 500 = #F0A800. */
+  --color-purple-50: #fef9e7;
+  --color-purple-100: #fdf3da;
+  --color-purple-200: #fae3a8;
+  --color-purple-300: #f7cf6b;
+  --color-purple-400: #f3bb38;
+  --color-purple-500: #f0a800;
+  --color-purple-600: #c78a00;
+  --color-purple-700: #9e6e00;
+  --color-purple-800: #7c5600;
+  --color-purple-900: #5e4100;
+  --color-purple-950: #382600;
 
-  --color-violet-50: #f1f7e4;
-  --color-violet-100: #e3efc9;
-  --color-violet-200: #cde3a4;
-  --color-violet-300: #b6d779;
-  --color-violet-400: #a3cd57;
-  --color-violet-500: #91c53c;
-  --color-violet-600: #739e2d;
-  --color-violet-700: #5c7e24;
-  --color-violet-800: #49641d;
-  --color-violet-900: #3a5017;
-  --color-violet-950: #243210;
+  --color-violet-50: #fef9e7;
+  --color-violet-100: #fdf3da;
+  --color-violet-200: #fae3a8;
+  --color-violet-300: #f7cf6b;
+  --color-violet-400: #f3bb38;
+  --color-violet-500: #f0a800;
+  --color-violet-600: #c78a00;
+  --color-violet-700: #9e6e00;
+  --color-violet-800: #7c5600;
+  --color-violet-900: #5e4100;
+  --color-violet-950: #382600;
 }
 
 /*
@@ -58,9 +68,12 @@
  * ================================================
  */
 
-/* 1. Enhanced focus-visible ring for all interactive elements (WCAG 2.4.7) */
+/* 1. Enhanced focus-visible ring for all interactive elements (WCAG 2.4.7).
+ * Uses the dark brand green (#5C7E24) rather than the lighter #91C53C so the
+ * 2px indicator clears the 3:1 non-text contrast minimum (WCAG 1.4.11) against
+ * the app's light/white surfaces (#91C53C on white is only ~2:1). */
 *:focus-visible {
-  outline: 2px solid #91C53C;
+  outline: 2px solid #5C7E24;
   outline-offset: 2px;
 }
 

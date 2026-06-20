@@ -386,7 +386,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 type="button"
                 onClick={() => toggleSection(section.header!)}
                 aria-expanded={!isSectionCollapsed}
-                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[#739E2D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[#49641D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
               >
                 <span>{section.header}</span>
                 {isSectionCollapsed ? (
@@ -416,14 +416,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                         "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                         "focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]",
                         isActive
-                          ? "bg-[#F1F7E4] text-[#739E2D]"
-                          : "text-[#6C757D] hover:bg-[#F1F7E4] hover:text-[#739E2D]"
+                          ? "bg-[#F1F7E4] text-[#49641D]"
+                          : "text-[#6C757D] hover:bg-[#F1F7E4] hover:text-[#49641D]"
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-5 w-5 shrink-0",
-                          isActive ? "text-[#739E2D]" : "text-[#6C757D] group-hover:text-[#739E2D]"
+                          isActive ? "text-[#49641D]" : "text-[#6C757D] group-hover:text-[#49641D]"
                         )}
                         aria-hidden="true"
                       />
@@ -480,7 +480,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <Link
                 href="/profile"
                 onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:bg-[#F1F7E4] focus:text-[#739E2D] focus:outline-none"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#49641D] focus:bg-[#F1F7E4] focus:text-[#49641D] focus:outline-none"
                 role="menuitem"
               >
                 <User className="h-4 w-4" aria-hidden="true" />
@@ -493,7 +493,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   await supabase.auth.signOut();
                   window.location.href = "/login";
                 }}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:bg-[#F1F7E4] focus:text-[#739E2D] focus:outline-none"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#49641D] focus:bg-[#F1F7E4] focus:text-[#49641D] focus:outline-none"
                 role="menuitem"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -515,7 +515,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <button
             onClick={onToggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[#F1F7E4] hover:text-[#739E2D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
+            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[#F1F7E4] hover:text-[#49641D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
           >
             {collapsed ? (
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
