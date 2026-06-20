@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
 import { BrandProvider } from "@/components/providers/brand-provider";
 import { ToastContainer } from "@/components/ui/toast";
 import ServiceWorkerRegister from "@/components/pwa/service-worker-register";
 import I18nProvider from "@/i18n/provider";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDirection } from "@/lib/i18n/direction";
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "LearnHub LMS",
@@ -41,7 +41,7 @@ export default async function RootLayout({
         <link rel="icon" href="/learnhub-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className={`${geist.variable} antialiased`}>
+      <body className="antialiased">
         <I18nProvider locale={locale} messages={messages}>
           <BrandProvider>
             {children}
