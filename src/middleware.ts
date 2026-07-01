@@ -188,6 +188,12 @@ export async function middleware(request: NextRequest) {
     "/api/embed",
     "/api/push/subscribe",
     "/api/evaluations/webhook",
+    // Partner Portal integration endpoints authenticate with a shared bearer
+    // secret (PARTNER_PORTAL_WEBHOOK_SECRET), not a user session. They must skip
+    // the login redirect below; otherwise an unauthenticated external caller is
+    // 307-redirected to /login and receives the login page HTML instead of JSON.
+    "/api/integrations/partner-portal/webhook",
+    "/api/integrations/partner-portal/courses",
   ];
   const isPublicPath = publicPaths.some((path) =>
     pathname.startsWith(path)
