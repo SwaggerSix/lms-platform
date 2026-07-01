@@ -9,12 +9,12 @@ const MAX_BIO = 2000;
 export default function BioClient({
   initialBio,
   name,
-  locked = false,
+  portalSynced = false,
 }: {
   initialBio: string;
   name: string;
-  /** True when the profile is synced from the partner portal (read-only here). */
-  locked?: boolean;
+  /** True when the profile is synced from the partner portal (edits sync back). */
+  portalSynced?: boolean;
 }) {
   const toast = useToast();
   const [bio, setBio] = useState(initialBio);
@@ -55,10 +55,10 @@ export default function BioClient({
         </p>
       </div>
 
-      {locked && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Your profile is managed in the gC Partner Portal. Update your bio there
-          and the change will sync here automatically.
+      {portalSynced && (
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          Your profile is linked to the gC Partner Portal. Changes you make here
+          are saved back to your master profile and synced across systems.
         </div>
       )}
 
@@ -75,7 +75,6 @@ export default function BioClient({
           maxLength={MAX_BIO}
           onChange={(e) => setBio(e.target.value)}
           rows={8}
-          disabled={locked}
           placeholder="Share your background, expertise, and teaching style…"
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         />
@@ -85,18 +84,16 @@ export default function BioClient({
           </span>
         </div>
 
-        {!locked && (
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={save}
-              disabled={saving || !dirty}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
-            >
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saving ? "Saving…" : "Save Bio"}
-            </button>
-          </div>
-        )}
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={save}
+            disabled={saving || !dirty}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+          >
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {saving ? "Saving…" : "Save Bio"}
+          </button>
+        </div>
       </div>
     </div>
   );

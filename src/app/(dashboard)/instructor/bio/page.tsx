@@ -34,7 +34,7 @@ export default async function InstructorBioPage() {
     <BioClient
       initialBio={initialBio}
       name={`${dbUser.first_name ?? ""} ${dbUser.last_name ?? ""}`.trim()}
-      locked={dbUser.external_source === "partner_portal"}
+      portalSynced={dbUser.external_source === "partner_portal"}
     />
   );
 }
