@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Pencil,
+  Award as AwardIcon,
   BookOpen,
   Clock,
   Award,
@@ -86,9 +88,15 @@ const TOP_BADGES = [
 export default function ProfileClient({
   data,
   readOnly = false,
+  certificationsHref,
 }: {
   data: ProfileData;
   readOnly?: boolean;
+  /**
+   * When provided, renders a link to the hidden "Gotham Course Certifications"
+   * page. Only passed for viewers allowed to manage them (admins / managers).
+   */
+  certificationsHref?: string;
 }) {
   const [editMode, setEditMode] = useState(false);
   const [bio, setBio] = useState(data.bio);
@@ -141,22 +149,33 @@ export default function ProfileClient({
               </div>
             </div>
 
-            {/* Edit button */}
-            {!readOnly && (
-              <button
-                onClick={handleToggleEdit}
-                disabled={saving}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                  editMode
-                    ? "bg-green-600 text-white hover:bg-green-700"
-                    : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                )}
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
-                {editMode ? "Save Profile" : "Edit Profile"}
-              </button>
-            )}
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-2">
+              {certificationsHref && (
+                <Link
+                  href={certificationsHref}
+                  className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                >
+                  <AwardIcon className="h-4 w-4" />
+                  Gotham Course Certifications
+                </Link>
+              )}
+              {!readOnly && (
+                <button
+                  onClick={handleToggleEdit}
+                  disabled={saving}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                    editMode
+                      ? "bg-green-600 text-white hover:bg-green-700"
+                      : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                  )}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+                  {editMode ? "Save Profile" : "Edit Profile"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

@@ -51,5 +51,19 @@ export default async function MemberProfilePage({
   const profileData = await buildProfileData(id);
   if (!profileData) notFound();
 
-  return <ProfileClient data={profileData} readOnly />;
+  // Everyone who reaches this render is an admin/super_admin or a manager of
+  // this user — all roles permitted to manage course certifications — so expose
+  // the hidden Gotham Course Certifications page to them.
+  const canManageCertifications =
+    isAdmin || viewer.role === "manager" || viewer.role === "super_admin";
+
+  return (
+    <ProfileClient
+      data={profileData}
+      readOnly
+      certificationsHref={
+        canManageCertifications ? `/profile/${id}/certifications` : undefined
+      }
+    />
+  );
 }
