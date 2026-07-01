@@ -18,6 +18,8 @@ export const PORTAL_OWNED_USER_FIELDS = [
   "avatar_url",
 ] as const;
 
+export type PortalOwnedUserField = (typeof PORTAL_OWNED_USER_FIELDS)[number];
+
 type Service = ReturnType<typeof createServiceClient>;
 
 export interface PartnerPortalSyncResult {

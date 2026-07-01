@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
-import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS } from "@/lib/integrations/partner-portal/sync";
+import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS, type PortalOwnedUserField } from "@/lib/integrations/partner-portal/sync";
+import { postProfileWriteback } from "@/lib/integrations/partner-portal/writeback";
 
 export async function PATCH(
   request: NextRequest,
@@ -41,23 +42,17 @@ export async function PATCH(
   }
 
   // Mass assignment fix: whitelist allowed fields
-  let allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
+  const allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
 
-  // For subcontractors synced from the partner portal, the portal owns the
-  // identity/content fields (name, email, bio, avatar). Admins can still
-  // manage LMS-local concerns — role, status, org, manager — but edits to
-  // portal-owned fields are dropped so the next sync isn't clobbered.
+  // For subcontractors synced from the partner portal, the portal is the system
+  // of record for identity/content fields. Admins can still edit them here
+  // (two-way sync), and the changed portal-owned fields are written back to the
+  // portal, which re-syncs the canonical value here and to CoachHub.
   const { data: target } = await service
     .from("users")
-    .select("external_source")
+    .select("external_source, external_id")
     .eq("id", id)
     .single();
-
-  if (target?.external_source === EXTERNAL_SOURCE) {
-    allowedFields = allowedFields.filter(
-      (f) => !(PORTAL_OWNED_USER_FIELDS as readonly string[]).includes(f)
-    );
-  }
 
   const sanitized = Object.fromEntries(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
@@ -73,6 +68,15 @@ export async function PATCH(
   if (error) {
     console.error("Users API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // Push portal-owned field edits back to the portal (system of record). F&F.
+  if (target?.external_source === EXTERNAL_SOURCE && target.external_id) {
+    const writeback: Partial<Record<PortalOwnedUserField, unknown>> = {};
+    for (const f of PORTAL_OWNED_USER_FIELDS) {
+      if (f in sanitized) writeback[f] = sanitized[f];
+    }
+    await postProfileWriteback(target.external_id, writeback);
   }
 
   logAudit({

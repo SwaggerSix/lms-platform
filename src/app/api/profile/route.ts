@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
-import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS } from "@/lib/integrations/partner-portal/sync";
+import { EXTERNAL_SOURCE, PORTAL_OWNED_USER_FIELDS, type PortalOwnedUserField } from "@/lib/integrations/partner-portal/sync";
+import { postProfileWriteback } from "@/lib/integrations/partner-portal/writeback";
 
 /**
  * GET /api/profile — return the authenticated user's full profile.
@@ -50,7 +51,7 @@ export async function PATCH(request: NextRequest) {
   // Look up internal user id
   const { data: profile } = await service
     .from("users")
-    .select("id, external_source")
+    .select("id, external_source, external_id")
     .eq("auth_id", authUser.id)
     .single();
 
@@ -61,16 +62,7 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json();
 
   // Only allow self-editable fields
-  let allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio", "timezone"];
-
-  // Portal-owned fields are read-only for subcontractors synced from the
-  // partner portal — the portal is the system of record, so a later sync must
-  // never be clobbered by a local edit. Drop them from the allow-list.
-  if (profile.external_source === EXTERNAL_SOURCE) {
-    allowedFields = allowedFields.filter(
-      (f) => !(PORTAL_OWNED_USER_FIELDS as readonly string[]).includes(f)
-    );
-  }
+  const allowedFields = ["first_name", "last_name", "preferences", "avatar_url", "bio", "timezone"];
 
   const sanitized = Object.fromEntries(
     Object.entries(body).filter(([key]) => allowedFields.includes(key))
@@ -90,6 +82,18 @@ export async function PATCH(request: NextRequest) {
   if (error) {
     console.error("Profile API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // Two-way sync: for subcontractors synced from the partner portal (system of
+  // record), the edit is allowed locally and the changed portal-owned fields are
+  // pushed back to the portal, which then re-syncs the canonical value here and
+  // to CoachHub. Fire-and-forget.
+  if (profile.external_source === EXTERNAL_SOURCE && profile.external_id) {
+    const writeback: Partial<Record<PortalOwnedUserField, unknown>> = {};
+    for (const f of PORTAL_OWNED_USER_FIELDS) {
+      if (f in sanitized) writeback[f] = sanitized[f];
+    }
+    await postProfileWriteback(profile.external_id, writeback);
   }
 
   return NextResponse.json(data);
