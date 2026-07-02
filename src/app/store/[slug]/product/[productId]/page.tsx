@@ -2,7 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Clock } from "lucide-react";
+import { ChevronLeft, Clock, Check, Award } from "lucide-react";
 import { formatPrice } from "@/lib/ecommerce/pricing";
 import { AddToCart } from "./add-to-cart";
 import { ProductGallery } from "./product-gallery";
@@ -68,7 +68,7 @@ export default async function ProductPage({
   const { data: product } = await service
     .from("products")
     .select(
-      "id, name, description, price, discount_price, discount_ends_at, image_url, image_urls, category, categories, duration_label, delivery_formats, logistics, min_participants, max_participants, status"
+      "id, name, description, price, discount_price, discount_ends_at, image_url, image_urls, category, categories, duration_label, delivery_formats, logistics, min_participants, max_participants, status, learning_objectives, methodology, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level"
     )
     .eq("id", productId)
     .eq("storefront_id", store.id)
@@ -88,6 +88,14 @@ export default async function ProductPage({
   const deliveryFormats: string[] = Array.isArray(product.delivery_formats)
     ? product.delivery_formats
     : [];
+  const objectives: string[] = Array.isArray(product.learning_objectives)
+    ? (product.learning_objectives as string[]).filter(Boolean)
+    : [];
+  const nasbaBits = [
+    product.nasba_cpe_credits != null ? `${product.nasba_cpe_credits} CPE credits` : null,
+    product.nasba_field_of_study || null,
+    product.nasba_knowledge_level ? `${product.nasba_knowledge_level} level` : null,
+  ].filter(Boolean) as string[];
 
   const onSale =
     product.discount_price != null &&
@@ -159,6 +167,40 @@ export default async function ProductPage({
               {product.description}
             </p>
           )}
+
+          {objectives.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-slate-900 mb-3">What you&apos;ll learn</h2>
+              <ul className="space-y-2">
+                {objectives.map((o, i) => (
+                  <li key={i} className="flex gap-2 text-slate-700 leading-relaxed">
+                    <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "var(--store-primary)" }} />
+                    <span>{o}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {product.methodology && (
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-slate-900 mb-2">How it&apos;s delivered</h2>
+              <p className="text-slate-700 leading-relaxed whitespace-pre-line">{product.methodology}</p>
+            </div>
+          )}
+
+          {product.nasba_certified && (
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+              <div className="flex items-center gap-2">
+                <Award className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-sm font-semibold text-slate-900">NASBA CPE credit</h2>
+              </div>
+              {nasbaBits.length > 0 && (
+                <p className="mt-2 text-sm text-slate-700">{nasbaBits.join(" · ")}</p>
+              )}
+            </div>
+          )}
+
           <div className="mt-8">
             {price > 0 ? (
               <AddToCart
