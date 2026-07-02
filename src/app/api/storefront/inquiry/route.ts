@@ -79,8 +79,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
+  // order_notify_email supports a comma-separated list of recipients.
   const notifyTo = store.order_notify_email || store.contact_email;
-  if (notifyTo) {
+  const recipients = (notifyTo || "").split(/[,;\s]+/).filter(Boolean);
+  if (recipients.length > 0) {
     const branding = (store.branding || {}) as { primary_color?: string };
     const tpl = pricingInquiryNotification({
       storeName: store.name || "Store",
@@ -93,15 +95,15 @@ export async function POST(request: NextRequest) {
       seatsEstimate: data.seats_estimate,
       message: data.message,
     });
-    // CC never duplicates the primary recipient.
-    const cc = store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined;
+    // CC never duplicates a primary recipient.
+    const cc = store.notify_cc_email && !recipients.includes(store.notify_cc_email) ? store.notify_cc_email : undefined;
     // sendEmail reports failures (e.g. no Resend key configured) via its return
     // value rather than throwing — log both paths so sends never fail silently.
-    const result = await sendEmail({ to: notifyTo, cc, replyTo: data.email, ...tpl }).catch(
+    const result = await sendEmail({ to: recipients, cc, replyTo: data.email, ...tpl }).catch(
       (e): { success: false; error: string } => ({ success: false, error: String(e) })
     );
     if (!result.success) {
-      console.error(`Inquiry notification email to ${notifyTo} failed:`, result.error);
+      console.error(`Inquiry notification email to ${recipients.join(", ")} failed:`, result.error);
     }
   }
 
