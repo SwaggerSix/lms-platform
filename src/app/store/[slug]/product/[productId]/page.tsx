@@ -6,6 +6,7 @@ import { ChevronLeft, Clock, Check, Award, Tag, Users, MonitorPlay, BookOpen, Gr
 import type { LucideIcon } from "lucide-react";
 import { formatPrice } from "@/lib/ecommerce/pricing";
 import { AddToCart } from "./add-to-cart";
+import { RequestPricing } from "./request-pricing";
 import { ProductGallery } from "./product-gallery";
 import { ProductCard } from "../../catalog-client";
 
@@ -231,15 +232,7 @@ export default async function ProductPage({
                 }}
               />
             ) : (
-              <a
-                href={`mailto:${store.contact_email || "info@gothamculture.com"}?subject=${encodeURIComponent(
-                  `Pricing inquiry: ${product.name || "Course"}`
-                )}`}
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full text-white font-semibold text-base hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: "var(--store-primary)" }}
-              >
-                Request pricing &amp; availability
-              </a>
+              <RequestPricing slug={slug} productId={product.id} productName={product.name || "Course"} />
             )}
           </div>
 

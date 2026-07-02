@@ -145,3 +145,47 @@ export function abandonedCartRecovery(params: {
     text: `Hi ${params.customerName || "there"}, you left items in your cart at ${params.storeName}. Resume your order: ${params.recoveryUrl}`,
   };
 }
+
+export interface PricingInquiryData {
+  storeName: string;
+  brandColor: string;
+  productName: string;
+  name: string;
+  email: string;
+  organization?: string | null;
+  phone?: string | null;
+  seatsEstimate?: string | null;
+  message?: string | null;
+}
+
+// Escape user-submitted values before interpolating into email HTML — the
+// pricing-inquiry form is public and unauthenticated.
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// Internal notification for a "Request pricing & availability" inquiry from a
+// storefront course page. Sent to the store team; reply-to is the requester.
+export function pricingInquiryNotification(data: PricingInquiryData): EmailTemplate {
+  const row = (label: string, value?: string | null) =>
+    value
+      ? `<tr><td style="padding:3px 0;color:#6b7280;font-size:13px;vertical-align:top;">${label}</td><td style="padding:3px 0 3px 16px;color:#111827;font-size:13px;">${esc(value)}</td></tr>`
+      : "";
+  const inner = `
+<h2 style="margin:0 0 4px;color:#111827;font-size:18px;">New pricing inquiry</h2>
+<p style="margin:0 0 16px;color:#374151;font-size:14px;font-weight:600;">${esc(data.productName)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+${row("Name", data.name)}
+${row("Email", data.email)}
+${row("Organization", data.organization)}
+${row("Phone", data.phone)}
+${row("Est. seats", data.seatsEstimate)}
+</table>
+${data.message ? `<div style="padding:12px 16px;background:#f9fafb;border-radius:6px;border-left:4px solid ${data.brandColor};"><p style="margin:0;color:#374151;font-size:13px;white-space:pre-line;"><strong>Message:</strong> ${esc(data.message)}</p></div>` : ""}
+<p style="margin:16px 0 0;color:#6b7280;font-size:12px;">Reply to this email to respond directly to the requester.</p>
+`;
+  return {
+    subject: `Pricing inquiry: ${data.productName} — ${data.organization || data.name}`,
+    html: layout(data.brandColor, data.storeName, inner),
+    text: `New pricing inquiry for ${data.productName} from ${data.name} (${data.email})${data.organization ? `, ${data.organization}` : ""}${data.seatsEstimate ? `, ~${data.seatsEstimate} seats` : ""}.${data.message ? `\n\nMessage: ${data.message}` : ""}`,
+  };
+}
