@@ -95,9 +95,14 @@ export async function POST(request: NextRequest) {
     });
     // CC never duplicates the primary recipient.
     const cc = store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined;
-    await sendEmail({ to: notifyTo, cc, replyTo: data.email, ...tpl }).catch((e) =>
-      console.error("Inquiry notification email failed:", e)
+    // sendEmail reports failures (e.g. no Resend key configured) via its return
+    // value rather than throwing — log both paths so sends never fail silently.
+    const result = await sendEmail({ to: notifyTo, cc, replyTo: data.email, ...tpl }).catch(
+      (e): { success: false; error: string } => ({ success: false, error: String(e) })
     );
+    if (!result.success) {
+      console.error(`Inquiry notification email to ${notifyTo} failed:`, result.error);
+    }
   }
 
   return NextResponse.json({ ok: true });

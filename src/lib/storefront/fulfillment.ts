@@ -177,6 +177,12 @@ export async function sendOrderEmails(
     enrollmentStatus: enrollmentStatus ?? null,
   };
 
+  // sendEmail reports failures (e.g. no Resend key configured) via its return
+  // value rather than throwing — log both paths so sends never fail silently.
+  const logFailure = (label: string, to: string) => (r: { success: boolean; error?: string }) => {
+    if (!r.success) console.error(`${label} email to ${to} failed:`, r.error);
+  };
+
   // Buyer confirmation
   if (order.customer_email) {
     const tpl = orderConfirmation(data);
@@ -186,7 +192,9 @@ export async function sendOrderEmails(
       html: tpl.html,
       text: tpl.text,
       replyTo: store.contact_email || undefined,
-    }).catch((e) => console.error("Order confirmation email failed:", e));
+    })
+      .then(logFailure("Order confirmation", order.customer_email))
+      .catch((e) => console.error("Order confirmation email failed:", e));
   }
 
   // Internal notification. CC never duplicates the primary recipient.
@@ -200,6 +208,8 @@ export async function sendOrderEmails(
       html: tpl.html,
       text: tpl.text,
       replyTo: order.customer_email || undefined,
-    }).catch((e) => console.error("Order notification email failed:", e));
+    })
+      .then(logFailure("Order notification", notifyTo))
+      .catch((e) => console.error("Order notification email failed:", e));
   }
 }
