@@ -197,19 +197,21 @@ export async function sendOrderEmails(
       .catch((e) => console.error("Order confirmation email failed:", e));
   }
 
-  // Internal notification. CC never duplicates the primary recipient.
+  // Internal notification. order_notify_email supports a comma-separated list;
+  // CC never duplicates a primary recipient.
   const notifyTo = store.order_notify_email || store.contact_email;
-  if (notifyTo) {
+  const recipients = (notifyTo || "").split(/[,;\s]+/).filter(Boolean);
+  if (recipients.length > 0) {
     const tpl = orderNotification(data);
     await sendEmail({
-      to: notifyTo,
-      cc: store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined,
+      to: recipients,
+      cc: store.notify_cc_email && !recipients.includes(store.notify_cc_email) ? store.notify_cc_email : undefined,
       subject: tpl.subject,
       html: tpl.html,
       text: tpl.text,
       replyTo: order.customer_email || undefined,
     })
-      .then(logFailure("Order notification", notifyTo))
+      .then(logFailure("Order notification", recipients.join(", ")))
       .catch((e) => console.error("Order notification email failed:", e));
   }
 }
