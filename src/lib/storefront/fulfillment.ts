@@ -133,7 +133,7 @@ export async function sendOrderEmails(
 
   const { data: store } = await service
     .from("storefronts")
-    .select("name, slug, branding, tax_label, contact_email, order_notify_email")
+    .select("name, slug, branding, tax_label, contact_email, order_notify_email, notify_cc_email")
     .eq("id", order.storefront_id)
     .single();
   if (!store) return;
@@ -177,6 +177,12 @@ export async function sendOrderEmails(
     enrollmentStatus: enrollmentStatus ?? null,
   };
 
+  // sendEmail reports failures (e.g. no Resend key configured) via its return
+  // value rather than throwing — log both paths so sends never fail silently.
+  const logFailure = (label: string, to: string) => (r: { success: boolean; error?: string }) => {
+    if (!r.success) console.error(`${label} email to ${to} failed:`, r.error);
+  };
+
   // Buyer confirmation
   if (order.customer_email) {
     const tpl = orderConfirmation(data);
@@ -186,19 +192,24 @@ export async function sendOrderEmails(
       html: tpl.html,
       text: tpl.text,
       replyTo: store.contact_email || undefined,
-    }).catch((e) => console.error("Order confirmation email failed:", e));
+    })
+      .then(logFailure("Order confirmation", order.customer_email))
+      .catch((e) => console.error("Order confirmation email failed:", e));
   }
 
-  // Internal notification
+  // Internal notification. CC never duplicates the primary recipient.
   const notifyTo = store.order_notify_email || store.contact_email;
   if (notifyTo) {
     const tpl = orderNotification(data);
     await sendEmail({
       to: notifyTo,
+      cc: store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined,
       subject: tpl.subject,
       html: tpl.html,
       text: tpl.text,
       replyTo: order.customer_email || undefined,
-    }).catch((e) => console.error("Order notification email failed:", e));
+    })
+      .then(logFailure("Order notification", notifyTo))
+      .catch((e) => console.error("Order notification email failed:", e));
   }
 }

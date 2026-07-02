@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   const { data: store } = await service
     .from("storefronts")
-    .select("id, name, branding, contact_email, order_notify_email")
+    .select("id, name, branding, contact_email, order_notify_email, notify_cc_email")
     .eq("slug", data.storefront_slug)
     .eq("is_active", true)
     .single();
@@ -93,9 +93,16 @@ export async function POST(request: NextRequest) {
       seatsEstimate: data.seats_estimate,
       message: data.message,
     });
-    await sendEmail({ to: notifyTo, replyTo: data.email, ...tpl }).catch((e) =>
-      console.error("Inquiry notification email failed:", e)
+    // CC never duplicates the primary recipient.
+    const cc = store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined;
+    // sendEmail reports failures (e.g. no Resend key configured) via its return
+    // value rather than throwing — log both paths so sends never fail silently.
+    const result = await sendEmail({ to: notifyTo, cc, replyTo: data.email, ...tpl }).catch(
+      (e): { success: false; error: string } => ({ success: false, error: String(e) })
     );
+    if (!result.success) {
+      console.error(`Inquiry notification email to ${notifyTo} failed:`, result.error);
+    }
   }
 
   return NextResponse.json({ ok: true });

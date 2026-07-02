@@ -86,6 +86,7 @@ export async function sendEmail({
   text,
   from,
   replyTo,
+  cc,
 }: {
   to: string | string[];
   subject: string;
@@ -93,6 +94,7 @@ export async function sendEmail({
   text?: string;
   from?: string;
   replyTo?: string;
+  cc?: string | string[];
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   const cfg = await resolveEmailConfig();
   const fromAddress = from || cfg.from || "LMS Platform <noreply@example.com>";
@@ -113,6 +115,7 @@ export async function sendEmail({
       html,
       ...(text ? { text } : {}),
       ...(replyTo ? { reply_to: replyTo } : {}),
+      ...(cc ? { cc: Array.isArray(cc) ? cc : [cc] } : {}),
     });
 
     if (error) {
