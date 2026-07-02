@@ -133,7 +133,7 @@ export async function sendOrderEmails(
 
   const { data: store } = await service
     .from("storefronts")
-    .select("name, slug, branding, tax_label, contact_email, order_notify_email")
+    .select("name, slug, branding, tax_label, contact_email, order_notify_email, notify_cc_email")
     .eq("id", order.storefront_id)
     .single();
   if (!store) return;
@@ -189,12 +189,13 @@ export async function sendOrderEmails(
     }).catch((e) => console.error("Order confirmation email failed:", e));
   }
 
-  // Internal notification
+  // Internal notification. CC never duplicates the primary recipient.
   const notifyTo = store.order_notify_email || store.contact_email;
   if (notifyTo) {
     const tpl = orderNotification(data);
     await sendEmail({
       to: notifyTo,
+      cc: store.notify_cc_email && store.notify_cc_email !== notifyTo ? store.notify_cc_email : undefined,
       subject: tpl.subject,
       html: tpl.html,
       text: tpl.text,
