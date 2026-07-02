@@ -243,20 +243,8 @@ export default async function ProductPage({
             )}
           </div>
 
-          {product.description && (
-            <div className="mt-8 rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
-                <BookOpen className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">About this course</h2>
-              </div>
-              <p className="px-5 py-4 text-slate-700 leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
-            </div>
-          )}
-
           {objectives.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="mt-8 rounded-2xl border border-slate-200 overflow-hidden">
               <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
                 <GraduationCap className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
                 <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">What you&apos;ll learn</h2>
@@ -274,6 +262,18 @@ export default async function ProductPage({
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {product.description && (
+            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <BookOpen className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">About this course</h2>
+              </div>
+              <p className="px-5 py-4 text-slate-700 leading-relaxed whitespace-pre-line">
+                {product.description}
+              </p>
             </div>
           )}
 
