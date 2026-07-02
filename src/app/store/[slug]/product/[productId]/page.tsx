@@ -2,7 +2,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Clock, Check, Award } from "lucide-react";
+import { ChevronLeft, Clock, Check, Award, Tag, Users, MonitorPlay, BookOpen, GraduationCap, CalendarClock } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { formatPrice } from "@/lib/ecommerce/pricing";
 import { AddToCart } from "./add-to-cart";
 import { ProductGallery } from "./product-gallery";
@@ -97,6 +98,25 @@ export default async function ProductPage({
     product.nasba_knowledge_level ? `${product.nasba_knowledge_level} level` : null,
   ].filter(Boolean) as string[];
 
+  // Quick-fact tiles rendered in the "At a glance" panel under the course image.
+  const groupSize =
+    product.min_participants || product.max_participants
+      ? product.min_participants && product.max_participants
+        ? `${product.min_participants}–${product.max_participants} participants`
+        : product.max_participants
+          ? `Up to ${product.max_participants} participants`
+          : `From ${product.min_participants} participants`
+      : null;
+  const facts: { icon: LucideIcon; label: string; value: string }[] = [
+    product.duration_label ? { icon: Clock, label: "Duration", value: product.duration_label } : null,
+    deliveryFormats.length > 0 ? { icon: MonitorPlay, label: "Delivery", value: deliveryFormats.join(", ") } : null,
+    product.category ? { icon: Tag, label: "Category", value: product.category } : null,
+    groupSize ? { icon: Users, label: "Group size", value: groupSize } : null,
+    product.nasba_certified
+      ? { icon: Award, label: "CPE credit", value: product.nasba_cpe_credits != null ? `${product.nasba_cpe_credits} NASBA CPE` : "NASBA certified" }
+      : null,
+  ].filter(Boolean) as { icon: LucideIcon; label: string; value: string }[];
+
   const onSale =
     product.discount_price != null &&
     (!product.discount_ends_at || new Date(product.discount_ends_at) > new Date());
@@ -121,7 +141,56 @@ export default async function ProductPage({
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <ProductGallery images={gallery} fallbackLetter={(product.name || "?").charAt(0)} alt={product.name || ""} />
+        <div>
+          <ProductGallery images={gallery} fallbackLetter={(product.name || "?").charAt(0)} alt={product.name || ""} />
+
+          {facts.length > 0 && (
+            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">At a glance</h2>
+              </div>
+              <dl className="grid grid-cols-2 gap-px bg-slate-100">
+                {facts.map((f) => (
+                  <div
+                    key={f.label}
+                    className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 text-center"
+                  >
+                    <span
+                      className="flex h-9 w-9 items-center justify-center rounded-full"
+                      style={{ backgroundColor: "color-mix(in srgb, var(--store-primary) 10%, white)" }}
+                    >
+                      <f.icon className="h-[18px] w-[18px]" style={{ color: "var(--store-primary)" }} />
+                    </span>
+                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{f.label}</dt>
+                    <dd className="text-sm font-bold text-slate-900 leading-snug">{f.value}</dd>
+                  </div>
+                ))}
+                {facts.length % 2 === 1 && <div aria-hidden className="bg-white" />}
+              </dl>
+            </div>
+          )}
+
+          {product.nasba_certified && (
+            <div
+              className="mt-4 flex items-center gap-3 rounded-2xl border p-4"
+              style={{
+                borderColor: "color-mix(in srgb, var(--store-primary) 30%, white)",
+                backgroundColor: "color-mix(in srgb, var(--store-primary) 5%, white)",
+              }}
+            >
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: "color-mix(in srgb, var(--store-primary) 12%, white)" }}
+              >
+                <Award className="h-5 w-5" style={{ color: "var(--store-primary)" }} />
+              </span>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">NASBA CPE credit</h2>
+                {nasbaBits.length > 0 && <p className="text-sm text-slate-700">{nasbaBits.join(" · ")}</p>}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div>
           {product.category && (
@@ -129,21 +198,7 @@ export default async function ProductPage({
               {product.category}
             </div>
           )}
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">{product.name}</h1>
-          {(product.duration_label || deliveryFormats.length > 0) && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {product.duration_label && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  <Clock className="h-3.5 w-3.5" /> {product.duration_label}
-                </span>
-              )}
-              {deliveryFormats.map((f) => (
-                <span key={f} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  {f}
-                </span>
-              ))}
-            </div>
-          )}
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{product.name}</h1>
           <div className="mt-4 flex items-baseline gap-3">
             {price > 0 ? (
               <>
@@ -162,46 +217,7 @@ export default async function ProductPage({
               </span>
             )}
           </div>
-          {product.description && (
-            <p className="mt-6 text-slate-700 leading-relaxed whitespace-pre-line">
-              {product.description}
-            </p>
-          )}
-
-          {objectives.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-sm font-semibold text-slate-900 mb-3">What you&apos;ll learn</h2>
-              <ul className="space-y-2">
-                {objectives.map((o, i) => (
-                  <li key={i} className="flex gap-2 text-slate-700 leading-relaxed">
-                    <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "var(--store-primary)" }} />
-                    <span>{o}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {product.methodology && (
-            <div className="mt-8">
-              <h2 className="text-sm font-semibold text-slate-900 mb-2">How it&apos;s delivered</h2>
-              <p className="text-slate-700 leading-relaxed whitespace-pre-line">{product.methodology}</p>
-            </div>
-          )}
-
-          {product.nasba_certified && (
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
-              <div className="flex items-center gap-2">
-                <Award className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
-                <h2 className="text-sm font-semibold text-slate-900">NASBA CPE credit</h2>
-              </div>
-              {nasbaBits.length > 0 && (
-                <p className="mt-2 text-sm text-slate-700">{nasbaBits.join(" · ")}</p>
-              )}
-            </div>
-          )}
-
-          <div className="mt-8">
+          <div className="mt-6">
             {price > 0 ? (
               <AddToCart
                 slug={slug}
@@ -227,10 +243,57 @@ export default async function ProductPage({
             )}
           </div>
 
+          {product.description && (
+            <div className="mt-8 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <BookOpen className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">About this course</h2>
+              </div>
+              <p className="px-5 py-4 text-slate-700 leading-relaxed whitespace-pre-line">
+                {product.description}
+              </p>
+            </div>
+          )}
+
+          {objectives.length > 0 && (
+            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <GraduationCap className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">What you&apos;ll learn</h2>
+              </div>
+              <ul className="divide-y divide-slate-100">
+                {objectives.map((o, i) => (
+                  <li key={i} className="flex gap-3 px-5 py-3 text-slate-700 leading-relaxed">
+                    <span
+                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                      style={{ backgroundColor: "color-mix(in srgb, var(--store-primary) 12%, white)" }}
+                    >
+                      <Check className="h-3 w-3" style={{ color: "var(--store-primary)" }} />
+                    </span>
+                    <span>{o}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {product.methodology && (
+            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <MonitorPlay className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">How it&apos;s delivered</h2>
+              </div>
+              <p className="px-5 py-4 text-slate-700 leading-relaxed whitespace-pre-line">{product.methodology}</p>
+            </div>
+          )}
+
           {(logistics.lead_time || logistics.coordinator_email || logistics.coordinator_phone || logistics.notes) && (
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
-              <h2 className="text-sm font-semibold text-slate-900 mb-3">Scheduling &amp; delivery</h2>
-              <dl className="space-y-2 text-sm">
+            <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <CalendarClock className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">Scheduling &amp; delivery</h2>
+              </div>
+              <dl className="space-y-2 px-5 py-4 text-sm">
                 {logistics.lead_time && (
                   <div className="flex gap-2"><dt className="text-slate-500 min-w-28">Lead time</dt><dd className="text-slate-800">{logistics.lead_time}</dd></div>
                 )}
