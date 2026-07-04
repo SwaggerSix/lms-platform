@@ -12,12 +12,11 @@ import {
   Briefcase,
   MessageCircle,
   Layers,
-  ChevronRight,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 export interface Skill {
   id: string;
@@ -55,7 +54,6 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [expandedSkills, setExpandedSkills] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [newSkill, setNewSkill] = useState({
@@ -74,15 +72,6 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
 
   const parentSkills = filteredSkills.filter((s) => !s.parentId);
   const getChildren = (parentId: string) => filteredSkills.filter((s) => s.parentId === parentId);
-
-  const toggleExpand = (id: string) => {
-    setExpandedSkills((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const parseTags = (text: string): string[] =>
     text
@@ -185,6 +174,97 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
     }
   };
 
+  const categoryBadge = (category: Skill["category"]) => (
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", categoryColors[category])}>
+      {categoryIcons[category]}
+      {category}
+    </span>
+  );
+
+  const proficiencyBar = (value: number) => (
+    <div className="h-2 w-full rounded-full bg-gray-200">
+      <div
+        className={cn("h-2 rounded-full transition-all", value >= 70 ? "bg-emerald-500" : value >= 50 ? "bg-amber-500" : "bg-red-500")}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+
+  const rowActions = (skill: Skill) => (
+    <div className="flex items-center justify-end gap-1">
+      <button onClick={() => setEditingSkill(skill)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors" title="Edit skill">
+        <Edit2 className="h-4 w-4" />
+        <span className="sr-only">Edit {skill.name}</span>
+      </button>
+      <button onClick={() => handleDeleteSkill(skill.id)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 transition-colors" title="Delete skill">
+        <Trash2 className="h-4 w-4" />
+        <span className="sr-only">Delete {skill.name}</span>
+      </button>
+    </div>
+  );
+
+  const columns: DataTableColumn<Skill>[] = [
+    {
+      key: "name",
+      header: "Skill Name",
+      sortValue: (s) => s.name,
+      render: (skill) => (
+        <div>
+          <p className="font-medium text-gray-900">{skill.name}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{skill.description}</p>
+          {skill.tags && skill.tags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {skill.tags.map((tag) => (
+                <span key={tag} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "category",
+      header: "Category",
+      sortValue: (s) => s.category,
+      render: (skill) => categoryBadge(skill.category),
+    },
+    {
+      key: "courses",
+      header: "Courses",
+      className: "text-center",
+      sortValue: (s) => s.coursesCount,
+      render: (skill) => <span className="text-sm text-gray-700">{skill.coursesCount}</span>,
+    },
+    {
+      key: "users",
+      header: "Users",
+      className: "text-center",
+      sortValue: (s) => s.usersCount,
+      render: (skill) => <span className="text-sm text-gray-700">{skill.usersCount}</span>,
+    },
+    {
+      key: "avgProficiency",
+      header: "Avg Prof.",
+      className: "text-center",
+      sortValue: (s) => s.avgProficiency,
+      render: (skill) => <span className="text-sm font-medium text-gray-900">{skill.avgProficiency}%</span>,
+    },
+    {
+      key: "proficiency",
+      header: "Proficiency",
+      className: "w-40",
+      render: (skill) => proficiencyBar(skill.avgProficiency),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "w-20 text-right",
+      render: (skill) => rowActions(skill),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -204,6 +284,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              aria-pressed={activeCategory === cat}
               className={cn(
                 "rounded-md px-4 py-2 text-sm font-medium transition-colors",
                 activeCategory === cat ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
@@ -225,113 +306,50 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="grid grid-cols-[1fr,120px,100px,100px,100px,160px,80px] gap-4 border-b border-gray-200 bg-gray-50 px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-          <div>Skill Name</div>
-          <div>Category</div>
-          <div className="text-center">Courses</div>
-          <div className="text-center">Users</div>
-          <div className="text-center">Avg Prof.</div>
-          <div>Proficiency</div>
-          <div className="text-right">Actions</div>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {parentSkills.map((skill) => {
-            const children = getChildren(skill.id);
-            const hasChildren = children.length > 0;
-            const isExpanded = expandedSkills.has(skill.id);
-            return (
-              <div key={skill.id}>
-                <div className="grid grid-cols-[1fr,120px,100px,100px,100px,160px,80px] gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-2">
-                    {hasChildren ? (
-                      <button onClick={() => toggleExpand(skill.id)} className="text-gray-400 hover:text-gray-600">
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      </button>
-                    ) : (
-                      <span className="w-4" />
-                    )}
-                    <div>
-                      <p className="font-medium text-gray-900">{skill.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{skill.description}</p>
-                      {skill.tags && skill.tags.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {skill.tags.map((tag) => (
-                            <span key={tag} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", categoryColors[skill.category])}>
-                      {categoryIcons[skill.category]}
-                      {skill.category}
-                    </span>
-                  </div>
-                  <div className="text-center text-sm text-gray-700">{skill.coursesCount}</div>
-                  <div className="text-center text-sm text-gray-700">{skill.usersCount}</div>
-                  <div className="text-center text-sm font-medium text-gray-900">{skill.avgProficiency}%</div>
-                  <div>
-                    <div className="h-2 w-full rounded-full bg-gray-200">
-                      <div
-                        className={cn("h-2 rounded-full transition-all", skill.avgProficiency >= 70 ? "bg-emerald-500" : skill.avgProficiency >= 50 ? "bg-amber-500" : "bg-red-500")}
-                        style={{ width: `${skill.avgProficiency}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => setEditingSkill(skill)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors">
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => handleDeleteSkill(skill.id)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+      <DataTable
+        columns={columns}
+        rows={parentSkills}
+        rowKey={(skill) => skill.id}
+        ariaLabel="Skills"
+        isExpandable={(skill) => getChildren(skill.id).length > 0}
+        renderExpanded={(skill) => (
+          <div className="space-y-2">
+            {getChildren(skill.id).map((child) => (
+              <div key={child.id} className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-100 bg-white px-4 py-3">
+                <Layers className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-800">{child.name}</p>
+                  <p className="text-xs text-gray-500">{child.description}</p>
                 </div>
-                {hasChildren && isExpanded && children.map((child) => (
-                  <div key={child.id} className="grid grid-cols-[1fr,120px,100px,100px,100px,160px,80px] gap-4 px-6 py-3 items-center bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-2 pl-10">
-                      <Layers className="h-3.5 w-3.5 text-gray-400" />
-                      <div>
-                        <p className="font-medium text-gray-800 text-sm">{child.name}</p>
-                        <p className="text-xs text-gray-500">{child.description}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", categoryColors[child.category])}>
-                        {categoryIcons[child.category]}
-                        {child.category}
-                      </span>
-                    </div>
-                    <div className="text-center text-sm text-gray-700">{child.coursesCount}</div>
-                    <div className="text-center text-sm text-gray-700">{child.usersCount}</div>
-                    <div className="text-center text-sm font-medium text-gray-900">{child.avgProficiency}%</div>
-                    <div>
-                      <div className="h-2 w-full rounded-full bg-gray-200">
-                        <div
-                          className={cn("h-2 rounded-full", child.avgProficiency >= 70 ? "bg-emerald-500" : child.avgProficiency >= 50 ? "bg-amber-500" : "bg-red-500")}
-                          style={{ width: `${child.avgProficiency}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => setEditingSkill(child)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors">
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => handleDeleteSkill(child.id)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                {categoryBadge(child.category)}
+                <span className="text-xs text-gray-500">
+                  {child.coursesCount} courses · {child.usersCount} users
+                </span>
+                <div className="flex w-44 items-center gap-2">
+                  {proficiencyBar(child.avgProficiency)}
+                  <span className="text-xs font-medium text-gray-900">{child.avgProficiency}%</span>
+                </div>
+                {rowActions(child)}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+        emptyState={
+          skills.length === 0
+            ? {
+                icon: <Layers className="h-10 w-10" aria-hidden="true" />,
+                title: "No skills yet",
+                description: "Create your first skill to start building your competency framework.",
+                action: (
+                  <Button onClick={() => setShowAddModal(true)}>
+                    <Plus className="h-4 w-4" />
+                    Add Skill
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {(["Technical", "Soft Skills", "Business"] as const).map((cat) => {
