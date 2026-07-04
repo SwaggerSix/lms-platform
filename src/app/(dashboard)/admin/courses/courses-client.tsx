@@ -7,6 +7,7 @@ import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getHelp } from "@/lib/help-content";
 import {
   Search,
@@ -445,22 +446,24 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
 
       {/* Empty state */}
       {paginatedCourses.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-center">
-          <BookOpen className="h-12 w-12 text-gray-300" />
-          <p className="mt-4 text-sm font-medium text-gray-500">No courses found</p>
-          <p className="mt-1 text-sm text-gray-400">
-            {search || categoryFilter !== 'All Categories' || typeFilter !== 'All Types' || difficultyFilter !== 'All Levels'
+        <EmptyState
+          icon={<BookOpen className="h-10 w-10" aria-hidden="true" />}
+          title="No courses found"
+          description={
+            search || categoryFilter !== 'All Categories' || typeFilter !== 'All Types' || difficultyFilter !== 'All Levels'
               ? 'Try adjusting your search or filters.'
-              : 'Get started by creating your first course.'}
-          </p>
-          <a
-            href="/admin/courses/new"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            <Plus className="h-4 w-4" />
-            Create Course
-          </a>
-        </div>
+              : 'Get started by creating your first course.'
+          }
+          action={
+            <a
+              href="/admin/courses/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              <Plus className="h-4 w-4" />
+              Create Course
+            </a>
+          }
+        />
       )}
 
       {/* Grid View */}

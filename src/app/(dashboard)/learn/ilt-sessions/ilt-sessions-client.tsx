@@ -17,6 +17,7 @@ import {
   Download,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { EmptyState } from "@/components/ui/empty-state";
 import { trackEvent } from "@/lib/analytics/track";
 import { formatZonedTime, timezoneAbbrev } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -517,17 +518,18 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
             })}
           </div>
         ) : (
-          <div className="mt-12 flex flex-col items-center justify-center py-16">
-            <Calendar className="h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No sessions found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {activeTab === "upcoming"
+          <EmptyState
+            className="mt-12"
+            icon={<Calendar className="h-10 w-10" aria-hidden="true" />}
+            title="No sessions found"
+            description={
+              activeTab === "upcoming"
                 ? "There are no upcoming webinars at this time."
                 : activeTab === "past"
                 ? "You have no past webinar records."
-                : "No sessions available."}
-            </p>
-          </div>
+                : "No sessions available."
+            }
+          />
         )}
       </div>
     </div>

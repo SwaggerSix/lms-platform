@@ -5,6 +5,7 @@ import { cn } from '@/utils/cn';
 import { formatNumber, formatDuration, slugify } from '@/utils/format';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useToast } from '@/components/ui/toast';
 import {
   Plus,
@@ -441,15 +442,17 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
       {/* Path Cards */}
       <div className="space-y-4">
         {paths.length === 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-            <Route className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-4 text-sm font-medium text-gray-900">No learning paths yet</h3>
-            <p className="mt-1 text-sm text-gray-500">Get started by creating your first learning path.</p>
-            <Button onClick={openCreateModal} className="mt-4">
-              <Plus className="h-4 w-4" />
-              Create Path
-            </Button>
-          </div>
+          <EmptyState
+            icon={<Route className="h-10 w-10" aria-hidden="true" />}
+            title="No learning paths yet"
+            description="Get started by creating your first learning path."
+            action={
+              <Button onClick={openCreateModal}>
+                <Plus className="h-4 w-4" />
+                Create Path
+              </Button>
+            }
+          />
         )}
 
         {paths.map((path) => (

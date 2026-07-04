@@ -16,6 +16,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDuration, formatNumber } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { courseTypeDefinition } from "@/lib/course-type-info";
 import { CourseCover } from "@/components/course/course-cover";
@@ -453,19 +454,19 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16">
-                <Search className="h-12 w-12 text-gray-300" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No courses found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your search or filter criteria.
-                </p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-                >
-                  <X className="h-4 w-4" /> Clear all filters
-                </button>
-              </div>
+              <EmptyState
+                icon={<Search className="h-10 w-10" aria-hidden="true" />}
+                title="No courses found"
+                description="Try adjusting your search or filter criteria."
+                action={
+                  <button
+                    onClick={clearFilters}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  >
+                    <X className="h-4 w-4" /> Clear all filters
+                  </button>
+                }
+              />
             )}
 
             {/* Pagination */}

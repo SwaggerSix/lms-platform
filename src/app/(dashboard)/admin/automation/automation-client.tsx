@@ -30,6 +30,7 @@ import {
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 
@@ -1024,11 +1025,11 @@ export default function AutomationClient({
       {/* Rules table */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Zap className="h-12 w-12 text-gray-300 mb-3" />
-            <h3 className="text-base font-semibold text-gray-600">No rules found</h3>
-            <p className="text-sm text-gray-400 mt-1">Create your first automation rule to get started.</p>
-          </div>
+          <EmptyState
+            icon={<Zap className="h-10 w-10" aria-hidden="true" />}
+            title="No rules found"
+            description="Create your first automation rule to get started."
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

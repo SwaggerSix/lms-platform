@@ -21,6 +21,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { CourseType, EnrollmentStatus } from "@/types/database";
 
 export interface TranscriptRecord {
@@ -537,11 +538,12 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
             })}
 
             {grouped.length === 0 && (
-              <div className="mt-12 flex flex-col items-center justify-center py-16">
-                <FileText className="h-16 w-16 text-gray-300" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No transcript entries found</h3>
-                <p className="mt-1 text-sm text-gray-500">Try adjusting your filters to see results.</p>
-              </div>
+              <EmptyState
+                className="mt-12"
+                icon={<FileText className="h-10 w-10" aria-hidden="true" />}
+                title="No transcript entries found"
+                description="Try adjusting your filters to see results."
+              />
             )}
           </div>
 

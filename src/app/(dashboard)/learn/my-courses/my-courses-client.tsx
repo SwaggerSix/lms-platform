@@ -4,6 +4,7 @@ import { useState } from "react";
 import MyLearningTabs from "@/components/layout/my-learning-tabs";
 import { Clock, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate, formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -194,24 +195,27 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
             })}
           </div>
         ) : (
-          <div className="mt-12 flex flex-col items-center justify-center py-16">
-            <BookOpen className="h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No courses here yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {activeTab === "in_progress"
+          <EmptyState
+            className="mt-12"
+            icon={<BookOpen className="h-10 w-10" aria-hidden="true" />}
+            title="No courses here yet"
+            description={
+              activeTab === "in_progress"
                 ? "You haven't started any courses. Browse the catalog to get started!"
                 : activeTab === "completed"
                 ? "You haven't completed any courses yet. Keep learning!"
-                : "No courses found."}
-            </p>
-            <a
-              href="/learn/catalog"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-            >
-              Browse Catalog
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
+                : "No courses found."
+            }
+            action={
+              <a
+                href="/learn/catalog"
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              >
+                Browse Catalog
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            }
+          />
         )}
       </div>
     </div>

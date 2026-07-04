@@ -23,6 +23,7 @@ import {
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getHelp } from "@/lib/help-content";
 
 interface WorkflowItem {
@@ -226,11 +227,11 @@ export default function WorkflowListClient({
       {/* Workflow List */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center text-gray-400">
-            <Workflow className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">No workflows found</p>
-            <p className="text-sm mt-1">Create your first workflow to get started</p>
-          </div>
+          <EmptyState
+            icon={<Workflow className="h-10 w-10" aria-hidden="true" />}
+            title="No workflows found"
+            description="Create your first workflow to get started"
+          />
         ) : (
           <div className="divide-y divide-gray-100">
             {filtered.map((workflow) => {
