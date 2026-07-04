@@ -244,12 +244,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
 
         {/* ---- Tab Navigation ---- */}
         <div className="mt-6 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Settings sections">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.key}
+                  aria-pressed={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={cn(
                     "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
@@ -376,6 +377,9 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       <div className="flex justify-center">
                         <button
                           onClick={() => toggleNotification(notif.key, "inApp")}
+                          role="switch"
+                          aria-checked={notif.inApp}
+                          aria-label={`${notif.label} in-app notifications`}
                           className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-indigo-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.inApp && "translate-x-5")} />
@@ -385,6 +389,9 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       <div className="flex justify-center">
                         <button
                           onClick={() => toggleNotification(notif.key, "email")}
+                          role="switch"
+                          aria-checked={notif.email}
+                          aria-label={`${notif.label} email notifications`}
                           className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-indigo-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.email && "translate-x-5")} />

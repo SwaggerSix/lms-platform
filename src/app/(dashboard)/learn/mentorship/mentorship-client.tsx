@@ -233,10 +233,11 @@ export default function MentorshipClient({
 
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6">
+        <nav className="-mb-px flex gap-6" aria-label="Mentorship sections">
           {tabs.map((tab) => (
             <button
               key={tab.key}
+              aria-pressed={activeTab === tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key

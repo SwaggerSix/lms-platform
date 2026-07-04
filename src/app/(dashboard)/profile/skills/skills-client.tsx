@@ -225,7 +225,13 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
         {/* ---- Radar Chart ---- */}
         <div className="mt-6 flex justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="relative">
-            <svg width={radarSize} height={radarSize} viewBox={`0 0 ${radarSize} ${radarSize}`}>
+            <svg
+              width={radarSize}
+              height={radarSize}
+              viewBox={`0 0 ${radarSize} ${radarSize}`}
+              role="img"
+              aria-label={`Skills radar chart showing proficiency across ${data.radarCategories.length} categories. The same information is listed in the skills section below.`}
+            >
               {/* Grid levels */}
               {gridLevels.map((level, i) => {
                 const points = Array.from({ length: sides }, (_, idx) => {

@@ -312,7 +312,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Filter sessions by date">
             {TABS.map((tab) => {
               const now = new Date().toISOString().split("T")[0];
               let count = 0;
@@ -326,6 +326,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
               return (
                 <button
                   key={tab.key}
+                  aria-pressed={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={cn(
                     "relative pb-3 text-sm font-medium transition-colors",

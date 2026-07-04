@@ -298,10 +298,11 @@ export default function DiscussionsClient({
 
         {/* ---- Tabs & Search ---- */}
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+          <div className="flex gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter discussions">
             {(["All Discussions", "My Posts", "Unanswered"] as TabFilter[]).map((tab) => (
               <button
                 key={tab}
+                aria-pressed={activeTab === tab}
                 onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
@@ -433,7 +434,7 @@ export default function DiscussionsClient({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-gray-900">{reply.author}</span>
-                              <span className="text-xs text-gray-400">{reply.timeAgo}</span>
+                              <span className="text-xs text-gray-500">{reply.timeAgo}</span>
                             </div>
                             <p className="mt-1 text-sm text-gray-600">{reply.text}</p>
                           </div>

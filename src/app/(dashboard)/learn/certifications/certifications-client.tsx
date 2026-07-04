@@ -336,10 +336,11 @@ export default function CertificationsClient({ certificates, userName }: Certifi
 
         {/* Tabs */}
         <div className="mt-8 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Filter certificates by status">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
+                aria-pressed={activeTab === tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
                   "relative pb-3 text-sm font-medium transition-colors",
