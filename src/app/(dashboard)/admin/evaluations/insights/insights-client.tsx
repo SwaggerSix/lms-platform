@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import { Loader2, Download, Star, TrendingUp, Users, MessageSquareQuote, BarChart3 } from "lucide-react";
 
 export interface Facet { id: string; label: string }
@@ -99,6 +100,7 @@ export default function InsightsClient({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <AdminAnalyticsTabs />
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Evaluation Insights</h1>

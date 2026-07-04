@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import AtRiskTable from "@/components/analytics/at-risk-table";
 import RiskIndicator from "@/components/analytics/risk-indicator";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -92,6 +93,7 @@ export default function PredictiveAnalyticsClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <AdminAnalyticsTabs />
       <div className="mb-8">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-gray-900">Predictive Analytics</h1>

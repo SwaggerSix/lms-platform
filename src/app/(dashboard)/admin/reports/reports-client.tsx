@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import {
   CheckCircle,
   ShieldCheck,
@@ -289,6 +290,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
 
   return (
     <div className="space-y-8">
+      <AdminAnalyticsTabs />
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
         <p className="mt-1 text-sm text-gray-500">Generate and export comprehensive learning reports</p>
