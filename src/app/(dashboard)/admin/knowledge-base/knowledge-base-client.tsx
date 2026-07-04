@@ -26,6 +26,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import type { KBArticleStatus } from "@/types/database";
 
@@ -435,20 +436,14 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
             </div>
           </div>
           {activeTab === "articles" && (
-            <button
-              onClick={openCreateModal}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-            >
+            <Button onClick={openCreateModal}>
               <Plus className="h-4 w-4" /> New Article
-            </button>
+            </Button>
           )}
           {activeTab === "categories" && (
-            <button
-              onClick={openCreateCategory}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-            >
+            <Button onClick={openCreateCategory}>
               <Plus className="h-4 w-4" /> New Category
-            </button>
+            </Button>
           )}
         </div>
 
@@ -939,18 +934,12 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowModal(false)}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSaveArticle}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
+              </Button>
+              <Button onClick={handleSaveArticle}>
                 {editingArticle ? "Save Changes" : "Create Article"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1006,18 +995,12 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowCategoryModal(false)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowCategoryModal(false)}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSaveCategory}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
+              </Button>
+              <Button onClick={handleSaveCategory}>
                 {editingCategory ? "Save Changes" : "Create Category"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

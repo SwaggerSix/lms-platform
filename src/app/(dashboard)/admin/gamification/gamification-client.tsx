@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 export interface PointRule {
@@ -245,13 +246,10 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       {activeTab === "Point Rules" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button
-              onClick={() => setShowRuleModal(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-            >
+            <Button onClick={() => setShowRuleModal(true)}>
               <Plus className="h-4 w-4" />
               Add Point Rule
-            </button>
+            </Button>
           </div>
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full">
@@ -310,13 +308,9 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
             </tbody>
           </table>
           <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 flex justify-end">
-            <button
-              onClick={handleSaveRules}
-              disabled={savingRules}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
+            <Button onClick={handleSaveRules} disabled={savingRules}>
               {savingRules ? "Saving..." : "Save Changes"}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -387,8 +381,8 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                   />
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
-                  <button onClick={() => setShowRuleModal(false)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                  <button onClick={addRule} disabled={!ruleAction.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">Add Rule</button>
+                  <Button variant="outline" onClick={() => setShowRuleModal(false)}>Cancel</Button>
+                  <Button onClick={addRule} disabled={!ruleAction.trim()}>Add Rule</Button>
                 </div>
               </div>
             </div>
@@ -400,13 +394,10 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       {activeTab === "Badges" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button
-              onClick={openCreateBadge}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-            >
+            <Button onClick={openCreateBadge}>
               <Plus className="h-4 w-4" />
               Create Badge
-            </button>
+            </Button>
           </div>
 
           {/* Badge create/edit modal */}
@@ -457,16 +448,15 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button onClick={resetBadgeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Button variant="outline" onClick={resetBadgeModal}>
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleSaveBadge}
                     disabled={savingBadge || !badgeName.trim()}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {savingBadge ? "Saving..." : editingBadgeId ? "Save Changes" : "Create Badge"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

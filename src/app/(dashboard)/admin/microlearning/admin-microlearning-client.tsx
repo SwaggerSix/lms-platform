@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import EmbedCodeGenerator from "@/components/microlearning/embed-code-generator";
+import { Button } from "@/components/ui/button";
 
 interface Nugget {
   id: string;
@@ -192,12 +193,9 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Learning Nuggets</h2>
-            <button
-              onClick={() => setShowCreateNugget(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-            >
+            <Button onClick={() => setShowCreateNugget(true)}>
               Create Nugget
-            </button>
+            </Button>
           </div>
 
           {/* Create Nugget Form */}
@@ -279,13 +277,12 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                 >
                   Cancel
                 </button>
-                <button
+                <Button
                   onClick={handleCreateNugget}
                   disabled={creating || !nuggetForm.title}
-                  className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
                   {creating ? "Creating..." : "Create"}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -354,12 +351,9 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Embed Widgets</h2>
-            <button
-              onClick={() => setShowCreateWidget(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-            >
+            <Button onClick={() => setShowCreateWidget(true)}>
               Create Widget
-            </button>
+            </Button>
           </div>
 
           {/* Create Widget Form */}
@@ -403,13 +397,12 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
               </div>
               <div className="flex justify-end gap-3">
                 <button onClick={() => setShowCreateWidget(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
-                <button
+                <Button
                   onClick={handleCreateWidget}
                   disabled={creating || !widgetForm.name}
-                  className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
                   {creating ? "Creating..." : "Create Widget"}
-                </button>
+                </Button>
               </div>
             </div>
           )}

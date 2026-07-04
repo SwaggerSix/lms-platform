@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/utils/cn';
 import { formatNumber, formatDuration, slugify } from '@/utils/format';
 import { Modal } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import {
   Plus,
@@ -431,13 +432,10 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           <h1 className="text-2xl font-bold text-gray-900">Learning Paths</h1>
           <p className="mt-1 text-sm text-gray-500">{paths.length} learning paths configured</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4" />
           Create Path
-        </button>
+        </Button>
       </div>
 
       {/* Path Cards */}
@@ -447,13 +445,10 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             <Route className="mx-auto h-12 w-12 text-gray-300" />
             <h3 className="mt-4 text-sm font-medium text-gray-900">No learning paths yet</h3>
             <p className="mt-1 text-sm text-gray-500">Get started by creating your first learning path.</p>
-            <button
-              onClick={openCreateModal}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-            >
+            <Button onClick={openCreateModal} className="mt-4">
               <Plus className="h-4 w-4" />
               Create Path
-            </button>
+            </Button>
           </div>
         )}
 
@@ -724,12 +719,9 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
 
         {/* Actions */}
         <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
-          <button
-            onClick={closeModal}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" onClick={closeModal}>
             Cancel
-          </button>
+          </Button>
           <button
             disabled={saving}
             onClick={handleSubmit}
@@ -770,12 +762,9 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={() => setDeleteConfirm(null)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
             Cancel
-          </button>
+          </Button>
           <button
             disabled={!!deleting}
             onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
@@ -875,12 +864,9 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
         </div>
 
         <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
-          <button
-            onClick={closeAssignModal}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" onClick={closeAssignModal}>
             Cancel
-          </button>
+          </Button>
           <button
             disabled={assigning || selectedUserIds.length === 0}
             onClick={handleAssign}

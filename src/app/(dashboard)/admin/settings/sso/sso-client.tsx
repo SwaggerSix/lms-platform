@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 
 interface SSOProvider {
   id: string;
@@ -532,16 +533,16 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {view === "add" ? "Create Provider" : "Save Changes"}
             </button>
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => {
                 resetForm();
                 setView("list");
               }}
-              className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -566,13 +567,10 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
             Manage SAML 2.0 / OIDC identity providers and SCIM provisioning
           </p>
         </div>
-        <button
-          onClick={openAddForm}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
-        >
+        <Button onClick={openAddForm}>
           <Plus className="h-4 w-4" />
           Add Provider
-        </button>
+        </Button>
       </div>
 
       {/* SCIM Token Banner */}
@@ -625,13 +623,10 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
             Add a SAML 2.0 or OIDC identity provider to enable single sign-on for your
             organization.
           </p>
-          <button
-            onClick={openAddForm}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
+          <Button onClick={openAddForm} className="mt-6">
             <Plus className="h-4 w-4" />
             Add SSO Provider
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">

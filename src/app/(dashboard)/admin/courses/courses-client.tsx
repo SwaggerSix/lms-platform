@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
+import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import {
@@ -856,12 +857,12 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => { setEditModal(null); setEditForm({}); }}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleEditSubmit}
                 disabled={isLoading(editModal.id, 'edit')}
@@ -892,12 +893,12 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
               Are you sure you want to archive <span className="font-medium text-gray-900">{archiveConfirm.title}</span>? It will no longer be visible to learners.
             </p>
             <div className="flex items-center justify-end gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setArchiveConfirm(null)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleArchiveConfirm}
                 disabled={isLoading(archiveConfirm.id, 'archive')}
@@ -918,13 +919,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             Showing {showStart + 1}-{showEnd} of {filtered.length} courses
           </p>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Previous
-            </button>
+            </Button>
             {getPageNumbers().map((p) => (
               <button
                 key={p}
@@ -937,13 +938,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 {p}
               </button>
             ))}
-            <button
+            <Button
+              variant="outline"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}

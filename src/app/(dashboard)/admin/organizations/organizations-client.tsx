@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/utils/cn';
+import { Button } from "@/components/ui/button";
 import {
   Building2,
   ChevronRight,
@@ -258,13 +259,10 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
           <h1 className="text-2xl font-bold text-gray-900">Organizations</h1>
           <p className="mt-1 text-sm text-gray-500">Manage organizational hierarchy</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4" />
           Add Organization
-        </button>
+        </Button>
       </div>
 
       {/* Global error */}
@@ -344,21 +342,23 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
                     >
                       {deleteLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Confirm Delete'}
                     </button>
-                    <button
+                    <Button
+                      variant="outline"
+                      className="flex-1"
                       onClick={() => setDeleteConfirmId(null)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <button
+                    <Button
+                      variant="outline"
+                      className="flex-1"
                       onClick={() => openEditModal(selectedNode)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <Edit className="h-3.5 w-3.5" /> Edit
-                    </button>
+                    </Button>
                     <button
                       onClick={() => setDeleteConfirmId(selectedNode.id)}
                       className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
@@ -433,13 +433,9 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
                 </div>
               )}
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
+                <Button type="button" variant="outline" onClick={closeModal}>
                   Cancel
-                </button>
+                </Button>
                 <button
                   type="submit"
                   disabled={loading}

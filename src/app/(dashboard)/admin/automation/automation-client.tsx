@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 
@@ -692,12 +693,9 @@ export default function AutomationClient({
                 {running === detailRule.id ? <RotateCcw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 Run Now
               </button>
-              <button
-                onClick={() => openEditForm(detailRule)}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => openEditForm(detailRule)}>
                 <Edit2 className="h-4 w-4" /> Edit
-              </button>
+              </Button>
               <button
                 onClick={() => handleDelete(detailRule)}
                 className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -931,34 +929,24 @@ export default function AutomationClient({
                     <p className="text-xs text-indigo-500 mt-1">Click to estimate how many users match these conditions.</p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={handlePreview}
-                  disabled={loadingPreview}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
+                <Button type="button" size="sm" onClick={handlePreview} disabled={loadingPreview}>
                   {loadingPreview ? "Counting..." : "Preview Match"}
-                </button>
+                </Button>
               </div>
             </div>
 
             {/* Submit */}
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => { setView("list"); resetForm(); }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-              >
+              </Button>
+              <Button type="button" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : editingRule ? "Update Rule" : "Create Rule"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -981,13 +969,10 @@ export default function AutomationClient({
             Simple if-this-then-that rules — e.g. "when a new hire joins, enroll them in onboarding." For multi-step flows with branches and delays, use Workflows instead.
           </p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
-        >
+        <Button onClick={openCreateForm}>
           <Plus className="h-4 w-4" />
           Create Rule
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}

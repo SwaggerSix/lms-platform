@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatPercent } from "@/utils/format";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 export interface Assignment {
@@ -350,13 +351,10 @@ export default function AssignmentsClient({
             Manage and track course assignments for your team
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
-        >
+        <Button onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4" />
           Assign Course
-        </button>
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -411,13 +409,13 @@ export default function AssignmentsClient({
         </div>
         {selectedAssignments.length > 0 && (
           <div className="relative">
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowBulkActions(!showBulkActions)}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
             >
               Bulk Actions ({selectedAssignments.length})
               <ChevronDown className="h-4 w-4" />
-            </button>
+            </Button>
             {showBulkActions && (
               <div className="absolute right-0 top-10 z-10 w-52 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
                 <button
@@ -827,12 +825,9 @@ export default function AssignmentsClient({
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={resetModal}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={resetModal}>
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleAssign}
                 disabled={
@@ -891,19 +886,15 @@ export default function AssignmentsClient({
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowExtendModal(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowExtendModal(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleExtendDeadline}
                 disabled={!extendDate || actionLoading === "extend"}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed"
               >
                 {actionLoading === "extend" ? "Extending..." : "Extend Deadline"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -932,19 +923,16 @@ export default function AssignmentsClient({
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowCancelModal(false)}>
                 Keep Assignments
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleCancelAssignment}
                 disabled={actionLoading === "cancel"}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading === "cancel" ? "Cancelling..." : "Cancel Assignments"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

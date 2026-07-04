@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -447,12 +448,9 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
 
         {/* Action buttons */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setConfiguring(null)}
-            className="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" size="lg" onClick={() => setConfiguring(null)}>
             Cancel
-          </button>
+          </Button>
           <button
             onClick={handleSave}
             disabled={saving}

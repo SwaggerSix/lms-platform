@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
+import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import { assignableRoles, ROLE_LABELS, type UserRole } from "@/lib/auth/roles";
@@ -372,13 +373,10 @@ export default function UsersClient({ users, organizations = [], currentUserRole
           </div>
           <p className="mt-1 text-sm text-gray-500">{userList.length} total users</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4" />
           Add User
-        </button>
+        </Button>
       </div>
 
       {/* Error banner */}
@@ -454,14 +452,15 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{formatDate(user.lastActive)}</td>
                 <td className="whitespace-nowrap px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleResendInvite(user.id)}
                       disabled={isSubmitting}
                       title="Resend invitation"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Send className="h-3.5 w-3.5" /> Resend invite
-                    </button>
+                    </Button>
                     <div className="relative inline-block">
                       <button
                         onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
@@ -505,13 +504,13 @@ export default function UsersClient({ users, organizations = [], currentUserRole
             Showing {showStart + 1}-{showEnd} of {filtered.length} users
           </p>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Previous
-            </button>
+            </Button>
             {getPageNumbers().map((p) => (
               <button
                 key={p}
@@ -524,13 +523,13 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 {p}
               </button>
             ))}
-            <button
+            <Button
+              variant="outline"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -557,20 +556,20 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <p className="mb-4 text-sm text-red-600">{error}</p>
             )}
             <div className="flex items-center justify-end gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -600,13 +599,10 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 onFocus={(e) => e.currentTarget.select()}
                 className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700"
               />
-              <button
-                onClick={copyInviteLink}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-              >
+              <Button onClick={copyInviteLink} className="shrink-0">
                 {inviteCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {inviteCopied ? 'Copied' : 'Copy link'}
-              </button>
+              </Button>
             </div>
             <p className="mt-2 text-xs text-gray-400">This link lets the user set their password and sign in. It expires for security, so resend if it lapses.</p>
           </div>
@@ -674,16 +670,15 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }} className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <Button variant="outline" onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveEditUser}
                 disabled={isSubmitting || !editEmail || !editFirstName || !editLastName}
-                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -708,34 +703,33 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
                 <div className="flex items-center gap-2">
                   <input readOnly value={credentials.email} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => navigator.clipboard.writeText(credentials.email)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Copy
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Temporary password</label>
                 <div className="flex items-center gap-2">
                   <input readOnly value={credentials.password} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => navigator.clipboard.writeText(credentials.password)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Copy
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setCredentials(null)}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
+              <Button onClick={() => setCredentials(null)}>
                 Done
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -793,16 +787,15 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => { resetForm(); setShowModal(false); }} className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <Button variant="outline" onClick={() => { resetForm(); setShowModal(false); }}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleAddUser}
                 disabled={isSubmitting || !formEmail || !formFirstName || !formLastName}
-                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Adding...' : 'Add User'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

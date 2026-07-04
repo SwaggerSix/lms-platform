@@ -4,6 +4,7 @@ import { Fragment, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import {
   Plus,
   Search,
@@ -406,14 +407,10 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
             <Sparkles className="h-4 w-4" />
             Generate with AI
           </button>
-          <button
-            onClick={openCreateModal}
-            disabled={!!loadingAction}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-50"
-          >
+          <Button onClick={openCreateModal} disabled={!!loadingAction}>
             <Plus className="h-4 w-4" />
             Create Assessment
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -683,12 +680,9 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                onClick={closeModal}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={closeModal}>
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleFormSubmit}
                 disabled={isLoading('create') || isLoading('edit')}
@@ -719,12 +713,9 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
               Are you sure you want to delete <span className="font-medium text-gray-900">{deleteConfirm.title}</span>? All associated questions and attempt data will be permanently removed.
             </p>
             <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={isLoading('delete', deleteConfirm.id)}
@@ -803,12 +794,9 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 )}
 
                 <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    onClick={() => setAiQuizOpen(false)}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
+                  <Button variant="outline" onClick={() => setAiQuizOpen(false)}>
                     Cancel
-                  </button>
+                  </Button>
                   <button
                     onClick={handleAiQuizGenerate}
                     disabled={aiQuizLoading}
@@ -897,19 +885,13 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                  <button
-                    onClick={() => setAiGeneratedQuestions([])}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
+                  <Button variant="outline" onClick={() => setAiGeneratedQuestions([])}>
                     Regenerate
-                  </button>
+                  </Button>
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setAiQuizOpen(false)}
-                      className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
+                    <Button variant="outline" onClick={() => setAiQuizOpen(false)}>
                       Close
-                    </button>
+                    </Button>
                     {aiQuizTarget && (
                       <button
                         onClick={handleAiQuizSave}

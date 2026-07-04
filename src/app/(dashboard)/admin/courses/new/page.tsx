@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { slugify, formatDuration } from '@/utils/format';
 import {
@@ -558,9 +559,9 @@ export default function CreateCoursePage() {
               <div className="flex items-center gap-2">
                 <input type="number" min={0} value={duration} onChange={(e) => setDuration(parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
                 <span className="text-sm text-gray-400">({formatDuration(duration)})</span>
-                <button type="button" onClick={() => setDuration(totalDuration)} className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200">
+                <Button type="button" variant="secondary" size="sm" onClick={() => setDuration(totalDuration)}>
                   Match content ({formatDuration(totalDuration)})
-                </button>
+                </Button>
               </div>
               {duration !== totalDuration && (
                 <p className="mt-1 text-xs text-amber-600">
@@ -614,7 +615,7 @@ export default function CreateCoursePage() {
               </div>
               <div className="flex gap-2">
                 <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="Add a tag..." className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
-                <button onClick={addTag} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">Add</button>
+                <Button variant="secondary" onClick={addTag}>Add</Button>
               </div>
             </div>
           </div>
@@ -645,9 +646,9 @@ export default function CreateCoursePage() {
                 <button onClick={addLessonTop} className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">
                   <Plus className="h-4 w-4" /> Add Lesson
                 </button>
-                <button onClick={addModule} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <Button onClick={addModule}>
                   <Plus className="h-4 w-4" /> Add Module
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -1003,33 +1004,28 @@ export default function CreateCoursePage() {
 
       {/* Navigation */}
       <div className="flex items-center justify-between">
-        <button
+        <Button
+          variant="outline"
           onClick={() => setStep(step - 1)}
           disabled={step === 1}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
-          )}
         >
           <ChevronLeft className="h-4 w-4" /> Previous
-        </button>
+        </Button>
         <div className="flex gap-3">
           {step === 4 && (
             <>
-              <button onClick={() => handleSubmit('draft')} disabled={submitting} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <Button variant="outline" onClick={() => handleSubmit('draft')} disabled={submitting}>
                 <Save className="h-4 w-4" /> {submitting ? 'Saving...' : 'Save as Draft'}
-              </button>
-              <button onClick={() => handleSubmit('published')} disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              </Button>
+              <Button onClick={() => handleSubmit('published')} disabled={submitting}>
                 <Send className="h-4 w-4" /> {submitting ? 'Publishing...' : 'Publish'}
-              </button>
+              </Button>
             </>
           )}
           {step < 4 && (
-            <button
-              onClick={() => setStep(step + 1)}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm"
-            >
+            <Button onClick={() => setStep(step + 1)}>
               Next <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
