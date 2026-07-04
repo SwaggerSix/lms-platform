@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/utils/cn";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
 import type { Document, DocumentFolder } from "@/types/database";
 import {
@@ -323,15 +324,15 @@ export default function DocumentsClient({
         {/* Document list / grid */}
         <div className="flex-1 overflow-y-auto p-6">
           {filteredDocuments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-              <FileText className="h-12 w-12 mb-3" />
-              <p className="text-lg font-medium">No documents found</p>
-              <p className="text-sm mt-1">
-                {searchQuery
+            <EmptyState
+              icon={<FileText className="h-10 w-10" aria-hidden="true" />}
+              title="No documents found"
+              description={
+                searchQuery
                   ? "Try adjusting your search query."
-                  : "This folder is empty."}
-              </p>
-            </div>
+                  : "This folder is empty."
+              }
+            />
           ) : viewMode === "list" ? (
             /* -------- List View -------- */
             <div className="space-y-3">

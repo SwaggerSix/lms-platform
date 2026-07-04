@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
 import type { KBArticleStatus } from "@/types/database";
 
@@ -596,10 +597,10 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
                 </tbody>
               </table>
               {filteredArticles.length === 0 && (
-                <div className="flex flex-col items-center py-12">
-                  <FileText className="h-12 w-12 text-gray-300" />
-                  <p className="mt-3 text-sm text-gray-500">No articles found matching your filters.</p>
-                </div>
+                <EmptyState
+                  icon={<FileText className="h-10 w-10" aria-hidden="true" />}
+                  title="No articles found matching your filters."
+                />
               )}
             </div>
           </div>
@@ -647,10 +648,10 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
                 ))}
             </div>
             {categories.length === 0 && (
-              <div className="flex flex-col items-center py-12">
-                <FolderOpen className="h-12 w-12 text-gray-300" />
-                <p className="mt-3 text-sm text-gray-500">No categories yet. Create your first one.</p>
-              </div>
+              <EmptyState
+                icon={<FolderOpen className="h-10 w-10" aria-hidden="true" />}
+                title="No categories yet. Create your first one."
+              />
             )}
           </div>
         )}

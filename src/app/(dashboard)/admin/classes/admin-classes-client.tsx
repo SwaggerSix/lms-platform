@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature, FileQuestion } from "lucide-react";
 
 interface Course { id: string; title: string }
@@ -199,9 +200,7 @@ export default function AdminClassesClient({
       {loading ? (
         <div className="flex items-center justify-center py-16 text-gray-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : classes.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center text-sm text-gray-500">
-          No classes yet. Create your first class above.
-        </div>
+        <EmptyState title="No classes yet. Create your first class above." />
       ) : (
         <div className="space-y-3">
           {classes.map((c) => (
