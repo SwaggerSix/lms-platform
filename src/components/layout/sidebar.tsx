@@ -65,6 +65,7 @@ import {
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
 import { roleLabel } from "@/lib/auth/roles";
+import { useBrandingStore } from "@/stores/branding-store";
 
 type Role = "learner" | "manager" | "instructor" | "admin" | "super_admin";
 
@@ -178,7 +179,7 @@ const navSections: NavSection[] = [
       { label: "Instructor Certifications", href: "/admin/instructor-certifications", icon: ShieldCheck },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-[#F1F7E4]/50",
+    bgClass: "bg-[var(--brand-sidebar-active-bg,#F1F7E4)]/50",
   },
   {
     header: "Admin · Governance",
@@ -202,7 +203,7 @@ const navSections: NavSection[] = [
       { label: "Error Log", href: "/admin/settings/error-log", icon: Bug },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-[#F1F7E4]/50",
+    bgClass: "bg-[var(--brand-sidebar-active-bg,#F1F7E4)]/50",
   },
   {
     header: "Admin · Engagement",
@@ -219,7 +220,7 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["admin", "super_admin"],
-    bgClass: "bg-[#F1F7E4]/50",
+    bgClass: "bg-[var(--brand-sidebar-active-bg,#F1F7E4)]/50",
   },
   {
     // Selling and sourcing content — reserved for gC / GGS Super Admins.
@@ -272,6 +273,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const { user } = useAuth();
   const locale = useLocale();
+  const branding = useBrandingStore((s) => s.config);
   const currentRole: Role = (user?.role as Role) ?? "learner";
 
   // Restore per-section collapse preferences
@@ -369,16 +371,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       aria-label="Main navigation"
       className={cn(
-        "flex h-full flex-col bg-[#FBFCFA] text-[#495057] border-r border-[#DEE2E6] transition-all duration-300",
+        "flex h-full flex-col bg-[var(--brand-sidebar-bg,#FBFCFA)] text-[var(--brand-sidebar-text,#495057)] border-r border-[#DEE2E6] transition-all duration-300",
         collapsed ? "w-[68px]" : "w-64"
       )}
     >
-      {/* Logo */}
+      {/* Logo — tenant logo/name when branded, LearnHub default otherwise */}
       <div className="flex h-16 items-center border-b border-[#DEE2E6] bg-white px-3">
-        {collapsed ? (
-          <img src="/learnhub-icon.svg" alt="LearnHub" className="h-9 w-9 shrink-0" />
+        {branding.logoUrl ? (
+          <img
+            src={branding.logoUrl}
+            alt={branding.portalName}
+            className={cn("shrink-0 object-contain", collapsed ? "h-9 w-9" : "h-9 w-auto max-w-full")}
+          />
+        ) : collapsed ? (
+          <img src="/learnhub-icon.svg" alt={branding.portalName} className="h-9 w-9 shrink-0" />
         ) : (
-          <img src="/learnhub-logo.svg" alt="LearnHub" className="h-9 w-auto" />
+          <img src="/learnhub-logo.svg" alt={branding.portalName} className="h-9 w-auto" />
         )}
       </div>
 
@@ -404,7 +412,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 type="button"
                 onClick={() => toggleSection(section.header!)}
                 aria-expanded={!isSectionCollapsed}
-                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[#49641D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
               >
                 <span>{section.header}</span>
                 {isSectionCollapsed ? (
@@ -432,16 +440,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        "focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]",
+                        "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]",
                         isActive
-                          ? "bg-[#F1F7E4] text-[#49641D]"
-                          : "text-[#6C757D] hover:bg-[#F1F7E4] hover:text-[#49641D]"
+                          ? "bg-[var(--brand-sidebar-active-bg,#F1F7E4)] text-[var(--brand-sidebar-active-text,#49641D)]"
+                          : "text-[#6C757D] hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)]"
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-5 w-5 shrink-0",
-                          isActive ? "text-[#49641D]" : "text-[#6C757D] group-hover:text-[#49641D]"
+                          isActive ? "text-[var(--brand-sidebar-active-text,#49641D)]" : "text-[#6C757D] group-hover:text-[var(--brand-sidebar-active-text,#49641D)]"
                         )}
                         aria-hidden="true"
                       />
@@ -466,18 +474,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             aria-expanded={userMenuOpen}
             aria-haspopup="true"
             className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-[#F1F7E4]",
-              "focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]",
+              "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)]",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]",
               collapsed && "justify-center"
             )}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#91C53C] text-xs font-bold text-white" aria-hidden="true">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-primary,#91C53C)] text-xs font-bold text-white" aria-hidden="true">
               {initials}
             </div>
             {!collapsed && (
               <>
                 <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-[#495057]">
+                  <p className="text-sm font-medium text-[var(--brand-sidebar-text,#495057)]">
                     {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
                   </p>
                   <p className="text-xs text-[#6C757D]">
@@ -498,7 +506,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <Link
                 href="/profile"
                 onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#49641D] focus:bg-[#F1F7E4] focus:text-[#49641D] focus:outline-none"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--brand-sidebar-text,#495057)] hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] focus:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none"
                 role="menuitem"
               >
                 <User className="h-4 w-4" aria-hidden="true" />
@@ -511,7 +519,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   await supabase.auth.signOut();
                   window.location.href = "/login";
                 }}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#495057] hover:bg-[#F1F7E4] hover:text-[#49641D] focus:bg-[#F1F7E4] focus:text-[#49641D] focus:outline-none"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[var(--brand-sidebar-text,#495057)] hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] focus:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none"
                 role="menuitem"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -533,7 +541,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <button
             onClick={onToggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[#F1F7E4] hover:text-[#49641D] focus:outline-none focus:ring-2 focus:ring-[#91C53C] focus:ring-offset-2 focus:ring-offset-[#FBFCFA]"
+            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
           >
             {collapsed ? (
               <ChevronRight className="h-5 w-5" aria-hidden="true" />

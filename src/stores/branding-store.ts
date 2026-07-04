@@ -11,6 +11,10 @@ interface BrandingState {
   setConfig: (config: Partial<BrandingConfig>) => void;
   resetConfig: () => void;
   applyToDOM: () => void;
+  /** Fetch the platform-wide branding saved in platform_settings and apply it. */
+  loadFromServer: () => Promise<void>;
+  /** Persist the current config platform-wide (admin only). Returns success. */
+  saveToServer: () => Promise<boolean>;
 }
 
 export const useBrandingStore = create<BrandingState>()(
@@ -37,6 +41,34 @@ export const useBrandingStore = create<BrandingState>()(
         Object.entries(vars).forEach(([key, value]) => {
           root.style.setProperty(key, value);
         });
+      },
+
+      loadFromServer: async () => {
+        try {
+          const res = await fetch("/api/settings?key=branding");
+          if (!res.ok) return;
+          const data = await res.json();
+          const value = data?.value;
+          if (value && typeof value === "object" && Object.keys(value).length > 0) {
+            set({ config: { ...defaultBranding, ...(value as Partial<BrandingConfig>) } });
+            get().applyToDOM();
+          }
+        } catch {
+          // Offline or unauthenticated — keep the locally cached config
+        }
+      },
+
+      saveToServer: async () => {
+        try {
+          const res = await fetch("/api/settings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: "branding", value: get().config }),
+          });
+          return res.ok;
+        } catch {
+          return false;
+        }
       },
     }),
     {

@@ -24,19 +24,46 @@
  * visual distinction from green and the two-tone in indigo/purple gradients.
  * Semantic palettes (red/amber/emerald/etc.) are left untouched.
  */
-@theme {
-  --color-indigo-50: #f1f7e4;
-  --color-indigo-100: #e3efc9;
-  --color-indigo-200: #cde3a4;
-  --color-indigo-300: #b6d779;
-  --color-indigo-400: #a3cd57;
-  --color-indigo-500: #91c53c;
-  --color-indigo-600: #91c53c;
-  --color-indigo-700: #739e2d;
-  --color-indigo-800: #5c7e24;
-  --color-indigo-900: #49641d;
-  --color-indigo-950: #2f4112;
+/*
+ * The primary (indigo→green) palette is driven by the tenant branding CSS
+ * variables (--brand-*), which BrandProvider/branding-store set on <html>.
+ * `@theme inline` makes utilities reference the variables at runtime, so a
+ * tenant changing its primary color re-themes every indigo-* class live.
+ * Fallbacks keep the gothamCulture green when no branding is applied, and
+ * color-mix() derives the ramp shades from the three brand anchors
+ * (primary / primary-hover / primary-text).
+ *
+ * A parallel semantic `primary` palette exposes the same values as
+ * bg-primary-600 etc. — new code should prefer those class names; the
+ * indigo names remain for the existing call sites.
+ */
+@theme inline {
+  --color-indigo-50: var(--brand-primary-light, #f1f7e4);
+  --color-indigo-100: color-mix(in srgb, var(--brand-primary, #91c53c) 22%, white);
+  --color-indigo-200: color-mix(in srgb, var(--brand-primary, #91c53c) 35%, white);
+  --color-indigo-300: color-mix(in srgb, var(--brand-primary, #91c53c) 55%, white);
+  --color-indigo-400: color-mix(in srgb, var(--brand-primary, #91c53c) 75%, white);
+  --color-indigo-500: var(--brand-primary, #91c53c);
+  --color-indigo-600: var(--brand-primary, #91c53c);
+  --color-indigo-700: var(--brand-primary-hover, #739e2d);
+  --color-indigo-800: color-mix(in srgb, var(--brand-primary-hover, #739e2d) 80%, black);
+  --color-indigo-900: var(--brand-primary-text, #49641d);
+  --color-indigo-950: color-mix(in srgb, var(--brand-primary-text, #49641d) 65%, black);
 
+  --color-primary-50: var(--brand-primary-light, #f1f7e4);
+  --color-primary-100: color-mix(in srgb, var(--brand-primary, #91c53c) 22%, white);
+  --color-primary-200: color-mix(in srgb, var(--brand-primary, #91c53c) 35%, white);
+  --color-primary-300: color-mix(in srgb, var(--brand-primary, #91c53c) 55%, white);
+  --color-primary-400: color-mix(in srgb, var(--brand-primary, #91c53c) 75%, white);
+  --color-primary-500: var(--brand-primary, #91c53c);
+  --color-primary-600: var(--brand-primary, #91c53c);
+  --color-primary-700: var(--brand-primary-hover, #739e2d);
+  --color-primary-800: color-mix(in srgb, var(--brand-primary-hover, #739e2d) 80%, black);
+  --color-primary-900: var(--brand-primary-text, #49641d);
+  --color-primary-950: color-mix(in srgb, var(--brand-primary-text, #49641d) 65%, black);
+}
+
+@theme {
   /* Secondary brand palette (gold). Anchored at 500 = #F0A800. */
   --color-purple-50: #fef9e7;
   --color-purple-100: #fdf3da;
@@ -73,7 +100,7 @@
  * 2px indicator clears the 3:1 non-text contrast minimum (WCAG 1.4.11) against
  * the app's light/white surfaces (#91C53C on white is only ~2:1). */
 *:focus-visible {
-  outline: 2px solid #5C7E24;
+  outline: 2px solid color-mix(in srgb, var(--brand-primary-hover, #739e2d) 80%, black);
   outline-offset: 2px;
 }
 
@@ -129,7 +156,7 @@ body {
 
 /* 6. Selection colors for visibility */
 ::selection {
-  background-color: #91C53C;
+  background-color: var(--brand-primary, #91C53C);
   color: #1a2400;
 }
 
