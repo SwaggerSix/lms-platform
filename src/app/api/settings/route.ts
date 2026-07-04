@@ -6,8 +6,9 @@ import { logAudit } from "@/lib/audit";
 
 // Settings keys that any authenticated user may read. Everything else in
 // platform_settings (webhook URLs, integration configs with secrets, etc.)
-// requires admin.
-const PUBLIC_SETTINGS_KEYS = new Set(["features"]);
+// requires admin. Branding (colors, logo, portal name) is needed by every
+// user to render the shell.
+const PUBLIC_SETTINGS_KEYS = new Set(["features", "branding"]);
 
 export async function GET(request: NextRequest) {
   // Feature flags are readable by any authenticated user (needed for sidebar)

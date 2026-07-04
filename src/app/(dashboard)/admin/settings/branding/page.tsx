@@ -49,24 +49,35 @@ function ColorInput({
 }
 
 export default function BrandingSettingsPage() {
-  const { config, setConfig, resetConfig } = useBrandingStore();
+  const { config, setConfig, resetConfig, saveToServer } = useBrandingStore();
   const [draft, setDraft] = useState<BrandingConfig>(config);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [activeTab, setActiveTab] = useState<"general" | "colors" | "login" | "preview">("general");
 
   const update = (partial: Partial<BrandingConfig>) => {
     setDraft((prev) => ({ ...prev, ...partial }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError(false);
     setConfig(draft);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    const ok = await saveToServer();
+    setSaving(false);
+    if (ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      setSaveError(true);
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setDraft(defaultBranding);
     resetConfig();
+    await saveToServer();
   };
 
   const applyPreset = (presetKey: string) => {
@@ -92,6 +103,11 @@ export default function BrandingSettingsPage() {
           <p className="mt-1 text-sm text-gray-500">
             Customize the look and feel of your learning portal
           </p>
+          {saveError && (
+            <p className="mt-1 text-sm text-red-600" role="alert">
+              Saving to the server failed — your changes are only applied in this browser. Please try again.
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -103,7 +119,8 @@ export default function BrandingSettingsPage() {
           </button>
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60"
             style={{ backgroundColor: draft.primaryColor }}
           >
             {saved ? (
@@ -111,7 +128,7 @@ export default function BrandingSettingsPage() {
             ) : (
               <Save className="h-4 w-4" aria-hidden="true" />
             )}
-            {saved ? "Saved!" : "Save Changes"}
+            {saving ? "Saving…" : saved ? "Saved!" : "Save Changes"}
           </button>
         </div>
       </div>
