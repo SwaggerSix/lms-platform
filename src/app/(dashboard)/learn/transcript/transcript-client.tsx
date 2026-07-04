@@ -280,7 +280,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
               <h1 className="text-2xl font-bold text-gray-900">Training Transcript</h1>
               <p className="mt-1 text-gray-500">Official record of all training activities and completions.</p>
             </div>
-            <div className="no-print flex items-center gap-2">
+            <div className="no-print flex flex-wrap items-center gap-2">
               <Button variant="outline" onClick={() => window.print()}>
                 <Printer className="h-4 w-4" /> Print / Save PDF
               </Button>
