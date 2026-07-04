@@ -6,18 +6,16 @@ import {
   BookOpen,
   Clock,
   Award,
-  Flame,
   MapPin,
   Building,
   Users,
   Calendar,
   CheckCircle2,
   Star,
-  Shield,
-  Target,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { useToast } from "@/components/ui/toast";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -40,7 +38,18 @@ export interface ProfileStats {
   coursesCompleted: number;
   learningHours: number;
   certificates: number;
-  dayStreak: number;
+  badgesEarned: number;
+}
+
+export interface ProfileActivity {
+  id: string;
+  text: string;
+  date: string;
+  kind: "started" | "completed" | "badge";
+}
+
+export interface ProfileBadge {
+  name: string;
 }
 
 export interface ProfileData {
@@ -56,28 +65,27 @@ export interface ProfileData {
   bio: string;
   skills: ProfileSkill[];
   certifications: ProfileCertification[];
+  recentActivity: ProfileActivity[];
+  topBadges: ProfileBadge[];
   stats: ProfileStats;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Static Data (badges & activity stay client-side for now)           */
-/* ------------------------------------------------------------------ */
+const ACTIVITY_ICONS = {
+  started: BookOpen,
+  completed: CheckCircle2,
+  badge: Award,
+} as const;
 
-const RECENT_ACTIVITY = [
-  { id: "ra1", text: "Completed Advanced Python course", timeAgo: "2 hours ago", icon: CheckCircle2 },
-  { id: "ra2", text: "Earned Quiz Master badge", timeAgo: "Yesterday", icon: Award },
-  { id: "ra3", text: "Scored 95% on Cloud Fundamentals quiz", timeAgo: "2 days ago", icon: Star },
-  { id: "ra4", text: "Started Leadership Essentials path", timeAgo: "3 days ago", icon: BookOpen },
-  { id: "ra5", text: "Maintained 12-day learning streak", timeAgo: "4 days ago", icon: Flame },
-  { id: "ra6", text: "Completed Data Science Basics module", timeAgo: "1 week ago", icon: CheckCircle2 },
-];
-
-const TOP_BADGES = [
-  { name: "First Steps", icon: BookOpen, color: "bg-blue-100 text-blue-600" },
-  { name: "Quick Learner", icon: Target, color: "bg-green-100 text-green-600" },
-  { name: "Streak Champ", icon: Flame, color: "bg-orange-100 text-orange-600" },
-  { name: "Safety Star", icon: Shield, color: "bg-red-100 text-red-600" },
-];
+function relativeDate(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 1) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks === 1 ? "" : "s"} ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -93,6 +101,7 @@ export default function ProfileClient({
   const [editMode, setEditMode] = useState(false);
   const [bio, setBio] = useState(data.bio);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   const handleToggleEdit = async () => {
     if (editMode) {
@@ -105,8 +114,11 @@ export default function ProfileClient({
           body: JSON.stringify({ preferences: { bio } }),
         });
         if (!res.ok) throw new Error("Failed to save");
+        toast.success("Bio updated");
       } catch {
-        // Silently fail — bio stays in local state
+        toast.error("Couldn't save your bio. Please try again.");
+        setSaving(false);
+        return; // Stay in edit mode so the user's text isn't silently dropped
       } finally {
         setSaving(false);
       }
@@ -245,8 +257,13 @@ export default function ProfileClient({
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
               <div className="mt-4">
-                {RECENT_ACTIVITY.map((item, idx) => {
-                  const Icon = item.icon;
+                {data.recentActivity.length === 0 && (
+                  <p className="py-4 text-sm text-gray-500">
+                    No activity yet — start a course to see it here.
+                  </p>
+                )}
+                {data.recentActivity.map((item, idx) => {
+                  const Icon = ACTIVITY_ICONS[item.kind];
                   return (
                     <div key={item.id} className="flex gap-3 py-3">
                       {/* Timeline */}
@@ -254,13 +271,13 @@ export default function ProfileClient({
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
                           <Icon className="h-4 w-4 text-indigo-600" />
                         </div>
-                        {idx < RECENT_ACTIVITY.length - 1 && (
+                        {idx < data.recentActivity.length - 1 && (
                           <div className="mt-1 h-full w-px bg-gray-200" />
                         )}
                       </div>
                       <div className="pb-1">
                         <p className="text-sm text-gray-900">{item.text}</p>
-                        <p className="mt-0.5 text-xs text-gray-500">{item.timeAgo}</p>
+                        <p className="mt-0.5 text-xs text-gray-500">{relativeDate(item.date)}</p>
                       </div>
                     </div>
                   );
@@ -298,10 +315,10 @@ export default function ProfileClient({
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center">
-                    <Flame className="h-5 w-5 text-orange-500" />
+                    <Star className="h-5 w-5 text-orange-500" />
                   </div>
-                  <p className="mt-1 text-2xl font-bold text-gray-900">{data.stats.dayStreak}</p>
-                  <p className="text-xs text-gray-500">Day Streak</p>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">{data.stats.badgesEarned}</p>
+                  <p className="text-xs text-gray-500">Badges Earned</p>
                 </div>
               </div>
             </div>
@@ -309,22 +326,23 @@ export default function ProfileClient({
             {/* Achievements Showcase */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Top Achievements</h3>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {TOP_BADGES.map((badge) => {
-                  const Icon = badge.icon;
-                  return (
+              {data.topBadges.length === 0 ? (
+                <p className="mt-4 text-sm text-gray-500">No badges earned yet.</p>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  {data.topBadges.map((badge) => (
                     <div
                       key={badge.name}
                       className="flex flex-col items-center rounded-lg border border-gray-100 p-3"
                     >
-                      <div className={cn("flex h-10 w-10 items-center justify-center rounded-full", badge.color)}>
-                        <Icon className="h-5 w-5" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                        <Award className="h-5 w-5" />
                       </div>
-                      <span className="mt-2 text-xs font-medium text-gray-700">{badge.name}</span>
+                      <span className="mt-2 text-center text-xs font-medium text-gray-700">{badge.name}</span>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Team Info */}

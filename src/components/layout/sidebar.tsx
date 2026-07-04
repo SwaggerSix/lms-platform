@@ -122,26 +122,13 @@ const navSections: NavSection[] = [
     roles: ["learner", "manager", "admin", "super_admin"],
   },
   {
-    header: "INSTRUCTOR",
-    items: [
-      { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
-      { label: "My Bio", href: "/instructor/bio", icon: User },
-      { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
-      { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
-      { label: "Messages", href: "/learn/messages", icon: Mail },
-      { label: "Documents", href: "/admin/documents", icon: FolderOpen },
-      { label: "Knowledge Base", href: "/admin/knowledge-base", icon: HelpCircle },
-    ],
-    roles: ["instructor", "admin", "super_admin"],
-    bgClass: "bg-[#F8F9FA]",
-  },
-  {
     // Instructors don't see the Learning or Administration sections, so this
     // section carries their day-to-day links. Admins reach the same pages via
     // the Administration sections, which keeps the sidebar free of duplicates.
     header: "Instructor",
     items: [
       { label: "My Classes", href: "/instructor/classes", icon: GraduationCap },
+      { label: "My Bio", href: "/instructor/bio", icon: User },
       { label: "My Certifications", href: "/instructor/certifications", icon: Medal },
       { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
       { label: "Messages", href: "/learn/messages", icon: Mail, featureKey: "social_learning" },
@@ -160,6 +147,7 @@ const navSections: NavSection[] = [
       { label: "Compliance", href: "/manager/compliance", icon: ShieldCheck },
       { label: "Team Skills", href: "/manager/skills", icon: BarChart3 },
       { label: "Team Analytics", href: "/manager/analytics", icon: TrendingUp },
+      { label: "Team Reports", href: "/manager/reports", icon: PieChart },
       { label: "Nudges", href: "/manager/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["manager", "admin", "super_admin"],

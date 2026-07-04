@@ -54,7 +54,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.role === "manager";
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
 
   // Focus input when opened
   useEffect(() => {
@@ -178,7 +178,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               {results.courses.map((course) => (
                 <ResultItem
                   key={course.id}
-                  href={isAdmin ? `/admin/courses` : `/learn/catalog`}
+                  href={isAdmin ? `/admin/courses/${course.slug}/resources` : `/learn/catalog/${course.slug}`}
                   title={course.title}
                   subtitle={course.status}
                   onClick={onClose}
@@ -196,7 +196,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               {results.articles.map((article) => (
                 <ResultItem
                   key={article.id}
-                  href="/learn/knowledge-base"
+                  href={`/learn/knowledge-base/${article.slug}`}
                   title={article.title}
                   subtitle={article.category_id ? `Category: ${article.category_id}` : "Uncategorized"}
                   onClick={onClose}
@@ -214,7 +214,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               {results.users.map((u) => (
                 <ResultItem
                   key={u.id}
-                  href="/admin/users"
+                  href={`/profile/${u.id}`}
                   title={`${u.first_name} ${u.last_name}`}
                   subtitle={u.role}
                   onClick={onClose}

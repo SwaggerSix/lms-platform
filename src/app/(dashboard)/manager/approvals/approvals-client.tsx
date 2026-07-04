@@ -214,7 +214,7 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <ClipboardCheck className="h-8 w-8 text-indigo-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Enrollment Approvals</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Approvals</h1>
         </div>
         <p className="text-gray-500 mt-1">
           Review and manage enrollment requests from your direct reports

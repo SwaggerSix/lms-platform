@@ -8,13 +8,10 @@ import {
   GraduationCap,
   TrendingUp,
   Award,
-  ShieldCheck,
   Plus,
   UserPlus,
   BarChart3,
   ClipboardCheck,
-  ArrowUpRight,
-  ArrowDownRight,
   Clock,
   CheckCircle2,
   UserCheck,
@@ -27,7 +24,6 @@ export interface DashboardData {
   enrollmentsThisMonth: number;
   completionRate: number;
   avgScore: number;
-  complianceRate: number;
   topCourses: { name: string; completionRate: number }[];
   recentActivity: { id: string; action: string; user: string; target: string; time: string; type: string }[];
 }
@@ -49,12 +45,11 @@ const activityIcons: Record<string, { icon: typeof CheckCircle2; color: string }
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
   const platformStats = [
-    { label: 'Total Users', value: data.totalUsers, change: 12.5, trend: 'up' as const, icon: Users, color: 'bg-blue-500' },
-    { label: 'Active Courses', value: data.activeCourses, change: 8.3, trend: 'up' as const, icon: BookOpen, color: 'bg-indigo-500' },
-    { label: 'Enrollments This Month', value: data.enrollmentsThisMonth, change: 23.1, trend: 'up' as const, icon: GraduationCap, color: 'bg-purple-500' },
-    { label: 'Completion Rate', value: data.completionRate, change: 2.4, trend: 'up' as const, icon: TrendingUp, color: 'bg-green-500', isPercent: true },
-    { label: 'Avg Score', value: data.avgScore, change: -1.2, trend: 'down' as const, icon: Award, color: 'bg-amber-500', isPercent: true },
-    { label: 'Compliance Rate', value: data.complianceRate, change: 1.8, trend: 'up' as const, icon: ShieldCheck, color: 'bg-emerald-500', isPercent: true },
+    { label: 'Total Users', value: data.totalUsers, icon: Users, color: 'bg-blue-500' },
+    { label: 'Active Courses', value: data.activeCourses, icon: BookOpen, color: 'bg-indigo-500' },
+    { label: 'Enrollments This Month', value: data.enrollmentsThisMonth, icon: GraduationCap, color: 'bg-purple-500' },
+    { label: 'Completion Rate', value: data.completionRate, icon: TrendingUp, color: 'bg-green-500', isPercent: true },
+    { label: 'Avg Score', value: data.avgScore, icon: Award, color: 'bg-amber-500', isPercent: true },
   ];
 
   return (
@@ -83,7 +78,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {platformStats.map((stat) => (
           <div
             key={stat.label}
@@ -99,17 +94,6 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   {stat.isPercent ? formatPercent(stat.value) : formatNumber(stat.value)}
                 </p>
               </div>
-            </div>
-            <div className="mt-3 flex items-center gap-1 text-xs">
-              {stat.trend === 'up' ? (
-                <ArrowUpRight className="h-3.5 w-3.5 text-green-500" />
-              ) : (
-                <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />
-              )}
-              <span className={stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}>
-                {Math.abs(stat.change)}%
-              </span>
-              <span className="text-gray-400">vs last month</span>
             </div>
           </div>
         ))}

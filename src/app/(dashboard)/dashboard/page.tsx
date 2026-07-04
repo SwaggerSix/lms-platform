@@ -33,7 +33,8 @@ const COURSE_TYPE_LABELS: Record<string, string> = {
   external: "External",
 };
 
-const SPOTLIGHT_BADGES = ["Most Popular", "New", "Required"];
+// A course counts as "New" in the spotlight if it was published this recently.
+const NEW_BADGE_WINDOW_DAYS = 45;
 
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -43,28 +44,14 @@ function formatDuration(minutes: number): string {
   return `${mins}m`;
 }
 
-function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
 export default async function DashboardPage() {
-  console.log("[dashboard] page render start");
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log("[dashboard] auth user:", user?.id, user?.email);
-
   if (!user) {
-    console.log("[dashboard] no auth user, redirecting to /login");
     redirect("/login");
   }
 
@@ -72,7 +59,7 @@ export default async function DashboardPage() {
   const service = createServiceClient();
   let { data: dbUser } = await service
     .from("users")
-    .select("id, first_name")
+    .select("id, first_name, role")
     .eq("auth_id", user.id)
     .single();
 
@@ -82,29 +69,25 @@ export default async function DashboardPage() {
   // loops with middleware which sends authenticated users on /login back
   // to /dashboard.
   if (!dbUser && user.email) {
-    console.log("[dashboard] no profile by auth_id, trying by email");
-
     // Look for an existing row with the same email — invited/imported users
     // often have an email row created before they ever signed up with Supabase
     // Auth, so their auth_id will be NULL or a stale value.
     const { data: byEmail } = await service
       .from("users")
-      .select("id, first_name, auth_id")
+      .select("id, first_name, role, auth_id")
       .eq("email", user.email)
       .maybeSingle();
 
     if (byEmail) {
-      console.log("[dashboard] linking existing email row to auth_id");
       const { data: linked, error: linkErr } = await service
         .from("users")
         .update({ auth_id: user.id })
         .eq("id", byEmail.id)
-        .select("id, first_name")
+        .select("id, first_name, role")
         .single();
       if (linkErr) console.error("[dashboard] link error", linkErr);
-      dbUser = linked ?? { id: byEmail.id, first_name: byEmail.first_name };
+      dbUser = linked ?? { id: byEmail.id, first_name: byEmail.first_name, role: byEmail.role };
     } else {
-      console.log("[dashboard] inserting new profile");
       const meta = (user.user_metadata ?? {}) as {
         first_name?: string;
         last_name?: string;
@@ -119,7 +102,7 @@ export default async function DashboardPage() {
           role: "learner",
           status: "active",
         })
-        .select("id, first_name")
+        .select("id, first_name, role")
         .single();
       if (insertErr) console.error("[dashboard] insert error", insertErr);
       dbUser = created;
@@ -127,7 +110,7 @@ export default async function DashboardPage() {
   }
 
   if (!dbUser) {
-    console.error("[dashboard] dbUser still null after auto-provision; refusing to redirect-loop. Auth user:", user.id, user.email);
+    console.error("[dashboard] dbUser still null after auto-provision; refusing to redirect-loop.");
     // Don't redirect to /login — middleware will bounce back and loop.
     // Render a minimal fallback so the user sees something instead of a blank.
     return (
@@ -141,7 +124,10 @@ export default async function DashboardPage() {
     );
   }
 
-  console.log("[dashboard] dbUser found, id:", dbUser.id);
+  // Admins land on the platform-overview dashboard rather than the learner view.
+  if (dbUser.role === "admin" || dbUser.role === "super_admin") {
+    redirect("/admin/dashboard");
+  }
 
   const userName = dbUser.first_name ?? "Learner";
   const userId = dbUser.id;
@@ -170,9 +156,11 @@ export default async function DashboardPage() {
     inProgressCountResult,
     completedCountResult,
     certsCountResult,
+    deadlinesCountResult,
     inProgressCoursesResult,
     deadlinesResult,
     spotlightResult,
+    recentBadgesResult,
   ] = await Promise.all([
     safe(
       "inProgressCount",
@@ -201,6 +189,16 @@ export default async function DashboardPage() {
     ),
 
     safe(
+      "deadlinesCount",
+      service
+        .from("enrollments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .not("due_date", "is", null)
+        .gte("due_date", new Date().toISOString())
+    ),
+
+    safe(
       "inProgressCourses",
       service
         .from("enrollments")
@@ -211,7 +209,8 @@ export default async function DashboardPage() {
             id,
             title,
             estimated_duration,
-            category:categories ( name )
+            category:categories ( name ),
+            instructor:users!courses_created_by_fkey ( first_name, last_name )
           )
         `)
         .eq("user_id", userId)
@@ -250,6 +249,7 @@ export default async function DashboardPage() {
           estimated_duration,
           course_type,
           created_by,
+          published_at,
           metadata,
           instructor:users!courses_created_by_fkey ( first_name, last_name )
         `)
@@ -257,11 +257,38 @@ export default async function DashboardPage() {
         .order("published_at", { ascending: false })
         .limit(3)
     ),
+
+    safe(
+      "recentBadges",
+      service
+        .from("user_badges")
+        .select(`
+          awarded_at,
+          badge:badges ( id, name, description )
+        `)
+        .eq("user_id", userId)
+        .order("awarded_at", { ascending: false })
+        .limit(3)
+    ),
   ]);
 
   const coursesInProgress = inProgressCountResult.count ?? 0;
   const coursesCompleted = completedCountResult.count ?? 0;
   const certificatesEarned = certsCountResult.count ?? 0;
+  const upcomingDeadlinesCount = deadlinesCountResult.count ?? 0;
+
+  // Real enrollment counts for the spotlight courses (never fabricate numbers).
+  const spotlightIds = (spotlightResult.data ?? []).map((c: any) => c.id);
+  const enrolledCounts: Record<string, number> = {};
+  if (spotlightIds.length > 0) {
+    const { data: spotlightEnrollments } = await service
+      .from("enrollments")
+      .select("course_id")
+      .in("course_id", spotlightIds);
+    for (const row of spotlightEnrollments ?? []) {
+      enrolledCounts[row.course_id] = (enrolledCounts[row.course_id] ?? 0) + 1;
+    }
+  }
 
   // Map in-progress courses
   const inProgressCourses: LearnerDashboardData["inProgressCourses"] = (
@@ -274,17 +301,16 @@ export default async function DashboardPage() {
       100,
       Math.round((timeSpent / estimatedDuration) * 100)
     );
-    const totalLessons = Math.ceil(estimatedDuration / 30);
-    const completedLessons = Math.round((progress / 100) * totalLessons);
 
     return {
       id: enrollment.id,
+      courseId: course?.id ?? "",
       title: course?.title ?? "Untitled Course",
-      instructor: "Instructor",
+      instructor: course?.instructor
+        ? `${course.instructor.first_name} ${course.instructor.last_name}`
+        : null,
       thumbnail: GRADIENT_THUMBNAILS[index % GRADIENT_THUMBNAILS.length],
       progress,
-      totalLessons,
-      completedLessons,
       category: course?.category?.name ?? "General",
     };
   });
@@ -320,11 +346,10 @@ export default async function DashboardPage() {
   });
 
   // Map spotlight courses
+  const newBadgeCutoff = Date.now() - NEW_BADGE_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const spotlightCourses: LearnerDashboardData["spotlightCourses"] = (
     spotlightResult.data ?? []
   ).map((course: any, index: number) => {
-    const hash = hashCode(course.id);
-    const enrolled = 100 + (hash % 800);
     // Only show a rating when the course actually has reviews — never fabricate
     // one for newly created/never-deployed courses.
     const meta = course.metadata || {};
@@ -332,7 +357,9 @@ export default async function DashboardPage() {
     const rating = reviewCount > 0 ? Math.round((meta.rating ?? 0) * 10) / 10 : 0;
     const instructor = course.instructor
       ? `${course.instructor.first_name} ${course.instructor.last_name}`
-      : "Instructor";
+      : null;
+    const isNew =
+      course.published_at && new Date(course.published_at).getTime() >= newBadgeCutoff;
 
     return {
       id: course.id,
@@ -341,33 +368,37 @@ export default async function DashboardPage() {
       description: course.description ?? "",
       thumbnail: SPOTLIGHT_GRADIENTS[index % SPOTLIGHT_GRADIENTS.length],
       instructor,
-      enrolled,
+      enrolled: enrolledCounts[course.id] ?? 0,
       rating,
       duration: formatDuration(course.estimated_duration ?? 60),
       type: COURSE_TYPE_LABELS[course.course_type] ?? course.course_type,
-      badge: SPOTLIGHT_BADGES[index] ?? "New",
+      badge: isNew ? "New" : null,
     };
   });
+
+  // Map the learner's most recently earned badges
+  const recentAchievements: LearnerDashboardData["recentAchievements"] = (
+    recentBadgesResult.data ?? []
+  )
+    .filter((row: any) => row.badge)
+    .map((row: any) => ({
+      id: row.badge.id,
+      title: row.badge.name,
+      description: row.badge.description ?? "",
+      awardedAt: row.awarded_at,
+    }));
 
   const dashboardData: LearnerDashboardData = {
     userName,
     coursesInProgress,
     coursesCompleted,
     certificatesEarned,
+    upcomingDeadlinesCount,
     inProgressCourses,
     upcomingDeadlines,
     spotlightCourses,
+    recentAchievements,
   };
-
-  console.log("[dashboard] rendering client with data:", {
-    userName,
-    coursesInProgress,
-    coursesCompleted,
-    certificatesEarned,
-    inProgressCount: inProgressCourses.length,
-    deadlinesCount: upcomingDeadlines.length,
-    spotlightCount: spotlightCourses.length,
-  });
 
   return <LearnerDashboardClient data={dashboardData} />;
 }

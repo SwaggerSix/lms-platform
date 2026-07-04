@@ -153,16 +153,42 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
     const completed = records.filter((e) => e.status === "completed");
     const totalHours = completed.reduce((sum, e) => sum + e.credits, 0);
     const activeCerts = records.filter((e) => e.certificate_id && e.status === "completed").length;
-    const complianceCourses = records.filter(
-      (e) => e.course_type === "scorm" && e.status === "completed"
-    );
+    const complianceCourses = records.filter((e) => e.course_type === "scorm");
     return {
       completedCount: completed.length,
       totalHours,
       activeCerts,
-      complianceComplete: complianceCourses.length,
+      complianceComplete: complianceCourses.filter((e) => e.status === "completed").length,
+      complianceTotal: complianceCourses.length,
     };
   }, [records]);
+
+  function handleExportCsv() {
+    const escape = (value: string | number | null) => {
+      const str = value == null ? "" : String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+    const header = ["Course Title", "Type", "Enrolled", "Completed", "Status", "Score", "Credits/Hours"];
+    const lines = filtered.map((e) =>
+      [
+        escape(e.course_title),
+        escape(COURSE_TYPE_CONFIG[e.course_type].label),
+        escape(e.enrollment_date?.slice(0, 10) ?? ""),
+        escape(e.completion_date?.slice(0, 10) ?? ""),
+        escape(e.status),
+        escape(e.score !== null ? `${e.score}%` : ""),
+        escape(e.credits),
+      ].join(",")
+    );
+    const csv = [header.join(","), ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transcript-${user.employee_id || "export"}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 
   function handleSort(field: SortField) {
     if (sortField === field) {
@@ -253,13 +279,13 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                <Printer className="h-4 w-4" /> Print
+                <Printer className="h-4 w-4" /> Print / Save PDF
               </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <Download className="h-4 w-4" /> Export PDF
-              </button>
-              <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <FileText className="h-4 w-4" /> Export CSV
+              <button
+                onClick={handleExportCsv}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Download className="h-4 w-4" /> Export CSV
               </button>
             </div>
           </div>
@@ -335,7 +361,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                   <ShieldCheck className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.complianceComplete}/{stats.complianceComplete}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.complianceComplete}/{stats.complianceTotal}</p>
                   <p className="text-xs text-gray-500">Compliance Complete</p>
                 </div>
               </div>
@@ -490,9 +516,14 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <td className="px-4 py-3 text-gray-600">{entry.credits}</td>
                             <td className="px-4 py-3">
                               {entry.certificate_id ? (
-                                <button className="text-indigo-600 hover:text-indigo-800" title="View Certificate">
+                                <a
+                                  href="/learn/certifications"
+                                  className="text-indigo-600 hover:text-indigo-800"
+                                  title="View Certificate"
+                                  aria-label={`View certificate for ${entry.course_title}`}
+                                >
                                   <ExternalLink className="h-4 w-4" />
-                                </button>
+                                </a>
                               ) : (
                                 <span className="text-gray-300">{"\u2014"}</span>
                               )}

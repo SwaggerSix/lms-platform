@@ -62,7 +62,7 @@ export default async function SettingsPage() {
   const { data: platformSettings } = await service
     .from("platform_settings")
     .select("key, value")
-    .in("key", ["default_language", "default_timezone", "default_theme", "default_date_format"]);
+    .in("key", ["default_language", "default_timezone", "default_date_format"]);
 
   const platformDefaults: Record<string, string> = {};
   (platformSettings || []).forEach((ps: any) => {
@@ -80,7 +80,6 @@ export default async function SettingsPage() {
     bio: userData.bio ?? preferences.bio ?? "",
     language: preferences.language || platformDefaults.default_language || "en",
     timezone: userData.timezone ?? preferences.timezone ?? platformDefaults.default_timezone ?? "America/Los_Angeles",
-    theme: preferences.theme || platformDefaults.default_theme || "system",
     dateFormat: preferences.date_format || platformDefaults.default_date_format || "MM/DD/YYYY",
   };
 
