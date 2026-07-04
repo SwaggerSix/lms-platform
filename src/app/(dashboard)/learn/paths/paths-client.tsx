@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Clock, Award, ArrowRight, Layers } from "lucide-react";
+import { BookOpen, Clock, Award, ArrowRight, Layers, Route } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getHelp } from "@/lib/help-content";
 
 export interface LearningPath {
@@ -55,6 +56,16 @@ export default function PathsClient({ paths }: Props) {
             </p>
           </div>
         </div>
+
+        {paths.length === 0 && (
+          <div className="mt-8">
+            <EmptyState
+              icon={<Route className="h-10 w-10" aria-hidden="true" />}
+              title="No learning paths yet"
+              description="Structured learning programs will appear here once your organization publishes them."
+            />
+          </div>
+        )}
 
         <div className="mt-8 space-y-6">
           {paths.map((path) => (
