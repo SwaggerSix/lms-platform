@@ -193,6 +193,11 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
     URL.revokeObjectURL(url);
   }
 
+  function ariaSortFor(field: SortField): "ascending" | "descending" | "none" {
+    if (sortField !== field) return "none";
+    return sortDirection === "asc" ? "ascending" : "descending";
+  }
+
   function handleSort(field: SortField) {
     if (sortField === field) {
       setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
@@ -451,42 +456,60 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("course_title")}
-                          >
-                            Course Title <SortIcon field="course_title" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("course_title")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("course_title")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Course Title <SortIcon field="course_title" />
+                            </button>
                           </th>
                           <th className="px-4 py-3">Type</th>
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("enrollment_date")}
-                          >
-                            Enrolled <SortIcon field="enrollment_date" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("enrollment_date")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("enrollment_date")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Enrolled <SortIcon field="enrollment_date" />
+                            </button>
                           </th>
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("completion_date")}
-                          >
-                            Completed <SortIcon field="completion_date" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("completion_date")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("completion_date")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Completed <SortIcon field="completion_date" />
+                            </button>
                           </th>
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("status")}
-                          >
-                            Status <SortIcon field="status" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("status")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("status")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Status <SortIcon field="status" />
+                            </button>
                           </th>
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("score")}
-                          >
-                            Score <SortIcon field="score" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("score")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("score")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Score <SortIcon field="score" />
+                            </button>
                           </th>
-                          <th
-                            className="cursor-pointer px-4 py-3 hover:text-gray-700"
-                            onClick={() => handleSort("credits")}
-                          >
-                            Credits/Hours <SortIcon field="credits" />
+                          <th className="px-4 py-3" aria-sort={ariaSortFor("credits")}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort("credits")}
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                            >
+                              Credits/Hours <SortIcon field="credits" />
+                            </button>
                           </th>
                           <th className="px-4 py-3">Certificate</th>
                         </tr>

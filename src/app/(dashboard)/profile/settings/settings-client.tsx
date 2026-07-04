@@ -376,6 +376,9 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       <div className="flex justify-center">
                         <button
                           onClick={() => toggleNotification(notif.key, "inApp")}
+                          role="switch"
+                          aria-checked={notif.inApp}
+                          aria-label={`${notif.label} in-app notifications`}
                           className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-indigo-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.inApp && "translate-x-5")} />
@@ -385,6 +388,9 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       <div className="flex justify-center">
                         <button
                           onClick={() => toggleNotification(notif.key, "email")}
+                          role="switch"
+                          aria-checked={notif.email}
+                          aria-label={`${notif.label} email notifications`}
                           className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-indigo-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.email && "translate-x-5")} />
