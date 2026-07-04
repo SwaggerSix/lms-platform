@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import type {
   Document,
   DocumentFolder,
@@ -554,20 +555,14 @@ export default function DocumentsClient({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={openCreateFolderModal}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
+            <Button variant="outline" onClick={openCreateFolderModal}>
               <FolderPlus className="h-4 w-4" />
               New Folder
-            </button>
-            <button
-              onClick={openUploadModal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
+            </Button>
+            <Button onClick={openUploadModal}>
               <Upload className="h-4 w-4" />
               Upload Document
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -991,13 +986,13 @@ export default function DocumentsClient({
                 Showing {showStart + 1}-{showEnd} of {filteredDocuments.length} documents
               </p>
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => p - 1)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4" /> Previous
-                </button>
+                </Button>
                 {getPageNumbers().map((p) => (
                   <button
                     key={p}
@@ -1010,13 +1005,13 @@ export default function DocumentsClient({
                     {p}
                   </button>
                 ))}
-                <button
+                <Button
+                  variant="outline"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -1234,23 +1229,19 @@ export default function DocumentsClient({
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-              <button
-                onClick={() => setActiveModal(null)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              >
+              <Button variant="outline" onClick={() => setActiveModal(null)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveDoc}
                 disabled={!formTitle.trim() || uploadProgress === "uploading"}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 {uploadProgress === "uploading"
                   ? "Uploading..."
                   : activeModal === "editDoc"
                     ? "Save Changes"
                     : "Upload"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1316,19 +1307,15 @@ export default function DocumentsClient({
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-              <button
-                onClick={() => setActiveModal(null)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              >
+              <Button variant="outline" onClick={() => setActiveModal(null)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveFolder}
                 disabled={!folderName.trim()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 {activeModal === "editFolder" ? "Save Changes" : "Create"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Upload, Plus, Send, Globe, Loader2, Copy } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 export interface ApiKey {
@@ -432,13 +433,10 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">API Keys</h3>
-              <button
-                onClick={handleGenerateKey}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-              >
+              <Button onClick={handleGenerateKey}>
                 <Plus className="h-4 w-4" />
                 Generate New Key
-              </button>
+              </Button>
             </div>
             {generatedKey && (
               <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">

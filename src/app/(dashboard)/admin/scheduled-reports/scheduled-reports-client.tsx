@@ -26,6 +26,7 @@ import {
   Timer,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import type { ScheduledReport, ReportFrequency, ReportFormat } from "@/types/database";
 import { ReportViewerModal, type ReportColumn } from "@/components/ui/report-viewer-modal";
 
@@ -401,13 +402,10 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
           <h1 className="text-2xl font-bold text-gray-900">Scheduled Reports</h1>
           <p className="mt-1 text-sm text-gray-500">Manage automated report delivery and scheduling</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={() => setShowCreateModal(true)}>
           <Plus className="h-4 w-4" />
           Create Schedule
-        </button>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -858,12 +856,9 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
                     placeholder="Enter email address"
                     className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
-                  <button
-                    onClick={addRecipient}
-                    className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
-                  >
+                  <Button variant="secondary" onClick={addRecipient}>
                     Add
-                  </button>
+                  </Button>
                 </div>
                 {formRecipients.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -995,15 +990,15 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
 
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   resetForm();
                   setShowCreateModal(false);
                 }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleCreateSchedule}
                 disabled={!formName.trim()}

@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 export interface Skill {
@@ -191,13 +192,10 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
           <h1 className="text-2xl font-bold text-gray-900">Skills Management</h1>
           <p className="mt-1 text-sm text-gray-500">Manage your organization&apos;s skills taxonomy and competency framework</p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={() => setShowAddModal(true)}>
           <Plus className="h-4 w-4" />
           Add Skill
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -397,10 +395,10 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setEditingSkill(null)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button disabled={saving} onClick={handleEditSkill} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              <Button variant="outline" onClick={() => setEditingSkill(null)}>Cancel</Button>
+              <Button disabled={saving} onClick={handleEditSkill}>
                 {saving ? "Saving..." : "Save Changes"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -448,10 +446,10 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setShowAddModal(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button disabled={saving} onClick={handleAddSkill} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button disabled={saving} onClick={handleAddSkill}>
                 {saving ? "Adding..." : "Add Skill"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

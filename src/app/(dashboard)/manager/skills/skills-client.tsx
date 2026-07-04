@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 
 export interface TeamMemberSkills {
   id: string;
@@ -516,15 +517,15 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                 </button>
               ))}
-              <button
+              <Button
                 onClick={() => {
                   setCoursesModalSkill(null);
                   handleViewAllCourses(coursesModalSkill);
                 }}
-                className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+                className="w-full"
               >
                 Browse All {coursesModalSkill} Courses
-              </button>
+              </Button>
             </div>
           </div>
         </div>

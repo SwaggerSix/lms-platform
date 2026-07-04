@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface Stats {
   totalMentors: number;
@@ -251,12 +252,9 @@ export default function AdminMentorshipClient({
             Overview of all mentorship activity and management tools
           </p>
         </div>
-        <button
-          onClick={() => setAssignOpen(true)}
-          className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        >
+        <Button onClick={() => setAssignOpen(true)} className="shrink-0">
           Assign Mentor
-        </button>
+        </Button>
       </div>
 
       {/* Assign mentor modal */}
@@ -343,20 +341,15 @@ export default function AdminMentorshipClient({
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={resetAssign}
-                disabled={assigning}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
+              <Button variant="outline" onClick={resetAssign} disabled={assigning}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={submitAssign}
                 disabled={assigning || !assignMentorId || !assignMenteeId}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {assigning ? "Assigning..." : "Assign Mentor"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -495,13 +488,14 @@ export default function AdminMentorshipClient({
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => toggleActive(mentor.id, mentor.is_active)}
                         disabled={togglingId === mentor.id}
-                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                       >
                         {mentor.is_active ? "Deactivate" : "Activate"}
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 );
@@ -524,12 +518,9 @@ export default function AdminMentorshipClient({
             <h2 className="text-sm font-semibold text-gray-900">Mentorship Circles</h2>
             <p className="text-xs text-gray-500 mt-0.5">One mentor leads a group of mentees.</p>
           </div>
-          <button
-            onClick={() => setCircleOpen(true)}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
-          >
+          <Button size="sm" onClick={() => setCircleOpen(true)}>
             + New Circle
-          </button>
+          </Button>
         </div>
         {circles.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-400">
@@ -555,12 +546,14 @@ export default function AdminMentorshipClient({
                       )}
                     </div>
                     {!full && (
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setAddMemberCircleId(c.id)}
-                        className="shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                        className="shrink-0"
                       >
                         + Add Member
-                      </button>
+                      </Button>
                     )}
                   </div>
 
@@ -586,19 +579,20 @@ export default function AdminMentorshipClient({
                             ))}
                         </select>
                       </div>
-                      <button
+                      <Button
+                        size="sm"
                         onClick={() => addCircleMember(c.id, addMemberMenteeId)}
                         disabled={!addMemberMenteeId}
-                        className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                       >
                         Add
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => { setAddMemberCircleId(null); setAddMemberMenteeId(""); }}
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-white"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   )}
 
@@ -691,20 +685,15 @@ export default function AdminMentorshipClient({
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={resetCircleForm}
-                disabled={circleSaving}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
+              <Button variant="outline" onClick={resetCircleForm} disabled={circleSaving}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={submitCircle}
                 disabled={circleSaving || !circleName.trim() || !circleMentorId}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {circleSaving ? "Creating..." : "Create Circle"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

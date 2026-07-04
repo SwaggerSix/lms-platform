@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 
 export interface Announcement {
   id: string;
@@ -273,13 +274,10 @@ export default function NotificationsClient({ announcements, templates }: Notifi
           <h1 className="text-2xl font-bold text-gray-900">Announcements &amp; Notifications</h1>
           <p className="mt-1 text-sm text-gray-500">Manage platform announcements, notification templates, and delivery settings</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={() => setShowForm(!showForm)}>
           <Plus className="h-4 w-4" />
           Create Announcement
-        </button>
+        </Button>
       </div>
 
       <div className="border-b border-gray-200">
@@ -379,21 +377,20 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                 </div>
               </div>
               <div className="mt-6 flex justify-end gap-3">
-                <button
+                <Button
+                  variant="outline"
                   onClick={handleSaveAsDraft}
                   disabled={saving || !formTitle.trim() || !formBody.trim()}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Save as Draft"}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSendAnnouncement}
                   disabled={saving || !formTitle.trim() || !formBody.trim()}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                   {saving ? "Sending..." : "Send Announcement"}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -419,16 +416,15 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button onClick={() => setEditingId(null)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Button variant="outline" onClick={() => setEditingId(null)}>
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleEditAnnouncement(editingId)}
                     disabled={saving || !editTitle.trim() || !editBody.trim()}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
                     {saving ? "Saving..." : "Save Changes"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

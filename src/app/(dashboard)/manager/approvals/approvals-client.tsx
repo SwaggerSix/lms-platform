@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import type { ApprovalStatus } from "@/types/database";
 
@@ -412,12 +413,13 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
                         >
                           {actionLoading ? "Approving..." : "Yes, Approve"}
                         </button>
-                        <button
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setConfirmApproveId(null)}
-                          className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           Cancel
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <>
@@ -428,13 +430,13 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
                           <CheckCircle2 className="h-4 w-4" />
                           Approve
                         </button>
-                        <button
+                        <Button
+                          variant="destructive"
                           onClick={() => openRejectModal(approval.id)}
-                          className="flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
                         >
                           <XCircle className="h-4 w-4" />
                           Reject
-                        </button>
+                        </Button>
                       </>
                     )}
                   </div>
@@ -505,16 +507,16 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
               )}
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 p-6">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setRejectModalOpen(false);
                   setRejectingId(null);
                   setRejectionReason("");
                 }}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleReject}
                 disabled={!rejectionReason.trim() || actionLoading}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature, FileQuestion } from "lucide-react";
 
 interface Course { id: string; title: string }
@@ -115,12 +116,9 @@ export default function AdminClassesClient({
             <input type="checkbox" checked={nasbaOnly} onChange={(e) => setNasbaOnly(e.target.checked)} />
             NASBA certified only
           </label>
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
+          <Button onClick={() => setShowForm((v) => !v)}>
             <Plus className="h-4 w-4" /> New Class
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -190,7 +188,7 @@ export default function AdminClassesClient({
             </>
           )}
           <div className="sm:col-span-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600">Cancel</button>
+            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
             <button type="submit" disabled={creating} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
               {creating && <Loader2 className="h-4 w-4 animate-spin" />} Create Class
             </button>
@@ -233,25 +231,27 @@ export default function AdminClassesClient({
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {isAdmin && (
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setContractFor(contractFor === c.id ? null : c.id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                     >
                       <FileSignature className="h-3.5 w-3.5" /> Contract
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setExamsFor(examsFor === c.id ? null : c.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                   >
                     <FileQuestion className="h-3.5 w-3.5" /> Exams
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="sm"
                     onClick={() => setInviteFor(inviteFor === c.id ? null : c.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
                   >
                     <Mail className="h-3.5 w-3.5" /> Invite
-                  </button>
+                  </Button>
                   <Link href={`/learn/classes/${c.id}`} className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
                     <ExternalLink className="h-3.5 w-3.5" /> View
                   </Link>

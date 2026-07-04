@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 /* ------------------------------------------------------------------ */
@@ -255,12 +256,9 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
               <BarChart3 className="h-5 w-5 text-indigo-600" />
               <h2 className="text-lg font-semibold text-gray-900">Team Progress Report</h2>
             </div>
-            <button
-              onClick={handleExportTableCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-            >
+            <Button variant="outline" size="sm" onClick={handleExportTableCSV}>
               <Download className="h-3.5 w-3.5" /> Export All
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -339,18 +337,16 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleViewFullReport("completion")}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                 >
                   <Eye className="h-3.5 w-3.5" /> View Full Report
-                </button>
-                <button
-                  onClick={exportTeamProgressCSV}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                >
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportTeamProgressCSV}>
                   <Download className="h-3.5 w-3.5" /> Export CSV
-                </button>
+                </Button>
               </div>
             </div>
             {expandedReport === "completion" && (
@@ -390,18 +386,16 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleViewFullReport("compliance")}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                 >
                   <Eye className="h-3.5 w-3.5" /> View Full Report
-                </button>
-                <button
-                  onClick={exportComplianceCSV}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                >
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportComplianceCSV}>
                   <Download className="h-3.5 w-3.5" /> Export CSV
-                </button>
+                </Button>
               </div>
             </div>
             {expandedReport === "compliance" && (

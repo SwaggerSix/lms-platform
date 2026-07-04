@@ -28,6 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import { formatDate } from "@/utils/format";
 import type {
@@ -564,24 +565,27 @@ export default function ILTSessionsClient({
           {/* Bulk actions */}
           <div className="mt-4 flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">Bulk mark unmarked as:</span>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => bulkMarkAttendance(session.id, "present")}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
             >
               <UserCheck className="h-3.5 w-3.5 text-green-600" /> Present
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => bulkMarkAttendance(session.id, "absent")}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
             >
               <UserX className="h-3.5 w-3.5 text-red-600" /> Absent
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => bulkMarkAttendance(session.id, "no_show")}
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
             >
               <XCircle className="h-3.5 w-3.5 text-orange-600" /> No Show
-            </button>
+            </Button>
           </div>
 
           {/* Roster Table */}
@@ -651,12 +655,9 @@ export default function ILTSessionsClient({
             <h1 className="text-2xl font-bold text-gray-900">Webinars &amp; Open Learning Events</h1>
             <p className="mt-1 text-gray-500">Post and manage webinars and open learning events — schedule, register attendees, and track attendance.</p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
+          <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-4 w-4" /> Create Session
-          </button>
+          </Button>
         </div>
 
         {/* Stats */}
@@ -1160,19 +1161,15 @@ export default function ILTSessionsClient({
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowCreateModal(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleCreateSession}
                 disabled={!formData.course_id || !formData.title || !formData.session_date}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Session
-              </button>
+              </Button>
             </div>
           </div>
         </div>

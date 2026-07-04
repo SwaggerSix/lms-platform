@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatRelativeTime, formatPercent } from "@/utils/format";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -497,20 +498,14 @@ export default function TeamClient({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={openImport}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-          >
+          <Button variant="outline" onClick={openImport}>
             <Upload className="h-4 w-4" />
             Import CSV
-          </button>
-          <button
-            onClick={openAddMember}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
-          >
+          </Button>
+          <Button onClick={openAddMember}>
             <UserPlus className="h-4 w-4" />
             Add Member
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -900,13 +895,15 @@ export default function TeamClient({
               </p>
 
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleViewProfile(member)}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  className="flex-1"
                 >
                   <Eye className="mr-1 inline h-3 w-3" />
                   Profile
-                </button>
+                </Button>
                 <button
                   onClick={() => openEditMember(member)}
                   className="rounded-lg border border-gray-300 px-2 py-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
@@ -914,13 +911,14 @@ export default function TeamClient({
                 >
                   <Pencil className="h-3 w-3" />
                 </button>
-                <button
+                <Button
+                  size="sm"
                   onClick={() => handleAssignCourse(member)}
-                  className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+                  className="flex-1"
                 >
                   <BookOpen className="mr-1 inline h-3 w-3" />
                   Assign
-                </button>
+                </Button>
                 <button
                   onClick={() => handleSendReminder(member)}
                   disabled={reminderLoading === member.id}
@@ -1077,21 +1075,18 @@ export default function TeamClient({
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setProfileMember(null);
                   router.push(`/profile/${profileMember.id}`);
                 }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >
                 View Full Profile
-              </button>
-              <button
-                onClick={() => setProfileMember(null)}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-              >
+              </Button>
+              <Button onClick={() => setProfileMember(null)}>
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1176,12 +1171,9 @@ export default function TeamClient({
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setAssignMember(null)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setAssignMember(null)}>
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleSubmitAssignment}
                 disabled={!selectedCourse || !dueDate || assigning}
@@ -1388,16 +1380,16 @@ export default function TeamClient({
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowAddMember(false);
                   setEditMember(null);
                   resetEmployeeSearch();
                 }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleSaveMember}
                 disabled={savingMember}
@@ -1507,12 +1499,9 @@ export default function TeamClient({
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <button
-                onClick={() => setShowImport(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => setShowImport(false)}>
                 Cancel
-              </button>
+              </Button>
               <button
                 onClick={handleImportSubmit}
                 disabled={importRows.length === 0 || importing}
