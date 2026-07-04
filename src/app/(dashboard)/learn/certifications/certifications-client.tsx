@@ -21,6 +21,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
+import { Button } from "@/components/ui/button";
 import DOMPurify from "dompurify";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -400,10 +401,9 @@ export default function CertificationsClient({ certificates, userName }: Certifi
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-gray-100 pt-4">
-                  <button
+                  <Button
                     onClick={() => handleViewCertificate(cert)}
                     disabled={generatingId === cert.id}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {generatingId === cert.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -411,20 +411,20 @@ export default function CertificationsClient({ certificates, userName }: Certifi
                       <Eye className="h-4 w-4" />
                     )}
                     View Certificate
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => handleDesignedDownloadPDF(cert)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     <Download className="h-4 w-4" /> Download PDF
-                  </button>
+                  </Button>
                   <div className="relative">
-                    <button
+                    <Button
+                      variant="outline"
                       onClick={() => setShareMenuId(shareMenuId === cert.id ? null : cert.id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                       <Share2 className="h-4 w-4" /> Share
-                    </button>
+                    </Button>
                     {shareMenuId === cert.id && (
                       <div className="absolute bottom-full mb-1 left-0 z-10 w-56 rounded-lg border border-gray-200 bg-white shadow-lg">
                         <button
@@ -481,15 +481,15 @@ export default function CertificationsClient({ certificates, userName }: Certifi
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
               <h3 className="text-lg font-semibold text-gray-900">Certificate Preview</h3>
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => {
                     const w = window.open("", "_blank");
                     if (w) { w.document.write(viewingCert.html); w.document.close(); }
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <Download className="h-4 w-4" /> Download PDF
-                </button>
+                </Button>
                 <button
                   onClick={() => setViewingCert(null)}
                   className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"

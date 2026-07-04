@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration, formatNumber } from "@/utils/format";
+import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { courseTypeDefinition } from "@/lib/course-type-info";
 import { CourseCover } from "@/components/course/course-cover";
@@ -243,9 +244,9 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Mobile filter toggle */}
         <div className="mb-4 flex items-center justify-between lg:hidden">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filters
@@ -254,7 +255,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                 {selectedCategories.length + (selectedDifficulty ? 1 : 0) + selectedTypes.length}
               </span>
             )}
-          </button>
+          </Button>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -470,14 +471,14 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-8 flex items-center justify-center gap-2">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
-                </button>
+                </Button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}
@@ -492,14 +493,14 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     {page}
                   </button>
                 ))}
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             )}
           </div>

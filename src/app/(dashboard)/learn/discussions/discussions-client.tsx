@@ -14,6 +14,7 @@ import {
   Clock,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics/track";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -221,13 +222,10 @@ export default function DiscussionsClient({
             </div>
             <p className="mt-1 text-sm text-gray-500">Ask questions, share knowledge, and connect with peers.</p>
           </div>
-          <button
-            onClick={() => setShowNewForm(!showNewForm)}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
+          <Button onClick={() => setShowNewForm(!showNewForm)}>
             {showNewForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             {showNewForm ? "Cancel" : "New Discussion"}
-          </button>
+          </Button>
         </div>
 
         {/* ---- New Discussion Form ---- */}
@@ -287,13 +285,12 @@ export default function DiscussionsClient({
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 />
               </div>
-              <button
+              <Button
                 onClick={handlePostDiscussion}
                 disabled={submitting || !newTitle.trim() || !newBody.trim()}
-                className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? "Posting..." : "Post Discussion"}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -483,13 +480,10 @@ export default function DiscussionsClient({
               <MessageSquare className="h-12 w-12 text-gray-300" />
               <p className="mt-4 text-sm font-medium text-gray-500">No discussions found</p>
               <p className="mt-1 text-sm text-gray-400">Try adjusting your search or start a new discussion.</p>
-              <button
-                onClick={() => { setShowNewForm(true); setSearchQuery(""); }}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-              >
+              <Button className="mt-4" onClick={() => { setShowNewForm(true); setSearchQuery(""); }}>
                 <Plus className="h-4 w-4" />
                 New Discussion
-              </button>
+              </Button>
             </div>
           )}
 
@@ -500,13 +494,13 @@ export default function DiscussionsClient({
                 Showing {showStart + 1}-{showEnd} of {filteredThreads.length} discussions
               </p>
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => p - 1)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4" /> Previous
-                </button>
+                </Button>
                 {getPageNumbers().map((p) => (
                   <button
                     key={p}
@@ -519,13 +513,13 @@ export default function DiscussionsClient({
                     {p}
                   </button>
                 ))}
-                <button
+                <Button
+                  variant="outline"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}

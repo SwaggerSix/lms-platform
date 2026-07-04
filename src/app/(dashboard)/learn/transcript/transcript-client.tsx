@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
+import { Button } from "@/components/ui/button";
 import type { CourseType, EnrollmentStatus } from "@/types/database";
 
 export interface TranscriptRecord {
@@ -279,18 +280,12 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
               <p className="mt-1 text-gray-500">Official record of all training activities and completions.</p>
             </div>
             <div className="no-print flex items-center gap-2">
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => window.print()}>
                 <Printer className="h-4 w-4" /> Print / Save PDF
-              </button>
-              <button
-                onClick={handleExportCsv}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              </Button>
+              <Button variant="outline" onClick={handleExportCsv}>
                 <Download className="h-4 w-4" /> Export CSV
-              </button>
+              </Button>
             </div>
           </div>
 
