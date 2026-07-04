@@ -46,6 +46,7 @@ import {
   Zap,
   ShoppingCart,
   ShoppingBag,
+  BadgePercent,
   Bot,
   Heart,
   Puzzle,
@@ -221,16 +222,25 @@ const navSections: NavSection[] = [
     bgClass: "bg-[#F1F7E4]/50",
   },
   {
+    // Selling and sourcing content — reserved for gC / GGS Super Admins.
+    header: "Commerce",
+    items: [
+      { label: "Storefronts", href: "/admin/storefronts", icon: Store },
+      { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
+      { label: "Coupons", href: "/admin/ecommerce/coupons", icon: BadgePercent },
+      { label: "Content Providers", href: "/admin/marketplace", icon: ShoppingBag },
+      { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
+    ],
+    roles: ["super_admin"],
+    bgClass: "bg-[#FDF3DA]",
+  },
+  {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
     // cross-organization concerns and are hidden from client Admins.
     header: "Platform",
     items: [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
       { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Wand2 },
-      { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
-      { label: "Storefronts", href: "/admin/storefronts", icon: Store },
-      { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
-      { label: "Marketplace", href: "/admin/marketplace", icon: ShoppingBag },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
       { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
       { label: "HRIS Integration", href: "/admin/settings/integrations/hris", icon: Link2 },

@@ -5,7 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import UnifiedCatalog from "@/components/marketplace/unified-catalog";
 
 export const metadata: Metadata = {
-  title: "Course Marketplace | LMS Platform",
+  title: "Marketplace | LMS Platform",
   description: "Browse internal and external courses from top providers",
 };
 
@@ -66,9 +66,9 @@ export default async function LearnMarketplacePage() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Course Marketplace</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Marketplace</h1>
         <p className="text-gray-500 mt-1">
-          Browse courses from internal catalog and external providers
+          Browse courses from the internal catalog and partner content providers
         </p>
       </div>
 
