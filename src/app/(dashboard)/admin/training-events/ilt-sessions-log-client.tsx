@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import { Search, Globe, MapPin, Filter } from "lucide-react";
 
 export interface SessionRow {
@@ -78,8 +79,9 @@ export default function IltSessionsLogClient({ initialSessions }: Props) {
 
   return (
     <div className="container mx-auto max-w-7xl p-6">
+      <AdminSessionsTabs />
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">ILT Session Log</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Session Log</h1>
         <p className="mt-1 text-sm text-gray-600">
           Log of all instructor-led training sessions, including events imported from GEMS.
           Showing up to 500 most recent sessions.

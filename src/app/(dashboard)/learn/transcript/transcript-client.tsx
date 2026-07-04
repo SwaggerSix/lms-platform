@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import MyLearningTabs from "@/components/layout/my-learning-tabs";
 import {
   Printer,
   Download,
@@ -251,6 +252,9 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
 
       <div className="min-h-screen bg-gray-50">
         <div id="transcript-printable" className="mx-auto max-w-7xl px-6 py-8">
+          <div className="no-print">
+            <MyLearningTabs />
+          </div>
           {/* Print-only formal header */}
           <div className="print-only hidden mb-8 border-b-2 border-gray-900 pb-4 print-header items-center justify-between">
             <div>

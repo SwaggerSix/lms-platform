@@ -28,6 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import { formatDate } from "@/utils/format";
 import type {
   ILTSession,
@@ -643,6 +644,7 @@ export default function ILTSessionsClient({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
+        <AdminSessionsTabs />
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

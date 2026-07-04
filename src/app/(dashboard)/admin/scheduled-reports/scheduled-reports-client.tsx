@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import {
   Calendar,
   Clock,
@@ -393,6 +394,7 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
 
   return (
     <div className="space-y-8">
+      <AdminAnalyticsTabs />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

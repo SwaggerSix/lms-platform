@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/utils/cn';
+import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import { formatNumber, formatPercent } from '@/utils/format';
 import {
   Users,
@@ -54,6 +55,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   return (
     <div className="space-y-8">
+      <AdminAnalyticsTabs />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

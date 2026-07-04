@@ -50,8 +50,8 @@ export default function ShopClient({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Course Marketplace</h1>
-        <p className="text-gray-500 mt-1">Browse and purchase courses to advance your learning</p>
+        <h1 className="text-3xl font-bold text-gray-900">Shop</h1>
+        <p className="text-gray-500 mt-1">Purchase courses to advance your learning</p>
       </div>
 
       {/* Featured Section */}

@@ -42,18 +42,16 @@ import {
   FileText,
   CalendarDays,
   CheckSquare,
-  Clock,
-  History,
   KeyRound,
   Zap,
   ShoppingCart,
   ShoppingBag,
+  BadgePercent,
   Bot,
   Heart,
   Puzzle,
   Store,
   BookMarked,
-  BrainCircuit,
   Network,
   Globe,
   Eye,
@@ -63,7 +61,6 @@ import {
   Wand2,
   MessageSquareMore,
   Bug,
-  Video,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
@@ -76,6 +73,8 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   featureKey?: string; // maps to platform_settings.features or tenant.features
+  /** Extra route prefixes that should also highlight this item (hub tabs). */
+  matchPrefixes?: string[];
 }
 
 interface NavSection {
@@ -98,11 +97,16 @@ const navSections: NavSection[] = [
     header: "Learning",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen, featureKey: "courses" },
-      { label: "My Courses", href: "/learn/my-courses", icon: Library, featureKey: "courses" },
+      {
+        label: "My Courses",
+        href: "/learn/my-courses",
+        icon: Library,
+        featureKey: "courses",
+        matchPrefixes: ["/learn/transcript"],
+      },
       { label: "My Classes", href: "/learn/classes", icon: CalendarDays, featureKey: "classes" },
       { label: "Learning Paths", href: "/learn/paths", icon: Route, featureKey: "learning_paths" },
       { label: "Certifications", href: "/learn/certifications", icon: Award, featureKey: "certifications" },
-      { label: "Transcript", href: "/learn/transcript", icon: FileText, featureKey: "courses" },
       { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
       { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification" },
       { label: "Discussions", href: "/learn/discussions", icon: MessageSquare, featureKey: "social_learning" },
@@ -159,15 +163,19 @@ const navSections: NavSection[] = [
       { label: "Users", href: "/admin/users", icon: UserCog },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap, featureKey: "courses" },
-      { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
-      { label: "Shared Webinars", href: "/admin/shared-webinars", icon: Video, featureKey: "ilt_sessions" },
+      {
+        label: "Sessions & Webinars",
+        href: "/admin/ilt-sessions",
+        icon: CalendarDays,
+        featureKey: "ilt_sessions",
+        matchPrefixes: ["/admin/classes", "/admin/training-events", "/admin/shared-webinars"],
+      },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch, featureKey: "learning_paths" },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion, featureKey: "assessments" },
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck, featureKey: "assessments" },
       { label: "Exam Grading", href: "/admin/assessments/grading", icon: CheckSquare, featureKey: "assessments" },
       { label: "Certifications", href: "/admin/certifications", icon: Medal, featureKey: "certifications" },
       { label: "Instructor Certifications", href: "/admin/instructor-certifications", icon: ShieldCheck },
-      { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],
     roles: ["admin", "super_admin"],
     bgClass: "bg-[#F1F7E4]/50",
@@ -178,8 +186,17 @@ const navSections: NavSection[] = [
       { label: "Compliance", href: "/admin/compliance", icon: Scale },
       { label: "Approvals", href: "/admin/approvals", icon: CheckSquare },
       { label: "Skills", href: "/admin/skills", icon: Sparkles },
-      { label: "Reports", href: "/admin/reports", icon: PieChart },
-      { label: "Scheduled Reports", href: "/admin/scheduled-reports", icon: Clock },
+      {
+        label: "Analytics & Reports",
+        href: "/admin/reports",
+        icon: PieChart,
+        matchPrefixes: [
+          "/admin/dashboard",
+          "/admin/scheduled-reports",
+          "/admin/evaluations/insights",
+          "/admin/analytics",
+        ],
+      },
       { label: "Workflows", href: "/admin/workflows", icon: Workflow },
       { label: "Email Settings", href: "/admin/settings/email", icon: Mail },
       { label: "Error Log", href: "/admin/settings/error-log", icon: Bug },
@@ -197,7 +214,6 @@ const navSections: NavSection[] = [
       { label: "Mentorship", href: "/admin/mentorship", icon: Heart, featureKey: "mentorship" },
       { label: "Observations", href: "/admin/observations", icon: Eye, featureKey: "observations" },
       { label: "Evaluations", href: "/admin/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
-      { label: "Evaluation Insights", href: "/admin/evaluations/insights", icon: PieChart, featureKey: "evaluations" },
       { label: "Ratings", href: "/admin/ratings", icon: Trophy, featureKey: "course_ratings" },
       { label: "Microlearning", href: "/admin/microlearning", icon: Puzzle, featureKey: "microlearning" },
       { label: "Nudges", href: "/admin/nudges", icon: Zap, featureKey: "nudges" },
@@ -206,17 +222,25 @@ const navSections: NavSection[] = [
     bgClass: "bg-[#F1F7E4]/50",
   },
   {
+    // Selling and sourcing content — reserved for gC / GGS Super Admins.
+    header: "Commerce",
+    items: [
+      { label: "Storefronts", href: "/admin/storefronts", icon: Store },
+      { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
+      { label: "Coupons", href: "/admin/ecommerce/coupons", icon: BadgePercent },
+      { label: "Content Providers", href: "/admin/marketplace", icon: ShoppingBag },
+      { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
+    ],
+    roles: ["super_admin"],
+    bgClass: "bg-[#FDF3DA]",
+  },
+  {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
     // cross-organization concerns and are hidden from client Admins.
     header: "Platform",
     items: [
       { label: "Tenants", href: "/admin/tenants", icon: Globe },
       { label: "AI Course Creator", href: "/admin/courses/ai-create", icon: Wand2 },
-      { label: "eCommerce", href: "/admin/ecommerce", icon: ShoppingCart },
-      { label: "Storefronts", href: "/admin/storefronts", icon: Store },
-      { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
-      { label: "Marketplace", href: "/admin/marketplace", icon: ShoppingBag },
-      { label: "Predictive Analytics", href: "/admin/analytics/predictive", icon: BrainCircuit },
       { label: "xAPI / LRS", href: "/admin/settings/xapi", icon: Network },
       { label: "SSO", href: "/admin/settings/sso", icon: KeyRound },
       { label: "HRIS Integration", href: "/admin/settings/integrations/hris", icon: Link2 },
@@ -325,11 +349,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   // don't light up alongside their children (e.g. /admin/settings/sso).
   const activeHref = useMemo(() => {
     let best = "";
+    let bestLength = 0;
     for (const section of filteredSections) {
       for (const item of section.items) {
-        const matches =
-          pathname === item.href || pathname.startsWith(item.href + "/");
-        if (matches && item.href.length > best.length) best = item.href;
+        const prefixes = [item.href, ...(item.matchPrefixes ?? [])];
+        for (const prefix of prefixes) {
+          const matches = pathname === prefix || pathname.startsWith(prefix + "/");
+          if (matches && prefix.length > bestLength) {
+            best = item.href;
+            bestLength = prefix.length;
+          }
+        }
       }
     }
     return best;

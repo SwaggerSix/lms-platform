@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import Link from "next/link";
 import { Plus, Loader2, Mail, X, Users, Calendar, ExternalLink, FileSignature, FileQuestion } from "lucide-react";
 
@@ -103,6 +104,7 @@ export default function AdminClassesClient({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <AdminSessionsTabs />
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Classes</h1>
