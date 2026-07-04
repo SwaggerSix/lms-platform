@@ -178,11 +178,12 @@ export default function DocumentsClient({
 
   return (
     <div className="flex h-full min-h-screen bg-gray-50">
-      {/* ---- Sidebar ---- */}
+      {/* ---- Sidebar (desktop) — on mobile a folder dropdown in the header
+           replaces it, since a fixed 288px column doesn't fit small screens ---- */}
       <aside
         className={cn(
-          "border-r border-gray-200 bg-white transition-all duration-200 flex flex-col",
-          sidebarOpen ? "w-72" : "w-0 overflow-hidden"
+          "hidden border-r border-gray-200 bg-white transition-all duration-200 md:flex md:flex-col",
+          sidebarOpen ? "md:w-72" : "md:w-0 md:overflow-hidden"
         )}
       >
         <div className="px-5 py-4 border-b border-gray-200">
@@ -261,14 +262,35 @@ export default function DocumentsClient({
                   {selectedFolder.description}
                 </p>
               )}
+
+              {/* Mobile folder picker (sidebar is hidden below md) */}
+              <div className="mt-3 md:hidden">
+                <label htmlFor="mobile-folder-select" className="sr-only">
+                  Choose folder
+                </label>
+                <select
+                  id="mobile-folder-select"
+                  value={selectedFolderId ?? ""}
+                  onChange={(e) => setSelectedFolderId(e.target.value || null)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="">All Documents ({documents.length})</option>
+                  {folders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name} ({folder.document_count})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Toggle sidebar */}
+              {/* Toggle sidebar (desktop only — mobile uses the folder dropdown) */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"
+                className="hidden p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 md:block"
                 title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+                aria-label={sidebarOpen ? "Hide folder sidebar" : "Show folder sidebar"}
               >
                 <ChevronDown
                   className={cn(

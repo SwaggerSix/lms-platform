@@ -12,6 +12,7 @@ import {
   CheckCheck,
   Users,
   MessageSquare,
+  ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -801,8 +802,16 @@ export default function MessagesClient({
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      {/* ---- Left Panel: Conversation List ---- */}
-      <div className="flex w-80 flex-col border-r border-gray-200">
+      {/* ---- Left Panel: Conversation List ----
+          On mobile the list and the thread stack: the list fills the screen
+          until a conversation is opened, then the thread takes over with a
+          back button. From md up they render side by side. */}
+      <div
+        className={cn(
+          "w-full flex-col border-r border-gray-200 md:flex md:w-80",
+          activeConv ? "hidden" : "flex"
+        )}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
           <h1 className="text-lg font-bold text-gray-900">Messages</h1>
@@ -927,8 +936,15 @@ export default function MessagesClient({
       {activeConv ? (
         <div className="flex flex-1 flex-col">
           {/* Conversation header */}
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 md:px-6">
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveConvId("")}
+                aria-label="Back to conversations"
+                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 md:hidden"
+              >
+                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+              </button>
               <Avatar
                 user={getConversationAvatar(activeConv)}
                 size="md"
@@ -1121,8 +1137,8 @@ export default function MessagesClient({
           </div>
         </div>
       ) : (
-        /* Empty state */
-        <div className="flex flex-1 items-center justify-center">
+        /* Empty state (desktop only — on mobile the list fills the screen) */
+        <div className="hidden flex-1 items-center justify-center md:flex">
           <div className="text-center">
             <MessageSquare className="mx-auto h-16 w-16 text-gray-300" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
