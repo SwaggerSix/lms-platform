@@ -186,6 +186,33 @@ export default function RatingsClient({
   );
 }
 
+const trendColumns: DataTableColumn<Group>[] = [
+  {
+    key: "month",
+    header: "Month",
+    sortValue: (t) => t.label,
+    render: (t) => <span className="text-gray-800">{t.label}</span>,
+  },
+  {
+    key: "count",
+    header: "Ratings",
+    sortValue: (t) => t.count,
+    render: (t) => <span className="text-gray-500">{t.count}</span>,
+  },
+  {
+    key: "course",
+    header: "Course ★",
+    sortValue: (t) => t.course_avg,
+    render: (t) => <span className="text-gray-700">{t.course_avg != null ? `${t.course_avg}` : "—"}</span>,
+  },
+  {
+    key: "instructor",
+    header: "Instructor ★",
+    sortValue: (t) => t.instructor_avg,
+    render: (t) => <span className="text-gray-700">{t.instructor_avg != null ? `${t.instructor_avg}` : "—"}</span>,
+  },
+];
+
 function Card({ icon, bg, value, label }: { icon: React.ReactNode; bg: string; value: string; label: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

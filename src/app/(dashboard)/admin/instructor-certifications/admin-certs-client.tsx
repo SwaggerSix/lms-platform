@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Award, Download } from "lucide-react";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Cert {
   id: string;
@@ -85,44 +86,76 @@ export default function AdminCertsClient() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
-        ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-sm text-gray-400"><Award className="mx-auto mb-2 h-8 w-8 text-gray-300" />No certifications match.</div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
-                <th className="px-4 py-3">Instructor</th>
-                <th className="px-4 py-3">Credential</th>
-                <th className="px-4 py-3">License</th>
-                <th className="px-4 py-3">Issuing</th>
-                <th className="px-4 py-3">Expires</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filtered.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{r.instructor}</p>
-                    <p className="text-xs text-gray-400">{r.email}</p>
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{r.name}<span className="ml-1 text-[10px] uppercase text-gray-400">{r.credential_type}</span></td>
-                  <td className="px-4 py-3 text-gray-500">{r.license_number ?? "—"}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.issuing_body ?? "—"}{r.issuing_state ? ` (${r.issuing_state})` : ""}</td>
-                  <td className="px-4 py-3">
-                    <span className={r.ex.cls}>{r.expiry_date ? new Date(r.expiry_date).toLocaleDateString() : "—"}</span>
-                    <span className={`ml-1 text-xs ${r.ex.cls}`}>· {r.ex.label}</span>
-                  </td>
-                  <td className="px-4 py-3 capitalize text-gray-600">{r.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-gray-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={filtered}
+          rowKey={(r) => r.id}
+          initialSort="expires"
+          ariaLabel="Instructor certifications"
+          emptyState={{
+            icon: <Award className="h-10 w-10" aria-hidden="true" />,
+            title: "No certifications match.",
+          }}
+        />
+      )}
     </div>
   );
 }
+
+type CertRow = Cert & { instructor: string; email: string; ex: ReturnType<typeof expiry> };
+
+const columns: DataTableColumn<CertRow>[] = [
+  {
+    key: "instructor",
+    header: "Instructor",
+    sortValue: (r) => r.instructor,
+    render: (r) => (
+      <>
+        <p className="font-medium text-gray-900">{r.instructor}</p>
+        <p className="text-xs text-gray-400">{r.email}</p>
+      </>
+    ),
+  },
+  {
+    key: "credential",
+    header: "Credential",
+    sortValue: (r) => r.name,
+    render: (r) => (
+      <span className="text-gray-700">{r.name}<span className="ml-1 text-[10px] uppercase text-gray-400">{r.credential_type}</span></span>
+    ),
+  },
+  {
+    key: "license",
+    header: "License",
+    sortValue: (r) => r.license_number,
+    render: (r) => <span className="text-gray-500">{r.license_number ?? "—"}</span>,
+  },
+  {
+    key: "issuing",
+    header: "Issuing",
+    sortValue: (r) => r.issuing_body,
+    render: (r) => (
+      <span className="text-gray-500">{r.issuing_body ?? "—"}{r.issuing_state ? ` (${r.issuing_state})` : ""}</span>
+    ),
+  },
+  {
+    key: "expires",
+    header: "Expires",
+    sortValue: (r) => r.expiry_date,
+    render: (r) => (
+      <>
+        <span className={r.ex.cls}>{r.expiry_date ? new Date(r.expiry_date).toLocaleDateString() : "—"}</span>
+        <span className={`ml-1 text-xs ${r.ex.cls}`}>· {r.ex.label}</span>
+      </>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    sortValue: (r) => r.status,
+    render: (r) => <span className="capitalize text-gray-600">{r.status}</span>,
+  },
+];
