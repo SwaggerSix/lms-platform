@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Building2, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Tenant {
   id: string;
@@ -53,15 +56,12 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
             Manage multi-tenant portals across the platform
           </p>
         </div>
-        <Link
-          href="/admin/tenants/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create Tenant
-        </Link>
+        <Button asChild>
+          <Link href="/admin/tenants/new">
+            <Plus className="w-4 h-4" />
+            Create Tenant
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Row */}
@@ -82,9 +82,7 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
       {/* Filters */}
       <div className="flex items-center gap-4 mb-6">
         <div className="relative flex-1 max-w-sm">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search tenants..."
@@ -106,78 +104,110 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Courses</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  No tenants found
-                </td>
-              </tr>
-            ) : (
-              filtered.map((tenant) => (
-                <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                        style={{ backgroundColor: tenant.primary_color || "#91C53C" }}
-                      >
-                        {tenant.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
-                        <p className="text-xs text-gray-500">{tenant.slug}.lms-platform.com</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full capitalize ${PLAN_STYLES[tenant.plan] || PLAN_STYLES.starter}`}>
-                      {tenant.plan}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full capitalize ${STATUS_STYLES[tenant.status] || STATUS_STYLES.active}`}>
-                      {tenant.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{tenant.member_count}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{tenant.course_count}</td>
-                  <td className="px-6 py-4">
-                    {tenant.owner ? (
-                      <p className="text-sm text-gray-700">
-                        {tenant.owner.first_name} {tenant.owner.last_name}
-                      </p>
-                    ) : (
-                      <span className="text-sm text-gray-400">--</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/admin/tenants/${tenant.id}`}
-                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-                    >
-                      Manage
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        rowKey={(t) => t.id}
+        ariaLabel="Tenant portals"
+        emptyState={
+          tenants.length === 0
+            ? {
+                icon: <Building2 className="h-10 w-10" aria-hidden="true" />,
+                title: "No tenants yet",
+                description: "Create your first tenant portal to get started.",
+                action: (
+                  <Button asChild>
+                    <Link href="/admin/tenants/new">
+                      <Plus className="w-4 h-4" />
+                      Create Tenant
                     </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
+
+const columns: DataTableColumn<Tenant>[] = [
+  {
+    key: "tenant",
+    header: "Tenant",
+    sortValue: (t) => t.name,
+    render: (tenant) => (
+      <div className="flex items-center gap-3">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+          style={{ backgroundColor: tenant.primary_color || "#91C53C" }}
+        >
+          {tenant.name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
+          <p className="text-xs text-gray-500">{tenant.slug}.lms-platform.com</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "plan",
+    header: "Plan",
+    sortValue: (t) => t.plan,
+    render: (tenant) => (
+      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full capitalize ${PLAN_STYLES[tenant.plan] || PLAN_STYLES.starter}`}>
+        {tenant.plan}
+      </span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    sortValue: (t) => t.status,
+    render: (tenant) => (
+      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full capitalize ${STATUS_STYLES[tenant.status] || STATUS_STYLES.active}`}>
+        {tenant.status}
+      </span>
+    ),
+  },
+  {
+    key: "members",
+    header: "Members",
+    sortValue: (t) => t.member_count,
+    render: (tenant) => <span className="text-sm text-gray-700">{tenant.member_count}</span>,
+  },
+  {
+    key: "courses",
+    header: "Courses",
+    sortValue: (t) => t.course_count,
+    render: (tenant) => <span className="text-sm text-gray-700">{tenant.course_count}</span>,
+  },
+  {
+    key: "owner",
+    header: "Owner",
+    sortValue: (t) => (t.owner ? `${t.owner.first_name} ${t.owner.last_name}` : null),
+    render: (tenant) =>
+      tenant.owner ? (
+        <p className="text-sm text-gray-700">
+          {tenant.owner.first_name} {tenant.owner.last_name}
+        </p>
+      ) : (
+        <span className="text-sm text-gray-500">--</span>
+      ),
+  },
+  {
+    key: "actions",
+    header: <span className="sr-only">Actions</span>,
+    className: "text-right",
+    render: (tenant) => (
+      <Link
+        href={`/admin/tenants/${tenant.id}`}
+        className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+      >
+        Manage
+        <span className="sr-only">, {tenant.name}</span>
+      </Link>
+    ),
+  },
+];

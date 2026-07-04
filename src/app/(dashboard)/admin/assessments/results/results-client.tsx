@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Download, FileQuestion, CheckCircle2, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Assessment { id: string; title: string }
 interface Result {
@@ -69,13 +71,9 @@ export default function ResultsClient({ assessments }: { assessments: Assessment
           <h1 className="text-2xl font-bold text-gray-900">Examination Results</h1>
           <p className="mt-1 text-sm text-gray-500">Per-learner exam scores and pass/fail records.</p>
         </div>
-        <button
-          onClick={exportCsv}
-          disabled={results.length === 0}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
+        <Button variant="outline" onClick={exportCsv} disabled={results.length === 0}>
           <Download className="h-4 w-4" /> Export CSV
-        </button>
+        </Button>
       </div>
 
       <div className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4">
@@ -96,52 +94,80 @@ export default function ResultsClient({ assessments }: { assessments: Assessment
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-gray-400"><Loader2 className="h-6 w-6 animate-spin" /></div>
-        ) : results.length === 0 ? (
-          <div className="py-16 text-center text-sm text-gray-400">
-            <FileQuestion className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-            No results match these filters.
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
-                <th className="px-4 py-3">Learner</th>
-                <th className="px-4 py-3">Examination</th>
-                <th className="px-4 py-3">Course</th>
-                <th className="px-4 py-3">Class</th>
-                <th className="px-4 py-3">Score</th>
-                <th className="px-4 py-3">Result</th>
-                <th className="px-4 py-3">Completed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {results.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{r.learner_name}</p>
-                    {r.learner_email && <p className="text-xs text-gray-400">{r.learner_email}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{r.assessment_title}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.course_title ?? "—"}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.class_title ?? "—"}</td>
-                  <td className="px-4 py-3 text-gray-700">{r.score != null ? `${Math.round(r.score)}%` : "—"}</td>
-                  <td className="px-4 py-3">
-                    {r.passed ? (
-                      <span className="inline-flex items-center gap-1 text-green-700"><CheckCircle2 className="h-4 w-4" /> Passed</span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-red-700"><XCircle className="h-4 w-4" /> Not passed</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">{r.completed_at ? new Date(r.completed_at).toLocaleDateString() : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-gray-400">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={results}
+          rowKey={(r) => r.id}
+          ariaLabel="Examination results"
+          initialSort="-completed"
+          emptyState={{
+            icon: <FileQuestion className="h-10 w-10" aria-hidden="true" />,
+            title: "No results match these filters.",
+          }}
+        />
+      )}
     </div>
   );
 }
+
+const columns: DataTableColumn<Result>[] = [
+  {
+    key: "learner",
+    header: "Learner",
+    sortValue: (r) => r.learner_name,
+    render: (r) => (
+      <div>
+        <p className="font-medium text-gray-900">{r.learner_name}</p>
+        {r.learner_email && <p className="text-xs text-gray-500">{r.learner_email}</p>}
+      </div>
+    ),
+  },
+  {
+    key: "assessment",
+    header: "Examination",
+    sortValue: (r) => r.assessment_title,
+    render: (r) => <span className="text-gray-700">{r.assessment_title}</span>,
+  },
+  {
+    key: "course",
+    header: "Course",
+    sortValue: (r) => r.course_title,
+    render: (r) => <span className="text-gray-500">{r.course_title ?? "—"}</span>,
+  },
+  {
+    key: "class",
+    header: "Class",
+    sortValue: (r) => r.class_title,
+    render: (r) => <span className="text-gray-500">{r.class_title ?? "—"}</span>,
+  },
+  {
+    key: "score",
+    header: "Score",
+    sortValue: (r) => r.score,
+    render: (r) => <span className="text-gray-700">{r.score != null ? `${Math.round(r.score)}%` : "—"}</span>,
+  },
+  {
+    key: "result",
+    header: "Result",
+    sortValue: (r) => (r.passed ? "Passed" : "Not passed"),
+    render: (r) =>
+      r.passed ? (
+        <span className="inline-flex items-center gap-1 text-green-700"><CheckCircle2 className="h-4 w-4" /> Passed</span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-red-700"><XCircle className="h-4 w-4" /> Not passed</span>
+      ),
+  },
+  {
+    key: "completed",
+    header: "Completed",
+    sortValue: (r) => r.completed_at,
+    render: (r) => (
+      <span className="text-gray-500">{r.completed_at ? new Date(r.completed_at).toLocaleDateString() : "—"}</span>
+    ),
+  },
+];
