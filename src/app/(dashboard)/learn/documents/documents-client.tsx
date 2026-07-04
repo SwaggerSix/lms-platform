@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/utils/cn";
+import { useToast } from "@/components/ui/toast";
 import type { Document, DocumentFolder } from "@/types/database";
 import {
   Search,
@@ -125,6 +126,7 @@ export default function DocumentsClient({
     )
   );
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const toast = useToast();
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
@@ -148,12 +150,25 @@ export default function DocumentsClient({
     return docs;
   }, [selectedFolderId, searchQuery, documents]);
 
-  const handleAcknowledge = (docId: string) => {
+  const handleAcknowledge = async (docId: string) => {
+    // Optimistic update, rolled back if the server rejects it.
     setAcknowledgedIds((prev) => {
       const next = new Set(prev);
       next.add(docId);
       return next;
     });
+    try {
+      const res = await fetch(`/api/documents/${docId}/acknowledge`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to acknowledge");
+      toast.success("Acknowledgment recorded");
+    } catch {
+      setAcknowledgedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(docId);
+        return next;
+      });
+      toast.error("Couldn't record your acknowledgment. Please try again.");
+    }
   };
 
   // -----------------------------------------------------------------------

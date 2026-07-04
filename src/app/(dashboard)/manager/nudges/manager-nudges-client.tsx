@@ -85,7 +85,7 @@ export default function ManagerNudgesClient({ teamMembers, initialAssignments, a
           <Zap className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Team Nudges</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Nudges</h1>
           <p className="text-sm text-gray-500">Assign daily MicroActions and track your team&apos;s habits.</p>
         </div>
       </div>

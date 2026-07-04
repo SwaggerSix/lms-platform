@@ -83,7 +83,6 @@ const TYPE_TO_DB: Record<CourseItem['type'], string> = {
 };
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
-const categories = ['All Categories', 'Compliance', 'Management', 'Technical', 'Sales', 'Soft Skills'];
 const types = ['All Types', 'Self-Paced', 'Instructor-Led', 'Blended'];
 const difficulties = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
 
@@ -424,7 +423,8 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           />
         </div>
         <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-          {categories.map((c) => <option key={c}>{c}</option>)}
+          <option>All Categories</option>
+          {categoryOptions.map((c) => <option key={c.id}>{c.name}</option>)}
         </select>
         <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           {types.map((t) => <option key={t}>{t}</option>)}
@@ -608,7 +608,6 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                           </button>
                           <Link href={`/admin/courses/${course.slug}/resources`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FolderOpen className="h-3.5 w-3.5" /> Course Content</Link>
                           <Link href={`/admin/courses/${course.slug}/one-pager`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FileText className="h-3.5 w-3.5" /> One-Pager</Link>
-                          <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><BarChart3 className="h-3.5 w-3.5" /> Analytics</button>
                         </div>
                       )}
                     </div>

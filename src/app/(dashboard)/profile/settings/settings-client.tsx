@@ -6,16 +6,10 @@ import {
   Bell,
   Shield,
   Settings,
-  Camera,
   Eye,
   EyeOff,
-  Monitor,
-  Moon,
-  Sun,
   Globe,
   Clock,
-  Smartphone,
-  Laptop,
   LogOut,
   Loader2,
   CheckCircle2,
@@ -36,15 +30,6 @@ export interface NotificationSetting {
   email: boolean;
 }
 
-export interface Session {
-  id: string;
-  device: string;
-  location: string;
-  lastActive: string;
-  isCurrent: boolean;
-  icon: "laptop" | "mobile";
-}
-
 export interface SettingsData {
   userId: string;
   firstName: string;
@@ -56,7 +41,6 @@ export interface SettingsData {
   bio: string;
   language: string;
   timezone: string;
-  theme: "light" | "dark" | "system";
   dateFormat: string;
 }
 
@@ -83,11 +67,6 @@ const INITIAL_NOTIFICATIONS: NotificationSetting[] = [
   { key: "digest", label: "Weekly Digest", inApp: true, email: false },
 ];
 
-const SESSIONS: Session[] = [
-  { id: "s1", device: "MacBook Pro - Chrome", location: "San Francisco, CA", lastActive: "Active now", isCurrent: true, icon: "laptop" },
-  { id: "s2", device: "iPhone 15 - Safari", location: "San Francisco, CA", lastActive: "2 hours ago", isCurrent: false, icon: "mobile" },
-];
-
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -104,7 +83,6 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [language, setLanguage] = useState(data.language);
   const [timezone, setTimezone] = useState(data.timezone);
-  const [theme, setTheme] = useState<"light" | "dark" | "system">(data.theme);
   const [dateFormat, setDateFormat] = useState(data.dateFormat);
   const [saving, setSaving] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -144,7 +122,6 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
     language,
     locale: language,
     timezone,
-    theme,
     date_format: dateFormat,
     notifications: notifications.reduce((acc, n) => {
       acc[n.key] = { inApp: n.inApp, email: n.email };
@@ -297,17 +274,12 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
 
               {/* Avatar upload area */}
               <div className="mt-6 flex items-center gap-4">
-                <div className="group relative">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white">
-                    {data.initials}
-                  </div>
-                  <div className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Camera className="h-5 w-5 text-white" />
-                  </div>
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white">
+                  {data.initials}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">Profile Photo</p>
-                  <p className="text-xs text-gray-500">Click avatar to change. JPG, PNG or GIF. Max 2MB.</p>
+                  <p className="text-xs text-gray-500">Your initials are shown while photo uploads are unavailable.</p>
                 </div>
               </div>
 
@@ -490,49 +462,6 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </div>
               </div>
 
-              {/* Active Sessions */}
-              <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900">Active Sessions</h2>
-                <p className="mt-1 text-sm text-gray-500">Manage devices where you are currently logged in.</p>
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        <th className="pb-3 pr-4">Device</th>
-                        <th className="pb-3 px-4">Location</th>
-                        <th className="pb-3 px-4">Last Active</th>
-                        <th className="pb-3 pl-4"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {SESSIONS.map((session) => (
-                        <tr key={session.id} className={cn(session.isCurrent && "bg-green-50")}>
-                          <td className="py-3 pr-4">
-                            <div className="flex items-center gap-2">
-                              {session.icon === "laptop" ? <Laptop className="h-4 w-4 text-gray-400" /> : <Smartphone className="h-4 w-4 text-gray-400" />}
-                              <span className="text-sm font-medium text-gray-900">{session.device}</span>
-                              {session.isCurrent && (
-                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Current</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{session.location}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{session.lastActive}</td>
-                          <td className="py-3 pl-4">
-                            {!session.isCurrent && (
-                              <button className="inline-flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700">
-                                <LogOut className="h-3.5 w-3.5" />
-                                Revoke
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
               {/* Two-Factor Authentication */}
               <TwoFactorCard />
             </div>
@@ -581,44 +510,6 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     <option value="Europe/Berlin">Central European Time (CET)</option>
                     <option value="Asia/Tokyo">Japan Standard Time (JST)</option>
                   </select>
-                </div>
-
-                {/* Theme */}
-                <div>
-                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <Monitor className="h-4 w-4" /> Theme
-                  </label>
-                  <div className="mt-2 flex gap-3">
-                    {[
-                      { key: "light" as const, label: "Light", icon: Sun },
-                      { key: "dark" as const, label: "Dark", icon: Moon },
-                      { key: "system" as const, label: "System", icon: Monitor },
-                    ].map((opt) => {
-                      const Icon = opt.icon;
-                      return (
-                        <label
-                          key={opt.key}
-                          className={cn(
-                            "flex cursor-pointer items-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors",
-                            theme === opt.key
-                              ? "border-indigo-600 bg-indigo-50 text-indigo-600"
-                              : "border-gray-200 text-gray-600 hover:bg-gray-50"
-                          )}
-                        >
-                          <input
-                            type="radio"
-                            name="theme"
-                            value={opt.key}
-                            checked={theme === opt.key}
-                            onChange={() => setTheme(opt.key)}
-                            className="sr-only"
-                          />
-                          <Icon className="h-4 w-4" />
-                          {opt.label}
-                        </label>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 {/* Date Format */}

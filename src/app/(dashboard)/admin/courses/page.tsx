@@ -58,12 +58,20 @@ export default async function CoursesPage() {
 
   const categoryOptions = (categoryRows ?? []).map((c: any) => ({ id: c.id, name: c.name }));
 
+  // Aggregate real enrollment/completion numbers per course.
+  const { data: enrollmentRows } = await service
+    .from('enrollments')
+    .select('course_id, status');
+  const enrollmentStats: Record<string, { total: number; completed: number }> = {};
+  for (const e of enrollmentRows ?? []) {
+    if (!e.course_id) continue;
+    const stats = (enrollmentStats[e.course_id] ??= { total: 0, completed: 0 });
+    stats.total += 1;
+    if (e.status === 'completed') stats.completed += 1;
+  }
+
   const courses: CourseItem[] = (rows ?? []).map((row: any, index: number) => {
-    const isPublished = row.status === 'published';
-    // Derive a deterministic pseudo-random number from the row id for placeholder stats
-    const seed = row.id
-      ? row.id.split('').reduce((acc: number, ch: string) => acc + ch.charCodeAt(0), 0)
-      : index;
+    const stats = enrollmentStats[row.id] ?? { total: 0, completed: 0 };
 
     return {
       id: row.id,
@@ -74,8 +82,8 @@ export default async function CoursesPage() {
       category: row.category?.name ?? 'General',
       categoryId: row.category_id ?? '',
       difficulty: difficultyMap[row.difficulty_level] ?? 'beginner',
-      enrolled: isPublished ? 100 + (seed * 37) % 900 : 0,
-      completionRate: isPublished ? 60 + (seed * 13) % 35 : 0,
+      enrolled: stats.total,
+      completionRate: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0,
       duration: row.estimated_duration ?? 0,
       thumbnail: GRADIENTS[index % GRADIENTS.length],
       coverUrl: row.thumbnail_url ?? null,

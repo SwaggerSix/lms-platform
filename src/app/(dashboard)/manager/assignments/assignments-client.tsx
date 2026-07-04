@@ -343,7 +343,7 @@ export default function AssignmentsClient({
           <div className="flex items-center gap-3 mb-1">
             <BookOpen className="h-8 w-8 text-indigo-600" />
             <h1 className="text-3xl font-bold text-gray-900">
-              Course Assignments
+              Assignments
             </h1>
           </div>
           <p className="text-gray-500 mt-1">

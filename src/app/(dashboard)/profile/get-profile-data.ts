@@ -3,6 +3,8 @@ import type {
   ProfileData,
   ProfileSkill,
   ProfileCertification,
+  ProfileActivity,
+  ProfileBadge,
 } from "./profile-client";
 
 // Builds the full ProfileData for a given users-table id.
@@ -116,15 +118,65 @@ export async function buildProfileData(
     }
   );
 
-  const { data: enrollments } = await service
-    .from("enrollments")
-    .select("id, status, completed_at")
-    .eq("user_id", userData.id);
+  const [{ data: enrollments }, { data: userBadgesRaw }] = await Promise.all([
+    service
+      .from("enrollments")
+      .select("id, status, completed_at, enrolled_at, time_spent, course:courses(title)")
+      .eq("user_id", userData.id),
+    service
+      .from("user_badges")
+      .select("awarded_at, badge:badges(name)")
+      .eq("user_id", userData.id)
+      .order("awarded_at", { ascending: false }),
+  ]);
 
   const completedCourses = (enrollments || []).filter(
     (e: any) => e.status === "completed"
   ).length;
   const certificateCount = certifications.length;
+  const learningHours = Math.round(
+    (enrollments || []).reduce((sum: number, e: any) => sum + (e.time_spent ?? 0), 0) / 60
+  );
+
+  const topBadges: ProfileBadge[] = (userBadgesRaw || [])
+    .filter((ub: any) => ub.badge?.name)
+    .slice(0, 4)
+    .map((ub: any) => ({ name: ub.badge.name }));
+
+  // Recent activity assembled from real enrollment and badge events.
+  const activityEvents: ProfileActivity[] = [];
+  for (const e of enrollments || []) {
+    const title = (e as any).course?.title ?? "a course";
+    if ((e as any).enrolled_at) {
+      activityEvents.push({
+        id: `enrolled-${(e as any).id}`,
+        text: `Started ${title}`,
+        date: (e as any).enrolled_at,
+        kind: "started",
+      });
+    }
+    if ((e as any).completed_at) {
+      activityEvents.push({
+        id: `completed-${(e as any).id}`,
+        text: `Completed ${title}`,
+        date: (e as any).completed_at,
+        kind: "completed",
+      });
+    }
+  }
+  for (const [idx, ub] of (userBadgesRaw || []).entries()) {
+    if ((ub as any).badge?.name && (ub as any).awarded_at) {
+      activityEvents.push({
+        id: `badge-${idx}`,
+        text: `Earned ${(ub as any).badge.name} badge`,
+        date: (ub as any).awarded_at,
+        kind: "badge",
+      });
+    }
+  }
+  const recentActivity = activityEvents
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6);
 
   const firstName = userData.first_name || "";
   const lastName = userData.last_name || "";
@@ -151,11 +203,13 @@ export async function buildProfileData(
     bio,
     skills,
     certifications,
+    recentActivity,
+    topBadges,
     stats: {
       coursesCompleted: completedCourses,
-      learningHours: 0,
+      learningHours,
       certificates: certificateCount,
-      dayStreak: 0,
+      badgesEarned: (userBadgesRaw || []).length,
     },
   };
 }

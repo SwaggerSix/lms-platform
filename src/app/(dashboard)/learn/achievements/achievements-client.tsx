@@ -110,11 +110,9 @@ const LEVEL_NAMES: Record<number, string> = {
 /* ------------------------------------------------------------------ */
 
 type MainTab = "Badges" | "Leaderboard" | "Activity";
-type LBFilter = "Global" | "My Department" | "This Month";
 
 export default function AchievementsClient({ data }: { data: AchievementsData }) {
   const [mainTab, setMainTab] = useState<MainTab>("Badges");
-  const [lbFilter, setLbFilter] = useState<LBFilter>("Global");
 
   const {
     totalPoints,
@@ -308,24 +306,6 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
         {/* ======== LEADERBOARD TAB ======== */}
         {mainTab === "Leaderboard" && (
           <div className="mt-6">
-            {/* Sub-filter tabs */}
-            <div className="mb-4 flex gap-2">
-              {(["Global", "My Department", "This Month"] as LBFilter[]).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setLbFilter(f)}
-                  className={cn(
-                    "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                    lbFilter === f
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-
             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <table className="w-full">
                 <thead>

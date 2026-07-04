@@ -522,9 +522,9 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
             <h3 className="mt-4 text-lg font-medium text-gray-900">No sessions found</h3>
             <p className="mt-1 text-sm text-gray-500">
               {activeTab === "upcoming"
-                ? "There are no upcoming ILT sessions at this time."
+                ? "There are no upcoming webinars at this time."
                 : activeTab === "past"
-                ? "You have no past ILT session records."
+                ? "You have no past webinar records."
                 : "No sessions available."}
             </p>
           </div>

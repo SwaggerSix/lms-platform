@@ -115,7 +115,6 @@ export default async function AdminDashboardPage() {
     enrollmentsThisMonth,
     completionRate,
     avgScore,
-    complianceRate: completionRate,
     topCourses,
     recentActivity,
   };

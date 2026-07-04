@@ -33,17 +33,27 @@ export default async function LearnerDocumentsPage() {
 
   // Org-wide documents (user_id IS NULL) plus this learner's own personal
   // documents (e.g. course materials provisioned on enrollment).
-  const { data: documentsData } = await service
-    .from("documents")
-    .select("*")
-    .or(`user_id.is.null,user_id.eq.${dbUser.id}`)
-    .order("updated_at", { ascending: false });
+  const [{ data: documentsData }, { data: acknowledgmentsData }] = await Promise.all([
+    service
+      .from("documents")
+      .select("*")
+      .or(`user_id.is.null,user_id.eq.${dbUser.id}`)
+      .order("updated_at", { ascending: false }),
+    service
+      .from("document_acknowledgments")
+      .select("document_id")
+      .eq("user_id", dbUser.id),
+  ]);
+
+  const acknowledgedIds = new Set(
+    (acknowledgmentsData ?? []).map((a: { document_id: string }) => a.document_id)
+  );
 
   // Build folder list with document counts
   const documents: DocumentWithAcknowledgment[] = (documentsData ?? []).map(
     (doc: Document) => ({
       ...doc,
-      acknowledged: false, // TODO: join with document_acknowledgments for current user
+      acknowledged: acknowledgedIds.has(doc.id),
     })
   );
 

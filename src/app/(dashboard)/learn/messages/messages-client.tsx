@@ -5,11 +5,7 @@ import {
   Search,
   Plus,
   Send,
-  Paperclip,
-  MoreHorizontal,
   X,
-  Phone,
-  Video,
   File,
   Image as ImageIcon,
   Check,
@@ -972,17 +968,6 @@ export default function MessagesClient({
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button aria-label="Start voice call" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <Phone className="h-5 w-5" aria-hidden="true" />
-              </button>
-              <button aria-label="Start video call" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <Video className="h-5 w-5" aria-hidden="true" />
-              </button>
-              <button aria-label="Conversation options" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
           </div>
 
           {/* Messages area */}
@@ -1118,9 +1103,6 @@ export default function MessagesClient({
           {/* Input area */}
           <div className="border-t border-gray-200 px-6 py-4">
             <div className="flex items-end gap-3">
-              <button aria-label="Attach file" className="mb-1 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <Paperclip className="h-5 w-5" aria-hidden="true" />
-              </button>
               <div className="flex-1">
                 <input
                   type="text"

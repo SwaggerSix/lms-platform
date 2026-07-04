@@ -5,14 +5,11 @@ import {
   BookOpen,
   CheckCircle2,
   Award,
-  Flame,
   Clock,
   ArrowRight,
   Play,
   Star,
   Trophy,
-  Target,
-  Zap,
   Sparkles,
   Users,
   TrendingUp,
@@ -23,14 +20,14 @@ export interface LearnerDashboardData {
   coursesInProgress: number;
   coursesCompleted: number;
   certificatesEarned: number;
+  upcomingDeadlinesCount: number;
   inProgressCourses: {
     id: string;
+    courseId: string;
     title: string;
-    instructor: string;
+    instructor: string | null;
     thumbnail: string;
     progress: number;
-    totalLessons: number;
-    completedLessons: number;
     category: string;
   }[];
   upcomingDeadlines: {
@@ -47,80 +44,59 @@ export interface LearnerDashboardData {
     slug: string;
     description: string;
     thumbnail: string;
-    instructor: string;
+    instructor: string | null;
     enrolled: number;
     rating: number;
     duration: string;
     type: string;
-    badge: string;
+    badge: string | null;
+  }[];
+  recentAchievements: {
+    id: string;
+    title: string;
+    description: string;
+    awardedAt: string;
   }[];
 }
 
-const recentAchievements = [
-  {
-    id: "1",
-    title: "Fast Learner",
-    description: "Complete 3 courses in one month",
-    icon: Zap,
-    color: "text-yellow-500",
-    bg: "bg-yellow-50",
-    date: "2 days ago",
-  },
-  {
-    id: "2",
-    title: "Perfect Score",
-    description: "Score 100% on an assessment",
-    icon: Target,
-    color: "text-green-500",
-    bg: "bg-green-50",
-    date: "5 days ago",
-  },
-  {
-    id: "3",
-    title: "Team Player",
-    description: "Help 5 peers in discussions",
-    icon: Trophy,
-    color: "text-purple-500",
-    bg: "bg-purple-50",
-    date: "1 week ago",
-  },
-];
+function formatAwardedDate(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 1) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks === 1 ? "" : "s"} ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 export default function LearnerDashboardClient({ data }: { data: LearnerDashboardData }) {
   const stats = [
     {
       label: "Courses in Progress",
       value: String(data.coursesInProgress),
-      change: "+1 this week",
       icon: BookOpen,
-      color: "bg-blue-500",
       bgLight: "bg-blue-50",
       textColor: "text-blue-600",
     },
     {
       label: "Completed Courses",
       value: String(data.coursesCompleted),
-      change: "+2 this month",
       icon: CheckCircle2,
-      color: "bg-green-500",
       bgLight: "bg-green-50",
       textColor: "text-green-600",
     },
     {
       label: "Certificates Earned",
       value: String(data.certificatesEarned),
-      change: "1 pending",
       icon: Award,
-      color: "bg-purple-500",
       bgLight: "bg-purple-50",
       textColor: "text-purple-600",
     },
     {
-      label: "Learning Streak",
-      value: "7 days",
-      change: "Personal best!",
-      icon: Flame,
-      color: "bg-orange-500",
+      label: "Upcoming Deadlines",
+      value: String(data.upcomingDeadlinesCount),
+      icon: Clock,
       bgLight: "bg-orange-50",
       textColor: "text-orange-600",
     },
@@ -133,10 +109,12 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Welcome back, {data.userName}!</h1>
           <p className="mt-1 text-indigo-100">
-            You&apos;re on a 7-day learning streak. Keep it going!
+            {data.coursesInProgress > 0
+              ? `You have ${data.coursesInProgress} course${data.coursesInProgress === 1 ? "" : "s"} in progress. Pick up where you left off!`
+              : "Explore the catalog to start your next course."}
           </p>
           <a
-            href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].id}` : "/learn/my-courses"}
+            href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].courseId}` : "/learn/my-courses"}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
           >
             <Play className="h-4 w-4" aria-hidden="true" />
@@ -163,7 +141,6 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               </div>
               <p className="mt-3 text-2xl font-bold text-gray-900">{stat.value}</p>
               <p className="text-sm text-gray-500">{stat.label}</p>
-              <p className={cn("mt-1 text-xs font-medium", stat.textColor)}>{stat.change}</p>
             </div>
           );
         })}
@@ -191,18 +168,11 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               >
                 <div className={cn("relative flex h-40 items-end p-4", course.thumbnail)}>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <span
-                    className={cn(
-                      "absolute right-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide",
-                      course.badge === "Most Popular"
-                        ? "bg-amber-400 text-amber-900"
-                        : course.badge === "New"
-                          ? "bg-emerald-400 text-emerald-900"
-                          : "bg-red-400 text-white"
-                    )}
-                  >
-                    {course.badge}
-                  </span>
+                  {course.badge && (
+                    <span className="absolute right-3 top-3 rounded-full bg-emerald-400 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-emerald-900">
+                      {course.badge}
+                    </span>
+                  )}
                   <div className="relative z-10">
                     <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
                       {course.type}
@@ -212,7 +182,9 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                 </div>
                 <div className="p-4">
                   <p className="line-clamp-2 text-sm text-gray-600">{course.description}</p>
-                  <p className="mt-2 text-sm text-gray-500">{course.instructor}</p>
+                  {course.instructor && (
+                    <p className="mt-2 text-sm text-gray-500">{course.instructor}</p>
+                  )}
                   <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       {course.rating > 0 && (
@@ -256,7 +228,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
             {data.inProgressCourses.map((course) => (
               <a
                 key={course.id}
-                href={`/learn/player/${course.id}`}
+                href={`/learn/player/${course.courseId}`}
                 className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <div className={cn("flex h-36 items-center justify-center", course.thumbnail)}>
@@ -269,12 +241,12 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                     </span>
                   </div>
                   <h3 className="font-semibold text-gray-900">{course.title}</h3>
-                  <p className="mt-0.5 text-sm text-gray-500">{course.instructor}</p>
+                  {course.instructor && (
+                    <p className="mt-0.5 text-sm text-gray-500">{course.instructor}</p>
+                  )}
                   <div className="mt-3">
                     <div className="mb-1 flex items-center justify-between text-xs">
-                      <span className="text-gray-500">
-                        {course.completedLessons}/{course.totalLessons} lessons
-                      </span>
+                      <span className="text-gray-500">Progress</span>
                       <span className="font-medium text-indigo-600">{course.progress}%</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
@@ -370,26 +342,35 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>
-          <div className="space-y-3">
-            {recentAchievements.map((achievement) => {
-              const Icon = achievement.icon;
-              return (
+          {data.recentAchievements.length > 0 ? (
+            <div className="space-y-3">
+              {data.recentAchievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", achievement.bg)}>
-                    <Icon className={cn("h-5 w-5", achievement.color)} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
+                    <Trophy className="h-5 w-5 text-amber-500" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-gray-900">{achievement.title}</p>
                     <p className="truncate text-xs text-gray-500">{achievement.description}</p>
                   </div>
-                  <span className="shrink-0 text-[11px] text-gray-500">{achievement.date}</span>
+                  <span className="shrink-0 text-[11px] text-gray-500">
+                    {formatAwardedDate(achievement.awardedAt)}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+              <Trophy className="mx-auto h-8 w-8 text-gray-400" aria-hidden="true" />
+              <p className="mt-2 text-sm font-medium text-gray-900">No badges yet</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Complete courses and assessments to earn your first badge.
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>
