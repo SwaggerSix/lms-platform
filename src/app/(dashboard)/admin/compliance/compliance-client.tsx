@@ -2,25 +2,22 @@
 
 import { useState } from 'react';
 import { cn } from '@/utils/cn';
-import { formatPercent, formatNumber } from '@/utils/format';
+import { formatNumber } from '@/utils/format';
 import {
   ShieldCheck,
   AlertTriangle,
   Clock,
   CheckCircle2,
   XCircle,
-  ChevronDown,
-  ChevronRight,
   Search,
-  Filter,
-  MoreHorizontal,
   Edit,
   Eye,
   Users,
   X,
-  Loader2,
   Plus,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import DataTable, { type DataTableColumn } from '@/components/ui/data-table';
 
 export interface ComplianceUserStatus {
   name: string;
@@ -82,7 +79,6 @@ export interface CourseOption {
 
 export default function ComplianceClient({ requirements: initialRequirements, overviewStats, courses = [] }: ComplianceClientProps & { courses?: CourseOption[] }) {
   const [requirements, setRequirements] = useState(initialRequirements);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'create'>('view');
@@ -252,6 +248,95 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
     }
   };
 
+  const columns: DataTableColumn<ComplianceRequirement>[] = [
+    {
+      key: 'name',
+      header: 'Requirement',
+      sortValue: (r) => r.name,
+      render: (req) => <p className="text-sm font-medium text-gray-900">{req.name}</p>,
+    },
+    {
+      key: 'regulation',
+      header: 'Regulation',
+      sortValue: (r) => r.regulation,
+      render: (req) => <span className="text-sm text-gray-500">{req.regulation}</span>,
+    },
+    {
+      key: 'mandatory',
+      header: 'Mandatory',
+      className: 'text-center',
+      sortValue: (r) => (r.mandatory ? 0 : 1),
+      render: (req) =>
+        req.mandatory ? (
+          <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Required</span>
+        ) : (
+          <span className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-500 ring-1 ring-inset ring-gray-500/20">Optional</span>
+        ),
+    },
+    {
+      key: 'applicableTo',
+      header: 'Applicable To',
+      sortValue: (r) => r.applicableTo,
+      render: (req) => <span className="text-sm text-gray-500">{req.applicableTo}</span>,
+    },
+    {
+      key: 'course',
+      header: 'Course',
+      render: (req) => <span className="text-sm font-medium text-indigo-600">{req.linkedCourse}</span>,
+    },
+    {
+      key: 'frequency',
+      header: 'Frequency',
+      className: 'text-center',
+      sortValue: (r) => r.frequency,
+      render: (req) => <span className="text-sm text-gray-500">{req.frequency}</span>,
+    },
+    {
+      key: 'compliance',
+      header: 'Compliance',
+      sortValue: (r) => r.complianceRate,
+      render: (req) => (
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-20 rounded-full bg-gray-100">
+            <div
+              className={cn(
+                'h-2 rounded-full',
+                req.complianceRate >= 90 ? 'bg-green-500' : req.complianceRate >= 75 ? 'bg-amber-500' : 'bg-red-500'
+              )}
+              style={{ width: `${req.complianceRate}%` }}
+            />
+          </div>
+          <span className="text-xs font-semibold text-gray-700">{req.complianceRate}%</span>
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      className: 'w-20 text-right',
+      render: (req) => (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => openViewModal(req)}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            title="View details"
+          >
+            <Eye className="h-4 w-4" />
+            <span className="sr-only">View {req.name}</span>
+          </button>
+          <button
+            onClick={() => openEditModal(req)}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            title="Edit requirement"
+          >
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">Edit {req.name}</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -260,13 +345,10 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           <h1 className="text-2xl font-bold text-gray-900">Compliance Management</h1>
           <p className="mt-1 text-sm text-gray-500">Track regulatory and training compliance</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-        >
+        <Button onClick={openCreateModal}>
           <Plus className="h-4 w-4" />
           Add Requirement
-        </button>
+        </Button>
       </div>
 
       {/* Stats */}
@@ -311,120 +393,63 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       )}
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-8 px-4 py-3"></th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Requirement</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Regulation</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Mandatory</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Applicable To</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Course</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Frequency</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Compliance</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filtered.map((req) => (
-              <>
-                <tr key={req.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4">
-                    <button onClick={() => setExpandedId(expandedId === req.id ? null : req.id)} className="text-gray-400 hover:text-gray-600">
-                      {expandedId === req.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </button>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-gray-900">{req.name}</p>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{req.regulation}</td>
-                  <td className="px-6 py-4 text-center">
-                    {req.mandatory ? (
-                      <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Required</span>
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        rowKey={(req) => req.id}
+        ariaLabel="Compliance requirements"
+        renderExpanded={(req) => (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">User Compliance Status</h4>
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {formatNumber(req.totalUsers)} total</span>
+                <span className="flex items-center gap-1 text-green-600"><CheckCircle2 className="h-3 w-3" /> {formatNumber(req.compliantUsers)} compliant</span>
+                <span className="flex items-center gap-1 text-red-600"><XCircle className="h-3 w-3" /> {req.overdueUsers} overdue</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {req.userStatus.map((user, i) => (
+                <div key={i} className="flex items-center gap-4 rounded-lg bg-white px-4 py-3 border border-gray-100">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                    {user.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.department}</p>
+                  </div>
+                  <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', userStatusBadge[user.status])}>
+                    {user.status}
+                  </span>
+                  <div className="text-right text-xs">
+                    {user.completedDate ? (
+                      <p className="text-gray-500">Completed: {user.completedDate}</p>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-500 ring-1 ring-inset ring-gray-500/20">Optional</span>
+                      <p className="text-gray-500">Not completed</p>
                     )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{req.applicableTo}</td>
-                  <td className="px-6 py-4 text-sm text-indigo-600 font-medium">{req.linkedCourse}</td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-500">{req.frequency}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-20 rounded-full bg-gray-100">
-                        <div
-                          className={cn(
-                            'h-2 rounded-full',
-                            req.complianceRate >= 90 ? 'bg-green-500' : req.complianceRate >= 75 ? 'bg-amber-500' : 'bg-red-500'
-                          )}
-                          style={{ width: `${req.complianceRate}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-gray-700">{req.complianceRate}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openViewModal(req)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                        title="View details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => openEditModal(req)}
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                        title="Edit requirement"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                {expandedId === req.id && (
-                  <tr key={`${req.id}-detail`}>
-                    <td colSpan={9} className="bg-gray-50/50 px-10 py-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">User Compliance Status</h4>
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {formatNumber(req.totalUsers)} total</span>
-                          <span className="flex items-center gap-1 text-green-600"><CheckCircle2 className="h-3 w-3" /> {formatNumber(req.compliantUsers)} compliant</span>
-                          <span className="flex items-center gap-1 text-red-600"><XCircle className="h-3 w-3" /> {req.overdueUsers} overdue</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        {req.userStatus.map((user, i) => (
-                          <div key={i} className="flex items-center gap-4 rounded-lg bg-white px-4 py-3 border border-gray-100">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
-                              {user.name.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                              <p className="text-xs text-gray-400">{user.department}</p>
-                            </div>
-                            <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', userStatusBadge[user.status])}>
-                              {user.status}
-                            </span>
-                            <div className="text-right text-xs">
-                              {user.completedDate ? (
-                                <p className="text-gray-500">Completed: {user.completedDate}</p>
-                              ) : (
-                                <p className="text-gray-400">Not completed</p>
-                              )}
-                              <p className="text-gray-400">Due: {user.dueDate}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <p className="text-gray-500">Due: {user.dueDate}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        emptyState={
+          requirements.length === 0
+            ? {
+                icon: <ShieldCheck className="h-10 w-10" aria-hidden="true" />,
+                title: 'No compliance requirements yet',
+                description: 'Add a requirement to start tracking regulatory and training compliance.',
+                action: (
+                  <Button onClick={openCreateModal}>
+                    <Plus className="h-4 w-4" />
+                    Add Requirement
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+      />
 
       {/* View/Edit/Create Modal */}
       {modalOpen && (selectedReq || modalMode === 'create') && (
@@ -600,21 +625,16 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                   </select>
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
-                  <button
+                  <Button
                     type="button"
-                    onClick={() => setModalMode('view')}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    variant="outline"
+                    onClick={modalMode === 'create' ? closeModal : () => setModalMode('view')}
                   >
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                  >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  </Button>
+                  <Button type="submit" loading={loading}>
                     {modalMode === 'create' ? 'Create Requirement' : 'Save Changes'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { cn } from "@/utils/cn";
 import {
@@ -43,6 +43,13 @@ export interface DataTableProps<Row> {
   /** Accessible label for the table. */
   ariaLabel?: string;
   className?: string;
+  /**
+   * Render a full-width detail panel below a row. Providing this adds a
+   * leading expand-toggle column; the panel spans every column when open.
+   */
+  renderExpanded?: (row: Row) => React.ReactNode;
+  /** With renderExpanded: rows for which this returns false get no toggle. Defaults to every row expandable. */
+  isExpandable?: (row: Row) => boolean;
 }
 
 /**
@@ -60,12 +67,26 @@ export default function DataTable<Row>({
   emptyState,
   ariaLabel,
   className,
+  renderExpanded,
+  isExpandable,
 }: DataTableProps<Row>) {
   const [sortKey, setSortKey] = useState<string | null>(
     initialSort ? initialSort.replace(/^-/, "") : null
   );
   const [sortDesc, setSortDesc] = useState(initialSort?.startsWith("-") ?? false);
   const [page, setPage] = useState(1);
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+
+  const colCount = columns.length + (renderExpanded ? 1 : 0);
+
+  const toggleExpanded = (key: string) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const sorted = useMemo(() => {
     if (!sortKey) return rows;
@@ -120,6 +141,11 @@ export default function DataTable<Row>({
       <Table aria-label={ariaLabel}>
         <TableHeader>
           <TableRow className="hover:bg-gray-50">
+            {renderExpanded && (
+              <TableHead className="w-8">
+                <span className="sr-only">Expand</span>
+              </TableHead>
+            )}
             {columns.map((column) => {
               const isSorted = sortKey === column.key;
               return (
@@ -162,18 +188,51 @@ export default function DataTable<Row>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pageRows.map((row) => (
-            <TableRow key={rowKey(row)}>
-              {columns.map((column) => (
-                <TableCell key={column.key} className={column.className}>
-                  {column.render(row)}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
+          {pageRows.map((row) => {
+            const key = rowKey(row);
+            const expandable = renderExpanded ? isExpandable?.(row) ?? true : false;
+            const isOpen = expandable && expandedKeys.has(key);
+            return (
+              <Fragment key={key}>
+                <TableRow>
+                  {renderExpanded && (
+                    <TableCell className="w-8">
+                      {expandable && (
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(key)}
+                          aria-expanded={isOpen}
+                          className="rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        >
+                          <span className="sr-only">{isOpen ? "Collapse row" : "Expand row"}</span>
+                          {isOpen ? (
+                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </button>
+                      )}
+                    </TableCell>
+                  )}
+                  {columns.map((column) => (
+                    <TableCell key={column.key} className={column.className}>
+                      {column.render(row)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                {isOpen && renderExpanded && (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={colCount} className="bg-gray-50/50 px-6 py-4">
+                      {renderExpanded(row)}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
+            );
+          })}
           {pageRows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
+              <TableCell colSpan={colCount} className="py-8 text-center text-gray-500">
                 No matching results
               </TableCell>
             </TableRow>
