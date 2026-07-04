@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { trackEvent } from "@/lib/analytics/track";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -476,15 +477,17 @@ export default function DiscussionsClient({
           })}
 
           {filteredThreads.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-16 text-center">
-              <MessageSquare className="h-12 w-12 text-gray-300" />
-              <p className="mt-4 text-sm font-medium text-gray-500">No discussions found</p>
-              <p className="mt-1 text-sm text-gray-400">Try adjusting your search or start a new discussion.</p>
-              <Button className="mt-4" onClick={() => { setShowNewForm(true); setSearchQuery(""); }}>
-                <Plus className="h-4 w-4" />
-                New Discussion
-              </Button>
-            </div>
+            <EmptyState
+              icon={<MessageSquare className="h-10 w-10" aria-hidden="true" />}
+              title="No discussions found"
+              description="Try adjusting your search or start a new discussion."
+              action={
+                <Button onClick={() => { setShowNewForm(true); setSearchQuery(""); }}>
+                  <Plus className="h-4 w-4" />
+                  New Discussion
+                </Button>
+              }
+            />
           )}
 
           {/* Pagination */}

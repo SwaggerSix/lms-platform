@@ -22,6 +22,7 @@ import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import DOMPurify from "dompurify";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -464,13 +465,12 @@ export default function CertificationsClient({ certificates, userName }: Certifi
         </div>
 
         {filteredCerts.length === 0 && (
-          <div className="mt-12 flex flex-col items-center py-16">
-            <Award className="h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No certificates found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Complete courses to earn certificates.
-            </p>
-          </div>
+          <EmptyState
+            className="mt-12"
+            icon={<Award className="h-10 w-10" aria-hidden="true" />}
+            title="No certificates found"
+            description="Complete courses to earn certificates."
+          />
         )}
       </div>
 
