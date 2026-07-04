@@ -183,7 +183,7 @@ function FAQItem({ article, searchQuery }: { article: KBArticleView; searchQuery
               <ThumbsDown className="h-3.5 w-3.5" /> No
             </button>
             {feedback && (
-              <span className="text-xs text-gray-400">Thanks for your feedback!</span>
+              <span className="text-xs text-gray-500">Thanks for your feedback!</span>
             )}
           </div>
         </div>
@@ -229,7 +229,7 @@ function SearchResults({
       </p>
       {Object.entries(grouped).map(([categoryName, catArticles]) => (
         <div key={categoryName}>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">
             {categoryName}
           </h3>
           <div className="space-y-2">
@@ -245,7 +245,7 @@ function SearchResults({
                 <p className="mt-1 text-sm text-gray-500 line-clamp-2">
                   {highlightMatch(article.excerpt, searchQuery)}
                 </p>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
+                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
                     <Eye className="h-3 w-3" /> {formatNumber(article.viewCount)} views
                   </span>
@@ -326,7 +326,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-gray-600"
               >
                 Clear
               </button>
@@ -349,7 +349,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
             <span className="text-gray-900 font-medium">{selectedCategoryData.name}</span>
             <button
               onClick={() => setSelectedCategory(null)}
-              className="ml-2 text-xs text-gray-400 hover:text-gray-600"
+              className="ml-2 text-xs text-gray-500 hover:text-gray-600"
             >
               (clear filter)
             </button>
@@ -391,7 +391,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
                         ))}
                       </div>
                     </div>
-                    <div className="ml-4 flex flex-col items-end gap-1 text-xs text-gray-400">
+                    <div className="ml-4 flex flex-col items-end gap-1 text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <Eye className="h-3 w-3" /> {formatNumber(article.viewCount)}
                       </span>
@@ -473,7 +473,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
                       </span>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-gray-900 truncate">{article.title}</h4>
-                        <div className="mt-0.5 flex items-center gap-3 text-xs text-gray-400">
+                        <div className="mt-0.5 flex items-center gap-3 text-xs text-gray-500">
                           <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
                             {article.categoryName}
                           </span>

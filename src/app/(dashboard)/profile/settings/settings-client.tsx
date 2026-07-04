@@ -244,12 +244,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
 
         {/* ---- Tab Navigation ---- */}
         <div className="mt-6 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Settings sections">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.key}
+                  aria-pressed={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={cn(
                     "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",

@@ -64,7 +64,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Filter courses by status">
             {TABS.map((tab) => {
               const count =
                 tab.key === "all"
@@ -73,6 +73,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
               return (
                 <button
                   key={tab.key}
+                  aria-pressed={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={cn(
                     "relative pb-3 text-sm font-medium transition-colors",

@@ -101,8 +101,9 @@ export default function LearnerFeedbackClient({
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <div className="flex gap-6">
+        <div className="flex gap-6" aria-label="Feedback views">
           <button
+            aria-pressed={activeTab === "pending"}
             onClick={() => setActiveTab("pending")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "pending"
@@ -118,6 +119,7 @@ export default function LearnerFeedbackClient({
             )}
           </button>
           <button
+            aria-pressed={activeTab === "reports"}
             onClick={() => setActiveTab("reports")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "reports"

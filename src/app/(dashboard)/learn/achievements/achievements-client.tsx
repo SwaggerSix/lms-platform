@@ -225,10 +225,11 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
 
         {/* ---- Main Tabs ---- */}
         <div className="mt-8 border-b border-gray-200">
-          <nav className="flex gap-6">
+          <nav className="flex gap-6" aria-label="Achievement views">
             {(["Badges", "Leaderboard", "Activity"] as MainTab[]).map((tab) => (
               <button
                 key={tab}
+                aria-pressed={mainTab === tab}
                 onClick={() => setMainTab(tab)}
                 className={cn(
                   "relative pb-3 text-sm font-medium transition-colors",

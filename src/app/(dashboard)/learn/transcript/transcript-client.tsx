@@ -580,7 +580,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
             </div>
             <div className="overflow-x-auto rounded-b-xl border border-t-0 border-gray-200 bg-white">
               {exams.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm text-gray-400">No examinations taken yet.</p>
+                <p className="px-4 py-8 text-center text-sm text-gray-500">No examinations taken yet.</p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>

@@ -269,8 +269,9 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-gray-200" aria-label="Filter observations by role">
         <button
+          aria-pressed={tab === "observer"}
           onClick={() => setTab("observer")}
           className={cn(
             "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
@@ -281,6 +282,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
           As Observer ({asObserver.length})
         </button>
         <button
+          aria-pressed={tab === "subject"}
           onClick={() => setTab("subject")}
           className={cn(
             "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",

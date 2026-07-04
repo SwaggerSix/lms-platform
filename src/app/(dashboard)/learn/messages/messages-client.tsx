@@ -330,7 +330,7 @@ function NewMessageModal({
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-xs text-gray-400">
+                <p className="mt-2 text-xs text-gray-500">
                   Everyone on your team is added.
                 </p>
               )}
@@ -841,7 +841,7 @@ export default function MessagesClient({
             <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
               <MessageSquare className="h-10 w-10 text-gray-300" />
               <p className="mt-3 text-sm font-medium text-gray-500">No conversations yet</p>
-              <p className="mt-1 text-xs text-gray-400">Start a conversation with a colleague.</p>
+              <p className="mt-1 text-xs text-gray-500">Start a conversation with a colleague.</p>
               <Button size="sm" className="mt-3" onClick={() => setShowNewMessage(true)}>
                 <Plus className="h-4 w-4" />
                 New Message
@@ -1062,7 +1062,7 @@ export default function MessagesClient({
                           </div>
                           <div
                             className={cn(
-                              "mt-1 flex items-center gap-1 text-[11px] text-gray-400",
+                              "mt-1 flex items-center gap-1 text-[11px] text-gray-500",
                               isMine ? "justify-end" : "justify-start"
                             )}
                           >
