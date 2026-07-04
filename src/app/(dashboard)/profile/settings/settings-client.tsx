@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { TwoFactorCard } from "@/components/security/two-factor-card";
 import { locales, localeNames, type Locale } from "@/i18n/config";
@@ -342,14 +343,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <button
+                <Button
                   onClick={savePersonalInfo}
                   disabled={saving === "personal"}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {saving === "personal" && <Loader2 className="h-4 w-4 animate-spin" />}
                   Save Changes
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -396,14 +396,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <button
+                <Button
                   onClick={saveNotifications}
                   disabled={saving === "notifications"}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {saving === "notifications" && <Loader2 className="h-4 w-4 animate-spin" />}
                   Save Preferences
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -451,14 +450,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
-                  <button
+                  <Button
                     onClick={changePassword}
                     disabled={saving === "password"}
-                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {saving === "password" && <Loader2 className="h-4 w-4 animate-spin" />}
                     Update Password
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -530,14 +528,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               </div>
 
               <div className="mt-8 flex justify-end">
-                <button
+                <Button
                   onClick={savePreferences}
                   disabled={saving === "preferences"}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {saving === "preferences" && <Loader2 className="h-4 w-4 animate-spin" />}
                   Save Preferences
-                </button>
+                </Button>
               </div>
             </div>
           )}

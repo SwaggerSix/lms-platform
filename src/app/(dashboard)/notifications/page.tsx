@@ -6,6 +6,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useNotificationStore } from "@/stores/notification-store";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Notification } from "@/types/database";
@@ -97,13 +98,10 @@ export default function NotificationsPage() {
           </p>
         </div>
         {unreadCount > 0 && (
-          <button
-            onClick={() => markAllAsRead()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
+          <Button variant="outline" onClick={() => markAllAsRead()}>
             <CheckCheck className="h-4 w-4" aria-hidden="true" />
             Mark all read
-          </button>
+          </Button>
         )}
       </div>
 

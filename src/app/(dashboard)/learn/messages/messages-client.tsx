@@ -14,6 +14,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useRealtimeSubscription, useRealtimeBroadcast } from "@/hooks/use-realtime";
 import { createClient } from "@/lib/supabase/client";
 
@@ -392,23 +393,19 @@ function NewMessageModal({
         </div>
 
         <div className="flex justify-end gap-3 border-t px-6 py-4">
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+          <Button variant="outline" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               if (selectedUsers.length > 0 && message.trim()) {
                 onSend(selectedUsers, message.trim());
               }
             }}
             disabled={selectedUsers.length === 0 || !message.trim()}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Send Message
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -809,13 +806,10 @@ export default function MessagesClient({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
           <h1 className="text-lg font-bold text-gray-900">Messages</h1>
-          <button
-            onClick={() => setShowNewMessage(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
+          <Button size="sm" onClick={() => setShowNewMessage(true)}>
             <Plus className="h-4 w-4" />
             New Message
-          </button>
+          </Button>
         </div>
 
         {/* Search */}
@@ -839,13 +833,10 @@ export default function MessagesClient({
               <MessageSquare className="h-10 w-10 text-gray-300" />
               <p className="mt-3 text-sm font-medium text-gray-500">No conversations yet</p>
               <p className="mt-1 text-xs text-gray-400">Start a conversation with a colleague.</p>
-              <button
-                onClick={() => setShowNewMessage(true)}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
-              >
+              <Button size="sm" className="mt-3" onClick={() => setShowNewMessage(true)}>
                 <Plus className="h-4 w-4" />
                 New Message
-              </button>
+              </Button>
             </div>
           )}
           {filteredConversations.map((conv) => {
