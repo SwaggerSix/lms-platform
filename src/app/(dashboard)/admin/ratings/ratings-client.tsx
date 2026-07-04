@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Download, Star, GraduationCap, BookOpen, TrendingUp } from "lucide-react";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 export interface Facet { id: string; label: string }
 
@@ -43,6 +44,39 @@ export default function RatingsClient({
   const anyFilter = Object.values(filters).some(Boolean);
   const rows = data?.breakdowns[dim] ?? [];
   const maxCount = useMemo(() => Math.max(1, ...rows.map((r) => r.count)), [rows]);
+
+  const breakdownColumns = useMemo<DataTableColumn<Group>[]>(() => [
+    {
+      key: "label",
+      header: DIM_LABELS[dim].replace("By ", ""),
+      sortValue: (r) => r.label,
+      render: (r) => <span className="text-gray-800">{r.label}</span>,
+    },
+    {
+      key: "count",
+      header: "Ratings",
+      className: "w-1/3",
+      sortValue: (r) => r.count,
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <div className="h-2 flex-1 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-amber-400" style={{ width: `${(r.count / maxCount) * 100}%` }} /></div>
+          <span className="w-8 text-right text-xs text-gray-500">{r.count}</span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "Course ★",
+      sortValue: (r) => r.course_avg,
+      render: (r) => <span className="text-gray-700">{r.course_avg != null ? `${r.course_avg}` : "—"}</span>,
+    },
+    {
+      key: "instructor",
+      header: "Instructor ★",
+      sortValue: (r) => r.instructor_avg,
+      render: (r) => <span className="text-gray-700">{r.instructor_avg != null ? `${r.instructor_avg}` : "—"}</span>,
+    },
+  ], [dim, maxCount]);
 
   const exportCsv = () => {
     if (!data) return;
@@ -117,53 +151,33 @@ export default function RatingsClient({
                 </button>
               ))}
             </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-xs font-medium uppercase text-gray-500">
-                  <th className="px-2 py-2">{DIM_LABELS[dim].replace("By ", "")}</th>
-                  <th className="px-2 py-2 w-1/3">Ratings</th>
-                  <th className="px-2 py-2">Course ★</th>
-                  <th className="px-2 py-2">Instructor ★</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {rows.map((r, i) => (
-                  <tr key={i}>
-                    <td className="px-2 py-2 text-gray-800">{r.label}</td>
-                    <td className="px-2 py-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 flex-1 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-amber-400" style={{ width: `${(r.count / maxCount) * 100}%` }} /></div>
-                        <span className="w-8 text-right text-xs text-gray-500">{r.count}</span>
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 text-gray-700">{r.course_avg != null ? `${r.course_avg}` : "—"}</td>
-                    <td className="px-2 py-2 text-gray-700">{r.instructor_avg != null ? `${r.instructor_avg}` : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              columns={breakdownColumns}
+              rows={rows}
+              rowKey={(r) => r.label}
+              initialSort="-count"
+              ariaLabel={`Ratings ${DIM_LABELS[dim].toLowerCase()}`}
+              emptyState={{
+                icon: <Star className="h-10 w-10" aria-hidden="true" />,
+                title: "No ratings match these filters yet.",
+              }}
+            />
           </div>
 
           {data.trend.length > 1 && (
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900"><TrendingUp className="h-4 w-4 text-indigo-600" /> Over time (monthly)</h2>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 text-left text-xs font-medium uppercase text-gray-500">
-                    <th className="px-2 py-2">Month</th><th className="px-2 py-2">Ratings</th><th className="px-2 py-2">Course ★</th><th className="px-2 py-2">Instructor ★</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {data.trend.map((t, i) => (
-                    <tr key={i}>
-                      <td className="px-2 py-2 text-gray-800">{t.label}</td>
-                      <td className="px-2 py-2 text-gray-500">{t.count}</td>
-                      <td className="px-2 py-2 text-gray-700">{t.course_avg != null ? `${t.course_avg}` : "—"}</td>
-                      <td className="px-2 py-2 text-gray-700">{t.instructor_avg != null ? `${t.instructor_avg}` : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={trendColumns}
+                rows={data.trend}
+                rowKey={(t) => t.label}
+                initialSort="month"
+                ariaLabel="Ratings over time (monthly)"
+                emptyState={{
+                  icon: <TrendingUp className="h-10 w-10" aria-hidden="true" />,
+                  title: "No ratings match these filters yet.",
+                }}
+              />
             </div>
           )}
         </>
