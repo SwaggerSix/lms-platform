@@ -154,10 +154,15 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               <Sparkles className="h-5 w-5 text-amber-500" />
               <h2 className="text-lg font-semibold text-gray-900">Course Spotlight</h2>
             </div>
-            <a href="/learn/catalog" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              View all courses
-              <ArrowRight className="h-4 w-4" />
-            </a>
+            <div className="flex items-center gap-4">
+              <a href="/learn/recommendations" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                Recommended for you
+              </a>
+              <a href="/learn/catalog" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                View all courses
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.spotlightCourses.map((course) => (

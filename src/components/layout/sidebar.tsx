@@ -96,11 +96,16 @@ const navSections: NavSection[] = [
     header: "Learning",
     items: [
       { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen, featureKey: "courses" },
-      { label: "My Courses", href: "/learn/my-courses", icon: Library, featureKey: "courses" },
+      {
+        label: "My Courses",
+        href: "/learn/my-courses",
+        icon: Library,
+        featureKey: "courses",
+        matchPrefixes: ["/learn/transcript"],
+      },
       { label: "My Classes", href: "/learn/classes", icon: CalendarDays, featureKey: "classes" },
       { label: "Learning Paths", href: "/learn/paths", icon: Route, featureKey: "learning_paths" },
       { label: "Certifications", href: "/learn/certifications", icon: Award, featureKey: "certifications" },
-      { label: "Transcript", href: "/learn/transcript", icon: FileText, featureKey: "courses" },
       { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
       { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification" },
       { label: "Discussions", href: "/learn/discussions", icon: MessageSquare, featureKey: "social_learning" },

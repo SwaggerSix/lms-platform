@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MyLearningTabs from "@/components/layout/my-learning-tabs";
 import { Clock, BookOpen, AlertTriangle, CheckCircle2, ArrowRight } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatDuration } from "@/utils/format";
@@ -53,6 +54,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
+        <MyLearningTabs />
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-gray-900">My Courses</h1>
           <InfoTooltip content={getHelp("learn.my-courses").details} label="About My Courses" side="bottom" />
