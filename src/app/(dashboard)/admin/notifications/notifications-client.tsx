@@ -523,15 +523,12 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button onClick={() => setEditingTemplate(null)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Button variant="outline" onClick={() => setEditingTemplate(null)}>
                     Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveTemplate}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-                  >
+                  </Button>
+                  <Button onClick={handleSaveTemplate}>
                     Save Template
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -553,13 +550,15 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     </div>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => openTemplateEdit(template)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shrink-0 ml-4"
+                  className="shrink-0 ml-4"
                 >
                   <Edit2 className="h-3.5 w-3.5" />
                   Edit
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -626,13 +625,9 @@ export default function NotificationsClient({ announcements, templates }: Notifi
           </div>
 
           <div className="flex justify-end">
-            <button
-              onClick={handleSaveSettings}
-              disabled={savingSettings}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
+            <Button size="lg" onClick={handleSaveSettings} disabled={savingSettings}>
               {savingSettings ? "Saving..." : "Save Settings"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
