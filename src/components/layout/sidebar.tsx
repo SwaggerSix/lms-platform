@@ -43,7 +43,6 @@ import {
   CalendarDays,
   CheckSquare,
   Clock,
-  History,
   KeyRound,
   Zap,
   ShoppingCart,
@@ -63,7 +62,6 @@ import {
   Wand2,
   MessageSquareMore,
   Bug,
-  Video,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
@@ -76,6 +74,8 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   featureKey?: string; // maps to platform_settings.features or tenant.features
+  /** Extra route prefixes that should also highlight this item (hub tabs). */
+  matchPrefixes?: string[];
 }
 
 interface NavSection {
@@ -159,15 +159,19 @@ const navSections: NavSection[] = [
       { label: "Users", href: "/admin/users", icon: UserCog },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap, featureKey: "courses" },
-      { label: "Webinars", href: "/admin/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
-      { label: "Shared Webinars", href: "/admin/shared-webinars", icon: Video, featureKey: "ilt_sessions" },
+      {
+        label: "Sessions & Webinars",
+        href: "/admin/ilt-sessions",
+        icon: CalendarDays,
+        featureKey: "ilt_sessions",
+        matchPrefixes: ["/admin/classes", "/admin/training-events", "/admin/shared-webinars"],
+      },
       { label: "Learning Paths", href: "/admin/paths", icon: GitBranch, featureKey: "learning_paths" },
       { label: "Assessments", href: "/admin/assessments", icon: FileQuestion, featureKey: "assessments" },
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck, featureKey: "assessments" },
       { label: "Exam Grading", href: "/admin/assessments/grading", icon: CheckSquare, featureKey: "assessments" },
       { label: "Certifications", href: "/admin/certifications", icon: Medal, featureKey: "certifications" },
       { label: "Instructor Certifications", href: "/admin/instructor-certifications", icon: ShieldCheck },
-      { label: "ILT Session Log", href: "/admin/training-events", icon: History, featureKey: "ilt_sessions" },
     ],
     roles: ["admin", "super_admin"],
     bgClass: "bg-[#F1F7E4]/50",
@@ -325,11 +329,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   // don't light up alongside their children (e.g. /admin/settings/sso).
   const activeHref = useMemo(() => {
     let best = "";
+    let bestLength = 0;
     for (const section of filteredSections) {
       for (const item of section.items) {
-        const matches =
-          pathname === item.href || pathname.startsWith(item.href + "/");
-        if (matches && item.href.length > best.length) best = item.href;
+        const prefixes = [item.href, ...(item.matchPrefixes ?? [])];
+        for (const prefix of prefixes) {
+          const matches = pathname === prefix || pathname.startsWith(prefix + "/");
+          if (matches && prefix.length > bestLength) {
+            best = item.href;
+            bestLength = prefix.length;
+          }
+        }
       }
     }
     return best;

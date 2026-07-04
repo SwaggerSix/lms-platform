@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import { Loader2, Video, Calendar, CheckCircle2, AlertTriangle } from "lucide-react";
 
 interface Webinar {
@@ -52,6 +53,7 @@ export default function SharedWebinarsClient() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <AdminSessionsTabs />
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Shared Webinars</h1>
         <p className="mt-1 text-sm text-gray-500">
