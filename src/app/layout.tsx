@@ -40,6 +40,13 @@ export default async function RootLayout({
         <meta name="theme-color" content="#91C53C" />
         <link rel="icon" href="/learnhub-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* Apply the stored theme before paint to avoid a light flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('lms-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}",
+          }}
+        />
       </head>
       <body className="antialiased">
         <I18nProvider locale={locale} messages={messages}>

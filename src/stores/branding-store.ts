@@ -37,8 +37,12 @@ export const useBrandingStore = create<BrandingState>()(
 
       applyToDOM: () => {
         const config = get().config;
-        const vars = brandingToCSSVars(config);
         const root = document.documentElement;
+        // Shell variables differ per theme; the theme toggle re-invokes this
+        // after switching the `dark` class.
+        const vars = brandingToCSSVars(config, {
+          dark: root.classList.contains("dark"),
+        });
         Object.entries(vars).forEach(([key, value]) => {
           root.style.setProperty(key, value);
         });

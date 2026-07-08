@@ -383,7 +383,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       aria-label="Main navigation"
       className={cn(
-        "flex h-full flex-col bg-[var(--brand-sidebar-bg,#FBFCFA)] text-[var(--brand-sidebar-text,#495057)] border-r border-[#DEE2E6] transition-all duration-300",
+        "flex h-full flex-col bg-[var(--brand-sidebar-bg,#FBFCFA)] text-[var(--brand-sidebar-text,#495057)] border-r border-[var(--brand-sidebar-border,#DEE2E6)] transition-all duration-300",
         collapsed ? "w-[68px]" : "w-64"
       )}
     >
@@ -424,7 +424,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 type="button"
                 onClick={() => toggleSection(section.header!)}
                 aria-expanded={!isSectionCollapsed}
-                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[#6C757D] transition-colors hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
+                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--brand-sidebar-muted,#6C757D)] transition-colors hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
               >
                 <span>{section.header}</span>
                 {isSectionCollapsed ? (
@@ -455,13 +455,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                         "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]",
                         isActive
                           ? "bg-[var(--brand-sidebar-active-bg,#F1F7E4)] text-[var(--brand-sidebar-active-text,#49641D)]"
-                          : "text-[#6C757D] hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)]"
+                          : "text-[var(--brand-sidebar-muted,#6C757D)] hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)]"
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-5 w-5 shrink-0",
-                          isActive ? "text-[var(--brand-sidebar-active-text,#49641D)]" : "text-[#6C757D] group-hover:text-[var(--brand-sidebar-active-text,#49641D)]"
+                          isActive ? "text-[var(--brand-sidebar-active-text,#49641D)]" : "text-[var(--brand-sidebar-muted,#6C757D)] group-hover:text-[var(--brand-sidebar-active-text,#49641D)]"
                         )}
                         aria-hidden="true"
                       />
@@ -500,11 +500,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   <p className="text-sm font-medium text-[var(--brand-sidebar-text,#495057)]">
                     {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
                   </p>
-                  <p className="text-xs text-[#6C757D]">
+                  <p className="text-xs text-[var(--brand-sidebar-muted,#6C757D)]">
                     {roleLabel(currentRole)}
                   </p>
                 </div>
-                <ChevronDown className="h-4 w-4 text-[#6C757D]" aria-hidden="true" />
+                <ChevronDown className="h-4 w-4 text-[var(--brand-sidebar-muted,#6C757D)]" aria-hidden="true" />
               </>
             )}
           </button>
@@ -553,7 +553,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <button
             onClick={onToggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="flex w-full items-center justify-center rounded-lg p-2 text-[#6C757D] transition-colors hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
+            className="flex w-full items-center justify-center rounded-lg p-2 text-[var(--brand-sidebar-muted,#6C757D)] transition-colors hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
           >
             {collapsed ? (
               <ChevronRight className="h-5 w-5" aria-hidden="true" />

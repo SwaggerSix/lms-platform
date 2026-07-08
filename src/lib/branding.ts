@@ -73,8 +73,31 @@ export const defaultBranding: BrandingConfig = {
 
 /**
  * Converts branding config to CSS custom properties.
+ *
+ * In dark mode the shell (sidebar, light tints, text-on-wash) is derived
+ * from the brand primary against dark surfaces instead of using the
+ * configured light-theme values — the accent color itself is unchanged, so
+ * tenant branding carries into dark mode.
  */
-export function brandingToCSSVars(config: BrandingConfig): Record<string, string> {
+export function brandingToCSSVars(
+  config: BrandingConfig,
+  { dark = false }: { dark?: boolean } = {}
+): Record<string, string> {
+  if (dark) {
+    const primary = config.primaryColor;
+    return {
+      "--brand-primary": primary,
+      "--brand-primary-hover": config.primaryHoverColor,
+      "--brand-primary-light": `color-mix(in srgb, ${primary} 16%, #0f1626)`,
+      "--brand-primary-text": `color-mix(in srgb, ${primary} 55%, white)`,
+      "--brand-sidebar-bg": "#10192b",
+      "--brand-sidebar-text": "#a6b2c5",
+      "--brand-sidebar-active-bg": `color-mix(in srgb, ${primary} 18%, #10192b)`,
+      "--brand-sidebar-active-text": `color-mix(in srgb, ${primary} 55%, white)`,
+      "--brand-sidebar-border": "#26334c",
+      "--brand-sidebar-muted": "#7f8ca3",
+    };
+  }
   return {
     "--brand-primary": config.primaryColor,
     "--brand-primary-hover": config.primaryHoverColor,
@@ -84,6 +107,8 @@ export function brandingToCSSVars(config: BrandingConfig): Record<string, string
     "--brand-sidebar-text": config.sidebarText,
     "--brand-sidebar-active-bg": config.sidebarActiveBg,
     "--brand-sidebar-active-text": config.sidebarActiveText,
+    "--brand-sidebar-border": "#DEE2E6",
+    "--brand-sidebar-muted": "#6C757D",
   };
 }
 
