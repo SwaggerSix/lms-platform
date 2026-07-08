@@ -42,7 +42,7 @@ export default async function RoleManualPage({ params }: PageProps) {
       </Link>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{manual.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{manual.title}</h1>
         <p className="mt-2 text-base text-gray-600">{manual.intro}</p>
       </header>
 

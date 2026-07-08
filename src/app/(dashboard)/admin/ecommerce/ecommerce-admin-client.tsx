@@ -116,7 +116,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">eCommerce Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">eCommerce Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage products, orders, and revenue</p>
         </div>
         <div className="flex gap-3">

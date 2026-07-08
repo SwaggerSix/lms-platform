@@ -77,7 +77,7 @@ export default function StorefrontsClient() {
   return (
     <div className="p-6 max-w-5xl">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold">Storefronts</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Storefronts</h1>
         <button
           onClick={() => setShowCreate((s) => !s)}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700"

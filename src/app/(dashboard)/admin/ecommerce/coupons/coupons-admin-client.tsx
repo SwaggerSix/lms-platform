@@ -139,7 +139,7 @@ export default function CouponsAdminClient() {
             <span>/</span>
             <span className="text-gray-900">Coupons</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Coupons</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Coupons</h1>
           <p className="text-gray-500 mt-1">Create and manage discount coupons</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>Create Coupon</Button>

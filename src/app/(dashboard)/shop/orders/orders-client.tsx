@@ -55,7 +55,7 @@ export default function OrdersClient() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
           <p className="text-gray-500 mt-1">View your purchase history</p>
         </div>
         <Link href="/shop" className="text-primary-600 hover:text-primary-700 text-sm font-medium">

@@ -487,7 +487,7 @@ export default function TeamClient({
         <div>
           <div className="flex items-center gap-3 mb-1">
             <Users className="h-8 w-8 text-primary-600" />
-            <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
+            <h1 className="text-2xl font-bold text-gray-900">My Team</h1>
             <InfoTooltip content={getHelp("manager.team").details} label="About My Team" side="bottom" />
             <span className="ml-2 rounded-full bg-primary-100 px-3 py-1 text-sm font-semibold text-primary-700">
               {stats.teamSize} members
