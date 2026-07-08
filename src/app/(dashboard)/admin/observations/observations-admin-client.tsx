@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Link from "next/link";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
@@ -125,6 +126,73 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
       </span>
     );
   };
+
+  const observationColumns: DataTableColumn<Observation>[] = [
+    {
+      key: "template",
+      header: "Template",
+      sortValue: (o) => o.template?.name ?? null,
+      render: (obs) => <span className="font-medium text-gray-800">{obs.template?.name || "Unknown"}</span>,
+    },
+    {
+      key: "observer",
+      header: "Observer",
+      sortValue: (o) => (o.observer ? `${o.observer.first_name} ${o.observer.last_name}` : null),
+      render: (obs) => (
+        <span className="text-gray-600">
+          {obs.observer ? `${obs.observer.first_name} ${obs.observer.last_name}` : "-"}
+        </span>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Subject",
+      sortValue: (o) => (o.subject ? `${o.subject.first_name} ${o.subject.last_name}` : null),
+      render: (obs) => (
+        <span className="text-gray-600">
+          {obs.subject ? `${obs.subject.first_name} ${obs.subject.last_name}` : "-"}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortValue: (o) => o.status,
+      render: (obs) => statusBadge(obs.status),
+    },
+    {
+      key: "score",
+      header: "Score",
+      sortValue: (o) => o.overall_score,
+      render: (obs) => (
+        <span className="text-gray-600">{obs.overall_score !== null ? `${obs.overall_score}%` : "-"}</span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      sortValue: (o) => o.completed_at || o.scheduled_at || o.created_at,
+      render: (obs) => (
+        <span className="text-xs text-gray-500">
+          {formatDate(obs.completed_at || obs.scheduled_at || obs.created_at)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "text-right",
+      render: (obs) => (
+        <Link
+          href={`/learn/observations/${obs.id}`}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <Eye className="h-3 w-3" />
+          View
+        </Link>
+      ),
+    },
+  ];
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -334,62 +402,17 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
 
       {/* Observations tab */}
       {tab === "observations" && (
-        <div>
-          {filteredObservations.length > 0 ? (
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Template</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Observer</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Subject</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Score</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredObservations.map((obs) => (
-                    <tr key={obs.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-gray-800">
-                        {obs.template?.name || "Unknown"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {obs.observer ? `${obs.observer.first_name} ${obs.observer.last_name}` : "-"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {obs.subject ? `${obs.subject.first_name} ${obs.subject.last_name}` : "-"}
-                      </td>
-                      <td className="px-4 py-3">{statusBadge(obs.status)}</td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {obs.overall_score !== null ? `${obs.overall_score}%` : "-"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
-                        {formatDate(obs.completed_at || obs.scheduled_at || obs.created_at)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/learn/observations/${obs.id}`}
-                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 transition-colors"
-                        >
-                          <Eye className="h-3 w-3" />
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed border-gray-200 py-16 text-center">
-              <FileText className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-3 text-sm font-semibold text-gray-700">No observations found</h3>
-              <p className="mt-1 text-sm text-gray-500">Observations will appear here once created</p>
-            </div>
-          )}
-        </div>
+        <DataTable
+          columns={observationColumns}
+          rows={filteredObservations}
+          rowKey={(obs) => obs.id}
+          ariaLabel="Observations"
+          emptyState={{
+            icon: <FileText className="h-10 w-10" aria-hidden="true" />,
+            title: "No observations found",
+            description: "Observations will appear here once created",
+          }}
+        />
       )}
     </div>
   );

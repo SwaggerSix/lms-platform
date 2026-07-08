@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { MemberManager } from "@/components/tenants/member-manager";
 import { BrandingEditor } from "@/components/tenants/branding-editor";
 import { FeatureToggles } from "@/components/tenants/feature-toggles";
@@ -125,6 +127,53 @@ export default function TenantDetailClient({
 
   const assignedCourseIds = new Set(coursesList.map((c: any) => c.course?.id));
   const availableCourses = allCourses.filter((c: any) => !assignedCourseIds.has(c.id));
+
+  const courseColumns: DataTableColumn<any>[] = [
+    {
+      key: "course",
+      header: "Course",
+      sortValue: (tc) => tc.course?.title ?? "",
+      render: (tc) => (
+        <span className="text-sm font-medium text-gray-900">{tc.course?.title}</span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (tc) => (
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${tc.course?.status === "published" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+          {tc.course?.status}
+        </span>
+      ),
+    },
+    {
+      key: "featured",
+      header: "Featured",
+      render: (tc) => (
+        <span className="text-sm text-gray-700">{tc.is_featured ? "Yes" : "No"}</span>
+      ),
+    },
+    {
+      key: "price",
+      header: "Custom Price",
+      render: (tc) => (
+        <span className="text-sm text-gray-700">{tc.custom_price ? `$${tc.custom_price}` : "--"}</span>
+      ),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "text-right",
+      render: (tc) => (
+        <button
+          onClick={() => handleRemoveCourse(tc.course?.id)}
+          className="text-sm text-red-600 hover:text-red-800"
+        >
+          Remove
+        </button>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -313,47 +362,17 @@ export default function TenantDetailClient({
           </div>
 
           {/* Assigned Courses */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Course</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Featured</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Custom Price</th>
-                  <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {coursesList.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">No courses assigned</td>
-                  </tr>
-                ) : (
-                  coursesList.map((tc: any) => (
-                    <tr key={tc.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{tc.course?.title}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${tc.course?.status === "published" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
-                          {tc.course?.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{tc.is_featured ? "Yes" : "No"}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{tc.custom_price ? `$${tc.custom_price}` : "--"}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleRemoveCourse(tc.course?.id)}
-                          className="text-sm text-red-600 hover:text-red-800"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={courseColumns}
+            rows={coursesList}
+            rowKey={(tc) => tc.id}
+            ariaLabel="Assigned courses"
+            emptyState={{
+              icon: <BookOpen className="h-10 w-10" aria-hidden="true" />,
+              title: "No courses assigned",
+              description: "Assign a course above to make it available to this tenant",
+            }}
+          />
         </div>
       )}
 
