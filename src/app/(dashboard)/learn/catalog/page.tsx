@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import CatalogClient, { type CatalogCourse } from "./catalog-client";
+import { resolveEnabledFeatures } from "@/lib/features/resolve";
+import CatalogClient, { type CatalogCourse, type CatalogSource } from "./catalog-client";
 
 export const metadata: Metadata = {
-  title: "Course Catalog | LMS Platform",
+  title: "Catalog | LMS Platform",
   description: "Browse and enroll in courses across all categories and skill levels",
 };
 
@@ -55,7 +56,11 @@ function mapCategory(categoryName: string | null): string {
   return "Technology";
 }
 
-export default async function CourseCatalogPage() {
+export default async function CourseCatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string }>;
+}) {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -64,7 +69,7 @@ export default async function CourseCatalogPage() {
   const service = createServiceClient();
   let { data: dbUser } = await service
     .from("users")
-    .select("id")
+    .select("id, role")
     .eq("auth_id", user.id)
     .single();
 
@@ -82,9 +87,9 @@ export default async function CourseCatalogPage() {
         .from("users")
         .update({ auth_id: user.id })
         .eq("id", byEmail.id)
-        .select("id")
+        .select("id, role")
         .single();
-      dbUser = linked ?? { id: byEmail.id };
+      dbUser = linked ?? { id: byEmail.id, role: "learner" };
     } else {
       const meta = (user.user_metadata ?? {}) as {
         first_name?: string;
@@ -100,7 +105,7 @@ export default async function CourseCatalogPage() {
           role: "learner",
           status: "active",
         })
-        .select("id")
+        .select("id, role")
         .single();
       if (insertErr) console.error("[catalog] insert error", insertErr);
       dbUser = created;
@@ -243,5 +248,37 @@ export default async function CourseCatalogPage() {
     };
   });
 
-  return <CatalogClient courses={courses} />;
+  // Which discovery sources this user can see (tenant feature flags).
+  // Platform admins are not tenant-scoped: resolve against platform defaults.
+  let tenantId: string | null = null;
+  const role = (dbUser as { role?: string }).role;
+  if (role !== "admin" && role !== "super_admin") {
+    const { data: membership } = await service
+      .from("tenant_memberships")
+      .select("tenant_id")
+      .eq("user_id", dbUser.id)
+      .limit(1)
+      .maybeSingle();
+    tenantId = membership?.tenant_id ?? null;
+  }
+  const features = await resolveEnabledFeatures(service, tenantId);
+  const showPartner = Boolean(features.marketplace);
+  const showStore = Boolean(features.ecommerce);
+
+  const { source } = await searchParams;
+  const initialSource: CatalogSource =
+    source === "partner" && showPartner
+      ? "partner"
+      : source === "store" && showStore
+        ? "store"
+        : "internal";
+
+  return (
+    <CatalogClient
+      courses={courses}
+      showPartner={showPartner}
+      showStore={showStore}
+      initialSource={initialSource}
+    />
+  );
 }
