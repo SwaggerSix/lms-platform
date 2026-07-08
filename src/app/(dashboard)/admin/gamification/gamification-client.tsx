@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { useToast } from "@/components/ui/toast";
 
 export interface PointRule {
@@ -219,6 +220,140 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
     }
   };
 
+  const ruleColumns: DataTableColumn<PointRule>[] = [
+    {
+      key: "action",
+      header: "Action",
+      sortValue: (r) => r.action,
+      render: (rule) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+            {rule.action === "Course Completion" && <BookOpen className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Quiz Pass" && <Target className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Perfect Score" && <Star className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Discussion Post" && <MessageSquare className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Daily Login" && <Calendar className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Learning Streak (7-day)" && <Flame className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Enrollment" && <Zap className="h-4 w-4 text-indigo-600" />}
+            {rule.action === "Path Completion" && <Trophy className="h-4 w-4 text-indigo-600" />}
+          </div>
+          <span className="font-medium text-gray-900 text-sm">{rule.action}</span>
+        </div>
+      ),
+    },
+    {
+      key: "points",
+      header: "Points",
+      sortValue: (r) => r.points,
+      render: (rule) => (
+        <input
+          type="number"
+          min={0}
+          value={rule.points}
+          onChange={(e) => updateRulePoints(rule.id, parseInt(e.target.value) || 0)}
+          aria-label={`Points for ${rule.action}`}
+          className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm font-semibold text-indigo-700 text-center focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        />
+      ),
+    },
+    {
+      key: "description",
+      header: "Description",
+      render: (rule) => <span className="text-sm text-gray-500">{rule.description}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      className: "text-center",
+      sortValue: (r) => (r.enabled ? 0 : 1),
+      render: (rule) => (
+        <button
+          onClick={() => toggleRule(rule.id)}
+          role="switch"
+          aria-checked={rule.enabled}
+          aria-label={`${rule.action} enabled`}
+          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", rule.enabled ? "bg-indigo-600" : "bg-gray-300")}
+        >
+          <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", rule.enabled ? "translate-x-6" : "translate-x-1")} />
+        </button>
+      ),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "text-center w-16",
+      render: (rule) => (
+        <button onClick={() => deleteRule(rule.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Delete rule">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Delete {rule.action}</span>
+        </button>
+      ),
+    },
+  ];
+
+  const leaderboardColumns: DataTableColumn<LeaderboardUser>[] = [
+    {
+      key: "rank",
+      header: "Rank",
+      sortValue: (u) => u.rank,
+      render: (user) =>
+        user.rank <= 3 ? (
+          <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold", user.rank === 1 ? "bg-amber-100 text-amber-700" : user.rank === 2 ? "bg-gray-200 text-gray-700" : "bg-orange-100 text-orange-700")}>
+            {user.rank === 1 && <Crown className="h-4 w-4" />}
+            {user.rank === 2 && <Medal className="h-4 w-4" />}
+            {user.rank === 3 && <Medal className="h-4 w-4" />}
+          </div>
+        ) : (
+          <span className="ml-2 text-sm font-medium text-gray-500">#{user.rank}</span>
+        ),
+    },
+    {
+      key: "name",
+      header: "Name",
+      sortValue: (u) => u.name,
+      render: (user) => (
+        <div className="flex items-center gap-3">
+          <div className={cn("flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white", user.rank === 1 ? "bg-amber-500" : "bg-indigo-500")}>
+            {user.avatar}
+          </div>
+          <span className={cn("font-medium", user.rank === 1 ? "text-amber-900" : "text-gray-900")}>{user.name}</span>
+        </div>
+      ),
+    },
+    {
+      key: "level",
+      header: "Level",
+      className: "text-center",
+      sortValue: (u) => u.level,
+      render: (user) => (
+        <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">Lvl {user.level}</span>
+      ),
+    },
+    {
+      key: "totalPoints",
+      header: "Total Points",
+      className: "text-right",
+      sortValue: (u) => u.totalPoints,
+      render: (user) => (
+        <span className={cn("text-sm font-semibold", user.rank === 1 ? "text-amber-700" : "text-gray-900")}>
+          {user.totalPoints.toLocaleString()} pts
+        </span>
+      ),
+    },
+    {
+      key: "badges",
+      header: "Badges",
+      className: "text-center",
+      sortValue: (u) => u.badgesEarned,
+      render: (user) => (
+        <div className="flex items-center justify-center gap-1">
+          <Trophy className="h-3.5 w-3.5 text-amber-500" />
+          <span className="text-sm text-gray-700">{user.badgesEarned}</span>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -251,67 +386,22 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
               Add Point Rule
             </Button>
           </div>
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Points</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {pointRules.map((rule) => (
-                <tr key={rule.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                        {rule.action === "Course Completion" && <BookOpen className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Quiz Pass" && <Target className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Perfect Score" && <Star className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Discussion Post" && <MessageSquare className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Daily Login" && <Calendar className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Learning Streak (7-day)" && <Flame className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Enrollment" && <Zap className="h-4 w-4 text-indigo-600" />}
-                        {rule.action === "Path Completion" && <Trophy className="h-4 w-4 text-indigo-600" />}
-                      </div>
-                      <span className="font-medium text-gray-900 text-sm">{rule.action}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <input
-                      type="number"
-                      min={0}
-                      value={rule.points}
-                      onChange={(e) => updateRulePoints(rule.id, parseInt(e.target.value) || 0)}
-                      className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm font-semibold text-indigo-700 text-center focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{rule.description}</td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => toggleRule(rule.id)}
-                      className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", rule.enabled ? "bg-indigo-600" : "bg-gray-300")}
-                    >
-                      <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", rule.enabled ? "translate-x-6" : "translate-x-1")} />
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button onClick={() => deleteRule(rule.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Delete rule">
-                      <X className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 flex justify-end">
-            <Button onClick={handleSaveRules} disabled={savingRules}>
-              {savingRules ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
+        <DataTable
+          columns={ruleColumns}
+          rows={pointRules}
+          rowKey={(rule) => rule.id}
+          pageSize={0}
+          ariaLabel="Point rules"
+          emptyState={{
+            icon: <Zap className="h-10 w-10" aria-hidden="true" />,
+            title: "No point rules yet",
+            description: "Add a point rule to start awarding points for learner activity.",
+          }}
+        />
+        <div className="flex justify-end">
+          <Button onClick={handleSaveRules} disabled={savingRules}>
+            {savingRules ? "Saving..." : "Save Changes"}
+          </Button>
         </div>
 
         {/* Add Rule Modal */}
@@ -493,59 +583,25 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       )}
 
       {activeTab === "Leaderboard" && (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="space-y-4">
+          <div>
             <h2 className="text-lg font-semibold text-gray-900">Top 10 Learners</h2>
             <p className="text-sm text-gray-500">Based on total points earned across all activities</p>
           </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name</th>
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Level</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Total Points</th>
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Badges</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {leaderboard.map((user) => (
-                <tr key={user.rank} className={cn("transition-colors", user.rank === 1 ? "bg-amber-50/60 hover:bg-amber-50" : "hover:bg-gray-50")}>
-                  <td className="px-6 py-4">
-                    {user.rank <= 3 ? (
-                      <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold", user.rank === 1 ? "bg-amber-100 text-amber-700" : user.rank === 2 ? "bg-gray-200 text-gray-700" : "bg-orange-100 text-orange-700")}>
-                        {user.rank === 1 && <Crown className="h-4 w-4" />}
-                        {user.rank === 2 && <Medal className="h-4 w-4" />}
-                        {user.rank === 3 && <Medal className="h-4 w-4" />}
-                      </div>
-                    ) : (
-                      <span className="ml-2 text-sm font-medium text-gray-500">#{user.rank}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={cn("flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white", user.rank === 1 ? "bg-amber-500" : "bg-indigo-500")}>
-                        {user.avatar}
-                      </div>
-                      <span className={cn("font-medium", user.rank === 1 ? "text-amber-900" : "text-gray-900")}>{user.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">Lvl {user.level}</span>
-                  </td>
-                  <td className={cn("px-6 py-4 text-right text-sm font-semibold", user.rank === 1 ? "text-amber-700" : "text-gray-900")}>
-                    {user.totalPoints.toLocaleString()} pts
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Trophy className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="text-sm text-gray-700">{user.badgesEarned}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={leaderboardColumns}
+            rows={leaderboard}
+            rowKey={(user) => String(user.rank)}
+            pageSize={0}
+            initialSort="rank"
+            ariaLabel="Top 10 learners"
+            rowClassName={(user) => (user.rank === 1 ? "bg-amber-50/60 hover:bg-amber-50" : undefined)}
+            emptyState={{
+              icon: <Trophy className="h-10 w-10" aria-hidden="true" />,
+              title: "No leaderboard data yet",
+              description: "Learners appear here once they start earning points.",
+            }}
+          />
         </div>
       )}
     </div>
