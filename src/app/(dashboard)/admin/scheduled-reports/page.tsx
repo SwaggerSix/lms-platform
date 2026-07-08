@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import ScheduledReportsClient from "./scheduled-reports-client";
-import type { ScheduledReportWithHistory } from "./scheduled-reports-client";
+import type { ScheduledReportWithHistory } from "./reports-shared";
 
 export default async function ScheduledReportsPage() {
   const supabase = await createClient();
