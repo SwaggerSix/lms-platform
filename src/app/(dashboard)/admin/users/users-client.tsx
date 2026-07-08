@@ -5,15 +5,15 @@ import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import { assignableRoles, ROLE_LABELS, type UserRole } from "@/lib/auth/roles";
 import {
   Search,
   Plus,
-  MoreHorizontal,
-  ChevronLeft,
-  ChevronRight,
+  Users,
   Edit,
   UserX,
   KeyRound,
@@ -22,7 +22,6 @@ import {
   Check,
   Mail,
   X,
-  Filter,
   Trash2,
   AlertTriangle,
 } from 'lucide-react';
@@ -78,12 +77,9 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   const [roleFilter, setRoleFilter] = useState('All Roles');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [deptFilter, setDeptFilter] = useState('All Departments');
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ email: string; link: string; emailed: boolean } | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
 
   // Form state for Add User modal
   const [formFirstName, setFormFirstName] = useState('');
@@ -169,7 +165,6 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleDeactivate = async (userId: string) => {
-    setOpenMenu(null);
     setIsSubmitting(true);
     setError(null);
     try {
@@ -193,7 +188,6 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleDeleteClick = (userId: string) => {
-    setOpenMenu(null);
     const user = userList.find((u) => u.id === userId);
     if (!user) return;
     setError(null);
@@ -223,7 +217,6 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleEditUser = (userId: string) => {
-    setOpenMenu(null);
     const user = userList.find((u) => u.id === userId);
     if (!user) return;
     setEditUser(user);
@@ -288,7 +281,6 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleResendInvite = async (userId: string) => {
-    setOpenMenu(null);
     const user = userList.find((u) => u.id === userId);
     if (!user) return;
     setIsSubmitting(true);
@@ -316,7 +308,6 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleResetPassword = async (userId: string) => {
-    setOpenMenu(null);
     if (!confirm('Are you sure you want to send a password reset email to this user?')) return;
     const user = userList.find((u) => u.id === userId);
     if (!user) return;
@@ -347,20 +338,87 @@ export default function UsersClient({ users, organizations = [], currentUserRole
     return matchesSearch && matchesRole && matchesStatus && matchesDept;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paginatedUsers = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const showStart = (currentPage - 1) * pageSize;
-  const showEnd = Math.min(currentPage * pageSize, filtered.length);
-
-  // Compute visible page numbers (max 5)
-  const getPageNumbers = () => {
-    const pages: number[] = [];
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, start + 4);
-    if (end - start < 4) start = Math.max(1, end - 4);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  };
+  const userColumns: DataTableColumn<UserItem>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      sortValue: (user) => `${user.firstName} ${user.lastName}`.toLowerCase(),
+      render: (user) => (
+        <div className="flex items-center gap-3 whitespace-nowrap">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+            {user.avatar}
+          </div>
+          <span className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      sortValue: (user) => user.email,
+      render: (user) => <span className="text-sm text-gray-500">{user.email}</span>,
+    },
+    {
+      key: 'role',
+      header: 'Role',
+      sortValue: (user) => ROLE_LABELS[user.role],
+      render: (user) => (
+        <span className={cn('inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', roleBadge[user.role])}>
+          {ROLE_LABELS[user.role]}
+        </span>
+      ),
+    },
+    {
+      key: 'department',
+      header: 'Department',
+      sortValue: (user) => user.department,
+      render: (user) => <span className="text-sm text-gray-500">{user.department}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortValue: (user) => user.status,
+      render: (user) => (
+        <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[user.status])}>
+          {user.status}
+        </span>
+      ),
+    },
+    {
+      key: 'lastActive',
+      header: 'Last Active',
+      sortValue: (user) => user.lastActive,
+      render: (user) => <span className="whitespace-nowrap text-sm text-gray-500">{formatDate(user.lastActive)}</span>,
+    },
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      className: 'text-right',
+      render: (user) => (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleResendInvite(user.id)}
+            disabled={isSubmitting}
+            title="Resend invitation"
+          >
+            <Send className="h-3.5 w-3.5" /> Resend invite
+          </Button>
+          <RowActionsMenu
+            label={`Actions for ${user.firstName} ${user.lastName}`}
+            actions={[
+              { label: 'Edit User', icon: <Edit className="h-3.5 w-3.5" />, onSelect: () => handleEditUser(user.id) },
+              { label: 'Deactivate', icon: <UserX className="h-3.5 w-3.5" />, onSelect: () => handleDeactivate(user.id), disabled: isSubmitting || user.status === 'inactive' },
+              { label: 'Resend Invitation', icon: <Send className="h-3.5 w-3.5" />, onSelect: () => handleResendInvite(user.id), disabled: isSubmitting },
+              { label: 'Reset Password', icon: <KeyRound className="h-3.5 w-3.5" />, onSelect: () => handleResetPassword(user.id) },
+              { label: 'Delete User', icon: <Trash2 className="h-3.5 w-3.5" />, onSelect: () => handleDeleteClick(user.id), destructive: true },
+            ]}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -397,142 +455,44 @@ export default function UsersClient({ users, organizations = [], currentUserRole
             type="text"
             placeholder="Search users by name or email..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
-        <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
           {roleFilters.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
-        <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
           {statuses.map((s) => <option key={s}>{s}</option>)}
         </select>
-        <select value={deptFilter} onChange={(e) => { setDeptFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
           {departments.map((d) => <option key={d}>{d}</option>)}
         </select>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Department</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Last Active</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {paginatedUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="whitespace-nowrap px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
-                      {user.avatar}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</span>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{user.email}</td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', roleBadge[user.role])}>
-                    {ROLE_LABELS[user.role]}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{user.department}</td>
-                <td className="whitespace-nowrap px-6 py-4">
-                  <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[user.status])}>
-                    {user.status}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{formatDate(user.lastActive)}</td>
-                <td className="whitespace-nowrap px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleResendInvite(user.id)}
-                      disabled={isSubmitting}
-                      title="Resend invitation"
-                    >
-                      <Send className="h-3.5 w-3.5" /> Resend invite
-                    </Button>
-                    <div className="relative inline-block">
-                      <button
-                        onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
-                        aria-label="User actions"
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                      >
-                        <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                      {openMenu === user.id && (
-                        <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                          <button onClick={() => handleEditUser(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            <Edit className="h-3.5 w-3.5" /> Edit User
-                          </button>
-                          <button onClick={() => handleDeactivate(user.id)} disabled={isSubmitting || user.status === 'inactive'} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
-                            <UserX className="h-3.5 w-3.5" /> Deactivate
-                          </button>
-                          <button onClick={() => handleResendInvite(user.id)} disabled={isSubmitting} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
-                            <Send className="h-3.5 w-3.5" /> Resend Invitation
-                          </button>
-                          <button onClick={() => handleResetPassword(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            <KeyRound className="h-3.5 w-3.5" /> Reset Password
-                          </button>
-                          <button onClick={() => handleDeleteClick(user.id)} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                            <Trash2 className="h-3.5 w-3.5" /> Delete User
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {filtered.length > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            Showing {showStart + 1}-{showEnd} of {filtered.length} users
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              <ChevronLeft className="h-4 w-4" /> Previous
-            </Button>
-            {getPageNumbers().map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={cn(
-                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium',
-                  currentPage === p ? 'bg-indigo-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                )}
-              >
-                {p}
-              </button>
-            ))}
-            <Button
-              variant="outline"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTable
+        columns={userColumns}
+        rows={filtered}
+        rowKey={(user) => user.id}
+        pageSize={10}
+        ariaLabel="Users"
+        emptyState={
+          userList.length === 0
+            ? {
+                icon: <Users className="h-10 w-10" aria-hidden="true" />,
+                title: 'No users yet',
+                description: 'Add a user to get started',
+                action: (
+                  <Button onClick={() => setShowModal(true)}>
+                    <Plus className="h-4 w-4" />
+                    Add User
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+      />
 
       {/* Delete User Confirmation Modal */}
       {deleteConfirm && (
