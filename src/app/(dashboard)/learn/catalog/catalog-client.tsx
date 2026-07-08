@@ -477,9 +477,11 @@ export default function CatalogClient({
                       <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">
                         {course.description}
                       </p>
-                      <p className="mt-2 text-sm text-gray-600">
-                        By <span className="font-medium">{course.instructor}</span>
-                      </p>
+                      {course.instructor && (
+                        <p className="mt-2 text-sm text-gray-600">
+                          By <span className="font-medium">{course.instructor}</span>
+                        </p>
+                      )}
                       {/* Bottom row */}
                       <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-3">
                         <DifficultyBadge difficulty={course.difficulty} />
@@ -487,7 +489,7 @@ export default function CatalogClient({
                           <Clock className="h-3.5 w-3.5" />
                           {formatDuration(course.duration)}
                         </span>
-                        <StarRating rating={course.rating} />
+                        {course.reviewCount > 0 && <StarRating rating={course.rating} />}
                         <span className="flex items-center gap-1 text-xs text-gray-500">
                           <Users className="h-3.5 w-3.5" />
                           {formatNumber(course.enrolledCount)}

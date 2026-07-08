@@ -149,8 +149,10 @@ export default async function CourseCatalogPage({
     estimated_duration: number | null;
     enrollment_type: string;
     created_at: string;
+    created_by: string | null;
     thumbnail_url: string | null;
     category: { name: string } | null;
+    enrolled_count: { count: number }[] | null;
   };
   type Prereq = { course_id: string; prerequisite_course_id: string; requirement_type: string; min_score: number | null };
   type Enrollment = { course_id: string; status: string; score: number | null };
@@ -160,7 +162,7 @@ export default async function CourseCatalogPage({
     "courses",
     service
       .from("courses")
-      .select("*, category:categories(name)")
+      .select("*, category:categories(name), enrolled_count:enrollments(count)")
       .eq("status", "published")
       // Only courses currently within their availability window (NULL = unbounded).
       .or(`available_from.is.null,available_from.lte.${nowIso}`)
@@ -187,6 +189,45 @@ export default async function CourseCatalogPage({
       .select("course_id, status, score")
       .eq("user_id", dbUser.id)
   )) as Enrollment[] | null;
+
+  // Real rating aggregates and course-author names (§1.1: no fake data).
+  const courseRatings = courseIds.length > 0
+    ? ((await safe(
+        "courseRatings",
+        service
+          .from("course_ratings")
+          .select("course_id, course_rating")
+          .in("course_id", courseIds)
+      )) as { course_id: string; course_rating: number | null }[] | null)
+    : [];
+
+  const ratingByCourse = new Map<string, { sum: number; count: number }>();
+  for (const r of courseRatings ?? []) {
+    if (r.course_rating == null) continue;
+    const agg = ratingByCourse.get(r.course_id) ?? { sum: 0, count: 0 };
+    agg.sum += r.course_rating;
+    agg.count += 1;
+    ratingByCourse.set(r.course_id, agg);
+  }
+
+  const creatorIds = [
+    ...new Set((dbCourses ?? []).map((c) => c.created_by).filter((id): id is string => !!id)),
+  ];
+  const creators = creatorIds.length > 0
+    ? ((await safe(
+        "creators",
+        service
+          .from("users")
+          .select("id, first_name, last_name")
+          .in("id", creatorIds)
+      )) as { id: string; first_name: string | null; last_name: string | null }[] | null)
+    : [];
+  const creatorNameById = new Map(
+    (creators ?? []).map((u) => [
+      u.id,
+      `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
+    ])
+  );
 
   const enrollmentMap = new Map(
     (userEnrollments ?? []).map((e) => [e.course_id, e])
@@ -227,18 +268,19 @@ export default async function CourseCatalogPage({
       }
     }
 
+    const ratingAgg = ratingByCourse.get(c.id);
     return {
       id: c.id,
       slug: c.slug,
       title: c.title,
       description: c.description || c.short_description || "",
-      instructor: "Instructor",
+      instructor: (c.created_by && creatorNameById.get(c.created_by)) || "",
       difficulty: mapDifficulty(c.difficulty_level),
       type: mapCourseType(c.course_type),
       duration: c.estimated_duration || 60,
-      rating: 4.5 + (((i * 7) % 5) / 10),
-      reviewCount: 100 + ((i * 37) % 400),
-      enrolledCount: 500 + ((i * 137) % 5000),
+      rating: ratingAgg ? ratingAgg.sum / ratingAgg.count : 0,
+      reviewCount: ratingAgg?.count ?? 0,
+      enrolledCount: Number(c.enrolled_count?.[0]?.count ?? 0),
       category: mapCategory(c.category?.name ?? null),
       gradient: GRADIENTS[i % GRADIENTS.length],
       thumbnailUrl: c.thumbnail_url ?? null,
