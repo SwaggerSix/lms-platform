@@ -112,7 +112,7 @@ export default function ChecklistBuilder({ items, onChange }: ChecklistBuilderPr
             className={cn(
               "group rounded-lg border bg-white p-3 transition-all",
               dragIndex === index
-                ? "ring-2 ring-blue-300 shadow-md border-blue-200"
+                ? "ring-2 ring-primary-300 shadow-md border-primary-200"
                 : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
             )}
           >
@@ -138,7 +138,7 @@ export default function ChecklistBuilder({ items, onChange }: ChecklistBuilderPr
                   value={item.label}
                   onChange={(e) => updateItem(index, { label: e.target.value })}
                   placeholder="Enter checklist item label..."
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
                 />
 
                 {/* Item options row */}
@@ -149,7 +149,7 @@ export default function ChecklistBuilder({ items, onChange }: ChecklistBuilderPr
                     <select
                       value={item.type}
                       onChange={(e) => updateItem(index, { type: e.target.value as ChecklistItem["type"] })}
-                      className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-400 outline-none"
+                      className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 focus:border-primary-400 outline-none"
                     >
                       {ITEM_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>{t.label}</option>
@@ -167,7 +167,7 @@ export default function ChecklistBuilder({ items, onChange }: ChecklistBuilderPr
                       min={0}
                       max={100}
                       step={0.5}
-                      className="w-16 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-blue-400 outline-none"
+                      className="w-16 rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 focus:border-primary-400 outline-none"
                     />
                   </div>
 
@@ -177,7 +177,7 @@ export default function ChecklistBuilder({ items, onChange }: ChecklistBuilderPr
                       type="checkbox"
                       checked={item.required}
                       onChange={(e) => updateItem(index, { required: e.target.checked })}
-                      className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-xs text-gray-600">Required</span>
                   </label>

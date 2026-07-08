@@ -136,7 +136,7 @@ export default function ChecklistForm({
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
-              answeredCount === items.length ? "bg-green-500" : "bg-blue-500"
+              answeredCount === items.length ? "bg-green-500" : "bg-primary-500"
             )}
             style={{ width: `${items.length > 0 ? (answeredCount / items.length) * 100 : 0}%` }}
           />
@@ -235,7 +235,7 @@ export default function ChecklistForm({
                       readOnly={readOnly}
                       placeholder="Enter your observation..."
                       rows={2}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none resize-y"
+                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none resize-y"
                     />
                   )}
 
@@ -293,7 +293,7 @@ export default function ChecklistForm({
                     onChange={(e) => updateResponse(`${item.id}_note`, e.target.value)}
                     placeholder="Add a note for this item..."
                     rows={2}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 placeholder:text-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none resize-y"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 placeholder:text-gray-400 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none resize-y"
                   />
                 )}
 
@@ -343,7 +343,7 @@ export default function ChecklistForm({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Responses

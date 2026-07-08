@@ -80,7 +80,7 @@ export default function StorefrontsClient() {
         <h1 className="text-2xl font-bold">Storefronts</h1>
         <button
           onClick={() => setShowCreate((s) => !s)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700"
         >
           <Plus className="h-4 w-4" /> New store
         </button>
@@ -135,7 +135,7 @@ export default function StorefrontsClient() {
             <button
               type="submit"
               disabled={creating}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+              className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create store"}
             </button>
@@ -195,7 +195,7 @@ export default function StorefrontsClient() {
                 <div className="mt-4 flex gap-2">
                   <Link
                     href={`/admin/storefronts/${s.id}`}
-                    className="flex-1 text-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+                    className="flex-1 text-center px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700"
                   >
                     Manage
                   </Link>

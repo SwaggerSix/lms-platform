@@ -164,7 +164,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             Save Mappings
@@ -203,7 +203,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
               mapping.is_active
                 ? "bg-white border-gray-200"
                 : "bg-gray-50 border-gray-100 opacity-60",
-              dragIndex === index && "ring-2 ring-blue-300 shadow-sm"
+              dragIndex === index && "ring-2 ring-primary-300 shadow-sm"
             )}
           >
             <button className="cursor-grab text-gray-300 hover:text-gray-500" title="Drag to reorder">
@@ -213,7 +213,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
             <select
               value={mapping.source_field}
               onChange={(e) => updateMapping(index, "source_field", e.target.value)}
-              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
             >
               <option value="">Select source...</option>
               {sourceFields.map((f) => (
@@ -227,7 +227,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
             <select
               value={mapping.target_field}
               onChange={(e) => updateMapping(index, "target_field", e.target.value)}
-              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
             >
               <option value="">Select target...</option>
               {TARGET_FIELDS.map((f) => (
@@ -238,7 +238,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
             <select
               value={mapping.transform || ""}
               onChange={(e) => updateMapping(index, "transform", e.target.value || null)}
-              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+              className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
             >
               {TRANSFORMS.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -261,7 +261,7 @@ export default function FieldMapper({ integrationId, provider, mappings: initial
           <p className="text-sm text-gray-400">No field mappings configured</p>
           <button
             onClick={addMapping}
-            className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="mt-2 text-xs font-medium text-primary-600 hover:text-primary-700"
           >
             Add your first mapping
           </button>

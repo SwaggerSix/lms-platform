@@ -246,7 +246,7 @@ export default function SettingsTab({ storeId, store, notify, onReload }: Settin
       <button
         type="submit"
         disabled={saving}
-        className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+        className="px-5 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-60"
       >
         {saving ? "Saving…" : "Save settings"}
       </button>

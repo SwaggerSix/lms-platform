@@ -73,7 +73,7 @@ export default function TeamsIntegrationClient({
               className={cn(
                 "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
                 activeTab === tab.id
-                  ? "border-blue-600 text-blue-600"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               )}
             >
@@ -187,7 +187,7 @@ function NotificationsTab({ initialWebhookUrl }: { initialWebhookUrl: string }) 
                 setTestResult(null);
               }}
               placeholder="https://outlook.office.com/webhook/..."
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
             />
             <p className="mt-1 text-xs text-gray-400">
               Create a Power Automate workflow for your Teams channel and paste
@@ -234,7 +234,7 @@ function NotificationsTab({ initialWebhookUrl }: { initialWebhookUrl: string }) 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -382,7 +382,7 @@ function CalendarTab({ initialEnabled }: { initialEnabled: boolean }) {
             disabled={saving}
             className={cn(
               "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-              enabled ? "bg-blue-600" : "bg-gray-300",
+              enabled ? "bg-primary-600" : "bg-gray-300",
               saving && "opacity-50"
             )}
             role="switch"
@@ -549,7 +549,7 @@ function TabAppTab() {
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {downloading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -671,7 +671,7 @@ function BotTab() {
             href="https://portal.azure.com/#create/Microsoft.AzureBot"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 underline hover:text-blue-800"
+            className="text-primary-600 underline hover:text-primary-800"
           >
             Azure Bot Service registration
           </a>{" "}
@@ -778,7 +778,7 @@ function BotTab() {
                 href="https://portal.azure.com/#create/Microsoft.AzureBot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 underline hover:text-blue-800"
+                className="text-primary-600 underline hover:text-primary-800"
               >
                 Azure Portal
               </a>{" "}
