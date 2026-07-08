@@ -103,7 +103,7 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
 
         {/* Thumbnail */}
-        <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
+        <div className="aspect-video bg-gradient-to-br from-primary-100 to-purple-100 relative overflow-hidden">
           {displayImage ? (
             <img
               src={displayImage}
@@ -112,7 +112,7 @@ export default function ProductCard({ product }: { product: Product }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <svg className="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
@@ -124,7 +124,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {/* Category & Difficulty */}
           <div className="flex items-center gap-2 flex-wrap">
             {product.course.category && (
-              <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded">
                 {product.course.category.name}
               </span>
             )}
@@ -136,7 +136,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+          <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
             {displayTitle}
           </h3>
 
@@ -183,7 +183,7 @@ export default function ProductCard({ product }: { product: Product }) {
                   ? "bg-red-100 text-red-700"
                   : added
                   ? "bg-green-100 text-green-700"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  : "bg-primary-600 text-white hover:bg-primary-700"
               } disabled:opacity-50`}
             >
               {error || (added ? "Added!" : adding ? "..." : "Add to Cart")}

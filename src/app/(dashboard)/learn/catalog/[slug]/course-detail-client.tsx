@@ -314,7 +314,7 @@ export default function CourseDetailClient({
                         <div>
                           <a
                             href={`/learn/catalog/${prereq.slug}`}
-                            className="text-sm font-medium text-gray-900 hover:text-indigo-600"
+                            className="text-sm font-medium text-gray-900 hover:text-primary-600"
                           >
                             {prereq.title}
                           </a>
@@ -461,7 +461,7 @@ export default function CourseDetailClient({
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-gray-900">Your Instructor</h2>
               <div className="mt-4 flex items-start gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
                   {course.instructor.avatar}
                 </div>
                 <div>
@@ -550,7 +550,7 @@ export default function CourseDetailClient({
                 <button
                   onClick={handleEnroll}
                   disabled={enrolling}
-                  className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-primary-600 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {enrolling ? "Enrolling..." : "Enroll Now"}
                 </button>
@@ -606,7 +606,7 @@ export default function CourseDetailClient({
                   {course.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600"
+                      className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-600"
                     >
                       {skill}
                     </span>
@@ -637,7 +637,7 @@ export default function CourseDetailClient({
                   {!rc.thumbnailUrl && <BookOpen className="h-10 w-10 text-white/60" />}
                 </CourseCover>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-primary-600">
                     {rc.title}
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">By {rc.instructor}</p>

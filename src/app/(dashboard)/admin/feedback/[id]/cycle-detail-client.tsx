@@ -201,7 +201,7 @@ export default function CycleDetailClient({
           </div>
           <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-600 rounded-full transition-all duration-500"
+              className="h-full bg-primary-600 rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -221,7 +221,7 @@ export default function CycleDetailClient({
               onClick={() => setActiveTab(tab.key)}
               className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.key
-                  ? "border-indigo-600 text-indigo-600"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -256,7 +256,7 @@ export default function CycleDetailClient({
             </div>
             <button
               onClick={addQuestion}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -270,7 +270,7 @@ export default function CycleDetailClient({
               <p className="text-gray-500">No questions configured yet.</p>
               <button
                 onClick={addQuestion}
-                className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
                 Add your first question
               </button>
@@ -280,7 +280,7 @@ export default function CycleDetailClient({
               {templateQuestions.map((q, i) => (
                 <div key={q.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold mt-1">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xs font-semibold mt-1">
                       {i + 1}
                     </span>
                     <div className="flex-1 space-y-3">
@@ -289,7 +289,7 @@ export default function CycleDetailClient({
                         value={q.text}
                         onChange={(e) => updateQuestion(i, { text: e.target.value })}
                         placeholder="Enter your question..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
                       />
                       <div className="flex gap-4">
                         <select
@@ -319,7 +319,7 @@ export default function CycleDetailClient({
                             type="checkbox"
                             checked={q.required}
                             onChange={(e) => updateQuestion(i, { required: e.target.checked })}
-                            className="w-3.5 h-3.5 text-indigo-600 rounded"
+                            className="w-3.5 h-3.5 text-primary-600 rounded"
                           />
                           Required
                         </label>
@@ -353,7 +353,7 @@ export default function CycleDetailClient({
                   onClick={() => loadReport(sub.id)}
                   className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                     selectedSubject === sub.id
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-primary-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >

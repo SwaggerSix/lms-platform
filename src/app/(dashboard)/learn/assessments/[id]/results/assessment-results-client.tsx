@@ -118,7 +118,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
           {/* Stats Row */}
           <div className="mt-6 grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="flex flex-col items-center rounded-lg bg-gray-50 p-3">
-              <BarChart3 className="h-5 w-5 text-indigo-500" />
+              <BarChart3 className="h-5 w-5 text-primary-500" />
               <span className="mt-1 text-lg font-bold text-gray-900">{score}%</span>
               <span className="text-xs text-gray-500">Score</span>
             </div>
@@ -151,7 +151,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
             </button>
             <button
               onClick={() => router.push("/learn/my-courses")}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Course
@@ -180,7 +180,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
               <h2 className="text-lg font-semibold text-gray-900">Question Review</h2>
               <button
                 onClick={expandAll}
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 {expandedQuestions.size === reviewQuestions.length ? "Collapse All" : "Expand All"}
               </button>

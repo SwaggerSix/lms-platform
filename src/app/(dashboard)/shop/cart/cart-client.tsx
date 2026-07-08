@@ -104,7 +104,7 @@ export default function CartClient() {
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
           <p className="text-gray-500 mt-1">{items.length} item{items.length !== 1 ? "s" : ""} in your cart</p>
         </div>
-        <Link href="/shop" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+        <Link href="/shop" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
           Continue Shopping
         </Link>
       </div>
@@ -118,7 +118,7 @@ export default function CartClient() {
           <p className="text-gray-500 mb-4">Browse the marketplace to find courses</p>
           <Link
             href="/shop"
-            className="inline-flex px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            className="inline-flex px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
           >
             Browse Courses
           </Link>
@@ -139,12 +139,12 @@ export default function CartClient() {
                   className="flex gap-4 bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow"
                 >
                   {/* Thumbnail */}
-                  <div className="w-28 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg overflow-hidden shrink-0">
+                  <div className="w-28 h-20 bg-gradient-to-br from-primary-100 to-purple-100 rounded-lg overflow-hidden shrink-0">
                     {p.course?.thumbnail_url ? (
                       <img src={p.course.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-8 h-8 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                       </div>
@@ -185,7 +185,7 @@ export default function CartClient() {
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <button
                   onClick={() => setShowCheckout(false)}
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium mb-4"
+                  className="text-sm text-primary-600 hover:text-primary-700 font-medium mb-4"
                 >
                   &larr; Back to summary
                 </button>
@@ -227,7 +227,7 @@ export default function CartClient() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       placeholder="Enter code"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
                     />
                     <button
                       onClick={handleApplyCoupon}
@@ -258,7 +258,7 @@ export default function CartClient() {
 
                 <button
                   onClick={() => setShowCheckout(true)}
-                  className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition-colors"
+                  className="w-full bg-primary-600 text-white font-semibold py-3 rounded-xl hover:bg-primary-700 transition-colors"
                 >
                   Proceed to Checkout
                 </button>

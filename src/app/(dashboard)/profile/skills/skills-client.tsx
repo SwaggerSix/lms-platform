@@ -56,7 +56,7 @@ export interface SkillsData {
 /* ------------------------------------------------------------------ */
 
 const SOURCE_COLORS: Record<string, string> = {
-  Assessment: "bg-indigo-100 text-indigo-700",
+  Assessment: "bg-primary-100 text-primary-700",
   "Course Completion": "bg-green-100 text-green-700",
   "Self Reported": "bg-gray-100 text-gray-600",
   "Manager Review": "bg-purple-100 text-purple-700",
@@ -151,7 +151,7 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                 <select
                   value={assessSkill}
                   onChange={(e) => setAssessSkill(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a skill...</option>
                   {data.categories.flatMap((c) => c.skills).map((s) => (
@@ -187,7 +187,7 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                   onChange={(e) => setAssessNotes(e.target.value)}
                   rows={3}
                   placeholder="Add notes about your proficiency..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               {submitError && (
@@ -305,7 +305,7 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-semibold text-gray-700">{skill.proficiency}/5</span>
                           <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
-                            <div className="h-full rounded-full bg-indigo-500 transition-all" style={{ width: `${(skill.proficiency / 5) * 100}%` }} />
+                            <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${(skill.proficiency / 5) * 100}%` }} />
                           </div>
                         </div>
                       </div>
@@ -342,7 +342,7 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-20 overflow-hidden rounded-full bg-gray-200">
-                          <div className="h-full rounded-full bg-indigo-500" style={{ width: `${(gap.current / 5) * 100}%` }} />
+                          <div className="h-full rounded-full bg-primary-500" style={{ width: `${(gap.current / 5) * 100}%` }} />
                         </div>
                         <span className="text-xs text-gray-500">{gap.current}/5</span>
                       </div>
@@ -361,7 +361,7 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
                       </span>
                     </td>
                     <td className="py-3 pl-4">
-                      <a href="#" className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                      <a href="#" className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
                         {gap.recommendedCourse}
                         <ExternalLink className="h-3 w-3" />
                       </a>

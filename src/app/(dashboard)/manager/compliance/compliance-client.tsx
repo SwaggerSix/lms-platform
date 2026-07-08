@@ -205,7 +205,7 @@ export default function ComplianceClient({
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <ShieldCheck className="h-8 w-8 text-indigo-600" />
+            <ShieldCheck className="h-8 w-8 text-primary-600" />
             <h1 className="text-3xl font-bold text-gray-900">
               Compliance
             </h1>
@@ -579,7 +579,7 @@ export default function ComplianceClient({
                                   key={member.id}
                                   className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5"
                                 >
-                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
                                     {member.avatar}
                                   </div>
                                   <div className="flex-1 min-w-0">

@@ -96,7 +96,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
               aria-pressed={value.enrollmentType === et}
               className={cn(
                 'rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors',
-                value.enrollmentType === et ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                value.enrollmentType === et ? 'border-primary-600 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
               {et}
@@ -106,12 +106,12 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Passing Score: {value.passingScore}%</label>
-        <input type="range" min={0} max={100} value={value.passingScore} onChange={(e) => set('passingScore', parseInt(e.target.value))} className="w-full accent-indigo-600" />
+        <input type="range" min={0} max={100} value={value.passingScore} onChange={(e) => set('passingScore', parseInt(e.target.value))} className="w-full accent-primary-600" />
         <div className="flex justify-between text-xs text-gray-400"><span>0%</span><span>100%</span></div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Attempts</label>
-        <input type="number" min={1} max={10} value={value.maxAttempts} onChange={(e) => set('maxAttempts', parseInt(e.target.value) || 1)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <input type="number" min={1} max={10} value={value.maxAttempts} onChange={(e) => set('maxAttempts', parseInt(e.target.value) || 1)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
       </div>
       <div>
         <label className="flex cursor-pointer items-start gap-3">
@@ -119,7 +119,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
             type="checkbox"
             checked={value.includeEvaluation}
             onChange={(e) => set('includeEvaluation', e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
           />
           <span>
             <span className="block text-sm font-medium text-gray-700">Include a course evaluation</span>
@@ -133,11 +133,11 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
         <div className="grid grid-cols-2 gap-4 max-w-md">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Available from</label>
-            <input type="date" value={value.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="date" value={value.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Available until</label>
-            <input type="date" value={value.availableUntil} onChange={(e) => set('availableUntil', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="date" value={value.availableUntil} onChange={(e) => set('availableUntil', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
             value={prereqSearch}
             onChange={(e) => searchPrerequisites(e.target.value)}
             placeholder="Search courses to add as prerequisite..."
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
           {prereqResults.length > 0 && (
             <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
@@ -181,7 +181,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
           <select
             value={prereqReqType}
             onChange={(e) => setPrereqReqType(e.target.value)}
-            className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-primary-500"
           >
             <option value="completion">Completion</option>
             <option value="min_score">Minimum Score</option>
@@ -195,7 +195,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
                 max={100}
                 value={prereqMinScore}
                 onChange={(e) => setPrereqMinScore(parseInt(e.target.value) || 0)}
-                className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
               <span className="text-xs text-gray-400">%</span>
             </div>
@@ -211,7 +211,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
                 className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <BookOpen className="h-4 w-4 text-indigo-500" />
+                  <BookOpen className="h-4 w-4 text-primary-500" />
                   <span className="text-sm font-medium text-gray-900">{prereq.title}</span>
                 </div>
                 <div className="flex items-center gap-3">

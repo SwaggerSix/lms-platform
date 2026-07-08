@@ -141,7 +141,7 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
       <header className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award className="h-6 w-6 text-indigo-600" />
+            <Award className="h-6 w-6 text-primary-600" />
             <span className="text-lg font-bold text-gray-900">LearnHub</span>
             <span className="text-sm text-gray-500 ml-2">Certificate Verification</span>
           </div>
@@ -204,7 +204,7 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-gray-500">Verification Code</p>
-            <p className="mt-1 text-lg font-semibold font-mono text-indigo-600">{code}</p>
+            <p className="mt-1 text-lg font-semibold font-mono text-primary-600">{code}</p>
           </div>
         </div>
 
@@ -304,7 +304,7 @@ function InvalidCertificate({ code }: { code: string }) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center gap-2">
-          <Award className="h-6 w-6 text-indigo-600" />
+          <Award className="h-6 w-6 text-primary-600" />
           <span className="text-lg font-bold text-gray-900">LearnHub</span>
           <span className="text-sm text-gray-500 ml-2">Certificate Verification</span>
         </div>

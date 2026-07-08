@@ -197,7 +197,7 @@ export function ReportViewerModal<Row extends Record<string, unknown>>({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search rows…"
-              className="w-64 rounded-lg border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-64 rounded-lg border border-gray-300 bg-white py-1.5 pl-9 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <div className="flex items-center gap-2">

@@ -195,7 +195,7 @@ export default function DocumentTable({
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         {doc.is_policy && (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-600">
                             <ShieldCheck className="h-3 w-3" />
                             Policy
                           </span>
@@ -310,7 +310,7 @@ export default function DocumentTable({
                 onClick={() => onPageChange(p)}
                 className={cn(
                   "inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium",
-                  currentPage === p ? "bg-indigo-600 text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                  currentPage === p ? "bg-primary-600 text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                 )}
               >
                 {p}

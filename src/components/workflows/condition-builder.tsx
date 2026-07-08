@@ -175,7 +175,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
                 onChange={(e) => updateRule(idx, { field: e.target.value })}
                 placeholder="field path"
                 list="field-suggestions"
-                className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-2 focus:ring-primary-500 outline-none"
               />
             </div>
 
@@ -184,7 +184,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
               <select
                 value={rule.operator}
                 onChange={(e) => updateRule(idx, { operator: e.target.value as Operator })}
-                className="appearance-none pl-2 pr-5 py-1.5 border border-gray-200 rounded-md text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="appearance-none pl-2 pr-5 py-1.5 border border-gray-200 rounded-md text-xs bg-white focus:ring-2 focus:ring-primary-500 outline-none"
               >
                 {OPERATORS.map((op) => (
                   <option key={op.value} value={op.value}>{op.label}</option>
@@ -201,7 +201,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
                   value={rule.value || ""}
                   onChange={(e) => updateRule(idx, { value: e.target.value })}
                   placeholder="value"
-                  className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
             )}
@@ -229,7 +229,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
         <button
           type="button"
           onClick={addRule}
-          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 rounded-md hover:bg-primary-100 transition-colors"
         >
           <Plus className="w-3 h-3" />
           Add Rule

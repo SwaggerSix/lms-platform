@@ -33,7 +33,7 @@ const providerLabels: Record<string, string> = {
 
 const providerColors: Record<string, string> = {
   linkedin_learning: "bg-blue-100 text-blue-800",
-  coursera: "bg-indigo-100 text-indigo-800",
+  coursera: "bg-primary-100 text-primary-800",
   udemy_business: "bg-purple-100 text-purple-800",
   openai: "bg-gray-100 text-gray-800",
   custom: "bg-gray-100 text-gray-600",
@@ -111,7 +111,7 @@ export default function AdminMarketplaceClient({ initialProviders, stats }: Prop
         </div>
         <button
           onClick={() => setShowSetup(true)}
-          className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="px-4 py-2.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           Add Provider
         </button>
@@ -154,7 +154,7 @@ export default function AdminMarketplaceClient({ initialProviders, stats }: Prop
             </p>
             <button
               onClick={() => setShowSetup(true)}
-              className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              className="px-5 py-2.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
             >
               Add Provider
             </button>
@@ -196,7 +196,7 @@ export default function AdminMarketplaceClient({ initialProviders, stats }: Prop
                     <button
                       onClick={() => handleSync(provider.id)}
                       disabled={syncing === provider.id}
-                      className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium hover:bg-primary-100 disabled:opacity-50 transition-colors"
                     >
                       {syncing === provider.id ? "Syncing..." : "Sync"}
                     </button>

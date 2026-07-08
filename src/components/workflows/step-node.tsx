@@ -42,9 +42,9 @@ const stepTypeConfig: Record<
   action: {
     icon: Zap,
     label: "Action",
-    color: "text-indigo-700",
-    bg: "bg-indigo-50",
-    border: "border-indigo-200",
+    color: "text-primary-700",
+    bg: "bg-primary-50",
+    border: "border-primary-200",
   },
   delay: {
     icon: Timer,
@@ -136,7 +136,7 @@ export function StepNode({ step, isSelected, onClick }: StepNodeProps) {
         "w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 bg-white shadow-sm transition-all text-left",
         "hover:shadow-md",
         isSelected
-          ? "border-indigo-500 shadow-md ring-2 ring-indigo-100"
+          ? "border-primary-500 shadow-md ring-2 ring-primary-100"
           : `${typeConfig.border} hover:border-gray-300`
       )}
     >

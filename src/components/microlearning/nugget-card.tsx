@@ -31,7 +31,7 @@ const typeIcons: Record<string, string> = {
 
 const typeColors: Record<string, string> = {
   tip: "from-amber-500 to-orange-600",
-  flashcard: "from-blue-500 to-indigo-600",
+  flashcard: "from-blue-500 to-primary-600",
   quiz: "from-purple-500 to-violet-600",
   video_clip: "from-red-500 to-rose-600",
   infographic: "from-green-500 to-emerald-600",
@@ -97,7 +97,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
                 </>
               ) : (
                 <>
-                  <p className="text-indigo-700 font-medium">{nugget.content.back as string}</p>
+                  <p className="text-primary-700 font-medium">{nugget.content.back as string}</p>
                   <p className="mt-3 text-xs text-gray-400">Tap to flip back</p>
                 </>
               )}
@@ -122,8 +122,8 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
                         ? "bg-red-50 border-red-400 text-red-700"
                         : "border-gray-200 text-gray-500"
                       : selectedAnswer === i
-                      ? "bg-indigo-50 border-indigo-400 text-indigo-700"
-                      : "border-gray-200 hover:border-indigo-300 text-gray-600"
+                      ? "bg-primary-50 border-primary-400 text-primary-700"
+                      : "border-gray-200 hover:border-primary-300 text-gray-600"
                   }`}
                   disabled={showResult}
                 >
@@ -134,7 +134,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
             {!showResult && selectedAnswer !== null && (
               <button
                 onClick={handleQuizSubmit}
-                className="mt-3 w-full py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors"
+                className="mt-3 w-full py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors"
               >
                 Submit Answer
               </button>
@@ -197,7 +197,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
                     type="checkbox"
                     checked={checkedItems.has(i)}
                     onChange={() => handleChecklistToggle(i)}
-                    className="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span
                     className={`text-sm transition-colors ${
@@ -212,7 +212,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
             {nugget.content.items && (
               <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  className="h-full bg-primary-600 rounded-full transition-all duration-300"
                   style={{
                     width: `${(checkedItems.size / (nugget.content.items as string[]).length) * 100}%`,
                   }}

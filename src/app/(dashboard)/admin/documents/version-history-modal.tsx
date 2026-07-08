@@ -37,7 +37,7 @@ export default function VersionHistoryModal({
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
                       i === 0
-                        ? "bg-indigo-100 text-indigo-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "bg-gray-100 text-gray-500"
                     )}
                   >

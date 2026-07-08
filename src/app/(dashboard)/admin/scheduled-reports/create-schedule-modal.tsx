@@ -127,7 +127,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Weekly Enrollment Summary"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -137,7 +137,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
             <select
               value={formType}
               onChange={(e) => setFormType(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               {reportTypes.map((rt) => (
                 <option key={rt.value} value={rt.value}>
@@ -154,7 +154,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
               <select
                 value={formFrequency}
                 onChange={(e) => setFormFrequency(e.target.value as ReportFrequency)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -174,7 +174,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   <select
                     value={formDay}
                     onChange={(e) => setFormDay(Number(e.target.value))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     {dayOfWeekLabels.map((d, i) => (
                       <option key={i} value={i}>
@@ -186,7 +186,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   <select
                     value={formDay}
                     onChange={(e) => setFormDay(Number(e.target.value))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
                       <option key={d} value={d}>
@@ -207,7 +207,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                 type="time"
                 value={formTime}
                 onChange={(e) => setFormTime(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -215,7 +215,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
               <select
                 value={formTimezone}
                 onChange={(e) => setFormTimezone(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 {timezones.map((tz) => (
                   <option key={tz} value={tz}>
@@ -238,7 +238,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   className={cn(
                     "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                     formDelivery === method
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                      ? "border-primary-500 bg-primary-50 text-primary-700"
                       : "border-gray-300 text-gray-600 hover:bg-gray-50"
                   )}
                 >
@@ -274,7 +274,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   }
                 }}
                 placeholder="Enter email address"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
               <Button variant="secondary" onClick={addRecipient}>
                 Add
@@ -285,10 +285,10 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                 {formRecipients.map((email) => (
                   <span
                     key={email}
-                    className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+                    className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700"
                   >
                     {email}
-                    <button onClick={() => removeRecipient(email)} className="hover:text-indigo-900">
+                    <button onClick={() => removeRecipient(email)} className="hover:text-primary-900">
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -309,7 +309,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   className={cn(
                     "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                     formFormat === fmt
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                      ? "border-primary-500 bg-primary-50 text-primary-700"
                       : "border-gray-300 text-gray-600 hover:bg-gray-50"
                   )}
                 >
@@ -323,10 +323,10 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
           </div>
 
           {/* Preview Description */}
-          <div className="rounded-lg bg-indigo-50 border border-indigo-200 px-4 py-3">
+          <div className="rounded-lg bg-primary-50 border border-primary-200 px-4 py-3">
             <div className="flex items-start gap-2">
-              <Clock className="h-4 w-4 text-indigo-600 mt-0.5" />
-              <p className="text-sm text-indigo-700">
+              <Clock className="h-4 w-4 text-primary-600 mt-0.5" />
+              <p className="text-sm text-primary-700">
                 {getScheduleDescription({
                   schedule_frequency: formFrequency,
                   schedule_day: formFrequency === "daily" ? null : formDay,
@@ -348,7 +348,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   type="date"
                   value={formDateFrom}
                   onChange={(e) => setFormDateFrom(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -357,7 +357,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                   type="date"
                   value={formDateTo}
                   onChange={(e) => setFormDateTo(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -365,7 +365,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                 <select
                   value={formDepartment}
                   onChange={(e) => setFormDepartment(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="all">All Departments</option>
                   <option value="executive">Executive</option>
@@ -381,7 +381,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                 <select
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="all">All Roles</option>
                   <option value="instructor">Instructor</option>
@@ -395,7 +395,7 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
                 <select
                   value={formCourse}
                   onChange={(e) => setFormCourse(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="all">All Courses</option>
                   <option value="advanced-react">Advanced React Patterns</option>

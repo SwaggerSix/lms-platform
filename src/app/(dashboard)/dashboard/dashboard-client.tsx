@@ -105,17 +105,17 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 to-purple-600 px-8 py-8 text-white shadow-lg">
         <div className="relative z-10">
           <h1 className="text-2xl font-bold">Welcome back, {data.userName}!</h1>
-          <p className="mt-1 text-indigo-100">
+          <p className="mt-1 text-primary-100">
             {data.coursesInProgress > 0
               ? `You have ${data.coursesInProgress} course${data.coursesInProgress === 1 ? "" : "s"} in progress. Pick up where you left off!`
               : "Explore the catalog to start your next course."}
           </p>
           <a
             href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].courseId}` : "/learn/my-courses"}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600"
           >
             <Play className="h-4 w-4" aria-hidden="true" />
             Continue Learning
@@ -155,10 +155,10 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               <h2 className="text-lg font-semibold text-gray-900">Course Spotlight</h2>
             </div>
             <div className="flex items-center gap-4">
-              <a href="/learn/recommendations" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+              <a href="/learn/recommendations" className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
                 Recommended for you
               </a>
-              <a href="/learn/catalog" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+              <a href="/learn/catalog" className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
                 View all courses
                 <ArrowRight className="h-4 w-4" />
               </a>
@@ -169,7 +169,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               <a
                 key={course.id}
                 href={`/learn/catalog/${course.slug}`}
-                className="group relative block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="group relative block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <div className={cn("relative flex h-40 items-end p-4", course.thumbnail)}>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -207,7 +207,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                         {course.duration}
                       </span>
                     </div>
-                    <span className="flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors group-hover:bg-indigo-100">
+                    <span className="flex items-center gap-1 rounded-lg bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-600 transition-colors group-hover:bg-primary-100">
                       <TrendingUp className="h-3.5 w-3.5" />
                       View
                     </span>
@@ -224,7 +224,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Continue Learning</h2>
-            <a href="/learn/my-courses" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <a href="/learn/my-courses" className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
               View all
               <ArrowRight className="h-4 w-4" />
             </a>
@@ -234,14 +234,14 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               <a
                 key={course.id}
                 href={`/learn/player/${course.courseId}`}
-                className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <div className={cn("flex h-36 items-center justify-center", course.thumbnail)}>
                   <Play className="h-12 w-12 text-white/80 transition-transform group-hover:scale-110" />
                 </div>
                 <div className="p-4">
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-600">
+                    <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-medium text-primary-600">
                       {course.category}
                     </span>
                   </div>
@@ -252,11 +252,11 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
                   <div className="mt-3">
                     <div className="mb-1 flex items-center justify-between text-xs">
                       <span className="text-gray-500">Progress</span>
-                      <span className="font-medium text-indigo-600">{course.progress}%</span>
+                      <span className="font-medium text-primary-600">{course.progress}%</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-full rounded-full bg-indigo-600 transition-all"
+                        className="h-full rounded-full bg-primary-600 transition-all"
                         style={{ width: `${course.progress}%` }}
                       />
                     </div>
@@ -342,7 +342,7 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Recent Achievements</h2>
-            <a href="/learn/achievements" className="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <a href="/learn/achievements" className="flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
               All
               <ArrowRight className="h-4 w-4" />
             </a>

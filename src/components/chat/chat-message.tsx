@@ -15,7 +15,7 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
           isUser
-            ? "bg-indigo-600 text-white"
+            ? "bg-primary-600 text-white"
             : "bg-gradient-to-br from-emerald-400 to-teal-500 text-white"
         }`}
       >
@@ -27,7 +27,7 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
         <div
           className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
             isUser
-              ? "bg-indigo-600 text-white rounded-br-md"
+              ? "bg-primary-600 text-white rounded-br-md"
               : "bg-white border border-gray-200 text-gray-800 rounded-bl-md shadow-sm"
           }`}
         >
@@ -93,7 +93,7 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
                           key={k}
                           className={`px-1 py-0.5 rounded text-xs font-mono ${
                             isUser
-                              ? "bg-indigo-500 text-indigo-100"
+                              ? "bg-primary-500 text-primary-100"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >

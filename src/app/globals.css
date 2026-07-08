@@ -34,8 +34,10 @@
  * (primary / primary-hover / primary-text).
  *
  * A parallel semantic `primary` palette exposes the same values as
- * bg-primary-600 etc. — new code should prefer those class names; the
- * indigo names remain for the existing call sites.
+ * bg-primary-600 etc. All app call sites now use the primary-* names;
+ * the indigo aliases remain only for `prose prose-indigo` typography
+ * styles and any class strings persisted in data. Retire them once
+ * those are confirmed migrated.
  */
 @theme inline {
   --color-indigo-50: var(--brand-primary-light, #f1f7e4);

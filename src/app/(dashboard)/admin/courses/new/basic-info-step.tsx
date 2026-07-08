@@ -103,53 +103,53 @@ export default function BasicInfoStep({
       <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Title</label>
-        <input type="text" value={value.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="e.g. Introduction to Data Science" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <input type="text" value={value.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="e.g. Introduction to Data Science" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Slug</label>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-400">/courses/</span>
-          <input type="text" value={value.slug} onChange={(e) => set('slug', e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+          <input type="text" value={value.slug} onChange={(e) => set('slug', e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
-        <textarea rows={4} value={value.description} onChange={(e) => set('description', e.target.value)} placeholder="Detailed course description..." className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <textarea rows={4} value={value.description} onChange={(e) => set('description', e.target.value)} placeholder="Detailed course description..." className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Short Description</label>
-        <input type="text" value={value.shortDescription} onChange={(e) => set('shortDescription', e.target.value)} placeholder="Brief summary (max 160 characters)" maxLength={160} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <input type="text" value={value.shortDescription} onChange={(e) => set('shortDescription', e.target.value)} placeholder="Brief summary (max 160 characters)" maxLength={160} className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Learning Objectives</label>
-        <textarea rows={4} value={value.learningObjectives} onChange={(e) => set('learningObjectives', e.target.value)} placeholder="One objective per line, e.g.&#10;Understand core concepts&#10;Apply best practices" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <textarea rows={4} value={value.learningObjectives} onChange={(e) => set('learningObjectives', e.target.value)} placeholder="One objective per line, e.g.&#10;Understand core concepts&#10;Apply best practices" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
         <p className="mt-1 text-xs text-gray-400">One per line. Shown to learners as &ldquo;What you&rsquo;ll learn&rdquo;.</p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Optimal Audience</label>
-        <input type="text" value={value.optimalAudience} onChange={(e) => set('optimalAudience', e.target.value)} placeholder="Who is this course best suited for?" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+        <input type="text" value={value.optimalAudience} onChange={(e) => set('optimalAudience', e.target.value)} placeholder="Who is this course best suited for?" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-          <select value={value.categoryId} onChange={(e) => set('categoryId', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={value.categoryId} onChange={(e) => set('categoryId', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             <option value="">Uncategorized</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           <div className="mt-1 flex gap-3">
-            <button type="button" onClick={addCategory} className="text-xs font-medium text-indigo-600 hover:text-indigo-700">+ Add category</button>
+            <button type="button" onClick={addCategory} className="text-xs font-medium text-primary-600 hover:text-primary-700">+ Add category</button>
             <button type="button" onClick={renameCategory} className="text-xs font-medium text-gray-500 hover:text-gray-700">Edit selected</button>
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Type</label>
-          <select value={value.courseType} onChange={(e) => set('courseType', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={value.courseType} onChange={(e) => set('courseType', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             {typeOptions.map((t) => <option key={t}>{t}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Difficulty Level</label>
-          <select value={value.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <select value={value.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
             {difficultyOptions.map((d) => <option key={d}>{d}</option>)}
           </select>
         </div>
@@ -157,7 +157,7 @@ export default function BasicInfoStep({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Length (minutes)</label>
         <div className="flex items-center gap-2">
-          <input type="number" min={0} value={value.duration} onChange={(e) => set('duration', parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+          <input type="number" min={0} value={value.duration} onChange={(e) => set('duration', parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           <span className="text-sm text-gray-400">({formatDuration(value.duration)})</span>
           <Button type="button" variant="secondary" size="sm" onClick={() => set('duration', contentDuration)}>
             Match content ({formatDuration(contentDuration)})
@@ -207,14 +207,14 @@ export default function BasicInfoStep({
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags</label>
         <div className="flex flex-wrap gap-2 mb-2">
           {value.tags.map((tag) => (
-            <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+            <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
               {tag}
-              <button onClick={() => set('tags', value.tags.filter((t) => t !== tag))} className="text-indigo-400 hover:text-indigo-600"><X className="h-3 w-3" /></button>
+              <button onClick={() => set('tags', value.tags.filter((t) => t !== tag))} className="text-primary-400 hover:text-primary-600"><X className="h-3 w-3" /></button>
             </span>
           ))}
         </div>
         <div className="flex gap-2">
-          <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="Add a tag..." className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+          <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} placeholder="Add a tag..." className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           <Button variant="secondary" onClick={addTag}>Add</Button>
         </div>
       </div>

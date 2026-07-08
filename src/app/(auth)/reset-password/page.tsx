@@ -164,7 +164,7 @@ export default function ResetPasswordPage() {
     <div className="rounded-2xl bg-white p-8 shadow-2xl">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-200">
           <GraduationCap className="h-8 w-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Reset Your Password</h1>
@@ -184,7 +184,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to sign in
@@ -192,7 +192,7 @@ export default function ResetPasswordPage() {
         </div>
       ) : phase === "checking" ? (
         <div className="flex flex-col items-center py-6 text-center">
-          <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
           <p className="mt-3 text-sm text-gray-500">Verifying your reset link...</p>
         </div>
       ) : phase === "invalid" ? (
@@ -210,7 +210,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             href="/forgot-password"
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
           >
             Request a new reset link
           </Link>
@@ -251,7 +251,7 @@ export default function ResetPasswordPage() {
                 required
                 minLength={8}
                 placeholder="At least 8 characters"
-                className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
 
@@ -269,14 +269,14 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 placeholder="Re-enter your password"
-                className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Reset Password
@@ -287,7 +287,7 @@ export default function ResetPasswordPage() {
           <p className="mt-6 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to sign in

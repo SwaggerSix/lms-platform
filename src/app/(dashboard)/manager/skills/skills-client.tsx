@@ -132,7 +132,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <Sparkles className="h-8 w-8 text-indigo-600" />
+          <Sparkles className="h-8 w-8 text-primary-600" />
           <h1 className="text-3xl font-bold text-gray-900">
             Team Skills
           </h1>
@@ -175,7 +175,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                   key={member.id}
                   className={cn(
                     "cursor-pointer transition-colors hover:bg-gray-50",
-                    selectedMember === member.id && "bg-indigo-50"
+                    selectedMember === member.id && "bg-primary-50"
                   )}
                   onClick={() =>
                     setSelectedMember(
@@ -185,7 +185,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                 >
                   <td className="px-6 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
                         {member.avatar}
                       </div>
                       <div>
@@ -268,10 +268,10 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
 
       {/* Member Drill-Down Panel */}
       {selectedMemberData && (
-        <div className="mb-8 rounded-xl border border-indigo-200 bg-indigo-50/50 p-6 shadow-sm">
+        <div className="mb-8 rounded-xl border border-primary-200 bg-primary-50/50 p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
                 {selectedMemberData.avatar}
               </div>
               <div>
@@ -438,7 +438,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                       </span>
                       <button
                         onClick={() => handleViewAllCourses(skill)}
-                        className="flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                        className="flex items-center gap-1 rounded-lg border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100"
                       >
                         <ExternalLink className="h-3 w-3" />
                         Browse Catalog
@@ -467,7 +467,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                         <button
                           key={course}
                           onClick={() => handleCourseClick(course, skill)}
-                          className="flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                          className="flex items-center gap-1 rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-100"
                         >
                           <BookOpen className="h-3 w-3" />
                           {course}
@@ -509,7 +509,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                   className="flex w-full items-center justify-between rounded-lg border border-gray-200 p-3 text-left transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
-                    <BookOpen className="h-5 w-5 text-indigo-600" />
+                    <BookOpen className="h-5 w-5 text-primary-600" />
                     <span className="text-sm font-medium text-gray-900">
                       {course}
                     </span>

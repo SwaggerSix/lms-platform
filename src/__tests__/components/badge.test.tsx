@@ -10,7 +10,7 @@ describe("Badge", () => {
 
   it("applies default variant", () => {
     render(<Badge>Default</Badge>);
-    expect(screen.getByText("Default").className).toMatch(/bg-indigo-100/);
+    expect(screen.getByText("Default").className).toMatch(/bg-primary-100/);
   });
 
   it("applies success variant", () => {

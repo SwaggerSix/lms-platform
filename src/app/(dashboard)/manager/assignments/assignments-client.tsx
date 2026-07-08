@@ -342,7 +342,7 @@ export default function AssignmentsClient({
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <BookOpen className="h-8 w-8 text-indigo-600" />
+            <BookOpen className="h-8 w-8 text-primary-600" />
             <h1 className="text-3xl font-bold text-gray-900">
               Assignments
             </h1>
@@ -369,7 +369,7 @@ export default function AssignmentsClient({
             className={cn(
               "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
               activeTab === tab
-                ? "text-indigo-600"
+                ? "text-primary-600"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -381,14 +381,14 @@ export default function AssignmentsClient({
               className={cn(
                 "rounded-full px-2 py-0.5 text-xs",
                 activeTab === tab
-                  ? "bg-indigo-100 text-indigo-700"
+                  ? "bg-primary-100 text-primary-700"
                   : "bg-gray-100 text-gray-600"
               )}
             >
               {tabCounts[tab]}
             </span>
             {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
             )}
           </button>
         ))}
@@ -404,7 +404,7 @@ export default function AssignmentsClient({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search assignments"
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         {selectedAssignments.length > 0 && (
@@ -462,7 +462,7 @@ export default function AssignmentsClient({
                       selectedAssignments.length === filteredAssignments.length
                     }
                     onChange={toggleAllAssignments}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -505,7 +505,7 @@ export default function AssignmentsClient({
                       type="checkbox"
                       checked={selectedAssignments.includes(assignment.id)}
                       onChange={() => toggleAssignmentSelect(assignment.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -515,7 +515,7 @@ export default function AssignmentsClient({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
                         {assignment.assignedToAvatar}
                       </div>
                       <span className="text-sm text-gray-700">
@@ -557,7 +557,7 @@ export default function AssignmentsClient({
                               ? "bg-green-500"
                               : assignment.status === "overdue"
                               ? "bg-red-500"
-                              : "bg-indigo-500"
+                              : "bg-primary-500"
                           )}
                           style={{ width: `${assignment.progress}%` }}
                         />
@@ -649,7 +649,7 @@ export default function AssignmentsClient({
                     className={cn(
                       "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                       assignType === t
-                        ? "bg-white text-indigo-700 shadow-sm"
+                        ? "bg-white text-primary-700 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
                     )}
                   >
@@ -671,7 +671,7 @@ export default function AssignmentsClient({
                     placeholder="Search courses..."
                     value={courseSearch}
                     onChange={(e) => setCourseSearch(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
@@ -682,7 +682,7 @@ export default function AssignmentsClient({
                       className={cn(
                         "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50",
                         selectedCourse === course.id &&
-                          "bg-indigo-50 text-indigo-700"
+                          "bg-primary-50 text-primary-700"
                       )}
                     >
                       <div>
@@ -692,7 +692,7 @@ export default function AssignmentsClient({
                         </p>
                       </div>
                       {selectedCourse === course.id && (
-                        <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                        <CheckCircle2 className="h-4 w-4 text-primary-600" />
                       )}
                     </button>
                   ))}
@@ -713,7 +713,7 @@ export default function AssignmentsClient({
                     placeholder="Search learning paths..."
                     value={pathSearch}
                     onChange={(e) => setPathSearch(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
@@ -728,7 +728,7 @@ export default function AssignmentsClient({
                         onClick={() => setSelectedPath(path.id)}
                         className={cn(
                           "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50",
-                          selectedPath === path.id && "bg-indigo-50 text-indigo-700"
+                          selectedPath === path.id && "bg-primary-50 text-primary-700"
                         )}
                       >
                         <div>
@@ -739,7 +739,7 @@ export default function AssignmentsClient({
                           </p>
                         </div>
                         {selectedPath === path.id && (
-                          <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                          <CheckCircle2 className="h-4 w-4 text-primary-600" />
                         )}
                       </button>
                     ))
@@ -767,14 +767,14 @@ export default function AssignmentsClient({
                         type="checkbox"
                         checked={selectedMembers.includes(member.id)}
                         onChange={() => toggleMemberSelect(member.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-gray-700">{member.name}</span>
                     </label>
                   ))}
                 </div>
                 {selectedMembers.length > 0 && (
-                  <p className="mt-1 text-xs text-indigo-600">
+                  <p className="mt-1 text-xs text-primary-600">
                     {selectedMembers.length} member(s) selected
                   </p>
                 )}
@@ -789,7 +789,7 @@ export default function AssignmentsClient({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
@@ -801,7 +801,7 @@ export default function AssignmentsClient({
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -819,7 +819,7 @@ export default function AssignmentsClient({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes or instructions for the assignees..."
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
                 />
               </div>
             </div>
@@ -842,8 +842,8 @@ export default function AssignmentsClient({
                     selectedMembers.length > 0 &&
                     dueDate &&
                     !assigning
-                    ? "bg-indigo-600 hover:bg-indigo-700"
-                    : "bg-indigo-300 cursor-not-allowed"
+                    ? "bg-primary-600 hover:bg-primary-700"
+                    : "bg-primary-300 cursor-not-allowed"
                 )}
               >
                 {assigning
@@ -881,7 +881,7 @@ export default function AssignmentsClient({
                   type="date"
                   value={extendDate}
                   onChange={(e) => setExtendDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>

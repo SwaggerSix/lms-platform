@@ -23,8 +23,8 @@ export default function CategoriesTab({ categories, canManage, onEdit, onDelete 
               className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm"
             >
               <GripVertical className="h-5 w-5 flex-shrink-0 cursor-grab text-gray-300" />
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-100">
-                <FolderOpen className="h-5 w-5 text-indigo-600" />
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100">
+                <FolderOpen className="h-5 w-5 text-primary-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-gray-900">{cat.name}</h3>

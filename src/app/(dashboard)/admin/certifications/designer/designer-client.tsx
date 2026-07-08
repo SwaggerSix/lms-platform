@@ -344,21 +344,21 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
         {/* Template Name */}
         <div className="border-b border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Palette className="h-5 w-5 text-indigo-600" />
+            <Palette className="h-5 w-5 text-primary-600" />
             <h1 className="text-lg font-bold text-gray-900">Certificate Designer</h1>
           </div>
           <input
             type="text"
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Template name"
           />
           <input
             type="text"
             value={templateDescription}
             onChange={(e) => setTemplateDescription(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Description (optional)"
           />
 
@@ -372,7 +372,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                   const t = templates.find((t) => t.id === e.target.value);
                   if (t) loadTemplate(t);
                 }}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Select a template...</option>
                 {templates.map((t) => (
@@ -400,26 +400,26 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                 <button
                   key={preset}
                   onClick={() => loadPreset(preset)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-gray-200 p-3 text-sm hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
+                  className="flex flex-col items-center gap-1 rounded-lg border border-gray-200 p-3 text-sm hover:border-primary-300 hover:bg-primary-50 transition-colors"
                 >
                   <div className={cn(
                     "h-16 w-full rounded border-2",
                     preset === "classic" && "border-amber-700 bg-amber-50",
-                    preset === "modern" && "border-indigo-500 bg-white",
+                    preset === "modern" && "border-primary-500 bg-white",
                     preset === "elegant" && "border-yellow-500 bg-stone-50",
                     preset === "corporate" && "border-slate-700 bg-slate-50",
                   )}>
                     <div className={cn(
                       "mt-2 mx-auto h-1.5 w-10 rounded",
                       preset === "classic" && "bg-amber-700",
-                      preset === "modern" && "bg-indigo-500",
+                      preset === "modern" && "bg-primary-500",
                       preset === "elegant" && "bg-yellow-500",
                       preset === "corporate" && "bg-slate-700",
                     )} />
                     <div className={cn(
                       "mt-1 mx-auto h-1 w-14 rounded",
                       preset === "classic" && "bg-amber-300",
-                      preset === "modern" && "bg-indigo-200",
+                      preset === "modern" && "bg-primary-200",
                       preset === "elegant" && "bg-yellow-300",
                       preset === "corporate" && "bg-slate-300",
                     )} />
@@ -480,7 +480,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                     className={cn(
                       "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                       design.dimensions.orientation === "landscape"
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
                         : "border-gray-300 text-gray-600 hover:bg-gray-50"
                     )}
                   >
@@ -494,7 +494,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                     className={cn(
                       "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                       design.dimensions.orientation === "portrait"
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
                         : "border-gray-300 text-gray-600 hover:bg-gray-50"
                     )}
                   >
@@ -530,7 +530,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                   onClick={() => updateDesign((d) => ({ ...d, border: { ...d.border, enabled: !d.border.enabled } }))}
                   className={cn(
                     "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                    design.border.enabled ? "bg-indigo-600" : "bg-gray-300"
+                    design.border.enabled ? "bg-primary-600" : "bg-gray-300"
                   )}
                 >
                   <span className={cn(
@@ -644,7 +644,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-3 py-2 text-sm cursor-pointer transition-colors",
                       selectedElementId === el.id
-                        ? "bg-indigo-50 border border-indigo-200"
+                        ? "bg-primary-50 border border-primary-200"
                         : "hover:bg-gray-50 border border-transparent"
                     )}
                     onClick={() => setSelectedElementId(el.id)}
@@ -742,7 +742,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 previewMode
-                  ? "bg-indigo-100 text-indigo-700"
+                  ? "bg-primary-100 text-primary-700"
                   : "border border-gray-300 text-gray-600 hover:bg-gray-50"
               )}
             >
@@ -772,7 +772,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -845,8 +845,8 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                     key={`overlay-${el.id}`}
                     style={style}
                     className={cn(
-                      "hover:outline hover:outline-2 hover:outline-indigo-400 hover:outline-offset-2 rounded",
-                      selectedElementId === el.id && "outline outline-2 outline-indigo-500 outline-offset-2"
+                      "hover:outline hover:outline-2 hover:outline-primary-400 hover:outline-offset-2 rounded",
+                      selectedElementId === el.id && "outline outline-2 outline-primary-500 outline-offset-2"
                     )}
                     onClick={() => handleElementClick(el.id)}
                   />
@@ -907,11 +907,11 @@ function TextElementProperties({
             type="text"
             value={element.content}
             onChange={(e) => onChange({ content: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 pr-8"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 pr-8"
           />
           <button
             onClick={() => setShowVariableDropdown(!showVariableDropdown)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600"
             title="Insert variable"
           >
             <Copy className="h-4 w-4" />
@@ -926,9 +926,9 @@ function TextElementProperties({
                   onChange({ content: element.content + v.key });
                   setShowVariableDropdown(false);
                 }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 transition-colors"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 transition-colors"
               >
-                <span className="font-mono text-indigo-600 text-xs">{v.key}</span>
+                <span className="font-mono text-primary-600 text-xs">{v.key}</span>
                 <span className="block text-xs text-gray-500">{v.description}</span>
               </button>
             ))}
@@ -989,7 +989,7 @@ function TextElementProperties({
               onClick={() => onChange({ align: a })}
               className={cn(
                 "flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium capitalize transition-colors",
-                element.align === a ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                element.align === a ? "border-primary-500 bg-primary-50 text-primary-700" : "border-gray-300 text-gray-600 hover:bg-gray-50"
               )}
             >
               {a}

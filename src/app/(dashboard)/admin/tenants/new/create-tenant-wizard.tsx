@@ -103,7 +103,7 @@ export default function CreateTenantWizard() {
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                 step >= s.num
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-primary-600 text-white"
                   : "bg-gray-200 text-gray-500"
               }`}
             >
@@ -115,7 +115,7 @@ export default function CreateTenantWizard() {
                 s.num
               )}
             </div>
-            <span className={`text-sm ${step >= s.num ? "text-indigo-600 font-medium" : "text-gray-500"}`}>
+            <span className={`text-sm ${step >= s.num ? "text-primary-600 font-medium" : "text-gray-500"}`}>
               {s.label}
             </span>
             {i < STEPS.length - 1 && <div className="w-12 h-px bg-gray-300 mx-2" />}
@@ -142,7 +142,7 @@ export default function CreateTenantWizard() {
               value={form.name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Acme Corporation"
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function CreateTenantWizard() {
                 value={form.slug}
                 onChange={(e) => updateForm({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
                 placeholder="acme-corp"
-                className="flex-1 px-3 py-2.5 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="flex-1 px-3 py-2.5 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
               <span className="px-3 py-2.5 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg text-sm text-gray-500">
                 .lms-platform.com
@@ -174,7 +174,7 @@ export default function CreateTenantWizard() {
               value={form.domain}
               onChange={(e) => updateForm({ domain: e.target.value })}
               placeholder="learn.acme.com"
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
             <p className="mt-1 text-xs text-gray-500">
               Point a CNAME record to your platform to use a custom domain.
@@ -200,13 +200,13 @@ export default function CreateTenantWizard() {
                   onClick={() => updateForm({ plan: plan.key })}
                   className={`p-4 rounded-xl border-2 text-left transition-colors ${
                     form.plan === plan.key
-                      ? "border-indigo-600 bg-indigo-50"
+                      ? "border-primary-600 bg-primary-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium text-gray-900">{plan.label}</p>
-                    <p className="text-sm font-semibold text-indigo-600">{plan.price}</p>
+                    <p className="text-sm font-semibold text-primary-600">{plan.price}</p>
                   </div>
                   <p className="text-xs text-gray-500">{plan.desc}</p>
                 </button>
@@ -224,7 +224,7 @@ export default function CreateTenantWizard() {
                 value={form.max_users}
                 onChange={(e) => updateForm({ max_users: e.target.value })}
                 placeholder="Use plan default"
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -236,7 +236,7 @@ export default function CreateTenantWizard() {
                 value={form.max_courses}
                 onChange={(e) => updateForm({ max_courses: e.target.value })}
                 placeholder="Use plan default"
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function CreateTenantWizard() {
           <button
             onClick={() => setStep((s) => (s + 1) as Step)}
             disabled={!canProceed()}
-            className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </button>
@@ -337,7 +337,7 @@ export default function CreateTenantWizard() {
           <button
             onClick={handleCreate}
             disabled={creating || !canProceed()}
-            className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="px-5 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50"
           >
             {creating ? "Creating..." : "Create Tenant"}
           </button>

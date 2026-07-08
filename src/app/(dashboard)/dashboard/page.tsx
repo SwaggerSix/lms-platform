@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const GRADIENT_THUMBNAILS = [
-  "bg-gradient-to-br from-blue-500 to-indigo-600",
+  "bg-gradient-to-br from-blue-500 to-primary-600",
   "bg-gradient-to-br from-red-500 to-pink-600",
   "bg-gradient-to-br from-emerald-500 to-teal-600",
   "bg-gradient-to-br from-violet-500 to-purple-600",
@@ -20,7 +20,7 @@ const GRADIENT_THUMBNAILS = [
 ];
 
 const SPOTLIGHT_GRADIENTS = [
-  "bg-gradient-to-br from-blue-600 to-indigo-700",
+  "bg-gradient-to-br from-blue-600 to-primary-700",
   "bg-gradient-to-br from-emerald-500 to-teal-600",
   "bg-gradient-to-br from-red-500 to-rose-600",
 ];

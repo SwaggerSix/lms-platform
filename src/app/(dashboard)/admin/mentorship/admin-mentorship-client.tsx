@@ -386,7 +386,7 @@ export default function AdminMentorshipClient({
       sortValue: (req) => (req.match_score ? parseFloat(req.match_score) : null),
       render: (req) =>
         req.match_score ? (
-          <span className="text-sm font-medium text-indigo-600">
+          <span className="text-sm font-medium text-primary-600">
             {parseFloat(req.match_score).toFixed(0)}%
           </span>
         ) : (
@@ -412,7 +412,7 @@ export default function AdminMentorshipClient({
   ];
 
   const statCards = [
-    { label: "Active Mentors", value: stats.activeMentors, sub: `${stats.availableMentors} available`, color: "bg-indigo-50 text-indigo-700" },
+    { label: "Active Mentors", value: stats.activeMentors, sub: `${stats.availableMentors} available`, color: "bg-primary-50 text-primary-700" },
     { label: "Active Mentorships", value: stats.activeRequests, sub: `${stats.pendingRequests} pending`, color: "bg-green-50 text-green-700" },
     { label: "Total Sessions", value: stats.totalSessions, sub: `${stats.completedSessions} completed`, color: "bg-blue-50 text-blue-700" },
     { label: "Avg Rating", value: stats.avgRating, sub: `${stats.totalActiveMentees} active mentees`, color: "bg-amber-50 text-amber-700" },
@@ -457,7 +457,7 @@ export default function AdminMentorshipClient({
                 <select
                   value={assignMentorId}
                   onChange={(e) => setAssignMentorId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a mentor...</option>
                   {assignableMentors.map((m: any) => {
@@ -481,7 +481,7 @@ export default function AdminMentorshipClient({
                 <select
                   value={assignMenteeId}
                   onChange={(e) => setAssignMenteeId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a mentee...</option>
                   {users
@@ -499,7 +499,7 @@ export default function AdminMentorshipClient({
                 <select
                   value={assignType}
                   onChange={(e) => setAssignType(e.target.value as "traditional" | "reverse" | "peer")}
-                  className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="traditional">Traditional</option>
                   <option value="reverse">Reverse</option>
@@ -511,7 +511,7 @@ export default function AdminMentorshipClient({
                   onChange={(e) => setAssignGoals(e.target.value)}
                   rows={3}
                   placeholder="What should this mentorship focus on?"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -668,7 +668,7 @@ export default function AdminMentorshipClient({
                         <select
                           value={addMemberMenteeId}
                           onChange={(e) => setAddMemberMenteeId(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                         >
                           <option value="">Select a mentee...</option>
                           {users
@@ -706,11 +706,11 @@ export default function AdminMentorshipClient({
                         const mn = m.mentee as any;
                         const name = `${mn?.first_name ?? ""} ${mn?.last_name ?? ""}`.trim() || mn?.email || "Mentee";
                         return (
-                          <li key={m.mentee_id} className="inline-flex items-center gap-2 rounded-full bg-indigo-50 pl-3 pr-2 py-0.5 text-xs text-indigo-700">
+                          <li key={m.mentee_id} className="inline-flex items-center gap-2 rounded-full bg-primary-50 pl-3 pr-2 py-0.5 text-xs text-primary-700">
                             <span>{name}</span>
                             <button
                               onClick={() => removeCircleMember(c.id, m.mentee_id)}
-                              className="text-indigo-500 hover:text-indigo-700"
+                              className="text-primary-500 hover:text-primary-700"
                               aria-label="Remove member"
                             >
                               ×
@@ -747,7 +747,7 @@ export default function AdminMentorshipClient({
                   onChange={(e) => setCircleName(e.target.value)}
                   maxLength={200}
                   placeholder="e.g. Q1 Emerging Leaders"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -755,7 +755,7 @@ export default function AdminMentorshipClient({
                 <select
                   value={circleMentorId}
                   onChange={(e) => setCircleMentorId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a mentor...</option>
                   {mentorList
@@ -773,7 +773,7 @@ export default function AdminMentorshipClient({
                   value={circleDescription}
                   onChange={(e) => setCircleDescription(e.target.value)}
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -784,7 +784,7 @@ export default function AdminMentorshipClient({
                   max={50}
                   value={circleMaxMembers}
                   onChange={(e) => setCircleMaxMembers(Number(e.target.value) || 6)}
-                  className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -815,7 +815,7 @@ export default function AdminMentorshipClient({
                 aria-pressed={filter === s}
                 className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                   filter === s
-                    ? "bg-indigo-100 text-indigo-700"
+                    ? "bg-primary-100 text-primary-700"
                     : "text-gray-500 hover:bg-gray-100"
                 }`}
               >

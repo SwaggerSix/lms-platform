@@ -82,7 +82,7 @@ function HeadingBlockEditor({ block, editable, onUpdate }: { block: HeadingBlock
         onChange={(e) =>
           onUpdate?.({ ...block, content: { ...block.content, level: parseInt(e.target.value) as 1 | 2 | 3 | 4 } })
         }
-        className="text-xs border border-gray-200 rounded px-1.5 py-1 text-gray-500 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className="text-xs border border-gray-200 rounded px-1.5 py-1 text-gray-500 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
       >
         <option value={1}>H1</option>
         <option value={2}>H2</option>
@@ -132,7 +132,7 @@ function ImageBlockEditor({ block, editable, onUpdate }: { block: ImageBlock; ed
         type="url"
         value={block.content.url}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, url: e.target.value } })}
-        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Image URL..."
       />
       <div className="flex gap-2">
@@ -140,14 +140,14 @@ function ImageBlockEditor({ block, editable, onUpdate }: { block: ImageBlock; ed
           type="text"
           value={block.content.alt}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, alt: e.target.value } })}
-          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Alt text..."
         />
         <input
           type="text"
           value={block.content.caption || ""}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, caption: e.target.value } })}
-          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Caption (optional)..."
         />
       </div>
@@ -202,7 +202,7 @@ function VideoBlockEditor({ block, editable, onUpdate }: { block: VideoBlock; ed
         type="url"
         value={block.content.url}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, url: e.target.value } })}
-        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Video URL (YouTube, Vimeo)..."
       />
     </div>
@@ -235,7 +235,7 @@ function CodeBlockEditor({ block, editable, onUpdate }: { block: CodeBlock; edit
         <select
           value={block.content.language}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, language: e.target.value } })}
-          className="text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
           {languages.map((lang) => (
             <option key={lang} value={lang}>{lang}</option>
@@ -246,7 +246,7 @@ function CodeBlockEditor({ block, editable, onUpdate }: { block: CodeBlock; edit
             type="checkbox"
             checked={block.content.showLineNumbers ?? true}
             onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, showLineNumbers: e.target.checked } })}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
           />
           Line numbers
         </label>
@@ -255,7 +255,7 @@ function CodeBlockEditor({ block, editable, onUpdate }: { block: CodeBlock; edit
         value={block.content.code}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, code: e.target.value } })}
         rows={8}
-        className="w-full font-mono text-sm bg-gray-900 text-gray-100 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+        className="w-full font-mono text-sm bg-gray-900 text-gray-100 p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
         placeholder="Paste your code here..."
         spellCheck={false}
       />
@@ -294,14 +294,14 @@ function EmbedBlockEditor({ block, editable, onUpdate }: { block: EmbedBlock; ed
           type="url"
           value={block.content.url}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, url: e.target.value } })}
-          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Embed URL..."
         />
         <input
           type="number"
           value={block.content.height || 400}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, height: parseInt(e.target.value) || 400 } })}
-          className="w-24 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-24 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Height"
         />
       </div>
@@ -317,7 +317,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
   if (!editable) {
     const correctOption = block.content.options.find((o) => o.isCorrect);
     return (
-      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-5">
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
         <p className="font-medium text-gray-900 mb-3">{block.content.question}</p>
         <div className="space-y-2">
           {block.content.options.map((opt) => (
@@ -330,8 +330,8 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
                   : showAnswer && selectedId === opt.id && !opt.isCorrect
                   ? "border-red-300 bg-red-50 text-red-800"
                   : selectedId === opt.id
-                  ? "border-indigo-300 bg-indigo-50"
-                  : "border-gray-200 bg-white hover:border-indigo-200"
+                  ? "border-primary-300 bg-primary-50"
+                  : "border-gray-200 bg-white hover:border-primary-200"
               }`}
             >
               {opt.text}
@@ -348,12 +348,12 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
   }
 
   return (
-    <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 space-y-3">
+    <div className="bg-primary-50/50 border border-primary-100 rounded-lg p-4 space-y-3">
       <input
         type="text"
         value={block.content.question}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, question: e.target.value } })}
-        className="w-full text-sm font-medium px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full text-sm font-medium px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Enter question..."
       />
       <div className="space-y-2">
@@ -366,7 +366,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
                 const newOptions = block.content.options.map((o) => ({ ...o, isCorrect: o.id === opt.id }));
                 onUpdate?.({ ...block, content: { ...block.content, options: newOptions } });
               }}
-              className="text-indigo-600 focus:ring-indigo-500"
+              className="text-primary-600 focus:ring-primary-500"
               title="Mark as correct"
             />
             <input
@@ -377,7 +377,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
                 newOptions[i] = { ...newOptions[i], text: e.target.value };
                 onUpdate?.({ ...block, content: { ...block.content, options: newOptions } });
               }}
-              className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder={`Option ${i + 1}...`}
             />
             {block.content.options.length > 2 && (
@@ -401,7 +401,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
           const newOptions = [...block.content.options, { id: uuidv4(), text: "", isCorrect: false }];
           onUpdate?.({ ...block, content: { ...block.content, options: newOptions } });
         }}
-        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+        className="text-xs text-primary-600 hover:text-primary-800 font-medium"
       >
         + Add option
       </button>
@@ -409,7 +409,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
         type="text"
         value={block.content.explanation || ""}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, explanation: e.target.value } })}
-        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Explanation (shown after answering)..."
       />
     </div>
@@ -494,7 +494,7 @@ function CalloutBlockEditor({ block, editable, onUpdate }: { block: CalloutBlock
           type="text"
           value={block.content.title || ""}
           onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, title: e.target.value } })}
-          className="flex-1 text-sm font-medium px-2 py-1 bg-white/60 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="flex-1 text-sm font-medium px-2 py-1 bg-white/60 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
           placeholder="Title (optional)..."
         />
       </div>
@@ -502,7 +502,7 @@ function CalloutBlockEditor({ block, editable, onUpdate }: { block: CalloutBlock
         value={block.content.text}
         onChange={(e) => onUpdate?.({ ...block, content: { ...block.content, text: e.target.value } })}
         rows={2}
-        className="w-full text-sm px-3 py-2 bg-white/60 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+        className="w-full text-sm px-3 py-2 bg-white/60 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
         placeholder="Callout text..."
       />
     </div>
@@ -552,7 +552,7 @@ function AccordionBlockEditor({ block, editable, onUpdate }: { block: AccordionB
                 newItems[i] = { ...newItems[i], title: e.target.value };
                 onUpdate?.({ ...block, content: { items: newItems } });
               }}
-              className="flex-1 text-sm font-medium px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="flex-1 text-sm font-medium px-2 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Section title..."
             />
             {block.content.items.length > 1 && (
@@ -577,7 +577,7 @@ function AccordionBlockEditor({ block, editable, onUpdate }: { block: AccordionB
               onUpdate?.({ ...block, content: { items: newItems } });
             }}
             rows={2}
-            className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+            className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
             placeholder="Section content..."
           />
         </div>
@@ -587,7 +587,7 @@ function AccordionBlockEditor({ block, editable, onUpdate }: { block: AccordionB
           const newItems = [...block.content.items, { id: uuidv4(), title: "", body: "" }];
           onUpdate?.({ ...block, content: { items: newItems } });
         }}
-        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+        className="text-xs text-primary-600 hover:text-primary-800 font-medium"
       >
         + Add section
       </button>
@@ -609,7 +609,7 @@ function TabsBlockEditor({ block, editable, onUpdate }: { block: TabsBlock; edit
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? "border-indigo-500 text-indigo-600"
+                  ? "border-primary-500 text-primary-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
@@ -631,7 +631,7 @@ function TabsBlockEditor({ block, editable, onUpdate }: { block: TabsBlock; edit
           <div
             key={tab.id}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-sm cursor-pointer transition-colors ${
-              activeTab === tab.id ? "border-indigo-300 bg-indigo-50" : "border-gray-200 bg-white"
+              activeTab === tab.id ? "border-primary-300 bg-primary-50" : "border-gray-200 bg-white"
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -669,7 +669,7 @@ function TabsBlockEditor({ block, editable, onUpdate }: { block: TabsBlock; edit
             const newTab = { id: uuidv4(), label: `Tab ${block.content.tabs.length + 1}`, body: "" };
             onUpdate?.({ ...block, content: { tabs: [...block.content.tabs, newTab] } });
           }}
-          className="px-2 py-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+          className="px-2 py-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium"
         >
           + Tab
         </button>
@@ -686,7 +686,7 @@ function TabsBlockEditor({ block, editable, onUpdate }: { block: TabsBlock; edit
               onUpdate?.({ ...block, content: { tabs: newTabs } });
             }}
             rows={4}
-            className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+            className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
             placeholder="Tab content..."
           />
         ) : null

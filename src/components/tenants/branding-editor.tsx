@@ -79,7 +79,7 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
               value={branding.logoUrl || ""}
               onChange={(e) => update("logoUrl", e.target.value)}
               placeholder="https://example.com/logo.png"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -89,7 +89,7 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
               value={branding.faviconUrl || ""}
               onChange={(e) => update("faviconUrl", e.target.value)}
               placeholder="https://example.com/favicon.ico"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -145,7 +145,7 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
               value={branding.heroText}
               onChange={(e) => update("heroText", e.target.value)}
               placeholder="Welcome to our learning platform"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -155,7 +155,7 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
               value={branding.footerText}
               onChange={(e) => update("footerText", e.target.value)}
               placeholder="2026 Company Name. All rights reserved."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -165,7 +165,7 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
               value={branding.loginBg}
               onChange={(e) => update("loginBg", e.target.value)}
               placeholder="https://example.com/bg.jpg"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -178,14 +178,14 @@ export function BrandingEditor({ tenantId, initialBranding }: BrandingEditorProp
             onChange={(e) => update("customCss", e.target.value)}
             placeholder=".custom-class { color: red; }"
             rows={6}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="w-full py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
         >
           {saving ? "Saving..." : "Save Branding"}
         </button>

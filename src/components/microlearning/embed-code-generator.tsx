@@ -88,7 +88,7 @@ export default function EmbedCodeGenerator({ widget, baseUrl }: EmbedCodeGenerat
               onClick={() => setEmbedType("iframe")}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 embedType === "iframe"
-                  ? "bg-indigo-100 text-indigo-700"
+                  ? "bg-primary-100 text-primary-700"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -98,7 +98,7 @@ export default function EmbedCodeGenerator({ widget, baseUrl }: EmbedCodeGenerat
               onClick={() => setEmbedType("script")}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 embedType === "script"
-                  ? "bg-indigo-100 text-indigo-700"
+                  ? "bg-primary-100 text-primary-700"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -115,7 +115,7 @@ export default function EmbedCodeGenerator({ widget, baseUrl }: EmbedCodeGenerat
               type="text"
               value={width}
               onChange={(e) => setWidth(e.target.value)}
-              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="100% or 600"
             />
           </div>
@@ -125,7 +125,7 @@ export default function EmbedCodeGenerator({ widget, baseUrl }: EmbedCodeGenerat
               type="text"
               value={height}
               onChange={(e) => setHeight(e.target.value)}
-              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="400"
             />
           </div>

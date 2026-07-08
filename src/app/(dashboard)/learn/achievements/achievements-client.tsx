@@ -145,8 +145,8 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
           {/* Total Points */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
-                <Zap className="h-5 w-5 text-indigo-600" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-100">
+                <Zap className="h-5 w-5 text-primary-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{totalPoints.toLocaleString()}</p>
@@ -203,20 +203,20 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                 {currentXP}/{nextLevelXP} XP to Level {currentLevel + 1}
               </p>
             </div>
-            <span className="text-sm font-medium text-indigo-600">
+            <span className="text-sm font-medium text-primary-600">
               {currentXP} / {nextLevelXP} XP
             </span>
           </div>
           <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-primary-500 to-purple-500 transition-all"
               style={{ width: `${(currentXP / nextLevelXP) * 100}%` }}
             />
           </div>
           {/* Level names */}
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
             {Object.entries(LEVEL_NAMES).map(([lvl, name]) => (
-              <span key={lvl} className={cn(Number(lvl) === currentLevel && "font-semibold text-indigo-600")}>
+              <span key={lvl} className={cn(Number(lvl) === currentLevel && "font-semibold text-primary-600")}>
                 Lv {lvl}: {name}
               </span>
             ))}
@@ -233,11 +233,11 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                 onClick={() => setMainTab(tab)}
                 className={cn(
                   "relative pb-3 text-sm font-medium transition-colors",
-                  mainTab === tab ? "text-indigo-600" : "text-gray-500 hover:text-gray-700"
+                  mainTab === tab ? "text-primary-600" : "text-gray-500 hover:text-gray-700"
                 )}
               >
                 {tab}
-                {mainTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded" />}
+                {mainTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded" />}
               </button>
             ))}
           </nav>
@@ -291,7 +291,7 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                         </div>
                         <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-200">
                           <div
-                            className="h-full rounded-full bg-indigo-400 transition-all"
+                            className="h-full rounded-full bg-primary-400 transition-all"
                             style={{ width: `${((badge.progress ?? 0) / (badge.maxProgress ?? 1)) * 100}%` }}
                           />
                         </div>
@@ -324,7 +324,7 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                       key={entry.rank}
                       className={cn(
                         "transition-colors",
-                        entry.isCurrentUser ? "bg-indigo-50" : "hover:bg-gray-50"
+                        entry.isCurrentUser ? "bg-primary-50" : "hover:bg-gray-50"
                       )}
                     >
                       <td className="px-6 py-4">
@@ -345,7 +345,7 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                           <div
                             className={cn(
                               "flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium",
-                              entry.isCurrentUser ? "bg-indigo-200 text-indigo-700" : "bg-gray-200 text-gray-600"
+                              entry.isCurrentUser ? "bg-primary-200 text-primary-700" : "bg-gray-200 text-gray-600"
                             )}
                           >
                             {entry.initials}
@@ -353,7 +353,7 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                           <span className="text-sm font-medium text-gray-900">
                             {entry.name}
                             {entry.isCurrentUser && (
-                              <span className="ml-1.5 text-xs text-indigo-600">(You)</span>
+                              <span className="ml-1.5 text-xs text-primary-600">(You)</span>
                             )}
                           </span>
                         </div>
@@ -384,8 +384,8 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
                   const Icon = iconMap[activity.iconName] || Award;
                   return (
                     <div key={activity.id} className="flex items-center gap-4 px-6 py-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                        <Icon className="h-5 w-5 text-indigo-600" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100">
+                        <Icon className="h-5 w-5 text-primary-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-900">

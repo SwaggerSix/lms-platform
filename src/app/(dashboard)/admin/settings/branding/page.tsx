@@ -41,7 +41,7 @@ function ColorInput({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-24 rounded-md border border-gray-300 bg-white px-3 text-sm font-mono text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="h-10 w-24 rounded-md border border-gray-300 bg-white px-3 text-sm font-mono text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         />
       </div>
     </div>
@@ -112,7 +112,7 @@ export default function BrandingSettingsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleReset}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             Reset to Default
@@ -145,7 +145,7 @@ export default function BrandingSettingsPage() {
                 className={cn(
                   "inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
                   activeTab === tab.key
-                    ? "border-indigo-600 text-indigo-600"
+                    ? "border-primary-600 text-primary-600"
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 )}
               >
@@ -168,7 +168,7 @@ export default function BrandingSettingsPage() {
               type="text"
               value={draft.portalName}
               onChange={(e) => update({ portalName: e.target.value })}
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
             <p className="mt-1 text-xs text-gray-500">
               Displayed in the sidebar, browser tab, and login page
@@ -183,7 +183,7 @@ export default function BrandingSettingsPage() {
               type="text"
               value={draft.tagline}
               onChange={(e) => update({ tagline: e.target.value })}
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function BrandingSettingsPage() {
               value={draft.logoUrl || ""}
               onChange={(e) => update({ logoUrl: e.target.value || null })}
               placeholder="https://example.com/logo.png"
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
             <p className="mt-1 text-xs text-gray-500">
               Recommended: 200x40px PNG or SVG with transparent background
@@ -211,7 +211,7 @@ export default function BrandingSettingsPage() {
               type="email"
               value={draft.supportEmail}
               onChange={(e) => update({ supportEmail: e.target.value })}
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -223,7 +223,7 @@ export default function BrandingSettingsPage() {
               type="text"
               value={draft.footerText}
               onChange={(e) => update({ footerText: e.target.value })}
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
             <p className="mt-1 text-xs text-gray-500">
               Use {"{year}"} as a placeholder for the current year
@@ -326,7 +326,7 @@ export default function BrandingSettingsPage() {
                   className={cn(
                     "rounded-lg border-2 px-4 py-2 text-sm font-medium capitalize transition-colors",
                     draft.loginBgStyle === style
-                      ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                      ? "border-primary-600 bg-primary-50 text-primary-700"
                       : "border-gray-200 text-gray-700 hover:border-gray-300"
                   )}
                 >
@@ -346,7 +346,7 @@ export default function BrandingSettingsPage() {
                 value={draft.loginBgImageUrl || ""}
                 onChange={(e) => update({ loginBgImageUrl: e.target.value || null })}
                 placeholder="https://example.com/bg.jpg"
-                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           )}
@@ -361,7 +361,7 @@ export default function BrandingSettingsPage() {
                 value={draft.loginBgColor}
                 onChange={(e) => update({ loginBgColor: e.target.value })}
                 placeholder="linear-gradient(135deg, #F1F7E4 0%, #FBFCFA 100%)"
-                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm font-mono text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm font-mono text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           )}

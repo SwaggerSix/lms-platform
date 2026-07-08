@@ -242,7 +242,7 @@ export default function DiscussionsClient({
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="What's your question or topic?"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -252,7 +252,7 @@ export default function DiscussionsClient({
                     id="discussion-course"
                     value={newCourseId}
                     onChange={(e) => setNewCourseId(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="">No specific course</option>
                     {courseOptions.map((c) => (
@@ -266,7 +266,7 @@ export default function DiscussionsClient({
                     id="discussion-topic"
                     value={newTopic}
                     onChange={(e) => setNewTopic(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="">No topic</option>
                     {TOPICS.map((tp) => (
@@ -283,7 +283,7 @@ export default function DiscussionsClient({
                   onChange={(e) => setNewBody(e.target.value)}
                   rows={5}
                   placeholder="Share the details of your question or discussion topic..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 />
               </div>
               <Button
@@ -320,7 +320,7 @@ export default function DiscussionsClient({
               value={courseFilter}
               onChange={(e) => { setCourseFilter(e.target.value); setCurrentPage(1); }}
               aria-label="Filter by course"
-              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
               <option value="">All courses</option>
               {courseOptions.map((c) => (
@@ -332,7 +332,7 @@ export default function DiscussionsClient({
               value={topicFilter}
               onChange={(e) => { setTopicFilter(e.target.value); setCurrentPage(1); }}
               aria-label="Filter by topic"
-              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             >
               <option value="">All topics</option>
               {TOPICS.map((tp) => (
@@ -347,7 +347,7 @@ export default function DiscussionsClient({
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                 placeholder="Search discussions..."
-                className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-56"
+                className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-56"
               />
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function DiscussionsClient({
                     <button
                       onClick={() => handleUpvote(thread.id)}
                       aria-label={`Upvote, ${thread.upvotes} votes`}
-                      className="rounded-md p-1 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600"
+                      className="rounded-md p-1 text-gray-400 hover:bg-primary-50 hover:text-primary-600"
                     >
                       <UpArrow className="h-5 w-5" aria-hidden="true" />
                     </button>
@@ -382,7 +382,7 @@ export default function DiscussionsClient({
                       onClick={() => setExpandedThread(isExpanded ? null : thread.id)}
                       className="text-left"
                     >
-                      <h3 className="text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
+                      <h3 className="text-base font-semibold text-gray-900 hover:text-primary-600 transition-colors">
                         {thread.title}
                       </h3>
                     </button>
@@ -391,7 +391,7 @@ export default function DiscussionsClient({
                     {/* Meta row */}
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                       <div className="flex items-center gap-1.5">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-medium text-indigo-700">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-100 text-[10px] font-medium text-primary-700">
                           {thread.authorInitials}
                         </div>
                         <span>{thread.author}</span>
@@ -444,7 +444,7 @@ export default function DiscussionsClient({
 
                     {/* Reply input */}
                     <div className="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
                         {currentUserInitials}
                       </div>
                       <input
@@ -460,13 +460,13 @@ export default function DiscussionsClient({
                             handleReply(thread.id);
                           }
                         }}
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                       />
                       <button
                         onClick={() => handleReply(thread.id)}
                         disabled={submitting || !replyTexts[thread.id]?.trim()}
                         aria-label="Send reply"
-                        className="rounded-lg bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="rounded-lg bg-primary-600 p-2 text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -511,7 +511,7 @@ export default function DiscussionsClient({
                     onClick={() => setCurrentPage(p)}
                     className={cn(
                       "inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium",
-                      currentPage === p ? "bg-indigo-600 text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      currentPage === p ? "bg-primary-600 text-white" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                     )}
                   >
                     {p}

@@ -287,7 +287,7 @@ export default function CertificationsClient({ certificates, userName }: Certifi
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex items-center gap-3">
-          <Award className="h-8 w-8 text-indigo-600" />
+          <Award className="h-8 w-8 text-primary-600" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-900">My Certifications</h1>
@@ -323,8 +323,8 @@ export default function CertificationsClient({ certificates, userName }: Certifi
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
-                <Award className="h-5 w-5 text-indigo-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+                <Award className="h-5 w-5 text-primary-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{certificates.length}</p>
@@ -345,13 +345,13 @@ export default function CertificationsClient({ certificates, userName }: Certifi
                 className={cn(
                   "relative pb-3 text-sm font-medium transition-colors",
                   activeTab === tab.key
-                    ? "text-indigo-600"
+                    ? "text-primary-600"
                     : "text-gray-500 hover:text-gray-700"
                 )}
               >
                 {tab.label}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
                 )}
               </button>
             ))}
@@ -367,17 +367,17 @@ export default function CertificationsClient({ certificates, userName }: Certifi
             >
               {/* Decorative border pattern */}
               <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-indigo-500 via-purple-500 to-indigo-500" />
-                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
-                <div className="absolute right-0 top-0 h-full w-1.5 bg-gradient-to-b from-indigo-500 via-purple-500 to-indigo-500" />
-                <div className="absolute left-0 right-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+                <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-primary-500 via-purple-500 to-primary-500" />
+                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-500 via-purple-500 to-primary-500" />
+                <div className="absolute right-0 top-0 h-full w-1.5 bg-gradient-to-b from-primary-500 via-purple-500 to-primary-500" />
+                <div className="absolute left-0 right-0 top-0 h-1.5 bg-gradient-to-r from-primary-500 via-purple-500 to-primary-500" />
               </div>
 
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
-                      <Award className="h-6 w-6 text-indigo-600" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100">
+                      <Award className="h-6 w-6 text-primary-600" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{cert.name}</h3>
@@ -454,7 +454,7 @@ export default function CertificationsClient({ certificates, userName }: Certifi
                     <button
                       onClick={() => handleRenew(cert)}
                       disabled={renewingId === cert.id}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-primary-300 bg-primary-50 px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50"
                     >
                       <RefreshCw className={cn("h-4 w-4", renewingId === cert.id && "animate-spin")} /> {renewingId === cert.id ? "Renewing..." : "Renew"}
                     </button>

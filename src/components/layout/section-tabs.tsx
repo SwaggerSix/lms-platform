@@ -36,9 +36,9 @@ export default function SectionTabs({
           href={tab.href}
           aria-current={activeHref === tab.href ? "page" : undefined}
           className={cn(
-            "whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+            "whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
             activeHref === tab.href
-              ? "border-indigo-600 text-indigo-600"
+              ? "border-primary-600 text-primary-600"
               : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
           )}
         >

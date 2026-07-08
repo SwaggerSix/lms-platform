@@ -197,7 +197,7 @@ export default function QuestionBuilderClient({
           <button
             onClick={save}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save
           </button>
@@ -283,7 +283,7 @@ export default function QuestionBuilderClient({
                     <button onClick={() => removeOption(qi, oi)} disabled={q.options.length <= 2} className="rounded p-1 text-gray-400 hover:bg-gray-100 disabled:opacity-30"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 ))}
-                <button onClick={() => addOption(qi)} className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                <button onClick={() => addOption(qi)} className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700">
                   <Plus className="h-3.5 w-3.5" /> Add option
                 </button>
                 <p className="text-[11px] text-gray-400">{q.question_type === "multiple_choice" ? "Select the single correct option." : "Tick all correct options."}</p>
@@ -326,7 +326,7 @@ export default function QuestionBuilderClient({
 
       <button
         onClick={() => setQuestions((qs) => [...qs, blankQuestion()])}
-        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 py-3 text-sm font-medium text-gray-600 hover:border-indigo-300 hover:text-indigo-600"
+        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 py-3 text-sm font-medium text-gray-600 hover:border-primary-300 hover:text-primary-600"
       >
         <Plus className="h-4 w-4" /> Add question
       </button>

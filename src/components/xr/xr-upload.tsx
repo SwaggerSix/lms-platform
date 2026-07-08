@@ -137,11 +137,11 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
                 onClick={() => setForm((prev) => ({ ...prev, content_type: type.value }))}
                 className={`p-3 rounded-lg border text-left transition-colors ${
                   form.content_type === type.value
-                    ? "border-indigo-500 bg-indigo-50"
+                    ? "border-primary-500 bg-primary-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <p className={`text-sm font-medium ${form.content_type === type.value ? "text-indigo-700" : "text-gray-700"}`}>
+                <p className={`text-sm font-medium ${form.content_type === type.value ? "text-primary-700" : "text-gray-700"}`}>
                   {type.label}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">{type.description}</p>
@@ -158,7 +158,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
               type="url"
               value={form.file_url}
               onChange={(e) => setForm((prev) => ({ ...prev, file_url: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="https://storage.example.com/vr-content/scene.html"
               required
             />
@@ -169,7 +169,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
               type="url"
               value={form.fallback_url}
               onChange={(e) => setForm((prev) => ({ ...prev, fallback_url: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="https://storage.example.com/vr-content/fallback.mp4"
             />
           </div>
@@ -179,7 +179,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
               type="text"
               value={form.lesson_id}
               onChange={(e) => setForm((prev) => ({ ...prev, lesson_id: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="UUID of the lesson to attach to"
             />
           </div>
@@ -193,28 +193,28 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
               type="text"
               value={form.resolution}
               onChange={(e) => setForm((prev) => ({ ...prev, resolution: e.target.value }))}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Resolution (e.g., 4096x2048)"
             />
             <input
               type="text"
               value={form.format}
               onChange={(e) => setForm((prev) => ({ ...prev, format: e.target.value }))}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Format (e.g., gltf, mp4)"
             />
             <input
               type="text"
               value={form.file_size}
               onChange={(e) => setForm((prev) => ({ ...prev, file_size: e.target.value }))}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="File size (e.g., 156MB)"
             />
             <input
               type="text"
               value={form.poly_count}
               onChange={(e) => setForm((prev) => ({ ...prev, poly_count: e.target.value }))}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Poly count (3D models)"
             />
           </div>
@@ -229,7 +229,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
                 type="checkbox"
                 checked={form.auto_play}
                 onChange={(e) => setForm((prev) => ({ ...prev, auto_play: e.target.checked }))}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm text-gray-700">Auto-play</span>
             </label>
@@ -238,7 +238,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
                 type="checkbox"
                 checked={form.controls}
                 onChange={(e) => setForm((prev) => ({ ...prev, controls: e.target.checked }))}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm text-gray-700">Show controls</span>
             </label>
@@ -256,7 +256,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
                 onClick={() => toggleCompatibility(opt.value)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
                   form.compatibility.includes(opt.value)
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    ? "border-primary-500 bg-primary-50 text-primary-700"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
@@ -269,7 +269,7 @@ export default function XRUpload({ onSuccess }: XRUploadProps) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? "Creating..." : "Create XR Content"}
         </button>

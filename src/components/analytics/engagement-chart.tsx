@@ -53,7 +53,7 @@ export default function EngagementChart({
   if (loading) {
     return (
       <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white" style={{ height }}>
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
       </div>
     );
   }
@@ -108,7 +108,7 @@ export default function EngagementChart({
         {hoveredIndex !== null && points[hoveredIndex] && (
           <div className="text-xs text-gray-500">
             {new Date(points[hoveredIndex].snapshotDate).toLocaleDateString()}:{" "}
-            <span className="font-medium text-indigo-600">
+            <span className="font-medium text-primary-600">
               {points[hoveredIndex].engagementScore.toFixed(0)}
             </span>
           </div>

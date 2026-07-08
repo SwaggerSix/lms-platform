@@ -392,7 +392,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       sortValue: (assessment) => assessment.title.toLowerCase(),
       render: (assessment) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
             <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
           </div>
           <div>
@@ -502,7 +502,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
         <div className="flex items-center gap-3">
           <button
             onClick={() => openAiQuizModal()}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-primary-700 transition-all"
           >
             <Sparkles className="h-4 w-4" />
             Generate with AI
@@ -522,7 +522,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
           placeholder="Search assessments..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         />
       </div>
 
@@ -578,7 +578,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="e.g. Final Compliance Assessment"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
@@ -589,7 +589,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                   value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="Brief description of this assessment..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
@@ -598,7 +598,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 <select
                   value={form.course_id}
                   onChange={(e) => setForm((f) => ({ ...f, course_id: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a course...</option>
                   {courses.map((c) => (
@@ -612,7 +612,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 <select
                   value={form.source}
                   onChange={(e) => setForm((f) => ({ ...f, source: e.target.value as 'native' | 'surveycraft' }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="native">Build questions in this LMS</option>
                   <option value="surveycraft">Use a SurveyCraft survey</option>
@@ -627,7 +627,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                     value={form.surveycraft_slug}
                     onChange={(e) => setForm((f) => ({ ...f, surveycraft_slug: e.target.value }))}
                     placeholder="e.g. leadership-mosaic or https://…/s/leadership-mosaic"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Create the survey in SurveyCraft, then paste its link (the part after <span className="font-mono">/s/</span>) or its slug here. Learners take it embedded; completion is recorded automatically.
@@ -643,7 +643,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                     min={1}
                     value={form.time_limit}
                     onChange={(e) => setForm((f) => ({ ...f, time_limit: Number(e.target.value) || 0 }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -654,7 +654,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                     max={100}
                     value={form.passing_score}
                     onChange={(e) => setForm((f) => ({ ...f, passing_score: Number(e.target.value) || 0 }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -664,7 +664,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                     min={1}
                     value={form.max_attempts}
                     onChange={(e) => setForm((f) => ({ ...f, max_attempts: Number(e.target.value) || 1 }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -677,7 +677,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
               <button
                 onClick={handleFormSubmit}
                 disabled={isLoading('create') || isLoading('edit')}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
               >
                 {(isLoading('create') || isLoading('edit')) && <Loader2 className="h-4 w-4 animate-spin" />}
                 {editingId ? 'Save Changes' : 'Create Assessment'}
@@ -726,7 +726,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
           <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-primary-600">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
                 <div>
@@ -791,7 +791,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                   <button
                     onClick={handleAiQuizGenerate}
                     disabled={aiQuizLoading}
-                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-primary-700 disabled:opacity-60"
                   >
                     {aiQuizLoading ? (
                       <>
@@ -887,7 +887,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                       <button
                         onClick={handleAiQuizSave}
                         disabled={aiQuizLoading}
-                        className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
                       >
                         {aiQuizLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                         Add to Assessment

@@ -92,7 +92,7 @@ export default function SharedWebinarsClient() {
                 onClick={() => toggle(w)}
                 disabled={busy === w.id}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold disabled:opacity-60 ${
-                  w.opted_in ? "border border-green-300 bg-green-50 text-green-700" : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  w.opted_in ? "border border-green-300 bg-green-50 text-green-700" : "bg-primary-600 text-white hover:bg-primary-700"
                 }`}
               >
                 {busy === w.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : w.opted_in ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}

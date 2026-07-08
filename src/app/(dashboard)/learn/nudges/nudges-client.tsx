@@ -69,7 +69,7 @@ export default function NudgesLearnerClient({ nudges: initial }: Props) {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
           <Zap className="h-5 w-5" />
         </div>
         <div>

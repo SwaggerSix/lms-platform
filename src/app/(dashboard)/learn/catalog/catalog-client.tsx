@@ -67,7 +67,7 @@ const ITEMS_PER_PAGE = 6;
 
 // Gradient map for courses without a thumbnail
 const GRADIENTS = [
-  "from-blue-500 to-indigo-600",
+  "from-blue-500 to-primary-600",
   "from-amber-500 to-orange-600",
   "from-red-500 to-rose-600",
   "from-green-500 to-emerald-600",
@@ -76,7 +76,7 @@ const GRADIENTS = [
   "from-slate-600 to-gray-800",
   "from-pink-500 to-rose-600",
   "from-emerald-500 to-teal-600",
-  "from-indigo-500 to-purple-600",
+  "from-primary-500 to-purple-600",
   "from-yellow-500 to-amber-600",
   "from-sky-500 to-blue-600",
 ];
@@ -218,10 +218,10 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-16 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-purple-700 px-6 py-16 text-white">
         <div className="mx-auto max-w-7xl text-center">
           <h1 className="text-4xl font-bold tracking-tight">Explore Our Learning Catalog</h1>
-          <p className="mx-auto mt-3 max-w-2xl text-lg text-indigo-100">
+          <p className="mx-auto mt-3 max-w-2xl text-lg text-primary-100">
             Discover courses to advance your career, build new skills, and achieve your professional goals.
           </p>
           <div className="mx-auto mt-8 max-w-xl">
@@ -252,7 +252,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
             <SlidersHorizontal className="h-4 w-4" />
             Filters
             {hasActiveFilters && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs text-white">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-xs text-white">
                 {selectedCategories.length + (selectedDifficulty ? 1 : 0) + selectedTypes.length}
               </span>
             )}
@@ -260,7 +260,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -284,7 +284,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-indigo-600 hover:text-indigo-700"
+                    className="text-sm text-primary-600 hover:text-primary-700"
                   >
                     Clear all
                   </button>
@@ -301,7 +301,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                         type="checkbox"
                         checked={selectedCategories.includes(cat)}
                         onChange={() => toggleCategory(cat)}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-sm text-gray-600">{cat}</span>
                     </label>
@@ -322,7 +322,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                           setSelectedDifficulty(selectedDifficulty === diff ? "" : diff);
                           setCurrentPage(1);
                         }}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-sm text-gray-600">{diff}</span>
                     </label>
@@ -340,7 +340,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                         type="checkbox"
                         checked={selectedTypes.includes(type)}
                         onChange={() => toggleType(type)}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-sm text-gray-600">{type}</span>
                       {courseTypeDefinition(type) && (
@@ -369,7 +369,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -427,7 +427,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     </CourseCover>
                     {/* Content */}
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600">
                         {course.title}
                       </h3>
                       <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">
@@ -461,7 +461,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                 action={
                   <button
                     onClick={clearFilters}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
                   >
                     <X className="h-4 w-4" /> Clear all filters
                   </button>
@@ -487,7 +487,7 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium",
                       page === currentPage
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-primary-600 text-white"
                         : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                     )}
                   >

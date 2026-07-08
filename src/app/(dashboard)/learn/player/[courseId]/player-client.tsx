@@ -301,7 +301,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
           <div className="flex items-center gap-2">
             <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-700">
               <div
-                className={cn("h-full rounded-full", progressPercent === 100 ? "bg-green-500" : "bg-indigo-600")}
+                className={cn("h-full rounded-full", progressPercent === 100 ? "bg-green-500" : "bg-primary-600")}
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -329,7 +329,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                   <p className="mt-2 text-gray-500">The requested lesson could not be found in this course.</p>
                   <a
                     href="/learn/my-courses"
-                    className="mt-5 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                    className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
                   >
                     Back to My Courses
                   </a>
@@ -368,7 +368,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                   {nextLesson && (
                     <button
                       onClick={() => navigateToLesson(nextLesson.id)}
-                      className="mt-5 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                      className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
                     >
                       Next Lesson
                       <ChevronRight className="h-4 w-4" />
@@ -426,7 +426,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                           download
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+                          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-700"
                         >
                           <FileText className="h-4 w-4" />
                           Open Document
@@ -468,7 +468,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                     />
                   ) : (
                     <>
-                      <Code className="mx-auto h-16 w-16 text-indigo-400" />
+                      <Code className="mx-auto h-16 w-16 text-primary-400" />
                       <h2 className="mt-4 text-center text-xl font-semibold text-gray-900">
                         {currentLesson.title}
                       </h2>
@@ -484,7 +484,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
             {currentLesson?.type === "quiz" && (
               <div className="flex min-h-[400px] items-center justify-center bg-gray-50 p-8">
                 <div className="text-center">
-                  <HelpCircle className="mx-auto h-16 w-16 text-indigo-400" />
+                  <HelpCircle className="mx-auto h-16 w-16 text-primary-400" />
                   <h2 className="mt-4 text-xl font-semibold text-gray-900">
                     {currentLesson.title}
                   </h2>
@@ -494,7 +494,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                   {currentLesson.contentUrl ? (
                     <a
                       href={`/learn/assessments/${currentLesson.contentUrl}`}
-                      className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+                      className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-700"
                     >
                       Start Quiz
                     </a>
@@ -539,7 +539,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
               <button
                 onClick={() => nextLesson && navigateToLesson(nextLesson.id)}
                 disabled={!nextLesson}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next <ChevronRight className="h-4 w-4" />
               </button>
@@ -560,7 +560,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
             <div className="mt-2 flex items-center gap-2">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-700">
                 <div
-                  className={cn("h-full rounded-full", progressPercent === 100 ? "bg-green-500" : "bg-indigo-600")}
+                  className={cn("h-full rounded-full", progressPercent === 100 ? "bg-green-500" : "bg-primary-600")}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -582,7 +582,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                     <div key={mod.id} className="flex items-center gap-2.5">
                       <div className={cn(
                         "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                        isLocked ? "bg-gray-600 text-gray-400" : "bg-indigo-600 text-white"
+                        isLocked ? "bg-gray-600 text-gray-400" : "bg-primary-600 text-white"
                       )}>
                         {isLocked ? <Lock className="h-3 w-3" /> : i + 1}
                       </div>
@@ -660,7 +660,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                                 isLessonLocked
                                   ? "text-gray-600 cursor-not-allowed"
                                   : isCurrent
-                                    ? "bg-indigo-600/20 text-white"
+                                    ? "bg-primary-600/20 text-white"
                                     : "text-gray-400 hover:bg-gray-700/50 hover:text-gray-200"
                               )}
                             >
@@ -669,7 +669,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                               ) : lesson.status === "completed" || lessonStatuses[lesson.id] === "completed" ? (
                                 <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
                               ) : isCurrent ? (
-                                <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-indigo-500 bg-indigo-500">
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary-500 bg-primary-500">
                                   <div className="h-2 w-2 rounded-full bg-white" />
                                 </div>
                               ) : (

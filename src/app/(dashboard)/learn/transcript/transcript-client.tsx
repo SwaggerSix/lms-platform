@@ -210,9 +210,9 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
   function SortIcon({ field }: { field: SortField }) {
     if (sortField !== field) return <ChevronUp className="ml-1 inline h-3 w-3 text-gray-300" />;
     return sortDirection === "asc" ? (
-      <ChevronUp className="ml-1 inline h-3 w-3 text-indigo-600" />
+      <ChevronUp className="ml-1 inline h-3 w-3 text-primary-600" />
     ) : (
-      <ChevronDown className="ml-1 inline h-3 w-3 text-indigo-600" />
+      <ChevronDown className="ml-1 inline h-3 w-3 text-primary-600" />
     );
   }
 
@@ -381,7 +381,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as "all" | "completed" | "in_progress")}
-                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="completed">Completed</option>
@@ -393,7 +393,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as CourseType | "all")}
-                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="all">All Types</option>
                 <option value="self_paced">Self-Paced</option>
@@ -408,7 +408,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -417,7 +417,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="mt-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             {(statusFilter !== "all" || typeFilter !== "all" || dateFrom || dateTo) && (
@@ -428,7 +428,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                   setDateFrom("");
                   setDateTo("");
                 }}
-                className="text-sm text-indigo-600 hover:text-indigo-800"
+                className="text-sm text-primary-600 hover:text-primary-800"
               >
                 Clear filters
               </button>
@@ -460,7 +460,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("course_title")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Course Title <SortIcon field="course_title" />
                             </button>
@@ -470,7 +470,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("enrollment_date")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Enrolled <SortIcon field="enrollment_date" />
                             </button>
@@ -479,7 +479,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("completion_date")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Completed <SortIcon field="completion_date" />
                             </button>
@@ -488,7 +488,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("status")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Status <SortIcon field="status" />
                             </button>
@@ -497,7 +497,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("score")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Score <SortIcon field="score" />
                             </button>
@@ -506,7 +506,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                             <button
                               type="button"
                               onClick={() => handleSort("credits")}
-                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                              className="uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             >
                               Credits/Hours <SortIcon field="credits" />
                             </button>
@@ -541,7 +541,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
                               {entry.certificate_id ? (
                                 <a
                                   href="/learn/certifications"
-                                  className="text-indigo-600 hover:text-indigo-800"
+                                  className="text-primary-600 hover:text-primary-800"
                                   title="View Certificate"
                                   aria-label={`View certificate for ${entry.course_title}`}
                                 >
@@ -574,7 +574,7 @@ export default function TranscriptClient({ user, records, exams = [] }: Transcri
           <div className="mt-8">
             <div className="flex items-center justify-between rounded-t-xl border border-gray-200 bg-gray-100 px-4 py-3">
               <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
-                <FileText className="h-5 w-5 text-indigo-600" /> Examination Results
+                <FileText className="h-5 w-5 text-primary-600" /> Examination Results
               </h2>
               <span className="text-sm text-gray-600">{exams.length} exam{exams.length === 1 ? "" : "s"}</span>
             </div>

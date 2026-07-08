@@ -89,7 +89,7 @@ export default function SessionRoster({
                   href={session.meeting_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 truncate max-w-xs"
+                  className="text-sm text-primary-600 hover:text-primary-700 truncate max-w-xs"
                 >
                   {session.meeting_url}
                 </a>
@@ -200,7 +200,7 @@ export default function SessionRoster({
                         onUpdateAttendance(session.id, attendee.id, e.target.value as AttendanceStatus)
                       }
                       className={cn(
-                        "rounded-lg border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
+                        "rounded-lg border border-gray-300 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500",
                         !attendee.attendance_status && "text-gray-400"
                       )}
                     >

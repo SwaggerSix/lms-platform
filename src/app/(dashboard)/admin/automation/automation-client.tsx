@@ -191,13 +191,13 @@ export default function AutomationClient({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search rules..."
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <select
           value={filterTrigger}
           onChange={(e) => setFilterTrigger(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
         >
           <option value="">All Triggers</option>
           {TRIGGER_TYPES.map((tt) => (
@@ -224,7 +224,7 @@ export default function AutomationClient({
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-500 uppercase">Total Executions</p>
-          <p className="text-2xl font-bold text-indigo-600 mt-1">{rules.reduce((s, r) => s + (r.run_count || 0), 0)}</p>
+          <p className="text-2xl font-bold text-primary-600 mt-1">{rules.reduce((s, r) => s + (r.run_count || 0), 0)}</p>
         </div>
       </div>
 

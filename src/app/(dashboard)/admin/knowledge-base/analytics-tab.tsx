@@ -58,8 +58,8 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
-              <TrendingUp className="h-5 w-5 text-indigo-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+              <TrendingUp className="h-5 w-5 text-primary-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{helpfulRatio}%</p>
@@ -73,7 +73,7 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 px-6 py-4">
           <h3 className="flex items-center gap-2 font-semibold text-gray-900">
-            <TrendingUp className="h-5 w-5 text-indigo-600" />
+            <TrendingUp className="h-5 w-5 text-primary-600" />
             Most Viewed Articles
           </h3>
         </div>

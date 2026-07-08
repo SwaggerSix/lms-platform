@@ -125,7 +125,7 @@ function RadarChart({
           x={p.x}
           y={p.y - 12}
           textAnchor="middle"
-          className="text-[9px] fill-indigo-700 font-bold"
+          className="text-[9px] fill-primary-700 font-bold"
         >
           {p.value.toFixed(1)}
         </text>
@@ -208,22 +208,22 @@ export default function FeedbackReport({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
-        <p className="text-indigo-200 text-sm font-medium">{cycleName}</p>
+      <div className="bg-gradient-to-r from-primary-600 to-purple-600 rounded-xl p-6 text-white">
+        <p className="text-primary-200 text-sm font-medium">{cycleName}</p>
         <h2 className="text-2xl font-bold mt-1">Feedback Report for {subjectName}</h2>
         <div className="flex items-center gap-6 mt-4">
           <div>
-            <p className="text-indigo-200 text-xs uppercase tracking-wide">Overall Score</p>
-            <p className="text-3xl font-bold">{overallAverage.toFixed(1)}<span className="text-lg text-indigo-200">/5</span></p>
+            <p className="text-primary-200 text-xs uppercase tracking-wide">Overall Score</p>
+            <p className="text-3xl font-bold">{overallAverage.toFixed(1)}<span className="text-lg text-primary-200">/5</span></p>
           </div>
-          <div className="h-12 w-px bg-indigo-400" />
+          <div className="h-12 w-px bg-primary-400" />
           <div>
-            <p className="text-indigo-200 text-xs uppercase tracking-wide">Responses</p>
+            <p className="text-primary-200 text-xs uppercase tracking-wide">Responses</p>
             <p className="text-3xl font-bold">{summary.total_responses}</p>
           </div>
-          <div className="h-12 w-px bg-indigo-400" />
+          <div className="h-12 w-px bg-primary-400" />
           <div>
-            <p className="text-indigo-200 text-xs uppercase tracking-wide">Breakdown</p>
+            <p className="text-primary-200 text-xs uppercase tracking-wide">Breakdown</p>
             <div className="flex gap-2 mt-1">
               {Object.entries(summary.by_relationship).map(([rel, count]) => (
                 <span key={rel} className="bg-white/20 px-2 py-0.5 rounded text-xs">
@@ -264,7 +264,7 @@ export default function FeedbackReport({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Object.entries(ratingAverages).map(([qId, avg]) => (
               <div key={qId} className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-indigo-600">{avg.toFixed(1)}</p>
+                <p className="text-2xl font-bold text-primary-600">{avg.toFixed(1)}</p>
                 <p className="text-xs text-gray-500 mt-1">Q{qId.slice(-4)}</p>
               </div>
             ))}
@@ -279,7 +279,7 @@ export default function FeedbackReport({
           <select
             value={commentFilter}
             onChange={(e) => setCommentFilter(e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All Sources</option>
             <option value="anonymous">Anonymous</option>

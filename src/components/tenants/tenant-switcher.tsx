@@ -123,7 +123,7 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
                 }}
                 className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left transition-colors ${
                   tenant.id === currentTenant?.id
-                    ? "bg-indigo-50"
+                    ? "bg-primary-50"
                     : "hover:bg-gray-50"
                 }`}
               >
@@ -146,7 +146,7 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
                   <p className="text-xs text-gray-500">{tenant.slug}.lms-platform.com</p>
                 </div>
                 {tenant.id === currentTenant?.id && (
-                  <svg className="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-primary-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 )}

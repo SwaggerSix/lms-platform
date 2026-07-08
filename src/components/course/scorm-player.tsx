@@ -321,7 +321,7 @@ export function SCORMPlayer({
                   setError(null);
                   if (iframeRef.current) iframeRef.current.src = packageUrl;
                 }}
-                className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                className="mt-4 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
               >
                 Retry
               </button>

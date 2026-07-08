@@ -38,7 +38,7 @@ function SearchInput({
         aria-label={props["aria-label"] || "Search"}
         className={cn(
           "h-10 w-full rounded-md border border-gray-300 bg-white pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 transition-colors",
-          "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         )}
         {...props}
       />

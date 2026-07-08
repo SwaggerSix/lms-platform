@@ -315,13 +315,13 @@ export default function ILTSessionsClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search sessions..."
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ILTSessionStatus | "all")}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           >
             <option value="all">All Statuses</option>
             <option value="scheduled">Scheduled</option>
@@ -335,7 +335,7 @@ export default function ILTSessionsClient({
               aria-pressed={viewMode === "list"}
               className={cn(
                 "flex items-center gap-1 px-3 py-2 text-sm font-medium",
-                viewMode === "list" ? "bg-indigo-50 text-indigo-600" : "text-gray-600 hover:text-gray-900"
+                viewMode === "list" ? "bg-primary-50 text-primary-600" : "text-gray-600 hover:text-gray-900"
               )}
             >
               <List className="h-4 w-4" /> List
@@ -345,7 +345,7 @@ export default function ILTSessionsClient({
               aria-pressed={viewMode === "calendar"}
               className={cn(
                 "flex items-center gap-1 border-l border-gray-300 px-3 py-2 text-sm font-medium",
-                viewMode === "calendar" ? "bg-indigo-50 text-indigo-600" : "text-gray-600 hover:text-gray-900"
+                viewMode === "calendar" ? "bg-primary-50 text-primary-600" : "text-gray-600 hover:text-gray-900"
               )}
             >
               <Calendar className="h-4 w-4" /> Calendar

@@ -90,7 +90,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
           <p className="text-sm text-gray-500">{modules.length} module{modules.length === 1 ? '' : 's'}, {totalLessons} lessons, {formatDuration(totalDuration)} total</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={addLessonTop} className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">
+          <button onClick={addLessonTop} className="inline-flex items-center gap-2 rounded-lg border border-primary-200 bg-white px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50">
             <Plus className="h-4 w-4" /> Add Lesson
           </button>
           <Button onClick={addModule}>
@@ -104,7 +104,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
           <div key={mod.id} className="rounded-xl border border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white rounded-t-xl">
               <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-100 text-xs font-bold text-indigo-700">{mi + 1}</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary-100 text-xs font-bold text-primary-700">{mi + 1}</span>
               <input
                 type="text"
                 value={mod.title}
@@ -116,13 +116,13 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
               </button>
             </div>
             {/* Drip / Scheduled Release Settings */}
-            <div className="px-4 py-3 border-b border-gray-200 bg-indigo-50/50">
+            <div className="px-4 py-3 border-b border-gray-200 bg-primary-50/50">
               <div className="flex flex-wrap items-center gap-3">
                 <label className="text-xs font-medium text-gray-600">Release:</label>
                 <select
                   value={mod.dripType}
                   onChange={(e) => updateModule(mod.id, { dripType: e.target.value as DripType })}
-                  className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   {(Object.keys(dripTypeLabels) as DripType[]).map((dt) => (
                     <option key={dt} value={dt}>{dripTypeLabels[dt]}</option>
@@ -135,7 +135,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
                       min={0}
                       value={mod.dripDays}
                       onChange={(e) => updateModule(mod.id, { dripDays: parseInt(e.target.value) || 0 })}
-                      className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-center text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="w-16 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-center text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                     <span className="text-xs text-gray-500">days after enrollment</span>
                   </div>
@@ -146,7 +146,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
                       type="date"
                       value={mod.dripDate}
                       onChange={(e) => updateModule(mod.id, { dripDate: e.target.value })}
-                      className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                   </div>
                 )}
@@ -187,7 +187,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
                         type="checkbox"
                         checked={lesson.required}
                         onChange={(e) => updateLesson(mod.id, lesson.id, { required: e.target.checked })}
-                        className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       Required
                     </label>
@@ -197,7 +197,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
                   </div>
                 );
               })}
-              <button onClick={() => addLesson(mod.id)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 py-2.5 text-xs font-medium text-gray-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors">
+              <button onClick={() => addLesson(mod.id)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 py-2.5 text-xs font-medium text-gray-500 hover:border-primary-300 hover:text-primary-600 transition-colors">
                 <Plus className="h-3.5 w-3.5" /> Add Lesson
               </button>
             </div>

@@ -52,11 +52,11 @@ function renderInline(text: string, keyPrefix: string): Inline[] {
       const isInternal = linkHref.startsWith("/");
       out.push(
         isInternal ? (
-          <Link key={key} href={linkHref} className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+          <Link key={key} href={linkHref} className="font-medium text-primary-600 hover:text-primary-700 hover:underline">
             {linkLabel}
           </Link>
         ) : (
-          <a key={key} href={linkHref} className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline" target="_blank" rel="noopener noreferrer">
+          <a key={key} href={linkHref} className="font-medium text-primary-600 hover:text-primary-700 hover:underline" target="_blank" rel="noopener noreferrer">
             {linkLabel}
           </a>
         )
@@ -162,7 +162,7 @@ export function MarkdownLite({ source }: { source: string }) {
         return (
           <div
             key={key}
-            className="rounded-md border-l-4 border-indigo-300 bg-indigo-50 px-4 py-2 text-sm text-indigo-900"
+            className="rounded-md border-l-4 border-primary-300 bg-primary-50 px-4 py-2 text-sm text-primary-900"
           >
             {block.lines.map((l, j) => (
               <React.Fragment key={j}>

@@ -78,7 +78,7 @@ export default function AcceptInvitePage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-200">
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Class Invitation</h1>
@@ -100,7 +100,7 @@ export default function AcceptInvitePage() {
           <div className="text-center">
             <XCircle className="mx-auto mb-3 h-10 w-10 text-red-500" />
             <p className="text-sm text-gray-600">{reasonText[info.reason ?? ""] ?? "This invitation is no longer valid."}</p>
-            <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+            <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-primary-600 hover:text-primary-700">
               Go to sign in
             </Link>
           </div>
@@ -122,7 +122,7 @@ export default function AcceptInvitePage() {
               <button
                 onClick={accept}
                 disabled={accepting}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {accepting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                 Accept &amp; Join
@@ -130,14 +130,14 @@ export default function AcceptInvitePage() {
             ) : info.is_new_user ? (
               <Link
                 href={`/register?redirect=${encodeURIComponent(redirectTarget)}&email=${encodeURIComponent(info.email ?? "")}`}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
               >
                 Create account to join
               </Link>
             ) : (
               <Link
                 href={`/login?redirect=${encodeURIComponent(redirectTarget)}`}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
               >
                 Sign in to join
               </Link>

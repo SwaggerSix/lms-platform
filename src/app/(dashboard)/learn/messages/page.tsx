@@ -101,7 +101,7 @@ export default async function MessagesPage() {
       initials: currentProfile
         ? initials(currentProfile.first_name, currentProfile.last_name)
         : "YO",
-      avatarColor: "bg-indigo-500",
+      avatarColor: "bg-primary-500",
       online: true,
       email: currentProfile?.email ?? authUser.email ?? "",
     };
@@ -137,7 +137,7 @@ export default async function MessagesPage() {
     initials: currentProfile
       ? initials(currentProfile.first_name, currentProfile.last_name)
       : "YO",
-    avatarColor: "bg-indigo-500",
+    avatarColor: "bg-primary-500",
     online: true,
     email: currentProfile?.email ?? authUser.email ?? "",
   };

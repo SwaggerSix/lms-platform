@@ -78,7 +78,7 @@ export default function GradingClient() {
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="flex items-center gap-2 font-semibold text-gray-900">
-                    <ClipboardCheck className="h-4 w-4 text-indigo-600" /> {item.assessment_title}
+                    <ClipboardCheck className="h-4 w-4 text-primary-600" /> {item.assessment_title}
                   </p>
                   <p className="text-xs text-gray-500">
                     {item.learner_name}{item.learner_email ? ` · ${item.learner_email}` : ""}
@@ -111,7 +111,7 @@ export default function GradingClient() {
                 <button
                   onClick={() => submit(item)}
                   disabled={savingId === item.id}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
                 >
                   {savingId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   Save grade

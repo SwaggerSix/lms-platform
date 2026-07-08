@@ -73,7 +73,7 @@ export default function EmailSettingsClient() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900"><Mail className="h-6 w-6 text-indigo-600" /> Email Settings</h1>
+      <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900"><Mail className="h-6 w-6 text-primary-600" /> Email Settings</h1>
       <p className="mt-1 text-sm text-gray-500">Transactional email is sent via Resend. Configure your sending address and API key here.</p>
 
       <div className={`mt-4 flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm ${hasKey ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
@@ -107,7 +107,7 @@ export default function EmailSettingsClient() {
           <p className="mt-1 text-xs text-gray-400">Stored encrypted. Leave the dots unchanged to keep the existing key. Get a key at resend.com/api-keys.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+          <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
             {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
           </button>
           <button onClick={sendTest} disabled={testing || !hasKey} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">

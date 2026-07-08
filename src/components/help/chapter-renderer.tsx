@@ -20,7 +20,7 @@ export function ChapterRenderer({
   return (
     <article className="mx-auto max-w-3xl space-y-10 px-4 py-8 sm:px-6">
       <header className="space-y-3">
-        <div className="text-xs font-medium uppercase tracking-wider text-indigo-600">
+        <div className="text-xs font-medium uppercase tracking-wider text-primary-600">
           {manual.title}
         </div>
         <h1 className="text-3xl font-bold text-gray-900">{chapter.title}</h1>
@@ -36,7 +36,7 @@ export function ChapterRenderer({
           {chapter.pageLink && (
             <Link
               href={chapter.pageLink}
-              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 font-medium text-indigo-700 hover:bg-indigo-100"
+              className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-700 hover:bg-primary-100"
             >
               Open the page
               <ArrowRight className="h-3 w-3" />
@@ -59,7 +59,7 @@ export function ChapterRenderer({
       {chapter.faqs.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-indigo-600" />
+            <HelpCircle className="h-5 w-5 text-primary-600" />
             <h2 className="text-lg font-semibold text-gray-900">Frequently asked questions</h2>
           </div>
           <div className="divide-y divide-gray-200 rounded-xl border border-gray-200 bg-white">
@@ -95,7 +95,7 @@ export function ChapterRenderer({
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:border-primary-300 hover:bg-primary-50"
                     >
                       {r.label}
                       <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
@@ -103,7 +103,7 @@ export function ChapterRenderer({
                   ) : (
                     <Link
                       href={href}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 hover:border-primary-300 hover:bg-primary-50"
                     >
                       {r.label}
                       <ArrowRight className="h-3.5 w-3.5 text-gray-400" />
@@ -120,7 +120,7 @@ export function ChapterRenderer({
       <div className="border-t border-gray-200 pt-6">
         <Link
           href={`/help/${role}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
         >
           ← Back to {manual.title}
         </Link>

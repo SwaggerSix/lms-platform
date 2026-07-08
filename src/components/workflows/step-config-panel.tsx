@@ -69,7 +69,7 @@ export function StepConfigPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-indigo-600" />
+          <Icon className="w-4 h-4 text-primary-600" />
           <h3 className="text-sm font-semibold text-gray-900 capitalize">
             {step.step_type} Configuration
           </h3>
@@ -94,7 +94,7 @@ export function StepConfigPanel({
               <select
                 value={(config.action_type as string) || ""}
                 onChange={(e) => updateConfig("action_type", e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
               >
                 <option value="">Select action...</option>
                 {ACTION_TYPES.map((a) => (
@@ -164,7 +164,7 @@ export function StepConfigPanel({
                   <select
                     value={(config.method as string) || "POST"}
                     onChange={(e) => updateConfig("method", e.target.value)}
-                    className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
                   >
                     <option value="POST">POST</option>
                     <option value="GET">GET</option>
@@ -196,7 +196,7 @@ export function StepConfigPanel({
                     const multiplier = unit === "minutes" ? 60 : unit === "hours" ? 3600 : unit === "days" ? 86400 : 1;
                     updateConfig("duration_seconds", val * multiplier);
                   }}
-                  className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                 />
                 <select
                   value={(config.duration_unit as string) || "seconds"}
@@ -206,7 +206,7 @@ export function StepConfigPanel({
                     const multiplier = e.target.value === "minutes" ? 60 : e.target.value === "hours" ? 3600 : e.target.value === "days" ? 86400 : 1;
                     updateConfig("duration_seconds", val * multiplier);
                   }}
-                  className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   <option value="seconds">Seconds</option>
                   <option value="minutes">Minutes</option>
@@ -311,7 +311,7 @@ function Field({
         value={String(value || "")}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
       />
     </div>
   );
@@ -336,7 +336,7 @@ function TextArea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none"
       />
     </div>
   );
@@ -363,7 +363,7 @@ function ConnectionSelect({
       <select
         value={value || ""}
         onChange={(e) => onChange(e.target.value || null)}
-        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
       >
         <option value="">None (end)</option>
         {options.map((s) => {

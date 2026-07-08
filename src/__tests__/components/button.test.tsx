@@ -39,7 +39,7 @@ describe("Button", () => {
 
   it("applies variant classes", () => {
     const { rerender } = render(<Button variant="default">Default</Button>);
-    expect(screen.getByRole("button").className).toMatch(/bg-indigo-600/);
+    expect(screen.getByRole("button").className).toMatch(/bg-primary-600/);
 
     rerender(<Button variant="destructive">Delete</Button>);
     expect(screen.getByRole("button").className).toMatch(/bg-red-600/);

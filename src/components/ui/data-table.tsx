@@ -169,7 +169,7 @@ export default function DataTable<Row>({
                     <button
                       type="button"
                       onClick={() => handleSort(column.key)}
-                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                      className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                     >
                       {column.header}
                       {isSorted ? (
@@ -205,7 +205,7 @@ export default function DataTable<Row>({
                           type="button"
                           onClick={() => toggleExpanded(key)}
                           aria-expanded={isOpen}
-                          className="rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                          className="rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         >
                           <span className="sr-only">{isOpen ? "Collapse row" : "Expand row"}</span>
                           {isOpen ? (

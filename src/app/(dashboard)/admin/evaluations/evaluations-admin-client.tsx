@@ -217,7 +217,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
                       <div className="flex items-center gap-3 shrink-0">
                         <button
                           onClick={() => toggleTemplate(template.id, template.is_active)}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${template.is_active ? "bg-indigo-600" : "bg-gray-300"}`}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${template.is_active ? "bg-primary-600" : "bg-gray-300"}`}
                           aria-label={template.is_active ? "Deactivate" : "Activate"}
                         >
                           <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${template.is_active ? "translate-x-4.5" : "translate-x-0.5"}`} />
@@ -283,7 +283,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
                         )}
                         <button
                           onClick={() => toggleTrigger(trigger.id, trigger.is_active)}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${trigger.is_active ? "bg-indigo-600" : "bg-gray-300"}`}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${trigger.is_active ? "bg-primary-600" : "bg-gray-300"}`}
                           aria-label={trigger.is_active ? "Deactivate" : "Activate"}
                         >
                           <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${trigger.is_active ? "translate-x-4.5" : "translate-x-0.5"}`} />

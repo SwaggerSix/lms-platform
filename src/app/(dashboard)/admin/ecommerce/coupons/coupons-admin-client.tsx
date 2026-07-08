@@ -135,7 +135,7 @@ export default function CouponsAdminClient() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <Link href="/admin/ecommerce" className="hover:text-indigo-600">eCommerce</Link>
+            <Link href="/admin/ecommerce" className="hover:text-primary-600">eCommerce</Link>
             <span>/</span>
             <span className="text-gray-900">Coupons</span>
           </div>
@@ -239,7 +239,7 @@ export default function CouponsAdminClient() {
                   type="checkbox"
                   checked={form.is_active}
                   onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600"
+                  className="rounded border-gray-300 text-primary-600"
                 />
                 Active
               </label>

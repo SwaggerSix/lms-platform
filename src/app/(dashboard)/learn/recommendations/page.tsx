@@ -26,7 +26,7 @@ const GRADIENTS = [
   "from-cyan-500 to-blue-600",
   "from-purple-600 to-violet-700",
   "from-orange-500 to-red-600",
-  "from-indigo-500 to-purple-600",
+  "from-primary-500 to-purple-600",
   "from-pink-500 to-rose-600",
   "from-amber-500 to-orange-600",
   "from-emerald-500 to-teal-600",

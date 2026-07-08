@@ -158,7 +158,7 @@ export function FeatureToggles({ tenantId }: FeatureTogglesProps) {
                     onClick={() => toggle(feature.key)}
                     className={cn(
                       "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0",
-                      on ? "bg-indigo-600" : "bg-gray-300"
+                      on ? "bg-primary-600" : "bg-gray-300"
                     )}
                   >
                     <span
@@ -179,7 +179,7 @@ export function FeatureToggles({ tenantId }: FeatureTogglesProps) {
         <button
           onClick={handleSave}
           disabled={!hasChanges || saving}
-          className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
         >
           {saving ? "Saving…" : "Save Changes"}
         </button>

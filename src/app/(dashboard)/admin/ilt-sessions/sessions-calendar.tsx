@@ -54,7 +54,7 @@ export default function SessionsCalendar({ sessions, onSelect }: SessionsCalenda
                 <span
                   className={cn(
                     "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs",
-                    day.date === calendarMonth.today ? "bg-indigo-600 text-white" : "text-gray-700"
+                    day.date === calendarMonth.today ? "bg-primary-600 text-white" : "text-gray-700"
                   )}
                 >
                   {day.date}

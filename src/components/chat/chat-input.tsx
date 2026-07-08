@@ -52,7 +52,7 @@ export default function ChatInput({
               key={i}
               onClick={() => onSend(prompt)}
               disabled={disabled}
-              className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100 transition-colors disabled:opacity-50 border border-indigo-100"
+              className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full hover:bg-primary-100 transition-colors disabled:opacity-50 border border-primary-100"
             >
               {prompt}
             </button>
@@ -61,7 +61,7 @@ export default function ChatInput({
       )}
 
       {/* Input Area */}
-      <div className="flex items-end gap-2 bg-white border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+      <div className="flex items-end gap-2 bg-white border border-gray-300 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 transition-all">
         <textarea
           ref={textareaRef}
           value={message}
@@ -75,7 +75,7 @@ export default function ChatInput({
         <button
           onClick={handleSubmit}
           disabled={!message.trim() || disabled}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7" />

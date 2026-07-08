@@ -9,7 +9,7 @@ export interface CourseCoverProps {
   title: string;
   /**
    * Full Tailwind gradient classes for the fallback, including direction, e.g.
-   * "bg-gradient-to-br from-blue-500 to-indigo-600". Used only when there is no
+   * "bg-gradient-to-br from-blue-500 to-primary-600". Used only when there is no
    * stored image.
    */
   gradientClassName?: string;

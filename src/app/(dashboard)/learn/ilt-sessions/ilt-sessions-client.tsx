@@ -332,7 +332,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                   className={cn(
                     "relative pb-3 text-sm font-medium transition-colors",
                     activeTab === tab.key
-                      ? "text-indigo-600"
+                      ? "text-primary-600"
                       : "text-gray-500 hover:text-gray-700"
                   )}
                 >
@@ -341,14 +341,14 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                     className={cn(
                       "ml-1.5 rounded-full px-2 py-0.5 text-xs",
                       activeTab === tab.key
-                        ? "bg-indigo-100 text-indigo-600"
+                        ? "bg-primary-100 text-primary-600"
                         : "bg-gray-100 text-gray-500"
                     )}
                   >
                     {count}
                   </span>
                   {activeTab === tab.key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
                   )}
                 </button>
               );
@@ -390,7 +390,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                     <div className="flex gap-4">
                       {/* Date display */}
                       <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-                        <Calendar className="mb-1 h-4 w-4 text-indigo-600" />
+                        <Calendar className="mb-1 h-4 w-4 text-primary-600" />
                         <span className="text-xs font-medium uppercase text-gray-500">{month}</span>
                         <span className="text-2xl font-bold text-gray-900">{day}</span>
                       </div>
@@ -489,7 +489,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                               </a>
                             </Button>
                           ) : (
-                            <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-indigo-50 py-2.5 text-sm font-medium text-indigo-700">
+                            <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-50 py-2.5 text-sm font-medium text-primary-700">
                               <CheckCircle2 className="h-4 w-4" /> Registered
                             </div>
                           )}
@@ -504,7 +504,7 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                             "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors",
                             isFull
                               ? "border border-yellow-300 bg-yellow-50 text-yellow-700"
-                              : "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                              : "bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
                           )}
                         >
                           {registeringId === session.id

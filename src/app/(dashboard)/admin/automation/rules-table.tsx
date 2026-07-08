@@ -61,7 +61,7 @@ export default function RulesTable({
                 <td className="px-6 py-4">
                   <button
                     onClick={() => onOpenDetail(rule)}
-                    className="font-medium text-gray-900 hover:text-indigo-600 text-left"
+                    className="font-medium text-gray-900 hover:text-primary-600 text-left"
                   >
                     {rule.name}
                   </button>
@@ -95,7 +95,7 @@ export default function RulesTable({
                       onClick={() => onRunNow(rule)}
                       disabled={runningId === rule.id}
                       title="Run Now"
-                      className="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50"
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-primary-50 hover:text-primary-600 disabled:opacity-50"
                     >
                       {runningId === rule.id ? <RotateCcw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                       <span className="sr-only">Run {rule.name} now</span>

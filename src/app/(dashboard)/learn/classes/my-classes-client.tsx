@@ -67,7 +67,7 @@ export default function MyClassesClient() {
               href={`/learn/classes/${c.id}`}
               className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="flex h-28 items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700">
+              <div className="flex h-28 items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700">
                 {c.thumbnail_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.thumbnail_url} alt="" className="h-full w-full object-cover" />
@@ -81,7 +81,7 @@ export default function MyClassesClient() {
                     {c.status.replace("_", " ")}
                   </span>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600">{c.title}</h3>
+                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary-600">{c.title}</h3>
                 <p className="mt-0.5 text-xs text-gray-500">{c.course_title}</p>
                 <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-3 text-xs text-gray-500">
                   {c.next_session && (

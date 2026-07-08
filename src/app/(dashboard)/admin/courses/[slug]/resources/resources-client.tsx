@@ -168,7 +168,7 @@ export default function CourseResourcesClient({
             <select
               value={resourceType}
               onChange={(e) => onTypeChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               {RESOURCE_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -180,7 +180,7 @@ export default function CourseResourcesClient({
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value as "learner" | "facilitator")}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="learner">Learners</option>
               <option value="facilitator">Facilitators only</option>
@@ -194,19 +194,19 @@ export default function CourseResourcesClient({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Defaults to the file name"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="file"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-600 hover:file:bg-indigo-100"
+            className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-600 hover:file:bg-primary-100"
           />
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
           >
             {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
             {uploading ? "Uploading…" : "Add content"}
@@ -242,7 +242,7 @@ export default function CourseResourcesClient({
                     rel="noopener noreferrer"
                     className="flex min-w-0 items-center gap-3"
                   >
-                    <Icon className="h-5 w-5 shrink-0 text-indigo-500" />
+                    <Icon className="h-5 w-5 shrink-0 text-primary-500" />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-gray-900">{r.title}</p>
                       <p className="text-xs text-gray-500">

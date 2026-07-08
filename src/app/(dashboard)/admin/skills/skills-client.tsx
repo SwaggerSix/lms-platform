@@ -192,7 +192,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
 
   const rowActions = (skill: Skill) => (
     <div className="flex items-center justify-end gap-1">
-      <button onClick={() => setEditingSkill(skill)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors" title="Edit skill">
+      <button onClick={() => setEditingSkill(skill)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-primary-600 transition-colors" title="Edit skill">
         <Edit2 className="h-4 w-4" />
         <span className="sr-only">Edit {skill.name}</span>
       </button>
@@ -301,7 +301,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
             placeholder="Search skills..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
       </div>
@@ -392,11 +392,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
-                <input type="text" value={editingSkill.name} onChange={(e) => setEditingSkill({ ...editingSkill, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="text" value={editingSkill.name} onChange={(e) => setEditingSkill({ ...editingSkill, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select value={editingSkill.category} onChange={(e) => setEditingSkill({ ...editingSkill, category: e.target.value as Skill["category"] })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select value={editingSkill.category} onChange={(e) => setEditingSkill({ ...editingSkill, category: e.target.value as Skill["category"] })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option value="Technical">Technical</option>
                   <option value="Soft Skills">Soft Skills</option>
                   <option value="Business">Business</option>
@@ -404,11 +404,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea value={editingSkill.description} onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <textarea value={editingSkill.description} onChange={(e) => setEditingSkill({ ...editingSkill, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mapping Tags</label>
-                <input type="text" value={(editingSkill.tags ?? []).join(", ")} onChange={(e) => setEditingSkill({ ...editingSkill, tags: parseTags(e.target.value) })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
+                <input type="text" value={(editingSkill.tags ?? []).join(", ")} onChange={(e) => setEditingSkill({ ...editingSkill, tags: parseTags(e.target.value) })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
                 <p className="mt-1 text-xs text-gray-400">Tags used to map and group this skill.</p>
               </div>
             </div>
@@ -434,11 +434,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
-                <input type="text" value={newSkill.name} onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="e.g., TypeScript" />
+                <input type="text" value={newSkill.name} onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" placeholder="e.g., TypeScript" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select value={newSkill.category} onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value as Skill["category"] })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select value={newSkill.category} onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value as Skill["category"] })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option value="Technical">Technical</option>
                   <option value="Soft Skills">Soft Skills</option>
                   <option value="Business">Business</option>
@@ -446,11 +446,11 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea value={newSkill.description} onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Describe this skill..." />
+                <textarea value={newSkill.description} onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" placeholder="Describe this skill..." />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Parent Skill (optional)</label>
-                <select value={newSkill.parentId} onChange={(e) => setNewSkill({ ...newSkill, parentId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select value={newSkill.parentId} onChange={(e) => setNewSkill({ ...newSkill, parentId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option value="">None (top-level skill)</option>
                   {skills.filter((s) => !s.parentId).map((s) => (
                     <option key={s.id} value={s.id}>{s.name}</option>
@@ -459,7 +459,7 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mapping Tags</label>
-                <input type="text" value={newSkill.tagsText} onChange={(e) => setNewSkill({ ...newSkill, tagsText: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
+                <input type="text" value={newSkill.tagsText} onChange={(e) => setNewSkill({ ...newSkill, tagsText: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" placeholder="comma-separated, e.g. frontend, leadership, compliance" />
                 <p className="mt-1 text-xs text-gray-400">Tags used to map and group this skill.</p>
               </div>
             </div>

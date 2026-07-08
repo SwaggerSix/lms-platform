@@ -213,13 +213,13 @@ export default function DocumentFormModal({
                 className={cn(
                   "flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
                   uploadFile
-                    ? "border-indigo-300 bg-indigo-50"
+                    ? "border-primary-300 bg-primary-50"
                     : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
                 )}
               >
                 {uploadFile ? (
                   <>
-                    <CheckCircle2 className="h-8 w-8 text-indigo-500 mx-auto mb-2" />
+                    <CheckCircle2 className="h-8 w-8 text-primary-500 mx-auto mb-2" />
                     <p className="text-sm font-medium text-gray-900 truncate max-w-full">
                       {uploadFile.name}
                     </p>
@@ -263,8 +263,8 @@ export default function DocumentFormModal({
                 />
               </label>
               {uploadProgress === "uploading" && (
-                <p className="mt-2 text-sm text-indigo-600 flex items-center gap-2">
-                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                <p className="mt-2 text-sm text-primary-600 flex items-center gap-2">
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
                   Uploading file...
                 </p>
               )}
@@ -285,7 +285,7 @@ export default function DocumentFormModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Document title"
             />
           </div>
@@ -298,7 +298,7 @@ export default function DocumentFormModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
               placeholder="Brief description of the document"
             />
           </div>
@@ -310,7 +310,7 @@ export default function DocumentFormModal({
             <select
               value={folderId}
               onChange={(e) => setFolderId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">No folder</option>
               {folders.map((f) => (
@@ -329,7 +329,7 @@ export default function DocumentFormModal({
               type="text"
               value={tagsText}
               onChange={(e) => setTagsText(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="policy, compliance, training"
             />
           </div>
@@ -341,7 +341,7 @@ export default function DocumentFormModal({
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as DocumentVisibility)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">Everyone</option>
               <option value="managers">Managers Only</option>
@@ -355,7 +355,7 @@ export default function DocumentFormModal({
                 type="checkbox"
                 checked={isPolicy}
                 onChange={(e) => setIsPolicy(e.target.checked)}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-gray-700">Is Policy Document</span>
             </label>
@@ -364,7 +364,7 @@ export default function DocumentFormModal({
                 type="checkbox"
                 checked={ackRequired}
                 onChange={(e) => setAckRequired(e.target.checked)}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-gray-700">
                 Acknowledgment Required

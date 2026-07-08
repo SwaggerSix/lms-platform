@@ -316,8 +316,8 @@ function QuestionInput({ question, value, onChange }: {
               onClick={() => onChange(n)}
               className={`w-10 h-10 rounded-lg border-2 text-sm font-medium transition-colors ${
                 value === n
-                  ? "border-indigo-500 bg-indigo-500 text-white"
-                  : "border-gray-200 hover:border-indigo-300 text-gray-700"
+                  ? "border-primary-500 bg-primary-500 text-white"
+                  : "border-gray-200 hover:border-primary-300 text-gray-700"
               }`}
             >
               {n}
@@ -345,8 +345,8 @@ function QuestionInput({ question, value, onChange }: {
               onClick={() => onChange(n)}
               className={`w-9 h-9 rounded border text-sm font-medium transition-colors ${
                 value === n
-                  ? "border-indigo-500 bg-indigo-500 text-white"
-                  : "border-gray-200 hover:border-indigo-300 text-gray-700"
+                  ? "border-primary-500 bg-primary-500 text-white"
+                  : "border-gray-200 hover:border-primary-300 text-gray-700"
               }`}
             >
               {n}
@@ -371,7 +371,7 @@ function QuestionInput({ question, value, onChange }: {
             onClick={() => onChange(opt)}
             className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${
               value === opt
-                ? "border-indigo-500 bg-indigo-50 text-indigo-800"
+                ? "border-primary-500 bg-primary-50 text-primary-800"
                 : "border-gray-200 hover:border-gray-300 text-gray-700"
             }`}
           >
@@ -392,8 +392,8 @@ function QuestionInput({ question, value, onChange }: {
             onClick={() => onChange(opt)}
             className={`px-6 py-2 rounded-lg border-2 text-sm font-medium capitalize transition-colors ${
               value === opt
-                ? "border-indigo-500 bg-indigo-500 text-white"
-                : "border-gray-200 hover:border-indigo-300 text-gray-700"
+                ? "border-primary-500 bg-primary-500 text-white"
+                : "border-gray-200 hover:border-primary-300 text-gray-700"
             }`}
           >
             {opt}

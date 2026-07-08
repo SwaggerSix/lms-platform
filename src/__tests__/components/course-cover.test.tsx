@@ -8,7 +8,7 @@ describe("CourseCover", () => {
       <CourseCover
         thumbnailUrl="https://abc.supabase.co/storage/v1/object/public/course-images/x.jpg"
         title="Intro to Grants"
-        gradientClassName="bg-gradient-to-br from-blue-500 to-indigo-600"
+        gradientClassName="bg-gradient-to-br from-blue-500 to-primary-600"
         className="h-40"
       />
     );

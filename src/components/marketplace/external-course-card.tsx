@@ -30,7 +30,7 @@ interface ExternalCourseCardProps {
 
 const providerBadgeColors: Record<string, string> = {
   linkedin_learning: "bg-blue-100 text-blue-800",
-  coursera: "bg-indigo-100 text-indigo-800",
+  coursera: "bg-primary-100 text-primary-800",
   udemy_business: "bg-purple-100 text-purple-800",
   openai: "bg-gray-100 text-gray-800",
   custom: "bg-gray-100 text-gray-600",
@@ -157,7 +157,7 @@ export default function ExternalCourseCard({ course, onEnroll }: ExternalCourseC
                 href={course.external_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-xs text-primary-600 hover:text-primary-800 font-medium"
               >
                 Continue
               </a>
@@ -167,7 +167,7 @@ export default function ExternalCourseCard({ course, onEnroll }: ExternalCourseC
                 className={`h-full rounded-full transition-all ${
                   course.user_enrollment.status === "completed"
                     ? "bg-green-500"
-                    : "bg-indigo-600"
+                    : "bg-primary-600"
                 }`}
                 style={{ width: `${course.user_enrollment.progress}%` }}
               />
@@ -177,7 +177,7 @@ export default function ExternalCourseCard({ course, onEnroll }: ExternalCourseC
           <button
             onClick={handleEnroll}
             disabled={enrolling}
-            className="w-full py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="w-full py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {enrolling ? "Enrolling..." : "Enroll"}
           </button>

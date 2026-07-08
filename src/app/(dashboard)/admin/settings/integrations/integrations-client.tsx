@@ -344,7 +344,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
               type="text"
               value={formClientId}
               onChange={(e) => setFormClientId(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Enter your Client ID"
             />
           </div>
@@ -358,7 +358,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                 type={showSecret ? "text" : "password"}
                 value={formClientSecret}
                 onChange={(e) => setFormClientSecret(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 text-sm font-mono focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="Enter your Client Secret"
               />
               <button
@@ -411,7 +411,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
             <button
               type="button"
               onClick={() => setFormSettings({ ...formSettings, auto_record: !formSettings.auto_record })}
-              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.auto_record ? "bg-indigo-600" : "bg-gray-300")}
+              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.auto_record ? "bg-primary-600" : "bg-gray-300")}
             >
               <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", formSettings.auto_record ? "translate-x-6" : "translate-x-1")} />
             </button>
@@ -425,7 +425,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
             <button
               type="button"
               onClick={() => setFormSettings({ ...formSettings, waiting_room: !formSettings.waiting_room })}
-              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.waiting_room ? "bg-indigo-600" : "bg-gray-300")}
+              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.waiting_room ? "bg-primary-600" : "bg-gray-300")}
             >
               <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", formSettings.waiting_room ? "translate-x-6" : "translate-x-1")} />
             </button>
@@ -439,7 +439,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
             <button
               type="button"
               onClick={() => setFormSettings({ ...formSettings, mute_on_entry: !formSettings.mute_on_entry })}
-              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.mute_on_entry ? "bg-indigo-600" : "bg-gray-300")}
+              className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", formSettings.mute_on_entry ? "bg-primary-600" : "bg-gray-300")}
             >
               <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", formSettings.mute_on_entry ? "translate-x-6" : "translate-x-1")} />
             </button>
@@ -454,7 +454,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {getIntegration(configuring) ? "Update Integration" : "Connect Integration"}
@@ -524,7 +524,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                         onClick={() => handleToggleActive(provider, !integration.is_active)}
                         className={cn(
                           "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                          integration.is_active ? "bg-indigo-600" : "bg-gray-300"
+                          integration.is_active ? "bg-primary-600" : "bg-gray-300"
                         )}
                         title={integration.is_active ? "Disable" : "Enable"}
                       >
@@ -555,7 +555,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                       "inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                       integration
                         ? "border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        : "bg-primary-600 text-white hover:bg-primary-700"
                     )}
                   >
                     <Settings className="h-4 w-4" />
@@ -577,7 +577,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                           auto_record: e.target.checked,
                         })
                       }
-                      className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     Auto-record
                   </label>
@@ -591,7 +591,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                           waiting_room: e.target.checked,
                         })
                       }
-                      className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     Waiting room
                   </label>
@@ -605,7 +605,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                           mute_on_entry: e.target.checked,
                         })
                       }
-                      className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     Mute on entry
                   </label>

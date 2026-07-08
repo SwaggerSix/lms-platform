@@ -81,7 +81,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
                   <span className="text-gray-400 text-sm">Loading 360 content...</span>
                 </div>
               </div>
@@ -107,7 +107,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
         return (
           <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
             {!sessionStartTime ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900">
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-900 to-purple-900">
                 <div className="text-center">
                   <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                     <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -121,7 +121,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
                   </p>
                   <button
                     onClick={handleStartSession}
-                    className="px-6 py-2.5 bg-white text-indigo-900 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2.5 bg-white text-primary-900 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors"
                   >
                     Launch Experience
                   </button>
@@ -183,7 +183,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
           <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div className="w-8 h-8 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
               </div>
             )}
             {/* model-viewer Web Component or iframe fallback */}
@@ -224,7 +224,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
                 href={content.fallback_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-indigo-600 hover:underline mt-2 inline-block"
+                className="text-sm text-primary-600 hover:underline mt-2 inline-block"
               >
                 View fallback content
               </a>

@@ -72,7 +72,7 @@ export default function ManagerAnalyticsClient({
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Engagement</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-600">{avgEngagement}%</p>
+          <p className="mt-1 text-2xl font-bold text-primary-600">{avgEngagement}%</p>
           <p className="mt-0.5 text-xs text-gray-400">team average</p>
         </div>
         <div className={`rounded-xl border p-5 ${atRiskCount > 0 ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"}`}>
@@ -110,7 +110,7 @@ export default function ManagerAnalyticsClient({
                     onClick={() => setSortBy(opt.key as any)}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                       sortBy === opt.key
-                        ? "bg-indigo-100 text-indigo-700"
+                        ? "bg-primary-100 text-primary-700"
                         : "text-gray-500 hover:bg-gray-100"
                     }`}
                   >
@@ -135,7 +135,7 @@ export default function ManagerAnalyticsClient({
                       )
                     }
                     className={`w-full px-5 py-3 text-left hover:bg-gray-50 transition-colors ${
-                      selectedMember?.id === member.id ? "bg-indigo-50" : ""
+                      selectedMember?.id === member.id ? "bg-primary-50" : ""
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -162,7 +162,7 @@ export default function ManagerAnalyticsClient({
                         <div className="hidden sm:flex items-center gap-2">
                           <div className="w-20 h-2 rounded-full bg-gray-100 overflow-hidden">
                             <div
-                              className="h-full rounded-full bg-indigo-500 transition-all"
+                              className="h-full rounded-full bg-primary-500 transition-all"
                               style={{ width: `${member.engagementScore}%` }}
                             />
                           </div>
@@ -203,7 +203,7 @@ export default function ManagerAnalyticsClient({
             <div className="sticky top-24 space-y-4">
               <div className="rounded-xl border border-gray-200 bg-white p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-bold">
                     {selectedMember.name
                       .split(" ")
                       .map((n) => n[0])
@@ -223,7 +223,7 @@ export default function ManagerAnalyticsClient({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-gray-50 p-3 text-center">
                     <p className="text-xs text-gray-500">Engagement</p>
-                    <p className="text-lg font-bold text-indigo-600">
+                    <p className="text-lg font-bold text-primary-600">
                       {selectedMember.engagementScore.toFixed(0)}%
                     </p>
                   </div>

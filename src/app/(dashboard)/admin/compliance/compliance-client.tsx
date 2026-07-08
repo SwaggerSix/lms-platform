@@ -63,7 +63,7 @@ interface ComplianceFormData {
 }
 
 const statIcons = [ShieldCheck, CheckCircle2, AlertTriangle, Clock];
-const statColors = ['bg-indigo-500', 'bg-green-500', 'bg-red-500', 'bg-amber-500'];
+const statColors = ['bg-primary-500', 'bg-green-500', 'bg-red-500', 'bg-amber-500'];
 
 const userStatusBadge: Record<string, string> = {
   compliant: 'bg-green-50 text-green-700 ring-green-600/20',
@@ -282,7 +282,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
     {
       key: 'course',
       header: 'Course',
-      render: (req) => <span className="text-sm font-medium text-indigo-600">{req.linkedCourse}</span>,
+      render: (req) => <span className="text-sm font-medium text-primary-600">{req.linkedCourse}</span>,
     },
     {
       key: 'frequency',
@@ -355,7 +355,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {overviewStats.map((stat, index) => {
           const Icon = statIcons[index] ?? ShieldCheck;
-          const color = statColors[index] ?? 'bg-indigo-500';
+          const color = statColors[index] ?? 'bg-primary-500';
           return (
             <div key={stat.label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-center gap-3">
@@ -380,7 +380,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
           placeholder="Search compliance requirements..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         />
       </div>
 
@@ -411,7 +411,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
             <div className="space-y-2">
               {req.userStatus.map((user, i) => (
                 <div key={i} className="flex items-center gap-4 rounded-lg bg-white px-4 py-3 border border-gray-100">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
                     {user.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -502,7 +502,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Linked Course</p>
-                    <p className="text-sm font-medium text-indigo-600">{selectedReq.linkedCourse}</p>
+                    <p className="text-sm font-medium text-primary-600">{selectedReq.linkedCourse}</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Frequency</p>
@@ -557,7 +557,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     required
                     value={formData.name}
                     onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -566,7 +566,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     type="text"
                     value={formData.regulation}
                     onChange={(e) => setFormData((f) => ({ ...f, regulation: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -575,7 +575,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     id="mandatory"
                     checked={formData.mandatory}
                     onChange={(e) => setFormData((f) => ({ ...f, mandatory: e.target.checked }))}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <label htmlFor="mandatory" className="text-sm font-medium text-gray-700">Mandatory</label>
                 </div>
@@ -584,7 +584,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                   <select
                     value={formData.applicableTo}
                     onChange={(e) => setFormData((f) => ({ ...f, applicableTo: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="All Employees">All Employees</option>
                     <option value="Executive">Executive</option>
@@ -602,7 +602,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                   <select
                     value={formData.linkedCourseId}
                     onChange={(e) => setFormData((f) => ({ ...f, linkedCourseId: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="">— Select a course —</option>
                     {courses.map((c) => (
@@ -615,7 +615,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                   <select
                     value={formData.frequency}
                     onChange={(e) => setFormData((f) => ({ ...f, frequency: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="One-time">One-time</option>
                     <option value="Quarterly">Quarterly (every 3 months)</option>

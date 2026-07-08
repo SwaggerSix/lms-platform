@@ -22,7 +22,7 @@ export interface LearningPath {
 }
 
 const GRADIENT_PALETTE = [
-  "from-blue-600 to-indigo-700",
+  "from-blue-600 to-primary-700",
   "from-amber-500 to-orange-600",
   "from-green-500 to-emerald-600",
   "from-purple-600 to-violet-700",
@@ -45,7 +45,7 @@ export default function PathsClient({ paths }: Props) {
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex items-center gap-3">
-          <Layers className="h-8 w-8 text-indigo-600" />
+          <Layers className="h-8 w-8 text-primary-600" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-900">Explore Learning Paths</h1>
@@ -108,7 +108,7 @@ export default function PathsClient({ paths }: Props) {
                       {path.skills.map((skill) => (
                         <span
                           key={skill}
-                          className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600"
+                          className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-600"
                         >
                           {skill}
                         </span>
@@ -127,7 +127,7 @@ export default function PathsClient({ paths }: Props) {
                           </div>
                           <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-gray-200">
                             <div
-                              className="h-full rounded-full bg-indigo-600"
+                              className="h-full rounded-full bg-primary-600"
                               style={{ width: `${path.progress}%` }}
                             />
                           </div>
@@ -141,8 +141,8 @@ export default function PathsClient({ paths }: Props) {
                       className={cn(
                         "inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors",
                         path.enrolled
-                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                          : "border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+                          ? "bg-primary-600 text-white hover:bg-primary-700"
+                          : "border border-primary-600 text-primary-600 hover:bg-primary-50"
                       )}
                     >
                       {path.enrolled ? "Continue" : "Start Path"}

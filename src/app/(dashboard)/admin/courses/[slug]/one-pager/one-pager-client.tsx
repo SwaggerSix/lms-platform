@@ -41,7 +41,7 @@ export default function OnePagerClient({ data }: { data: OnePager }) {
           </Link>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
             <Printer className="h-4 w-4" /> Print / Save as PDF
           </button>
@@ -49,8 +49,8 @@ export default function OnePagerClient({ data }: { data: OnePager }) {
 
         <div id="one-pager" className="rounded-xl bg-white p-10 shadow-sm">
           {/* Header */}
-          <div className="border-b-2 border-indigo-600 pb-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">Course Overview</p>
+          <div className="border-b-2 border-primary-600 pb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Course Overview</p>
             <h1 className="mt-1 text-3xl font-bold text-gray-900">{data.title}</h1>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
               {data.domain && <span><strong className="text-gray-700">Domain:</strong> {data.domain}</span>}

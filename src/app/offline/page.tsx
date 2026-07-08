@@ -50,7 +50,7 @@ export default function OfflinePage() {
 
         <button
           onClick={() => window.location.href = "/dashboard"}
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-3 text-sm font-semibold text-white hover:bg-primary-700"
         >
           <RefreshCw className="h-4 w-4" />
           Try Again
@@ -71,8 +71,8 @@ export default function OfflinePage() {
                     href={`/learn/catalog/${course.slug}`}
                     className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100">
-                      <BookOpen className="h-5 w-5 text-indigo-600" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-100">
+                      <BookOpen className="h-5 w-5 text-primary-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-sm font-medium text-gray-900">

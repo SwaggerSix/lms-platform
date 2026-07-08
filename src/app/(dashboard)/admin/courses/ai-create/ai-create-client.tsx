@@ -148,7 +148,7 @@ export default function AICreateClient({ hasApiKey }: { hasApiKey: boolean }) {
           <ChevronLeft className="h-4 w-4" /> Back to Courses
         </a>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-primary-600">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -171,7 +171,7 @@ export default function AICreateClient({ hasApiKey }: { hasApiKey: boolean }) {
                     step > s.num
                       ? 'bg-green-500 text-white'
                       : step === s.num
-                        ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+                        ? 'bg-gradient-to-br from-purple-500 to-primary-600 text-white'
                         : 'bg-gray-100 text-gray-400'
                   )}
                 >
@@ -233,7 +233,7 @@ export default function AICreateClient({ hasApiKey }: { hasApiKey: boolean }) {
               <button
                 onClick={() => handleSubmit('published')}
                 disabled={submitting}
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:from-purple-700 hover:to-primary-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Publish Course
@@ -244,7 +244,7 @@ export default function AICreateClient({ hasApiKey }: { hasApiKey: boolean }) {
             <button
               onClick={() => setStep(3)}
               disabled={!courseData || courseData.modules.length === 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:from-purple-700 hover:to-primary-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue to Publish <ChevronRight className="h-4 w-4" />
             </button>

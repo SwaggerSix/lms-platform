@@ -147,7 +147,7 @@ export default function UnifiedCatalog({ initialCourses = [], internalCourses = 
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search all courses..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
@@ -155,7 +155,7 @@ export default function UnifiedCatalog({ initialCourses = [], internalCourses = 
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value as any)}
-            className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All Sources</option>
             <option value="internal">Internal Courses</option>
@@ -165,7 +165,7 @@ export default function UnifiedCatalog({ initialCourses = [], internalCourses = 
           <select
             value={difficultyFilter}
             onChange={(e) => setDifficultyFilter(e.target.value)}
-            className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -227,7 +227,7 @@ export default function UnifiedCatalog({ initialCourses = [], internalCourses = 
       {sourceFilter !== "internal" && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-indigo-500 rounded-full" />
+            <span className="w-2 h-2 bg-primary-500 rounded-full" />
             External Courses
             <span className="text-sm font-normal text-gray-500">({filteredExternal.length})</span>
           </h2>

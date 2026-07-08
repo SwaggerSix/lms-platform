@@ -167,7 +167,7 @@ export default function WorkflowListClient({
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Workflow className="w-7 h-7 text-indigo-600" />
+            <Workflow className="w-7 h-7 text-primary-600" />
             Workflow Automation
             <InfoTooltip content={getHelp("admin.workflows").details} label="About Workflows" side="bottom" />
           </h1>
@@ -177,7 +177,7 @@ export default function WorkflowListClient({
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Workflow
@@ -193,13 +193,13 @@ export default function WorkflowListClient({
             placeholder="Search workflows..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
           />
         </div>
         <select
           value={filterTrigger}
           onChange={(e) => setFilterTrigger(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
         >
           <option value="">All Triggers</option>
           <option value="event">Event</option>
@@ -212,7 +212,7 @@ export default function WorkflowListClient({
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Workflows", value: workflows.length, color: "bg-indigo-50 text-indigo-700" },
+          { label: "Total Workflows", value: workflows.length, color: "bg-primary-50 text-primary-700" },
           { label: "Active", value: workflows.filter((w) => w.is_active).length, color: "bg-green-50 text-green-700" },
           { label: "Paused", value: workflows.filter((w) => !w.is_active).length, color: "bg-yellow-50 text-yellow-700" },
           { label: "Total Runs", value: workflows.reduce((s, w) => s + w.run_count, 0), color: "bg-blue-50 text-blue-700" },
@@ -250,15 +250,15 @@ export default function WorkflowListClient({
                   />
 
                   {/* Icon */}
-                  <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                    <TriggerIcon className="w-5 h-5 text-indigo-600" />
+                  <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+                    <TriggerIcon className="w-5 h-5 text-primary-600" />
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/admin/workflows/${workflow.id}`}
-                      className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                      className="text-sm font-semibold text-gray-900 hover:text-primary-600 transition-colors"
                     >
                       {workflow.name}
                     </Link>
@@ -348,7 +348,7 @@ export default function WorkflowListClient({
 
                   <Link
                     href={`/admin/workflows/${workflow.id}`}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary-200 bg-primary-50 text-sm font-medium text-primary-700 hover:bg-primary-100 transition-colors"
                   >
                     Open editor
                     <ChevronRight className="w-4 h-4" />
@@ -376,7 +376,7 @@ export default function WorkflowListClient({
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. New Employee Onboarding"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
@@ -386,7 +386,7 @@ export default function WorkflowListClient({
                   onChange={(e) => setNewDescription(e.target.value)}
                   rows={2}
                   placeholder="What does this workflow do?"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none"
                 />
               </div>
               <div>
@@ -401,7 +401,7 @@ export default function WorkflowListClient({
                         className={cn(
                           "flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm transition-colors",
                           newTrigger === t
-                            ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                            ? "border-primary-500 bg-primary-50 text-primary-700"
                             : "border-gray-200 text-gray-600 hover:bg-gray-50"
                         )}
                       >
@@ -423,7 +423,7 @@ export default function WorkflowListClient({
               <button
                 onClick={createWorkflow}
                 disabled={!newName.trim() || creating}
-                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? "Creating..." : "Create Workflow"}
               </button>

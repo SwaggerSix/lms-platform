@@ -181,7 +181,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuToggle}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 lg:hidden"
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 lg:hidden"
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" aria-hidden="true" />
@@ -232,7 +232,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         {/* Search */}
         <button
           onClick={() => setSearchOpen(true)}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           aria-label="Open search"
         >
           <Search className="h-5 w-5" aria-hidden="true" />
@@ -242,7 +242,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         {/* Help search */}
         <button
           onClick={() => setHelpOpen(true)}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           aria-label="Open help search (shortcut: ?)"
           title="Help & manuals (?)"
         >
@@ -257,7 +257,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               setNotifOpen(!notifOpen);
               setUserOpen(false);
             }}
-            className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
             aria-expanded={notifOpen}
             aria-haspopup="true"
@@ -290,7 +290,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                       markAllAsRead();
                     }
                   }}
-                  className="text-xs font-medium text-indigo-600 hover:text-indigo-700 focus:outline-none focus:underline"
+                  className="text-xs font-medium text-primary-600 hover:text-primary-700 focus:outline-none focus:underline"
                   role="menuitem"
                 >
                   Mark all read
@@ -308,7 +308,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                     role="listitem"
                     className={cn(
                       "border-b border-gray-50 px-4 py-3 transition-colors hover:bg-gray-50",
-                      !notif.is_read && "bg-indigo-50/50"
+                      !notif.is_read && "bg-primary-50/50"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -330,7 +330,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               <div className="border-t border-gray-100 px-4 py-2">
                 <Link
                   href="/notifications"
-                  className="block text-center text-xs font-medium text-indigo-600 hover:text-indigo-700 focus:outline-none focus:underline"
+                  className="block text-center text-xs font-medium text-primary-600 hover:text-primary-700 focus:outline-none focus:underline"
                   onClick={() => setNotifOpen(false)}
                   role="menuitem"
                 >
@@ -348,13 +348,13 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               setUserOpen(!userOpen);
               setNotifOpen(false);
             }}
-            className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             aria-label="User menu"
             aria-expanded={userOpen}
             aria-haspopup="true"
           >
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-xs font-bold text-white"
               aria-hidden="true"
             >
               {userInitials}

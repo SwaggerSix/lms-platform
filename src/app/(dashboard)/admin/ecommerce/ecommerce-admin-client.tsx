@@ -128,7 +128,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
           </Link>
           <button
             onClick={() => setShowCreateProduct(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
           >
             Add Product
           </button>
@@ -218,7 +218,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
                     </button>
                   </div>
                 ) : (
-                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:bg-indigo-50/50">
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-600 hover:border-primary-400 hover:bg-primary-50/50">
                     {uploadingImage ? "Uploading..." : "Upload an image (PNG, JPG, WebP — max 5MB)"}
                     <input
                       type="file"
@@ -271,7 +271,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
                   type="checkbox"
                   checked={newProduct.is_featured}
                   onChange={(e) => setNewProduct({ ...newProduct, is_featured: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600"
+                  className="rounded border-gray-300 text-primary-600"
                 />
                 Featured product
               </label>
@@ -289,7 +289,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                 >
                   {creating ? "Creating..." : "Create Product"}
                 </button>

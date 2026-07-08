@@ -57,7 +57,7 @@ export default function MentorCard({
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start gap-4">
         {/* Avatar */}
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
           {initials}
         </div>
 
@@ -65,7 +65,7 @@ export default function MentorCard({
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
             {matchScore !== undefined && (
-              <span className="ml-2 flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+              <span className="ml-2 flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700">
                 {Math.round(matchScore)}% match
               </span>
             )}
@@ -194,7 +194,7 @@ export default function MentorCard({
         <div className="mt-3">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-xs text-primary-600 hover:text-primary-700 font-medium"
           >
             {showDetails ? "Hide bio" : "Show bio"}
           </button>
@@ -212,7 +212,7 @@ export default function MentorCard({
           <button
             onClick={() => onRequestMentor(mentor.user_id)}
             disabled={isRequesting}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isRequesting ? "Requesting..." : "Request as Mentor"}
           </button>

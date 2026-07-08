@@ -39,7 +39,7 @@ const categoryOptions = NUDGE_CATEGORIES.map((c) => ({ label: c, value: c }));
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-2 text-sm text-gray-700">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
       {label}
     </label>
   );
@@ -51,7 +51,7 @@ export default function AdminNudgesClient({ initialActions, initialCampaigns }: 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
           <Zap className="h-5 w-5" />
         </div>
         <div>
@@ -423,7 +423,7 @@ function CampaignsTab({ initialActions, initialCampaigns }: { initialActions: Nu
                   const idx = selectedIds.indexOf(a.id);
                   return (
                     <label key={a.id} className="flex items-center gap-2 text-sm text-gray-700">
-                      <input type="checkbox" checked={idx >= 0} onChange={() => toggleAction(a.id)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                      <input type="checkbox" checked={idx >= 0} onChange={() => toggleAction(a.id)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                       {idx >= 0 && <Badge variant="default" size="sm">{idx + 1}</Badge>}
                       {a.title}
                     </label>

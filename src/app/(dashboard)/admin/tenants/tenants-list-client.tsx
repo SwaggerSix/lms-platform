@@ -29,7 +29,7 @@ const STATUS_STYLES: Record<string, string> = {
 const PLAN_STYLES: Record<string, string> = {
   free: "bg-gray-100 text-gray-700",
   starter: "bg-blue-100 text-blue-700",
-  professional: "bg-indigo-100 text-indigo-700",
+  professional: "bg-primary-100 text-primary-700",
   enterprise: "bg-purple-100 text-purple-700",
 };
 
@@ -67,7 +67,7 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Tenants", value: tenants.length, color: "bg-indigo-50 text-indigo-700" },
+          { label: "Total Tenants", value: tenants.length, color: "bg-primary-50 text-primary-700" },
           { label: "Active", value: tenants.filter((t) => t.status === "active").length, color: "bg-green-50 text-green-700" },
           { label: "Trial", value: tenants.filter((t) => t.status === "trial").length, color: "bg-amber-50 text-amber-700" },
           { label: "Suspended", value: tenants.filter((t) => t.status === "suspended").length, color: "bg-red-50 text-red-700" },
@@ -88,13 +88,13 @@ export default function TenantsListClient({ tenants }: { tenants: Tenant[] }) {
             placeholder="Search tenants..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -203,7 +203,7 @@ const columns: DataTableColumn<Tenant>[] = [
     render: (tenant) => (
       <Link
         href={`/admin/tenants/${tenant.id}`}
-        className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+        className="text-sm text-primary-600 hover:text-primary-800 font-medium"
       >
         Manage
         <span className="sr-only">, {tenant.name}</span>

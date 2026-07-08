@@ -364,7 +364,7 @@ export default function MentorshipDetailClient({
       <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">
               {partnerName[0] ?? "?"}
             </div>
             <div>
@@ -408,7 +408,7 @@ export default function MentorshipDetailClient({
             {request.preferred_areas.map((area: string, i: number) => (
               <span
                 key={i}
-                className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+                className="rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700"
               >
                 {area}
               </span>
@@ -425,7 +425,7 @@ export default function MentorshipDetailClient({
               checked={shareWithManager}
               onChange={toggleShareWithManager}
               disabled={sharing}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
             />
             <label htmlFor="share-with-manager" className="text-sm text-gray-700">
               Share this mentorship with my manager
@@ -456,7 +456,7 @@ export default function MentorshipDetailClient({
           {["matched", "active"].includes(status) && (
             <button
               onClick={() => setShowScheduler(!showScheduler)}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
             >
               Schedule Session
             </button>
@@ -465,7 +465,7 @@ export default function MentorshipDetailClient({
             !reviews.some((r: any) => r.reviewer_id === userId) && (
               <button
                 onClick={() => setShowReviewForm(true)}
-                className="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+                className="rounded-lg border border-primary-300 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50"
               >
                 {isMentor ? "Leave Reflection" : "Leave Review"}
               </button>
@@ -524,7 +524,7 @@ export default function MentorshipDetailClient({
                     onClick={() => setReviewOutcomesMet(o.v)}
                     className={`rounded-lg border px-3 py-1.5 text-sm ${
                       reviewOutcomesMet === o.v
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -549,7 +549,7 @@ export default function MentorshipDetailClient({
                     onClick={() => setReviewWouldRecommend(o.v)}
                     className={`rounded-lg border px-3 py-1.5 text-sm ${
                       reviewWouldRecommend === o.v
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -567,7 +567,7 @@ export default function MentorshipDetailClient({
                 onChange={(e) => setReviewTakeaways(e.target.value)}
                 rows={2}
                 placeholder="What did you learn? What changed for you?"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -578,7 +578,7 @@ export default function MentorshipDetailClient({
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
                 rows={3}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="flex gap-2 justify-end">
@@ -591,7 +591,7 @@ export default function MentorshipDetailClient({
               <button
                 onClick={submitReview}
                 disabled={reviewSubmitting}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
               >
                 {reviewSubmitting ? "Submitting..." : "Submit Review"}
               </button>
@@ -612,7 +612,7 @@ export default function MentorshipDetailClient({
           {canEditGoals && !goalAddOpen && (
             <button
               onClick={() => setGoalAddOpen(true)}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700"
             >
               + Add Goal
             </button>
@@ -635,7 +635,7 @@ export default function MentorshipDetailClient({
                   onChange={(e) => setGoalTitle(e.target.value)}
                   placeholder="e.g. Run a project status meeting independently"
                   maxLength={200}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -645,7 +645,7 @@ export default function MentorshipDetailClient({
                   onChange={(e) => setGoalDescription(e.target.value)}
                   rows={2}
                   placeholder="What does success look like?"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -654,7 +654,7 @@ export default function MentorshipDetailClient({
                   type="date"
                   value={goalTarget}
                   onChange={(e) => setGoalTarget(e.target.value)}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
@@ -668,7 +668,7 @@ export default function MentorshipDetailClient({
                 <button
                   onClick={addGoal}
                   disabled={goalSaving || !goalTitle.trim()}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
                 >
                   {goalSaving ? "Saving..." : "Save Goal"}
                 </button>
@@ -694,7 +694,7 @@ export default function MentorshipDetailClient({
                     checked={isDone}
                     onChange={() => toggleGoalDone(goal)}
                     disabled={!canEditGoals}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
                   />
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-medium ${isDone ? "text-gray-400 line-through" : "text-gray-900"}`}>
@@ -760,11 +760,11 @@ export default function MentorshipDetailClient({
                   <div
                     className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
                       mine
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-primary-600 text-white"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    <p className={`mb-0.5 text-xs ${mine ? "text-indigo-100" : "text-gray-500"}`}>
+                    <p className={`mb-0.5 text-xs ${mine ? "text-primary-100" : "text-gray-500"}`}>
                       {senderName} · {new Date(m.created_at).toLocaleString()}
                     </p>
                     <p className="whitespace-pre-wrap">{m.body}</p>
@@ -789,12 +789,12 @@ export default function MentorshipDetailClient({
                 rows={2}
                 placeholder="Write a message..."
                 maxLength={5000}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
               <button
                 onClick={sendMessage}
                 disabled={sendingMessage || !draftMessage.trim()}
-                className="self-end rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="self-end rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
               >
                 {sendingMessage ? "Sending..." : "Send"}
               </button>
@@ -821,8 +821,8 @@ export default function MentorshipDetailClient({
               <div key={session.id} className="px-5 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
@@ -847,7 +847,7 @@ export default function MentorshipDetailClient({
                               href={session.meeting_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-indigo-600 hover:text-indigo-700"
+                              className="text-primary-600 hover:text-primary-700"
                             >
                               Join Meeting
                             </a>
@@ -899,7 +899,7 @@ export default function MentorshipDetailClient({
                     {openNotesId !== session.id && (
                       <button
                         onClick={() => openNotes(session)}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                       >
                         {session.notes || session.mentor_notes || session.mentee_notes
                           ? "Edit Notes"
@@ -911,7 +911,7 @@ export default function MentorshipDetailClient({
 
                 {/* Inline notes editor */}
                 {openNotesId === session.id && (
-                  <div className="mt-3 ml-12 rounded-lg border border-indigo-100 bg-indigo-50/40 p-3">
+                  <div className="mt-3 ml-12 rounded-lg border border-primary-100 bg-primary-50/40 p-3">
                     {notesError && (
                       <div className="mb-2 rounded bg-red-50 border border-red-200 p-2 text-xs text-red-700">
                         {notesError}
@@ -925,7 +925,7 @@ export default function MentorshipDetailClient({
                       onChange={(e) => setDraftShared(e.target.value)}
                       rows={3}
                       placeholder="What did you discuss? What are the next steps?"
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     />
                     {myNotesField && (
                       <>
@@ -937,7 +937,7 @@ export default function MentorshipDetailClient({
                           onChange={(e) => setDraftMine(e.target.value)}
                           rows={2}
                           placeholder="Notes only you can see (visible to the other party once saved)."
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                         />
                       </>
                     )}
@@ -952,7 +952,7 @@ export default function MentorshipDetailClient({
                       <button
                         onClick={() => saveNotes(session.id)}
                         disabled={savingNotes}
-                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                        className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
                       >
                         {savingNotes ? "Saving..." : "Save"}
                       </button>

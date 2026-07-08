@@ -25,7 +25,7 @@ export interface InstructorClass {
 }
 
 const GRADIENTS = [
-  "from-blue-500 to-indigo-600",
+  "from-blue-500 to-primary-600",
   "from-emerald-500 to-teal-600",
   "from-violet-500 to-purple-600",
   "from-amber-500 to-orange-600",
@@ -72,7 +72,7 @@ export default function ClassesClient({
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-            <GraduationCap className="h-6 w-6 text-indigo-600" />
+            <GraduationCap className="h-6 w-6 text-primary-600" />
             My Classes
           </h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -88,7 +88,7 @@ export default function ClassesClient({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search classes..."
-              className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
         )}
@@ -113,7 +113,7 @@ export default function ClassesClient({
               <Link
                 key={c.id}
                 href={`/instructor/classes/${c.id}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <div
                   className={`relative flex h-28 items-center justify-center bg-gradient-to-br ${gradientFor(
@@ -137,10 +137,10 @@ export default function ClassesClient({
                   )}
                 </div>
                 <div className="flex flex-1 flex-col p-4">
-                  <span className="mb-1 text-xs font-medium text-indigo-600">
+                  <span className="mb-1 text-xs font-medium text-primary-600">
                     {COURSE_TYPE_LABELS[c.courseType] ?? c.courseType}
                   </span>
-                  <h3 className="line-clamp-2 text-base font-semibold text-gray-900 group-hover:text-indigo-700">
+                  <h3 className="line-clamp-2 text-base font-semibold text-gray-900 group-hover:text-primary-700">
                     {c.title}
                   </h3>
                   {c.shortDescription && (

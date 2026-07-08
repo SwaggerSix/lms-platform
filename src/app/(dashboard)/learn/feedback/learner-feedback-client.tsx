@@ -86,8 +86,8 @@ export default function LearnerFeedbackClient({
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
@@ -107,7 +107,7 @@ export default function LearnerFeedbackClient({
             onClick={() => setActiveTab("pending")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "pending"
-                ? "border-indigo-600 text-indigo-600"
+                ? "border-primary-600 text-primary-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -123,7 +123,7 @@ export default function LearnerFeedbackClient({
             onClick={() => setActiveTab("reports")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "reports"
-                ? "border-indigo-600 text-indigo-600"
+                ? "border-primary-600 text-primary-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -150,14 +150,14 @@ export default function LearnerFeedbackClient({
                 <Link
                   key={review.id}
                   href={`/learn/feedback/${review.id}`}
-                  className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-md transition-all group"
+                  className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-primary-300 hover:shadow-md transition-all group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-semibold text-sm">
+                    <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold text-sm">
                       {review.subject.first_name[0]}{review.subject.last_name[0]}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                      <p className="font-medium text-gray-900 group-hover:text-primary-600 transition-colors">
                         {review.cycle.anonymous
                           ? "Feedback Review"
                           : `Review for ${review.subject.first_name} ${review.subject.last_name}`}
@@ -192,7 +192,7 @@ export default function LearnerFeedbackClient({
                     }`}>
                       {review.status === "in_progress" ? "Continue" : "Start"}
                     </span>
-                    <svg className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-gray-400 group-hover:text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -238,7 +238,7 @@ export default function LearnerFeedbackClient({
                       </p>
                       <div className="w-32 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
                         <div
-                          className="h-full bg-indigo-600 rounded-full"
+                          className="h-full bg-primary-600 rounded-full"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

@@ -23,7 +23,7 @@ const providerTypes = [
     value: "coursera",
     name: "Coursera",
     logo: "🟦",
-    color: "from-blue-500 to-indigo-600",
+    color: "from-blue-500 to-primary-600",
     fields: [
       { key: "api_key", label: "API Key", type: "password", required: true },
       { key: "business_id", label: "Business ID", type: "text", required: true },
@@ -124,7 +124,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
                   step >= s.num
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-primary-600 text-white"
                     : "bg-gray-100 text-gray-400"
                 }`}
               >
@@ -166,7 +166,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
                   }}
                   className={`p-4 rounded-xl border text-left transition-all ${
                     selectedType === p.value
-                      ? "border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50"
+                      ? "border-primary-500 ring-2 ring-primary-200 bg-primary-50"
                       : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
                   }`}
                 >
@@ -187,7 +187,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
               <button
                 onClick={() => selectedType && setStep(2)}
                 disabled={!selectedType}
-                className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Continue
               </button>
@@ -207,7 +207,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="My LinkedIn Learning"
               />
             </div>
@@ -220,7 +220,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
                   type={field.type}
                   value={apiConfig[field.key] || ""}
                   onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required={field.required}
                 />
               </div>
@@ -231,7 +231,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
               </button>
               <button
                 onClick={() => setStep(3)}
-                className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
               >
                 Review
               </button>
@@ -278,7 +278,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
               >
                 {submitting ? "Creating..." : "Create Provider"}
               </button>

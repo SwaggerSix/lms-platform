@@ -82,7 +82,7 @@ export default function CertificationsClient() {
           <h1 className="text-2xl font-bold text-gray-900">My Certifications</h1>
           <p className="mt-1 text-sm text-gray-500">Track your NASBA and other professional credentials.</p>
         </div>
-        <button onClick={openNew} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+        <button onClick={openNew} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
           <Plus className="h-4 w-4" /> Add certification
         </button>
       </div>
@@ -179,7 +179,7 @@ export default function CertificationsClient() {
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setShowForm(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600">Cancel</button>
-              <button onClick={save} disabled={saving || !form.name.trim()} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+              <button onClick={save} disabled={saving || !form.name.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
               </button>
             </div>

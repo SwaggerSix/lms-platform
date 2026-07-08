@@ -45,7 +45,7 @@ export default function BioClient({
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-4">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-          <UserCircle className="h-6 w-6 text-indigo-600" />
+          <UserCircle className="h-6 w-6 text-primary-600" />
           My Bio
         </h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -76,7 +76,7 @@ export default function BioClient({
           onChange={(e) => setBio(e.target.value)}
           rows={8}
           placeholder="Share your background, expertise, and teaching style…"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         />
         <div className="mt-1 flex items-center justify-between">
           <span className="text-xs text-gray-400">
@@ -88,7 +88,7 @@ export default function BioClient({
           <button
             onClick={save}
             disabled={saving || !dirty}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {saving ? "Saving…" : "Save Bio"}

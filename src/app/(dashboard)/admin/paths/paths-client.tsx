@@ -461,7 +461,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               className="flex items-start gap-4 p-6 cursor-pointer hover:bg-gray-50/50 transition-colors"
               onClick={() => setExpandedId(expandedId === path.id ? null : path.id)}
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600">
                 <Route className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -482,7 +482,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                 <button
                   title={path.status === 'published' ? 'Assign learners' : 'Publish the path to assign learners'}
                   className={cn(
-                    'rounded-lg p-2 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600',
+                    'rounded-lg p-2 text-gray-400 hover:bg-primary-50 hover:text-primary-600',
                     path.status !== 'published' && 'opacity-40 pointer-events-none'
                   )}
                   onClick={(e) => {
@@ -536,7 +536,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   <div className="space-y-2">
                     {path.courses.map((course, i) => (
                       <div key={course.id} className="flex items-center gap-3 rounded-lg bg-white px-4 py-3 border border-gray-100">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">
                           {i + 1}
                         </div>
                         <GripVertical className="h-3.5 w-3.5 text-gray-300" />
@@ -570,7 +570,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="e.g., Frontend Developer Path"
             />
           </div>
@@ -582,7 +582,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Describe what learners will gain from this path..."
             />
           </div>
@@ -594,7 +594,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               <select
                 value={formData.difficulty}
                 onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as PathFormData['difficulty'] })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 {difficultyOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -620,7 +620,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as PathFormData['status'] })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
@@ -644,16 +644,16 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   return (
                     <span
                       key={cid}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700"
                     >
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-200 text-[10px] font-bold">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-200 text-[10px] font-bold">
                         {idx + 1}
                       </span>
                       {label}
                       <button
                         type="button"
                         onClick={() => removeCourse(cid)}
-                        className="ml-0.5 rounded-full p-0.5 hover:bg-indigo-200 transition-colors"
+                        className="ml-0.5 rounded-full p-0.5 hover:bg-primary-200 transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -670,7 +670,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                 type="text"
                 value={courseSearch}
                 onChange={(e) => setCourseSearch(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="Search courses..."
               />
             </div>
@@ -694,14 +694,14 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                       key={course.id}
                       className={cn(
                         'flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors',
-                        isSelected && 'bg-indigo-50/50'
+                        isSelected && 'bg-primary-50/50'
                       )}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleCourse(course.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{course.title}</p>
@@ -728,7 +728,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           <button
             disabled={saving}
             onClick={handleSubmit}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {saving
@@ -799,13 +799,13 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                 return (
                   <span
                     key={uid}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700"
                   >
                     {u ? userLabel(u) : 'Selected user'}
                     <button
                       type="button"
                       onClick={() => toggleUser(uid)}
-                      className="ml-0.5 rounded-full p-0.5 hover:bg-indigo-200 transition-colors"
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-primary-200 transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -822,7 +822,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               type="text"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Search by name or email..."
             />
           </div>
@@ -846,14 +846,14 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                     key={u.id}
                     className={cn(
                       'flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors',
-                      isSelected && 'bg-indigo-50/50'
+                      isSelected && 'bg-primary-50/50'
                     )}
                   >
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleUser(u.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{userLabel(u)}</p>
@@ -873,7 +873,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           <button
             disabled={assigning || selectedUserIds.length === 0}
             onClick={handleAssign}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {assigning && <Loader2 className="h-4 w-4 animate-spin" />}
             {assigning

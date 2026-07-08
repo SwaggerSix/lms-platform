@@ -184,14 +184,14 @@ function FileAttachment({ name, type }: { name: string; type: "file" | "image" }
   if (type === "image") {
     return (
       <div className="mt-1 flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-        <ImageIcon className="h-5 w-5 text-indigo-500" />
+        <ImageIcon className="h-5 w-5 text-primary-500" />
         <span className="text-sm text-gray-700">{name}</span>
       </div>
     );
   }
   return (
     <div className="mt-1 flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-      <File className="h-5 w-5 text-indigo-500" />
+      <File className="h-5 w-5 text-primary-500" />
       <span className="text-sm text-gray-700">{name}</span>
     </div>
   );
@@ -284,7 +284,7 @@ function NewMessageModal({
               {selectedUsers.map((user) => (
                 <span
                   key={user.id}
-                  className="flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700"
+                  className="flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-sm font-medium text-primary-700"
                 >
                   {user.name}
                   <button
@@ -312,7 +312,7 @@ function NewMessageModal({
                 <button
                   onClick={() => addUsers(teamMembers)}
                   disabled={unselectedTeam.length === 0}
-                  className="text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:cursor-not-allowed disabled:text-gray-400"
+                  className="text-xs font-medium text-primary-600 hover:text-primary-700 disabled:cursor-not-allowed disabled:text-gray-400"
                 >
                   Add entire team ({teamMembers.length})
                 </button>
@@ -323,7 +323,7 @@ function NewMessageModal({
                     <button
                       key={m.id}
                       onClick={() => addUsers([m])}
-                      className="rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                      className="rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs text-gray-700 hover:bg-primary-50 hover:text-primary-700"
                     >
                       + {m.name}
                     </button>
@@ -345,7 +345,7 @@ function NewMessageModal({
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -389,7 +389,7 @@ function NewMessageModal({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
 
@@ -830,7 +830,7 @@ export default function MessagesClient({
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
         </div>
@@ -884,7 +884,7 @@ export default function MessagesClient({
                 onClick={() => handleSelectConversation(conv.id)}
                 className={cn(
                   "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50",
-                  isActive && "bg-indigo-50 hover:bg-indigo-50"
+                  isActive && "bg-primary-50 hover:bg-primary-50"
                 )}
               >
                 <Avatar
@@ -920,7 +920,7 @@ export default function MessagesClient({
                       {truncate(preview, 45)}
                     </p>
                     {hasUnread && (
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
                         {conv.unreadCount}
                       </span>
                     )}
@@ -1045,7 +1045,7 @@ export default function MessagesClient({
                             className={cn(
                               "rounded-2xl px-4 py-2",
                               isMine
-                                ? "rounded-br-md bg-indigo-600 text-white"
+                                ? "rounded-br-md bg-primary-600 text-white"
                                 : "rounded-bl-md bg-gray-100 text-gray-900"
                             )}
                           >
@@ -1070,7 +1070,7 @@ export default function MessagesClient({
                             {isMine && (
                               <span>
                                 {msg.isRead ? (
-                                  <CheckCheck className="h-3.5 w-3.5 text-indigo-500" />
+                                  <CheckCheck className="h-3.5 w-3.5 text-primary-500" />
                                 ) : (
                                   <Check className="h-3.5 w-3.5" />
                                 )}
@@ -1122,14 +1122,14 @@ export default function MessagesClient({
                       handleSendMessage();
                     }
                   }}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <button
                 onClick={handleSendMessage}
                 disabled={!inputText.trim()}
                 aria-label="Send message"
-                className="mb-0.5 rounded-lg bg-indigo-600 p-2.5 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mb-0.5 rounded-lg bg-primary-600 p-2.5 text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send className="h-5 w-5" aria-hidden="true" />
               </button>

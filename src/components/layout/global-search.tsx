@@ -144,11 +144,11 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
             className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
           />
           {loading && (
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-indigo-600" aria-hidden="true" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary-600" aria-hidden="true" />
           )}
           <button
             onClick={onClose}
-            className="shrink-0 rounded-md p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="shrink-0 rounded-md p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Close search"
           >
             <X className="h-4 w-4" aria-hidden="true" />

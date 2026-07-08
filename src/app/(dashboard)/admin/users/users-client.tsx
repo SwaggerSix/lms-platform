@@ -49,7 +49,7 @@ const statuses = ['All Status', 'Active', 'Inactive', 'Pending'];
 const departments = ['All Departments', 'Executive', 'HR', 'Operations', 'Finance', 'Training Delivery', 'Training Development'];
 
 const roleBadge: Record<string, string> = {
-  super_admin: 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
+  super_admin: 'bg-primary-50 text-primary-700 ring-primary-600/20',
   admin: 'bg-red-50 text-red-700 ring-red-600/20',
   manager: 'bg-blue-50 text-blue-700 ring-blue-600/20',
   instructor: 'bg-purple-50 text-purple-700 ring-purple-600/20',
@@ -345,7 +345,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
       sortValue: (user) => `${user.firstName} ${user.lastName}`.toLowerCase(),
       render: (user) => (
         <div className="flex items-center gap-3 whitespace-nowrap">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700">
             {user.avatar}
           </div>
           <span className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</span>
@@ -456,16 +456,16 @@ export default function UsersClient({ users, organizations = [], currentUserRole
             placeholder="Search users by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
           {roleFilters.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
           {statuses.map((s) => <option key={s}>{s}</option>)}
         </select>
-        <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
           {departments.map((d) => <option key={d}>{d}</option>)}
         </select>
       </div>
@@ -583,25 +583,25 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-user-first-name" className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
-                  <input id="edit-user-first-name" type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input id="edit-user-first-name" type="text" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
                 <div>
                   <label htmlFor="edit-user-last-name" className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
-                  <input id="edit-user-last-name" type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input id="edit-user-last-name" type="text" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
               </div>
               <div>
                 <label htmlFor="edit-user-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                <input id="edit-user-email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input id="edit-user-email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-user-job-title" className="block text-sm font-medium text-gray-700 mb-1.5">Job Title</label>
-                  <input id="edit-user-job-title" type="text" placeholder="e.g. Consultant" value={editJobTitle} onChange={(e) => setEditJobTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input id="edit-user-job-title" type="text" placeholder="e.g. Consultant" value={editJobTitle} onChange={(e) => setEditJobTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
                 <div>
                   <label htmlFor="edit-user-department" className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
-                  <select id="edit-user-department" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <select id="edit-user-department" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <option value="">Unassigned</option>
                     {organizations.map((org) => (
                       <option key={org.id} value={org.id}>{org.name}</option>
@@ -612,13 +612,13 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label htmlFor="edit-user-status" className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-                  <select id="edit-user-status" value={editStatus} onChange={(e) => setEditStatus(e.target.value as typeof editStatus)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                  <select id="edit-user-status" value={editStatus} onChange={(e) => setEditStatus(e.target.value as typeof editStatus)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                     <option value="pending">Pending</option>
@@ -709,26 +709,26 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="add-user-first-name" className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
-                  <input id="add-user-first-name" type="text" placeholder="John" value={formFirstName} onChange={(e) => setFormFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input id="add-user-first-name" type="text" placeholder="John" value={formFirstName} onChange={(e) => setFormFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
                 <div>
                   <label htmlFor="add-user-last-name" className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
-                  <input id="add-user-last-name" type="text" placeholder="Doe" value={formLastName} onChange={(e) => setFormLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input id="add-user-last-name" type="text" placeholder="Doe" value={formLastName} onChange={(e) => setFormLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
               </div>
               <div>
                 <label htmlFor="add-user-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                <input id="add-user-email" type="email" placeholder="john.doe@acme.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input id="add-user-email" type="email" placeholder="john.doe@acme.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
               <div>
                 <label htmlFor="add-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                <select id="add-user-role" value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select id="add-user-role" value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="add-user-department" className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
-                <select id="add-user-department" value={formDepartment} onChange={(e) => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select id="add-user-department" value={formDepartment} onChange={(e) => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option value="">Select Department</option>
                   {organizations.map((org) => (
                     <option key={org.id} value={org.id}>{org.name}</option>
@@ -737,7 +737,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
               </div>
               <div>
                 <label htmlFor="add-user-manager" className="block text-sm font-medium text-gray-700 mb-1.5">Manager</label>
-                <select id="add-user-manager" className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select id="add-user-manager" className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option>Chris Cancialosi</option>
                   <option>Elizabeth Bauernshub</option>
                 </select>

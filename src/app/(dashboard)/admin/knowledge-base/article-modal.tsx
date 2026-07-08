@@ -140,7 +140,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               onChange={(e) => {
                 setForm({ ...form, title: e.target.value, slug: form.slug || generateSlug(e.target.value) });
               }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Article title"
             />
           </div>
@@ -150,7 +150,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               type="text"
               value={form.slug}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="auto-generated-from-title"
             />
           </div>
@@ -159,7 +159,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
             <select
               value={form.categoryId}
               onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
@@ -175,7 +175,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               type="text"
               value={form.excerpt}
               onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Brief summary of the article"
             />
           </div>
@@ -185,7 +185,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
               rows={10}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Write your article content here (supports markdown-style formatting)..."
             />
           </div>
@@ -195,7 +195,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               type="text"
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="tag1, tag2, tag3"
             />
           </div>
@@ -205,7 +205,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
               <select
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value as KBArticleStatus })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -218,7 +218,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
                   type="checkbox"
                   checked={form.isFaq}
                   onChange={(e) => setForm({ ...form, isFaq: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-gray-700">Show in FAQ</span>
               </label>
@@ -227,7 +227,7 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
                   type="checkbox"
                   checked={form.isPinned}
                   onChange={(e) => setForm({ ...form, isPinned: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-gray-700">Pin article</span>
               </label>

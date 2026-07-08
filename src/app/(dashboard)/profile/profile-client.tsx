@@ -133,7 +133,7 @@ export default function ProfileClient({
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
             {/* Avatar */}
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-3xl font-bold text-white">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-primary-600 text-3xl font-bold text-white">
               {data.initials}
             </div>
 
@@ -184,7 +184,7 @@ export default function ProfileClient({
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
-                  className="mt-3 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="mt-3 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 />
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-gray-600">{bio}</p>
@@ -207,7 +207,7 @@ export default function ProfileClient({
                           key={dot}
                           className={cn(
                             "h-2 w-2 rounded-full",
-                            dot <= skill.proficiency ? "bg-indigo-500" : "bg-gray-200"
+                            dot <= skill.proficiency ? "bg-primary-500" : "bg-gray-200"
                           )}
                         />
                       ))}
@@ -268,8 +268,8 @@ export default function ProfileClient({
                     <div key={item.id} className="flex gap-3 py-3">
                       {/* Timeline */}
                       <div className="flex flex-col items-center">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
-                          <Icon className="h-4 w-4 text-indigo-600" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100">
+                          <Icon className="h-4 w-4 text-primary-600" />
                         </div>
                         {idx < data.recentActivity.length - 1 && (
                           <div className="mt-1 h-full w-px bg-gray-200" />
@@ -294,7 +294,7 @@ export default function ProfileClient({
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="flex items-center justify-center">
-                    <BookOpen className="h-5 w-5 text-indigo-500" />
+                    <BookOpen className="h-5 w-5 text-primary-500" />
                   </div>
                   <p className="mt-1 text-2xl font-bold text-gray-900">{data.stats.coursesCompleted}</p>
                   <p className="text-xs text-gray-500">Courses Completed</p>

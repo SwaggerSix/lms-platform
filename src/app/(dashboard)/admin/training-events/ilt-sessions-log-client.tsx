@@ -33,7 +33,7 @@ interface Props {
 function statusClass(status: string | null): string {
   switch (status) {
     case "scheduled":
-      return "bg-indigo-50 text-indigo-700 ring-indigo-200";
+      return "bg-primary-50 text-primary-700 ring-primary-200";
     case "in_progress":
       return "bg-amber-50 text-amber-700 ring-amber-200";
     case "completed":
@@ -91,7 +91,7 @@ export default function IltSessionsLogClient({ initialSessions }: Props) {
           <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-700">
             {counts.total} total
           </span>
-          <span className="rounded-full bg-indigo-100 px-2 py-1 text-indigo-700">
+          <span className="rounded-full bg-primary-100 px-2 py-1 text-primary-700">
             {counts.gems} from GEMS
           </span>
           <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-700">
@@ -110,7 +110,7 @@ export default function IltSessionsLogClient({ initialSessions }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search title, course, instructor, location…"
-            className="w-full rounded border border-gray-300 px-8 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded border border-gray-300 px-8 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <div className="inline-flex items-center gap-1.5 text-sm text-gray-700">
@@ -232,7 +232,7 @@ const columns: DataTableColumn<SessionRow>[] = [
     sortValue: (s) => s.external_source ?? "manual",
     render: (s) =>
       s.external_source === "gems" ? (
-        <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700">
+        <span className="rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-medium text-primary-700">
           GEMS #{s.external_id}
         </span>
       ) : (

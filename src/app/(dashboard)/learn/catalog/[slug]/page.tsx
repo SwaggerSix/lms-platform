@@ -6,7 +6,7 @@ import type { CourseData, Module, Lesson } from "./course-detail-client";
 
 // Gradient mapping by category or fallback
 const GRADIENTS: Record<string, string> = {
-  "data-science": "from-blue-500 to-indigo-600",
+  "data-science": "from-blue-500 to-primary-600",
   "programming": "from-green-500 to-emerald-600",
   "cybersecurity": "from-slate-600 to-gray-800",
   "cloud": "from-sky-500 to-blue-600",
@@ -14,7 +14,7 @@ const GRADIENTS: Record<string, string> = {
   "business": "from-amber-500 to-orange-600",
 };
 
-const DEFAULT_GRADIENT = "from-blue-500 to-indigo-600";
+const DEFAULT_GRADIENT = "from-blue-500 to-primary-600";
 
 function getGradient(categorySlug?: string | null): string {
   if (!categorySlug) return DEFAULT_GRADIENT;

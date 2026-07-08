@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const GRADIENTS = [
-  "from-blue-500 to-indigo-600",
+  "from-blue-500 to-primary-600",
   "from-amber-500 to-orange-600",
   "from-red-500 to-rose-600",
   "from-green-500 to-emerald-600",
@@ -19,7 +19,7 @@ const GRADIENTS = [
   "from-slate-600 to-gray-800",
   "from-pink-500 to-rose-600",
   "from-emerald-500 to-teal-600",
-  "from-indigo-500 to-purple-600",
+  "from-primary-500 to-purple-600",
   "from-yellow-500 to-amber-600",
   "from-sky-500 to-blue-600",
 ];

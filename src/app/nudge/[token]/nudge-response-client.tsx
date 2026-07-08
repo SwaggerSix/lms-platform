@@ -83,7 +83,7 @@ export default function NudgeResponseClient({ token }: { token: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow">
-        <div className="bg-indigo-600 px-6 py-5 text-center">
+        <div className="bg-primary-600 px-6 py-5 text-center">
           <span className="text-xl font-bold text-white">Your Daily Nudge</span>
         </div>
         <div className="space-y-4 p-6">
@@ -98,13 +98,13 @@ export default function NudgeResponseClient({ token }: { token: string }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={data.imageUrl} alt="" className="w-full rounded-lg" />
               )}
-              <div className="rounded-lg border-l-4 border-indigo-600 bg-indigo-50/50 p-4">
+              <div className="rounded-lg border-l-4 border-primary-600 bg-primary-50/50 p-4">
                 <h1 className="text-lg font-semibold text-gray-900">{data.actionTitle}</h1>
                 {data.quote && (
                   <p className="mt-2 text-sm italic text-gray-500">&ldquo;{data.quote}&rdquo;{data.quoteAuthor ? ` — ${data.quoteAuthor}` : ""}</p>
                 )}
                 {data.actionDescription && <p className="mt-2 text-sm text-gray-700">{data.actionDescription}</p>}
-                <p className="mt-2 text-xs font-semibold text-indigo-600">~{data.estimatedMinutes} minutes</p>
+                <p className="mt-2 text-xs font-semibold text-primary-600">~{data.estimatedMinutes} minutes</p>
               </div>
 
               {data.streak && data.streak.currentStreak > 0 && (
@@ -133,7 +133,7 @@ export default function NudgeResponseClient({ token }: { token: string }) {
                       </Button>
                     )}
                     {(data.todayLog?.committed || result === "committed") && (
-                      <p className="text-center text-sm text-indigo-600">Committed — check back this evening to complete it.</p>
+                      <p className="text-center text-sm text-primary-600">Committed — check back this evening to complete it.</p>
                     )}
                     <Button variant="success" size="lg" disabled={submitting} onClick={() => submit("complete")}>
                       Yes, I Did It!
