@@ -3,27 +3,13 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import CertificationsClient from "./certifications-client";
-import type { Certificate, CertStatus } from "./certifications-client";
+import type { Certificate } from "./certifications-client";
+import { deriveStatus } from "@/lib/certifications/status";
 
 export const metadata: Metadata = {
   title: "Certifications | LMS Platform",
   description: "View and manage your earned certifications and credentials",
 };
-
-/** Expiry within 90 days is considered "expiring soon". */
-const EXPIRING_SOON_DAYS = 90;
-
-function deriveStatus(dbStatus: string, expiresAt: string | null): CertStatus {
-  if (dbStatus === "expired" || dbStatus === "revoked") return "expired";
-  if (dbStatus === "active" && expiresAt) {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const daysUntilExpiry = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysUntilExpiry <= 0) return "expired";
-    if (daysUntilExpiry <= EXPIRING_SOON_DAYS) return "expiring_soon";
-  }
-  return "active";
-}
 
 export default async function CertificationsPage() {
   const supabase = await createClient();

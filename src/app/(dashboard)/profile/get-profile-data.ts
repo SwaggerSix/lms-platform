@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { deriveStatus } from "@/lib/certifications/status";
 import type {
   ProfileData,
   ProfileSkill,
@@ -90,13 +91,10 @@ export async function buildProfileData(
     (uc: any) => {
       const issuedDate = uc.issued_at ? new Date(uc.issued_at) : null;
       const expiryDate = uc.expires_at ? new Date(uc.expires_at) : null;
-      const threeMonths = new Date();
-      threeMonths.setMonth(threeMonths.getMonth() + 3);
-
-      let status: "active" | "expiring" = "active";
-      if (expiryDate && expiryDate <= threeMonths) {
-        status = "expiring";
-      }
+      // Same status semantics as the Certifications page (90-day window,
+      // expired/revoked respected) instead of a bespoke 3-month rule that
+      // labeled already-expired certs "expiring".
+      const status = deriveStatus(uc.status ?? "active", uc.expires_at ?? null);
 
       return {
         name: uc.certifications?.name || "Unknown",
