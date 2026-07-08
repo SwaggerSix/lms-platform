@@ -31,8 +31,12 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
   const [formRecipients, setFormRecipients] = useState<string[]>([]);
   const [formRecipientInput, setFormRecipientInput] = useState("");
   const [formFormat, setFormFormat] = useState<ReportFormat>("pdf");
-  const [formDateFrom, setFormDateFrom] = useState("2026-03-01");
-  const [formDateTo, setFormDateTo] = useState("2026-03-16");
+  // Default filter window: start of the current month through today.
+  const [formDateFrom, setFormDateFrom] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  });
+  const [formDateTo, setFormDateTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [formDepartment, setFormDepartment] = useState("all");
   const [formRole, setFormRole] = useState("all");
   const [formCourse, setFormCourse] = useState("all");
