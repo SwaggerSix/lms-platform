@@ -17,6 +17,8 @@ import {
 import Link from "next/link";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import { CertStatusBadge } from "@/components/certifications/cert-status-badge";
+import type { CertStatus } from "@/lib/certifications/status";
 import ProfileTabs from "./profile-tabs";
 
 /* ------------------------------------------------------------------ */
@@ -33,7 +35,7 @@ export interface ProfileCertification {
   issuer: string;
   issued: string;
   expires: string;
-  status: "active" | "expiring";
+  status: CertStatus;
 }
 
 export interface ProfileStats {
@@ -236,18 +238,29 @@ export default function ProfileClient({
               </div>
             </div>
 
-            {/* Certifications */}
+            {/* Certifications — the Certifications page is the source of
+                truth; this card summarizes with the same status semantics. */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Certifications</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Certifications</h2>
+                {!readOnly && (
+                  <Link
+                    href="/learn/certifications"
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    View all →
+                  </Link>
+                )}
+              </div>
               <div className="mt-4 space-y-3">
                 {data.certifications.map((cert) => (
                   <div
                     key={cert.name}
                     className={cn(
                       "flex items-center justify-between rounded-lg border p-4",
-                      cert.status === "expiring"
-                        ? "border-amber-200 bg-amber-50"
-                        : "border-gray-200 bg-white"
+                      cert.status === "expiring_soon" && "border-amber-200 bg-amber-50",
+                      cert.status === "expired" && "border-red-200 bg-red-50",
+                      cert.status === "active" && "border-gray-200 bg-white"
                     )}
                   >
                     <div>
@@ -257,18 +270,14 @@ export default function ProfileClient({
                       </p>
                     </div>
                     <div className="text-right">
-                      <span
-                        className={cn(
-                          "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                          cert.status === "active" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-                        )}
-                      >
-                        {cert.status === "active" ? "Active" : "Expiring Soon"}
-                      </span>
-                      <p className="mt-1 text-xs text-gray-400">Exp: {cert.expires}</p>
+                      <CertStatusBadge status={cert.status} />
+                      <p className="mt-1 text-xs text-gray-500">Exp: {cert.expires}</p>
                     </div>
                   </div>
                 ))}
+                {data.certifications.length === 0 && (
+                  <p className="py-2 text-sm text-gray-500">No certifications yet.</p>
+                )}
               </div>
             </div>
 

@@ -9,8 +9,6 @@ import {
   RefreshCw,
   Shield,
   AlertTriangle,
-  XCircle,
-  CheckCircle2,
   ExternalLink,
   Eye,
   Copy,
@@ -26,13 +24,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import DOMPurify from "dompurify";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { CertStatusBadge } from "@/components/certifications/cert-status-badge";
+import type { CertStatus } from "@/lib/certifications/status";
 
 /** Escape HTML entities to prevent XSS in certificate templates */
 function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-
-export type CertStatus = "active" | "expiring_soon" | "expired";
 
 export interface Certificate {
   id: string;
@@ -53,22 +51,6 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
-
-function StatusBadge({ status }: { status: CertStatus }) {
-  const config = {
-    active: { label: "Active", icon: CheckCircle2, className: "bg-green-100 text-green-700" },
-    expiring_soon: { label: "Expiring Soon", icon: AlertTriangle, className: "bg-yellow-100 text-yellow-700" },
-    expired: { label: "Expired", icon: XCircle, className: "bg-red-100 text-red-700" },
-  };
-  const c = config[status];
-  const Icon = c.icon;
-  return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium", c.className)}>
-      <Icon className="h-3.5 w-3.5" />
-      {c.label}
-    </span>
-  );
-}
 
 interface CertificationsClientProps {
   certificates: Certificate[];
@@ -384,7 +366,7 @@ export default function CertificationsClient({ certificates, userName }: Certifi
                       <p className="text-sm text-gray-500">{cert.issuingCourse}</p>
                     </div>
                   </div>
-                  <StatusBadge status={cert.status} />
+                  <CertStatusBadge status={cert.status} />
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-4 text-sm">
