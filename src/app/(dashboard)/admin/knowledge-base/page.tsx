@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import KnowledgeBaseClient from "./knowledge-base-client";
-import type { AdminArticle, AdminCategory } from "./knowledge-base-client";
+import type { AdminArticle, AdminCategory } from "./kb-shared";
 
 export default async function AdminKnowledgeBasePage() {
   const supabase = await createClient();
