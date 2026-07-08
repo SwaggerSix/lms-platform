@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, ShieldCheck, ShieldOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 
 type Phase = "loading" | "disabled" | "enrolling" | "enabled";
@@ -249,15 +250,10 @@ export function TwoFactorCard() {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
             <ShieldCheck className="h-4 w-4" /> Enabled
           </span>
-          <button
-            onClick={disable}
-            disabled={busy}
-            className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
-            {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+          <Button variant="outline-destructive" onClick={disable} loading={busy}>
             <ShieldOff className="h-4 w-4" />
             Disable
-          </button>
+          </Button>
         </div>
       )}
     </div>

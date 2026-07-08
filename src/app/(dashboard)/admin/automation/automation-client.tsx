@@ -686,23 +686,16 @@ export default function AutomationClient({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleRunNow(detailRule)}
-                disabled={running === detailRule.id}
-                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-              >
+              <Button onClick={() => handleRunNow(detailRule)} disabled={running === detailRule.id}>
                 {running === detailRule.id ? <RotateCcw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 Run Now
-              </button>
+              </Button>
               <Button variant="outline" onClick={() => openEditForm(detailRule)}>
                 <Edit2 className="h-4 w-4" /> Edit
               </Button>
-              <button
-                onClick={() => handleDelete(detailRule)}
-                className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-              >
+              <Button variant="outline-destructive" onClick={() => handleDelete(detailRule)}>
                 <Trash2 className="h-4 w-4" /> Delete
-              </button>
+              </Button>
             </div>
           </div>
 

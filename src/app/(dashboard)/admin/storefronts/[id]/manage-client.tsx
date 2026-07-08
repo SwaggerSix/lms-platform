@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Storefront {
   id: string;
@@ -831,7 +832,9 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                             ))}
                           </select>
                           {refundable > 0.001 && (
-                            <button
+                            <Button
+                              variant="outline-destructive"
+                              size="sm"
                               disabled={orderBusy === o.id}
                               onClick={() => {
                                 const input = prompt(`Refund amount (max ${refundable.toFixed(2)}):`, refundable.toFixed(2));
@@ -840,10 +843,9 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
                                 if (!isFinite(amt) || amt <= 0) return;
                                 updateOrder(o.id, { refund_amount: amt });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-red-300 text-red-700 text-sm hover:bg-red-50 disabled:opacity-60"
                             >
                               Refund
-                            </button>
+                            </Button>
                           )}
                         </div>
 

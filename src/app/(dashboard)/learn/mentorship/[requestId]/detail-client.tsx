@@ -3,6 +3,7 @@
 import { useState } from "react";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
 import AddToCalendar from "@/components/calendar/add-to-calendar";
+import { Button } from "@/components/ui/button";
 
 interface Goal {
   id: string;
@@ -438,31 +439,19 @@ export default function MentorshipDetailClient({
         {/* Action buttons */}
         <div className="mt-4 flex flex-wrap gap-2">
           {status === "matched" && isMentor && (
-            <button
-              onClick={() => updateStatus("active")}
-              disabled={updating}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-            >
+            <Button variant="success" onClick={() => updateStatus("active")} disabled={updating}>
               Accept Mentorship
-            </button>
+            </Button>
           )}
           {status === "matched" && isMentor && (
-            <button
-              onClick={() => updateStatus("cancelled")}
-              disabled={updating}
-              className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
-            >
+            <Button variant="outline-destructive" onClick={() => updateStatus("cancelled")} disabled={updating}>
               Decline
-            </button>
+            </Button>
           )}
           {status === "active" && (
-            <button
-              onClick={() => updateStatus("completed")}
-              disabled={updating}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
+            <Button variant="outline" onClick={() => updateStatus("completed")} disabled={updating}>
               Mark Completed
-            </button>
+            </Button>
           )}
           {["matched", "active"].includes(status) && (
             <button

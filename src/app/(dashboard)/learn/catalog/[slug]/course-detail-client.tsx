@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Star,
   Clock,
@@ -508,12 +509,9 @@ export default function CourseDetailClient({
           <div className="w-full lg:w-80">
             <div className="sticky top-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               {enrolled ? (
-                <a
-                  href={`/learn/player/${course.id}`}
-                  className="block w-full rounded-lg bg-green-600 py-3 text-center text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Continue Learning
-                </a>
+                <Button variant="success" className="w-full" asChild>
+                  <a href={`/learn/player/${course.id}`}>Continue Learning</a>
+                </Button>
               ) : pendingApproval ? (
                 <div>
                   <button

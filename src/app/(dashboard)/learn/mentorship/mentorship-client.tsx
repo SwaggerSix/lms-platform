@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import MentorCard from "@/components/mentorship/mentor-card";
 import MatchResults from "@/components/mentorship/match-results";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Button } from "@/components/ui/button";
 import { getHelp } from "@/lib/help-content";
 
 interface MentorshipClientProps {
@@ -338,12 +339,9 @@ export default function MentorshipClient({
                   Share your expertise by volunteering as a mentor. Set your availability and areas of expertise.
                 </p>
               </div>
-              <button
-                onClick={() => setActiveTab("profile")}
-                className="shrink-0 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700"
-              >
+              <Button variant="success" className="shrink-0" onClick={() => setActiveTab("profile")}>
                 Become a Mentor
-              </button>
+              </Button>
             </div>
           )}
 

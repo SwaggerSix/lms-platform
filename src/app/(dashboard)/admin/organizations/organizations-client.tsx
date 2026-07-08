@@ -359,12 +359,13 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
                     >
                       <Edit className="h-3.5 w-3.5" /> Edit
                     </Button>
-                    <button
+                    <Button
+                      variant="outline-destructive"
+                      className="flex-1"
                       onClick={() => setDeleteConfirmId(selectedNode.id)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
   Play,
@@ -240,14 +241,10 @@ export default function ObservationDetailClient({
 
           {/* Complete button */}
           {isEditable && observation.status === "in_progress" && (
-            <button
-              onClick={handleComplete}
-              disabled={completing}
-              className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
-            >
-              {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+            <Button variant="success" onClick={handleComplete} loading={completing}>
+              {!completing && <CheckCircle2 className="h-4 w-4" />}
               Complete
-            </button>
+            </Button>
           )}
 
           {/* Sign-off button */}
