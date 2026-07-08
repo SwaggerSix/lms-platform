@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import ILTSessionsClient, {
-  type SessionItem,
-  type AttendeeItem,
-  type CourseOption,
-  type InstructorOption,
-} from "./ilt-sessions-client";
+import ILTSessionsClient from "./ilt-sessions-client";
+import type {
+  SessionItem,
+  AttendeeItem,
+  CourseOption,
+  InstructorOption,
+} from "./sessions-shared";
 
 export default async function AdminILTSessionsPage() {
   const supabase = await createClient();
