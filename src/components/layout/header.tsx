@@ -20,6 +20,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 import GlobalSearch from "@/components/layout/global-search";
 import HelpSearchDialog from "@/components/help/help-search-dialog";
+import ThemeToggle from "@/components/layout/theme-toggle";
 import type { Notification } from "@/types/database";
 
 function relativeTime(dateStr: string): string {
@@ -249,6 +250,9 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           <HelpCircle className="h-5 w-5" aria-hidden="true" />
         </button>
         <HelpSearchDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+        {/* Theme */}
+        <ThemeToggle />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>

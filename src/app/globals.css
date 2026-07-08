@@ -1,5 +1,48 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (UX review §3.5). The theme toggle / pre-paint
+ * script stamp `.dark` on <html>; `dark:` utilities key off it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Dark theme
+ * ================================================
+ * Tailwind v4 utilities resolve through the --color-* variables, so the
+ * dark theme re-points the NEUTRAL ramp instead of sweeping thousands of
+ * gray call sites: in dark mode `text-gray-900` stays "strongest text"
+ * and `bg-gray-100` stays "subtle fill" — the values flip, the meaning
+ * doesn't. Two companions:
+ *   - `.bg-white` (cards/surfaces) maps to a dark surface via a
+ *     zero-specificity compat rule; `text-white` and translucent
+ *     `bg-white/N` are deliberately untouched (button labels, overlays).
+ *   - The sidebar/light-tint --brand-* variables are re-derived per theme
+ *     in brandingToCSSVars(), since they're applied as inline styles.
+ * Colored status tints (bg-green-100 etc.) intentionally keep their light
+ * values for now — dark text on light chips stays readable on dark cards.
+ */
+.dark {
+  color-scheme: dark;
+
+  --color-gray-50: #0f1626;  /* page canvas / hover tint */
+  --color-gray-100: #243049; /* subtle fills, chips */
+  --color-gray-200: #34425f; /* borders */
+  --color-gray-300: #4a5878;
+  --color-gray-400: #8494ad; /* muted icons */
+  --color-gray-500: #a3b0c4; /* secondary text */
+  --color-gray-600: #c0cadb;
+  --color-gray-700: #d5dde9;
+  --color-gray-800: #e6ebf3;
+  --color-gray-900: #f2f5f9; /* headings / strongest text */
+  --color-gray-950: #f8fafc;
+}
+
+/* Cards and other white surfaces become dark surfaces (slightly lighter
+ * than the canvas). :where() keeps specificity at zero so any explicit
+ * dark: override still wins. */
+.dark :where(.bg-white) {
+  background-color: #1a2338;
+}
+
 /*
  * gothamCulture brand theme
  * ================================================
