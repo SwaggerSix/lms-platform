@@ -95,7 +95,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
                 cy="80"
                 r="70"
                 fill="none"
-                stroke={passed ? "#91C53C" : "#dc2626"}
+                stroke={passed ? "var(--brand-primary, #91C53C)" : "#dc2626"}
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeDasharray={2 * Math.PI * 70}
