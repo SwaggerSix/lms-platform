@@ -31,8 +31,13 @@ export default function ThemeToggle() {
   const applyBranding = useBrandingStore((s) => s.applyToDOM);
 
   useEffect(() => {
-    setPref(getStoredTheme());
+    const stored = getStoredTheme();
+    setPref(stored);
     setMounted(true);
+    // Belt and braces: re-apply on mount in case the pre-paint script was
+    // blocked (e.g. by a CSP change) so users aren't stranded in the wrong
+    // theme with no recourse but the toggle.
+    applyThemePreference(stored);
   }, []);
 
   // While following the system preference, react to OS theme changes live.
