@@ -185,7 +185,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
       render: (obs) => (
         <Link
           href={`/learn/observations/${obs.id}`}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 transition-colors"
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-primary-600 hover:bg-primary-50 transition-colors"
         >
           <Eye className="h-3 w-3" />
           View
@@ -208,7 +208,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
         </div>
         <Link
           href="/admin/observations/templates/new"
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
         >
           <Plus className="h-4 w-4" />
           New Template
@@ -219,7 +219,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
       <div className="grid grid-cols-4 gap-4">
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2">
-            <ClipboardCheck className="h-5 w-5 text-blue-500" />
+            <ClipboardCheck className="h-5 w-5 text-primary-500" />
             <div>
               <p className="text-2xl font-bold text-gray-900">{templates.length}</p>
               <p className="text-xs text-gray-500">Templates</p>
@@ -266,7 +266,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
             onClick={() => setTab("templates")}
             className={cn(
               "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-              tab === "templates" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+              tab === "templates" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
             )}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -276,7 +276,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
             onClick={() => setTab("observations")}
             className={cn(
               "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-              tab === "observations" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+              tab === "observations" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
             )}
           >
             <List className="h-3.5 w-3.5" />
@@ -291,14 +291,14 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="rounded-md border border-gray-200 py-1.5 pl-8 pr-3 text-xs focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none w-48"
+              className="rounded-md border border-gray-200 py-1.5 pl-8 pr-3 text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none w-48"
             />
           </div>
           {tab === "observations" && (
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-md border border-gray-200 py-1.5 px-2 text-xs focus:border-blue-400 outline-none"
+              className="rounded-md border border-gray-200 py-1.5 px-2 text-xs focus:border-primary-400 outline-none"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -390,7 +390,7 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
               <p className="mt-1 text-sm text-gray-500">Create your first observation checklist template</p>
               <Link
                 href="/admin/observations/templates/new"
-                className="mt-4 inline-flex items-center gap-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
               >
                 <Plus className="h-4 w-4" />
                 Create Template
