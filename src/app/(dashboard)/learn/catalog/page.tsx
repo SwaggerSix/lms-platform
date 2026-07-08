@@ -264,6 +264,7 @@ export default async function CourseCatalogPage({
   const features = await resolveEnabledFeatures(service, tenantId);
   const showPartner = Boolean(features.marketplace);
   const showStore = Boolean(features.ecommerce);
+  const showForYou = Boolean(features.predictive_analytics);
 
   const { source } = await searchParams;
   const initialSource: CatalogSource =
@@ -278,6 +279,7 @@ export default async function CourseCatalogPage({
       courses={courses}
       showPartner={showPartner}
       showStore={showStore}
+      showForYou={showForYou}
       initialSource={initialSource}
     />
   );
