@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Documentation mentions utility class names (e.g. the UX review's
+ * bg-indigo-600 examples); keep Tailwind's automatic source detection
+ * from generating utilities for them. */
+@source not "../../docs";
+
 /* Class-based dark mode (UX review §3.5). The theme toggle / pre-paint
  * script stamp `.dark` on <html>; `dark:` utilities key off it. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -36,13 +41,15 @@
   --color-gray-950: #f8fafc;
 
   /* Brand tint shades mix toward the dark canvas instead of white, so
-   * primary-tinted chips/tiles sit naturally on dark cards. (primary-50
-   * follows --brand-primary-light, re-derived per theme by the branding
-   * store; 500+ are the brand colors themselves and don't change.) */
-  --color-primary-100: color-mix(in srgb, var(--brand-primary, #91c53c) 24%, #0f1626);
-  --color-primary-200: color-mix(in srgb, var(--brand-primary, #91c53c) 34%, #0f1626);
-  --color-primary-300: color-mix(in srgb, var(--brand-primary, #91c53c) 48%, #0f1626);
-  --color-primary-400: color-mix(in srgb, var(--brand-primary, #91c53c) 70%, #0f1626);
+   * primary-tinted chips/tiles sit naturally on dark cards. These set the
+   * --brand-primary-N indirection vars the inlined utilities reference —
+   * see the @theme inline note below. (primary-50 follows
+   * --brand-primary-light, re-derived per theme by the branding store;
+   * 500+ are the brand colors themselves and don't change.) */
+  --brand-primary-100: color-mix(in srgb, var(--brand-primary, #91c53c) 24%, #0f1626);
+  --brand-primary-200: color-mix(in srgb, var(--brand-primary, #91c53c) 34%, #0f1626);
+  --brand-primary-300: color-mix(in srgb, var(--brand-primary, #91c53c) 48%, #0f1626);
+  --brand-primary-400: color-mix(in srgb, var(--brand-primary, #91c53c) 70%, #0f1626);
 }
 
 /* Cards and other white surfaces become dark surfaces (slightly lighter
@@ -76,11 +83,15 @@
  * (primary / primary-hover / primary-text).
  */
 @theme inline {
+  /* 100-400 route through --brand-primary-N indirection variables so the
+   * dark theme can re-point the tints at dark mixes: @theme inline INLINES
+   * these declarations into the utilities, so overriding --color-primary-N
+   * at runtime would have no effect — only the inner var()s are live. */
   --color-primary-50: var(--brand-primary-light, #f1f7e4);
-  --color-primary-100: color-mix(in srgb, var(--brand-primary, #91c53c) 22%, white);
-  --color-primary-200: color-mix(in srgb, var(--brand-primary, #91c53c) 35%, white);
-  --color-primary-300: color-mix(in srgb, var(--brand-primary, #91c53c) 55%, white);
-  --color-primary-400: color-mix(in srgb, var(--brand-primary, #91c53c) 75%, white);
+  --color-primary-100: var(--brand-primary-100, color-mix(in srgb, var(--brand-primary, #91c53c) 22%, white));
+  --color-primary-200: var(--brand-primary-200, color-mix(in srgb, var(--brand-primary, #91c53c) 35%, white));
+  --color-primary-300: var(--brand-primary-300, color-mix(in srgb, var(--brand-primary, #91c53c) 55%, white));
+  --color-primary-400: var(--brand-primary-400, color-mix(in srgb, var(--brand-primary, #91c53c) 75%, white));
   --color-primary-500: var(--brand-primary, #91c53c);
   --color-primary-600: var(--brand-primary, #91c53c);
   --color-primary-700: var(--brand-primary-hover, #739e2d);
