@@ -232,7 +232,7 @@ export default function ObservationDetailClient({
           {isObserver && observation.status === "draft" && (
             <button
               onClick={handleStartObservation}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               <Play className="h-4 w-4" />
               Start Observation
@@ -314,7 +314,7 @@ export default function ObservationDetailClient({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add general observation notes..."
               rows={3}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none resize-y"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none resize-y"
             />
           </div>
 

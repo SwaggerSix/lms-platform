@@ -146,7 +146,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
           canObserve && (
             <button
               onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               <Plus className="h-4 w-4" />
               New Observation
@@ -157,7 +157,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
 
       {/* Create modal */}
       {showCreate && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-6 space-y-4">
+        <div className="rounded-xl border border-primary-200 bg-primary-50/50 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900">Schedule New Observation</h2>
             <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600">
@@ -178,7 +178,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
               <select
                 value={selectedTemplate}
                 onChange={(e) => setSelectedTemplate(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
               >
                 <option value="">Select template...</option>
                 {templates.map((t) => (
@@ -209,7 +209,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
                     value={subjectSearch}
                     onChange={(e) => handleSearchSubjects(e.target.value)}
                     placeholder="Search for a user..."
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
                   />
                   {searchResults.length > 0 && (
                     <div className="absolute z-10 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg">
@@ -239,7 +239,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
               />
             </div>
 
@@ -250,7 +250,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g., Building A, Floor 2"
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
               />
             </div>
           </div>
@@ -259,7 +259,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
             <button
               onClick={handleCreate}
               disabled={creating}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Create Observation
@@ -275,7 +275,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
           onClick={() => setTab("observer")}
           className={cn(
             "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-            tab === "observer" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+            tab === "observer" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
           )}
         >
           <Eye className="h-3.5 w-3.5" />
@@ -286,7 +286,7 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
           onClick={() => setTab("subject")}
           className={cn(
             "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-            tab === "subject" ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+            tab === "subject" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
           )}
         >
           <User className="h-3.5 w-3.5" />
@@ -307,8 +307,8 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
                 href={`/learn/observations/${obs.id}`}
                 className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md hover:border-gray-300 transition-all"
               >
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                  <ClipboardCheck className="h-5 w-5 text-blue-500" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary-50">
+                  <ClipboardCheck className="h-5 w-5 text-primary-500" />
                 </div>
 
                 <div className="flex-1 min-w-0">

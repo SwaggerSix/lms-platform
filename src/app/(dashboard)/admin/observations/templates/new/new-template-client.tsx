@@ -120,7 +120,7 @@ export default function NewTemplateClient() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Template
@@ -149,7 +149,7 @@ export default function NewTemplateClient() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Safety Observation Checklist"
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
                 />
               </div>
 
@@ -160,7 +160,7 @@ export default function NewTemplateClient() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe when and how this checklist should be used..."
                   rows={3}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none resize-y"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none resize-y"
                 />
               </div>
 
@@ -171,7 +171,7 @@ export default function NewTemplateClient() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder="e.g., Safety, Compliance, Skills"
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
                 />
               </div>
 
@@ -184,7 +184,7 @@ export default function NewTemplateClient() {
                   placeholder="e.g., 80"
                   min={0}
                   max={100}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
                 />
               </div>
             </div>
