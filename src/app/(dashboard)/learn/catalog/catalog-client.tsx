@@ -21,9 +21,12 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { courseTypeDefinition } from "@/lib/course-type-info";
 import { CourseCover } from "@/components/course/course-cover";
 import { hasCoverImage } from "@/lib/courses/cover-image";
+import PartnerCoursesTab from "./partner-courses-tab";
+import StoreProductsTab from "./store-products-tab";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type CourseType = "Video" | "Interactive" | "Document" | "Blended";
+export type CatalogSource = "internal" | "partner" | "store";
 
 export interface CatalogCourse {
   id: string;
@@ -135,7 +138,18 @@ function mapCourseType(type: string): CourseType {
   return map[type] ?? "Video";
 }
 
-export default function CatalogClient({ courses }: { courses: CatalogCourse[] }) {
+export default function CatalogClient({
+  courses,
+  showPartner = false,
+  showStore = false,
+  initialSource = "internal",
+}: {
+  courses: CatalogCourse[];
+  showPartner?: boolean;
+  showStore?: boolean;
+  initialSource?: CatalogSource;
+}) {
+  const [source, setSource] = useState<CatalogSource>(initialSource);
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | "">("");
@@ -143,6 +157,19 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+
+  const sourceTabs: { key: CatalogSource; label: string }[] = [
+    { key: "internal", label: "Internal" },
+    ...(showPartner ? [{ key: "partner" as const, label: "Partner" }] : []),
+    ...(showStore ? [{ key: "store" as const, label: "Store" }] : []),
+  ];
+
+  const switchSource = (next: CatalogSource) => {
+    setSource(next);
+    // Keep the URL shareable without triggering a server re-render.
+    const url = next === "internal" ? "/learn/catalog" : `/learn/catalog?source=${next}`;
+    window.history.replaceState(null, "", url);
+  };
 
   const filteredCourses = useMemo(() => {
     let result = [...courses];
@@ -243,6 +270,36 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
+        {/* Source tabs: Internal / Partner / Store */}
+        {sourceTabs.length > 1 && (
+          <div
+            role="group"
+            aria-label="Course source"
+            className="mb-6 flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
+          >
+            {sourceTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => switchSource(tab.key)}
+                aria-pressed={source === tab.key}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-medium transition-colors",
+                  source === tab.key
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {source === "partner" && <PartnerCoursesTab search={search} />}
+        {source === "store" && <StoreProductsTab search={search} />}
+
+        {source === "internal" && (
+        <>
         {/* Mobile filter toggle */}
         <div className="mb-4 flex items-center justify-between lg:hidden">
           <Button
@@ -506,6 +563,8 @@ export default function CatalogClient({ courses }: { courses: CatalogCourse[] })
             )}
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

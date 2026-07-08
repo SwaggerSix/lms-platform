@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
     .range(offset, offset + limit - 1);
 
   if (featured === "true") query = query.eq("is_featured", true);
+  // Learner-facing storefront views only list products published to the store.
+  if (searchParams.get("listed") === "true") query = query.eq("listed_in_storefront", true);
   if (category) query = query.eq("course.category_id", category);
   if (minPrice) query = query.gte("price", parseFloat(minPrice));
   if (maxPrice) query = query.lte("price", parseFloat(maxPrice));

@@ -97,7 +97,13 @@ const navSections: NavSection[] = [
   {
     header: "Learning",
     items: [
-      { label: "Course Catalog", href: "/learn/catalog", icon: BookOpen, featureKey: "courses" },
+      {
+        label: "Catalog",
+        href: "/learn/catalog",
+        icon: BookOpen,
+        featureKey: "courses",
+        matchPrefixes: ["/learn/marketplace", "/shop"],
+      },
       {
         label: "My Courses",
         href: "/learn/my-courses",
@@ -117,8 +123,6 @@ const navSections: NavSection[] = [
       { label: "AI Chat", href: "/learn/chat", icon: Bot, featureKey: "ai_chat" },
       { label: "Mentorship", href: "/learn/mentorship", icon: Heart, featureKey: "mentorship" },
       { label: "Microlearning", href: "/learn/microlearning", icon: Puzzle, featureKey: "microlearning" },
-      { label: "Marketplace", href: "/learn/marketplace", icon: Store, featureKey: "marketplace" },
-      { label: "Shop", href: "/shop", icon: ShoppingCart, featureKey: "ecommerce" },
       { label: "360 Feedback", href: "/learn/feedback", icon: MessagesSquare, featureKey: "feedback_360" },
       { label: "Observations", href: "/learn/observations", icon: Eye, featureKey: "observations" },
       { label: "Evaluations", href: "/learn/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
