@@ -442,7 +442,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                     </h2>
                     {currentLesson.content && (
                       <div
-                        className="prose prose-indigo mt-4 max-w-none"
+                        className="prose mt-4 max-w-none"
                         dangerouslySetInnerHTML={{ __html: sanitizeHTML(currentLesson.content) }}
                       />
                     )}
@@ -456,7 +456,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                 <div className="mx-auto w-full max-w-3xl rounded-lg border border-gray-200 bg-white p-8">
                   {currentLesson.content ? (
                     <div
-                      className="prose prose-indigo max-w-none"
+                      className="prose max-w-none"
                       dangerouslySetInnerHTML={{ __html: sanitizeHTML(currentLesson.content) }}
                     />
                   ) : currentLesson.contentUrl ? (
