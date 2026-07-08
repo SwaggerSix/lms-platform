@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Upload, Plus, Send, Globe, Loader2, Copy } from "lucide-react";
+import { Upload, Plus, Send, Globe, Loader2, Copy, KeyRound } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { useToast } from "@/components/ui/toast";
 
 export interface ApiKey {
@@ -200,6 +201,76 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
     }
   };
 
+  const notificationColumns: DataTableColumn<NotificationType>[] = [
+    {
+      key: "name",
+      header: "Notification Type",
+      render: (n) => <span className="text-sm font-medium text-gray-900">{n.name}</span>,
+    },
+    {
+      key: "description",
+      header: "Description",
+      render: (n) => <span className="text-sm text-gray-500">{n.description}</span>,
+    },
+    {
+      key: "enabled",
+      header: "Enabled",
+      className: "text-center",
+      render: (n) => (
+        <button
+          role="switch"
+          aria-checked={n.enabled}
+          aria-label={`Toggle ${n.name} notifications`}
+          onClick={() => toggleNotification(n.id)}
+          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", n.enabled ? "bg-indigo-600" : "bg-gray-300")}
+        >
+          <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", n.enabled ? "translate-x-6" : "translate-x-1")} />
+        </button>
+      ),
+    },
+  ];
+
+  const apiKeyColumns: DataTableColumn<ApiKey>[] = [
+    {
+      key: "name",
+      header: "Key Name",
+      render: (key) => <span className="text-sm font-medium text-gray-900">{key.name}</span>,
+    },
+    {
+      key: "key",
+      header: "Key",
+      render: (key) => <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">{key.keyPreview}</code>,
+    },
+    {
+      key: "created",
+      header: "Created",
+      sortValue: (key) => key.created,
+      render: (key) => <span className="text-sm text-gray-500">{key.created}</span>,
+    },
+    {
+      key: "lastUsed",
+      header: "Last Used",
+      render: (key) => <span className="text-sm text-gray-500">{key.lastUsed}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      className: "text-center",
+      render: (key) => (
+        <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", key.status === "Active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500")}>{key.status}</span>
+      ),
+    },
+    {
+      key: "action",
+      header: <span className="sr-only">Action</span>,
+      className: "text-right",
+      render: (key) =>
+        key.status === "Active" ? (
+          <button onClick={() => handleRevokeKey(key.id, key.name)} className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">Revoke</button>
+        ) : null,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -348,30 +419,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Email Notifications</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Notification Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Enabled</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {notifications.map((n) => (
-                    <tr key={n.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{n.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{n.description}</td>
-                      <td className="px-4 py-3 text-center">
-                        <button onClick={() => toggleNotification(n.id)} className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", n.enabled ? "bg-indigo-600" : "bg-gray-300")}>
-                          <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", n.enabled ? "translate-x-6" : "translate-x-1")} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              columns={notificationColumns}
+              rows={notifications}
+              rowKey={(n) => n.id}
+              pageSize={0}
+              ariaLabel="Email notifications"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email Footer Text</label>
@@ -462,36 +516,18 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 </div>
               </div>
             )}
-            <div className="overflow-hidden rounded-lg border border-gray-200">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Key Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Key</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Created</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Last Used</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {apiKeys.map((key) => (
-                    <tr key={key.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{key.name}</td>
-                      <td className="px-4 py-3"><code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">{key.keyPreview}</code></td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{key.created}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{key.lastUsed}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", key.status === "Active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500")}>{key.status}</span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {key.status === "Active" && <button onClick={() => handleRevokeKey(key.id, key.name)} className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">Revoke</button>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              columns={apiKeyColumns}
+              rows={apiKeys}
+              rowKey={(key) => key.id}
+              pageSize={0}
+              ariaLabel="API keys"
+              emptyState={{
+                icon: <KeyRound className="h-10 w-10" aria-hidden="true" />,
+                title: "No API keys yet",
+                description: "Generate a key to access the platform API",
+              }}
+            />
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
