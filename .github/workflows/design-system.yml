@@ -1,0 +1,17 @@
+name: Design system guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The guard script is dependency-free, so no install step is needed.
+      - run: node scripts/check-design-system.mjs
