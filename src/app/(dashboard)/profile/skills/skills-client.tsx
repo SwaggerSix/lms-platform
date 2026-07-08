@@ -13,6 +13,7 @@ import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import ProfileTabs from "../profile-tabs";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -207,6 +208,11 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
       )}
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Profile section tabs — this page is the Skills & Gaps tab */}
+        <div className="mb-6">
+          <ProfileTabs active="skills" />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

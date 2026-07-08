@@ -14,8 +14,10 @@ import {
   Star,
   Loader2,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
+import ProfileTabs from "./profile-tabs";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -172,6 +174,13 @@ export default function ProfileClient({
           </div>
         </div>
 
+        {/* ---- Section tabs (own profile only; visitors just see the overview) ---- */}
+        {!readOnly && (
+          <div className="mt-6">
+            <ProfileTabs active="overview" />
+          </div>
+        )}
+
         {/* ---- Two Column Layout ---- */}
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* ===== Left Column (2/3) ===== */}
@@ -193,7 +202,17 @@ export default function ProfileClient({
 
             {/* Skills */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Skills</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Skills</h2>
+                {!readOnly && (
+                  <Link
+                    href="/profile/skills"
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    Full skill analysis →
+                  </Link>
+                )}
+              </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 {data.skills.map((skill) => (
                   <div
@@ -323,9 +342,20 @@ export default function ProfileClient({
               </div>
             </div>
 
-            {/* Achievements Showcase */}
+            {/* Achievements Showcase — the Achievements page is the source of
+                truth for badges/points; this card just showcases the top few. */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Top Achievements</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Top Achievements</h3>
+                {!readOnly && (
+                  <Link
+                    href="/learn/achievements"
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    View all →
+                  </Link>
+                )}
+              </div>
               {data.topBadges.length === 0 ? (
                 <p className="mt-4 text-sm text-gray-500">No badges earned yet.</p>
               ) : (
