@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       // 2. Knowledge base articles
       service
         .from("kb_articles")
-        .select("id, title, slug, category_id")
+        .select("id, title, slug, category:kb_categories(name)")
         .or(`title.ilike.${pattern},excerpt.ilike.${pattern}`)
         .limit(5),
 

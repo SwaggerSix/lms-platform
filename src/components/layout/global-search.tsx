@@ -17,7 +17,7 @@ interface SearchResults {
     id: string;
     title: string;
     slug: string;
-    category_id: string | null;
+    category: { name: string } | null;
   }>;
   users: Array<{
     id: string;
@@ -198,7 +198,7 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                   key={article.id}
                   href={`/learn/knowledge-base/${article.slug}`}
                   title={article.title}
-                  subtitle={article.category_id ? `Category: ${article.category_id}` : "Uncategorized"}
+                  subtitle={article.category?.name ?? "Uncategorized"}
                   onClick={onClose}
                 />
               ))}
@@ -232,10 +232,11 @@ export default function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               {results.documents.map((doc) => (
                 <ResultItem
                   key={doc.id}
-                  href="/learn/documents"
+                  href={`/api/documents/${doc.id}/download`}
                   title={doc.title}
                   subtitle={doc.file_type?.toUpperCase() ?? "File"}
                   onClick={onClose}
+                  external
                 />
               ))}
             </ResultSection>
@@ -271,22 +272,37 @@ function ResultItem({
   title,
   subtitle,
   onClick,
+  external = false,
 }: {
   href: string;
   title: string;
   subtitle: string;
   onClick: () => void;
+  /** Opens in a new tab via a plain anchor (e.g. file downloads served by API routes). */
+  external?: boolean;
 }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:bg-gray-50"
-    >
+  const className =
+    "flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:bg-gray-50";
+  const content = (
+    <>
       <span className="truncate font-medium text-gray-900">{title}</span>
       <span className="ml-2 shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
         {subtitle}
       </span>
+    </>
+  );
+
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" onClick={onClick} className={className}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} onClick={onClick} className={className}>
+      {content}
     </Link>
   );
 }
