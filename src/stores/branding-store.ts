@@ -36,19 +36,26 @@ export const useBrandingStore = create<BrandingState>()(
       },
 
       applyToDOM: () => {
-        const vars = brandingToCSSVars(get().config);
+        const config = get().config;
+        const vars = brandingToCSSVars(config);
         const root = document.documentElement;
         Object.entries(vars).forEach(([key, value]) => {
           root.style.setProperty(key, value);
         });
+        // Keep the browser/PWA chrome on the brand color too.
+        const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.content = config.primaryColor;
       },
 
       loadFromServer: async () => {
         try {
-          const res = await fetch("/api/settings?key=branding");
+          // Resolves platform branding plus the caller's tenant overrides
+          // (tenants.primary_color etc.), so tenant white-labeling re-themes
+          // the app for that tenant's users.
+          const res = await fetch("/api/branding");
           if (!res.ok) return;
           const data = await res.json();
-          const value = data?.value;
+          const value = data?.branding;
           if (value && typeof value === "object" && Object.keys(value).length > 0) {
             set({ config: { ...defaultBranding, ...(value as Partial<BrandingConfig>) } });
             get().applyToDOM();

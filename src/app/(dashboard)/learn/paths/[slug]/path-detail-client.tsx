@@ -242,7 +242,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                             cy="50"
                             r="42"
                             fill="none"
-                            stroke="#91C53C"
+                            stroke="var(--brand-primary, #91C53C)"
                             strokeWidth="8"
                             strokeLinecap="round"
                             strokeDasharray={`${2 * Math.PI * 42}`}

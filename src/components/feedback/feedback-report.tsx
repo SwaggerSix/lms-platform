@@ -87,7 +87,7 @@ function RadarChart({
       <polygon
         points={points.map((p) => `${p.x},${p.y}`).join(" ")}
         fill="rgba(145, 197, 60, 0.2)"
-        stroke="#91C53C"
+        stroke="var(--brand-primary, #91C53C)"
         strokeWidth="2"
       />
 
@@ -98,7 +98,7 @@ function RadarChart({
           cx={p.x}
           cy={p.y}
           r="4"
-          fill="#91C53C"
+          fill="var(--brand-primary, #91C53C)"
           stroke="white"
           strokeWidth="2"
         />
