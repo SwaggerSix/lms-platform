@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Clock,
   ChevronLeft,
@@ -372,13 +373,10 @@ export default function AssessmentTakingClient({ data, classId = null }: { data:
           </button>
 
           {currentQuestion === questions.length - 1 ? (
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-green-700"
-            >
+            <Button variant="success" className="px-6" onClick={() => setShowSubmitModal(true)}>
               <CheckCircle2 className="h-4 w-4" />
               Submit Assessment
-            </button>
+            </Button>
           ) : (
             <button
               onClick={() => setCurrentQuestion((i) => Math.min(questions.length - 1, i + 1))}

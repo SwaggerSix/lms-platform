@@ -492,13 +492,14 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
                     {confirmApproveId === approval.id ? (
                       <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3">
                         <span className="text-sm text-green-700">Confirm approval?</span>
-                        <button
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleApprove(approval.id)}
                           disabled={actionLoading === approval.id}
-                          className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {actionLoading === approval.id ? "Approving..." : "Yes, Approve"}
-                        </button>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -509,13 +510,10 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
                       </div>
                     ) : (
                       <>
-                        <button
-                          onClick={() => setConfirmApproveId(approval.id)}
-                          className="flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
-                        >
+                        <Button variant="success" onClick={() => setConfirmApproveId(approval.id)}>
                           <CheckCircle2 className="h-4 w-4" />
                           Approve
-                        </button>
+                        </Button>
                         <Button
                           variant="destructive"
                           onClick={() => openRejectModal(approval.id)}

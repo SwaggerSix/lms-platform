@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface NudgeData {
   assigneeName: string;
@@ -127,31 +128,19 @@ export default function NudgeResponseClient({ token }: { token: string }) {
                   />
                   <div className="flex flex-col gap-2">
                     {!data.todayLog?.committed && result !== "committed" && (
-                      <button
-                        disabled={submitting}
-                        onClick={() => submit("commit")}
-                        className="rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-                      >
+                      <Button size="lg" disabled={submitting} onClick={() => submit("commit")}>
                         I Commit to This Today!
-                      </button>
+                      </Button>
                     )}
                     {(data.todayLog?.committed || result === "committed") && (
                       <p className="text-center text-sm text-indigo-600">Committed — check back this evening to complete it.</p>
                     )}
-                    <button
-                      disabled={submitting}
-                      onClick={() => submit("complete")}
-                      className="rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-60"
-                    >
+                    <Button variant="success" size="lg" disabled={submitting} onClick={() => submit("complete")}>
                       Yes, I Did It!
-                    </button>
-                    <button
-                      disabled={submitting}
-                      onClick={() => submit("skip")}
-                      className="rounded-lg bg-gray-100 px-4 py-3 font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-60"
-                    >
+                    </Button>
+                    <Button variant="secondary" size="lg" disabled={submitting} onClick={() => submit("skip")}>
                       Not Today
-                    </button>
+                    </Button>
                   </div>
                   {error && <p className="text-center text-sm text-red-600">{error}</p>}
                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Clock,
@@ -478,14 +479,15 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                       {!isPast && session.is_registered && (
                         <>
                           {canJoin ? (
-                            <a
-                              href={session.meeting_url || "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white hover:bg-green-700"
-                            >
-                              <ExternalLink className="h-4 w-4" /> Join Meeting
-                            </a>
+                            <Button variant="success" className="flex-1" asChild>
+                              <a
+                                href={session.meeting_url || "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="h-4 w-4" /> Join Meeting
+                              </a>
+                            </Button>
                           ) : (
                             <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-indigo-50 py-2.5 text-sm font-medium text-indigo-700">
                               <CheckCircle2 className="h-4 w-4" /> Registered
