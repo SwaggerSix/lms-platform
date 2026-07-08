@@ -23,6 +23,7 @@ import { CourseCover } from "@/components/course/course-cover";
 import { hasCoverImage } from "@/lib/courses/cover-image";
 import PartnerCoursesTab from "./partner-courses-tab";
 import StoreProductsTab from "./store-products-tab";
+import CatalogSourceTabs, { type CatalogSourceTab } from "./catalog-source-tabs";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type CourseType = "Video" | "Interactive" | "Document" | "Blended";
@@ -142,11 +143,13 @@ export default function CatalogClient({
   courses,
   showPartner = false,
   showStore = false,
+  showForYou = false,
   initialSource = "internal",
 }: {
   courses: CatalogCourse[];
   showPartner?: boolean;
   showStore?: boolean;
+  showForYou?: boolean;
   initialSource?: CatalogSource;
 }) {
   const [source, setSource] = useState<CatalogSource>(initialSource);
@@ -158,17 +161,13 @@ export default function CatalogClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const sourceTabs: { key: CatalogSource; label: string }[] = [
-    { key: "internal", label: "Internal" },
-    ...(showPartner ? [{ key: "partner" as const, label: "Partner" }] : []),
-    ...(showStore ? [{ key: "store" as const, label: "Store" }] : []),
-  ];
-
-  const switchSource = (next: CatalogSource) => {
-    setSource(next);
+  const switchSource = (tab: CatalogSourceTab): boolean => {
+    if (tab === "forYou") return false; // navigate to /learn/recommendations
+    setSource(tab);
     // Keep the URL shareable without triggering a server re-render.
-    const url = next === "internal" ? "/learn/catalog" : `/learn/catalog?source=${next}`;
+    const url = tab === "internal" ? "/learn/catalog" : `/learn/catalog?source=${tab}`;
     window.history.replaceState(null, "", url);
+    return true;
   };
 
   const filteredCourses = useMemo(() => {
@@ -270,28 +269,16 @@ export default function CatalogClient({
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
-        {/* Source tabs: Internal / Partner / Store */}
-        {sourceTabs.length > 1 && (
-          <div
-            role="group"
-            aria-label="Course source"
-            className="mb-6 flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
-          >
-            {sourceTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => switchSource(tab.key)}
-                aria-pressed={source === tab.key}
-                className={cn(
-                  "rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  source === tab.key
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+        {/* Source tabs: Internal / Partner / Store / For You */}
+        {(showPartner || showStore || showForYou) && (
+          <div className="mb-6">
+            <CatalogSourceTabs
+              active={source}
+              showPartner={showPartner}
+              showStore={showStore}
+              showForYou={showForYou}
+              onSelect={switchSource}
+            />
           </div>
         )}
 

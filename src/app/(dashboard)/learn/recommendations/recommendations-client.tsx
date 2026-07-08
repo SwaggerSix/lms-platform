@@ -19,6 +19,7 @@ import { formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
 import { CourseCover } from "@/components/course/course-cover";
+import CatalogSourceTabs from "../catalog/catalog-source-tabs";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -71,15 +72,15 @@ export interface SimilarCourseBucket {
 
 export interface RecommendationsData {
   skillBased: RecommendedCourse[];
-  popular: RecommendedCourse[];
-  continueLearning: RecommendedCourse[];
-  trending: RecommendedCourse[];
   requiredForRole: RecommendedCourse[];
   skillGaps: SkillGapItem[];
   aiRecommendations: AiRecommendation[];
   adaptivePath: AdaptivePathData | null;
   similarBuckets: SimilarCourseBucket[];
   availableSkills: Array<{ id: string; name: string; currentLevel: number }>;
+  /** Which sibling catalog tabs to offer (tenant feature flags). */
+  showPartner: boolean;
+  showStore: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -239,15 +240,14 @@ function DifficultyBadge({ level }: { level: string | null }) {
 
 export default function RecommendationsClient({
   skillBased,
-  popular,
-  continueLearning,
-  trending,
   requiredForRole,
   skillGaps,
   aiRecommendations,
   adaptivePath: initialAdaptivePath,
   similarBuckets,
   availableSkills,
+  showPartner,
+  showStore,
 }: RecommendationsData) {
   const [isRefreshing, startTransition] = useTransition();
   const [selectedSkill, setSelectedSkill] = useState(
@@ -259,9 +259,6 @@ export default function RecommendationsClient({
   const hasAnyRecommendations =
     aiRecommendations.length > 0 ||
     skillBased.length > 0 ||
-    popular.length > 0 ||
-    continueLearning.length > 0 ||
-    trending.length > 0 ||
     requiredForRole.length > 0 ||
     skillGaps.length > 0 ||
     similarBuckets.length > 0;
@@ -289,6 +286,16 @@ export default function RecommendationsClient({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
+        {/* Catalog source tabs — this page is the catalog's For You tab */}
+        <div className="mb-6">
+          <CatalogSourceTabs
+            active="forYou"
+            showPartner={showPartner}
+            showStore={showStore}
+            showForYou
+          />
+        </div>
+
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -602,38 +609,9 @@ export default function RecommendationsClient({
             </Section>
           )}
 
-          {/* Continue Learning */}
-          {continueLearning.length > 0 && (
-            <Section title="Continue Learning">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {continueLearning.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* Popular with Your Peers */}
-          {popular.length > 0 && (
-            <Section title="Popular with Your Peers">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {popular.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {/* New & Trending */}
-          {trending.length > 0 && (
-            <Section title="New &amp; Trending">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {trending.map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            </Section>
-          )}
+          {/* "Popular with Your Peers", "Continue Learning", and "New &
+              Trending" moved to the catalog's Most Popular/Newest sorts and
+              the dashboard when this page became the For You tab (§2.7). */}
         </div>
       </div>
     </div>

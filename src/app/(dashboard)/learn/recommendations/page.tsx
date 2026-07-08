@@ -7,6 +7,7 @@ import {
   getAdaptivePath,
   getSimilarCourses,
 } from "@/lib/ai/recommendations";
+import { resolveEnabledFeatures } from "@/lib/features/resolve";
 import RecommendationsClient from "./recommendations-client";
 import type { RecommendedCourse, SkillGapItem, AiRecommendation, AdaptivePathData, SimilarCourseBucket } from "./recommendations-client";
 
@@ -128,12 +129,10 @@ export default async function RecommendationsPage() {
     (enrollments ?? []).map((e: any) => e.course_id as string)
   );
 
-  const completedCategoryIds = new Set<string>();
   const completedTags = new Set<string>();
   for (const e of enrollments ?? []) {
     if (e.status === "completed") {
       const course = e.course as any;
-      if (course?.category_id) completedCategoryIds.add(course.category_id);
       if (Array.isArray(course?.tags)) {
         for (const t of course.tags) completedTags.add(t);
       }
@@ -530,112 +529,10 @@ export default async function RecommendationsPage() {
     }
   }
 
-  /* ------ C) "Popular with Your Peers" ------ */
-  const popularCourses: RecommendedCourse[] = [];
-
-  const remainingByPopularity = allCourses
-    .filter((c) => !usedIds.has(c.id))
-    .map((c) => ({
-      ...c,
-      _enrolled_count: Number(c.enrolled_count?.[0]?.count ?? 0),
-    }))
-    .sort((a, b) => b._enrolled_count - a._enrolled_count);
-
-  if (orgId) {
-    const { data: orgUserIds } = await service
-      .from("users")
-      .select("id")
-      .eq("organization_id", orgId)
-      .neq("id", userId)
-      .limit(200);
-
-    const peerIds = (orgUserIds ?? []).map((u: any) => u.id);
-
-    if (peerIds.length > 0) {
-      const { data: peerEnrollments } = await service
-        .from("enrollments")
-        .select("course_id")
-        .in("user_id", peerIds);
-
-      const peerCourseCount = new Map<string, number>();
-      for (const pe of peerEnrollments ?? []) {
-        if (enrolledCourseIds.has(pe.course_id)) continue;
-        peerCourseCount.set(pe.course_id, (peerCourseCount.get(pe.course_id) ?? 0) + 1);
-      }
-
-      const peerSorted = [...peerCourseCount.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([courseId, count]) => ({ courseId, count }));
-
-      for (const item of peerSorted) {
-        if (popularCourses.length >= 6) break;
-        const course = courseById.get(item.courseId);
-        if (!course || usedIds.has(item.courseId)) continue;
-        const rec = take(course, `Popular with your peers — ${item.count} in your org enrolled`);
-        if (rec) popularCourses.push(rec);
-      }
-    }
-  }
-
-  for (const c of remainingByPopularity) {
-    if (popularCourses.length >= 6) break;
-    if (usedIds.has(c.id)) continue;
-    const count = c._enrolled_count;
-    if (count === 0) continue;
-    const rec = take(c, `Popular with your peers — ${count.toLocaleString()} enrolled`);
-    if (rec) popularCourses.push(rec);
-  }
-
-  /* ------ D) "Continue Learning" ------ */
-  const continueLearningCourses: RecommendedCourse[] = [];
-
-  if (completedCategoryIds.size > 0) {
-    const sameCategoryCourses = allCourses.filter(
-      (c) => !usedIds.has(c.id) && c.category_id && completedCategoryIds.has(c.category_id)
-    );
-
-    for (const c of sameCategoryCourses) {
-      if (continueLearningCourses.length >= 6) break;
-      const catName = c.category?.name ?? "this topic";
-      const rec = take(c, `Continue your ${catName} learning journey`);
-      if (rec) continueLearningCourses.push(rec);
-    }
-  }
-
-  if (continueLearningCourses.length < 3 && completedTags.size > 0) {
-    for (const c of allCourses) {
-      if (continueLearningCourses.length >= 6) break;
-      if (usedIds.has(c.id)) continue;
-      const courseTags = Array.isArray(c.tags) ? c.tags : [];
-      const matchTag = courseTags.find((t: string) => completedTags.has(t));
-      if (matchTag) {
-        const rec = take(c, `Related to your completed courses in ${matchTag}`);
-        if (rec) continueLearningCourses.push(rec);
-      }
-    }
-  }
-
-  /* ------ E) "New & Trending" ------ */
-  const trendingCourses: RecommendedCourse[] = [];
-
-  const recentCourses = allCourses
-    .filter((c) => !usedIds.has(c.id))
-    .sort((a, b) => {
-      const dateA = new Date(a.published_at ?? a.created_at ?? 0).getTime();
-      const dateB = new Date(b.published_at ?? b.created_at ?? 0).getTime();
-      return dateB - dateA;
-    });
-
-  for (const c of recentCourses) {
-    if (trendingCourses.length >= 6) break;
-    const count = Number(c.enrolled_count?.[0]?.count ?? 0);
-    const catName = c.category?.name;
-    const reason = catName
-      ? `New in ${catName} — ${count.toLocaleString()} enrolled`
-      : `Recently added — ${count.toLocaleString()} enrolled`;
-    const rec = take(c, reason);
-    if (rec) trendingCourses.push(rec);
-  }
+  /* NOTE: the "Popular with Your Peers", "Continue Learning", and
+     "New & Trending" buckets were removed when this page became the
+     catalog's For You tab — the catalog's Most Popular/Newest sorts and
+     the dashboard cover the same ground (UX review §2.7). */
 
   /* ------ F) "Required for Your Role" ------ */
   const requiredForRoleCourses: RecommendedCourse[] = [];
@@ -705,18 +602,33 @@ export default async function RecommendationsPage() {
   /*  8. Render                                                        */
   /* ================================================================ */
 
+  /* ================================================================ */
+  /*  9. Catalog source tabs (this page is the catalog's For You tab)  */
+  /* ================================================================ */
+
+  let tenantId: string | null = null;
+  if (dbUser.role !== "admin" && dbUser.role !== "super_admin") {
+    const { data: membership } = await service
+      .from("tenant_memberships")
+      .select("tenant_id")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+    tenantId = membership?.tenant_id ?? null;
+  }
+  const features = await resolveEnabledFeatures(service, tenantId);
+
   return (
     <RecommendationsClient
       skillBased={skillBasedCourses}
-      popular={popularCourses}
-      continueLearning={continueLearningCourses}
-      trending={trendingCourses}
       requiredForRole={requiredForRoleCourses}
       skillGaps={skillGapItems}
       aiRecommendations={aiRecommendations}
       adaptivePath={adaptivePath}
       similarBuckets={similarBuckets}
       availableSkills={availableSkills}
+      showPartner={Boolean(features.marketplace)}
+      showStore={Boolean(features.ecommerce)}
     />
   );
 }
