@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import { Loader2, Download, Star, TrendingUp, Users, MessageSquareQuote, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 export interface Facet { id: string; label: string }
 
@@ -98,6 +100,35 @@ export default function InsightsClient({
 
   const maxResponses = useMemo(() => Math.max(1, ...rows.map((r) => r.responses)), [rows]);
 
+  const breakdownColumns = useMemo<DataTableColumn<Group>[]>(() => [
+    {
+      key: "label",
+      header: DIM_LABELS[dim].replace("By ", ""),
+      sortValue: (r) => r.label,
+      render: (r) => <span className="text-gray-800">{r.label}</span>,
+    },
+    {
+      key: "responses",
+      header: "Responses",
+      className: "w-1/2",
+      sortValue: (r) => r.responses,
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <div className="h-2 flex-1 rounded-full bg-gray-100">
+            <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${(r.responses / maxResponses) * 100}%` }} />
+          </div>
+          <span className="w-8 text-right text-xs text-gray-500">{r.responses}</span>
+        </div>
+      ),
+    },
+    {
+      key: "avg_rating",
+      header: "Avg rating",
+      sortValue: (r) => r.avg_rating,
+      render: (r) => <span className="text-gray-700">{r.avg_rating != null ? `${r.avg_rating}` : "—"}</span>,
+    },
+  ], [dim, maxResponses]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <AdminAnalyticsTabs />
@@ -106,13 +137,9 @@ export default function InsightsClient({
           <h1 className="text-2xl font-bold text-gray-900">Evaluation Insights</h1>
           <p className="mt-1 text-sm text-gray-500">Filter evaluation results to build your story — ratings, NPS, and testimonials.</p>
         </div>
-        <button
-          onClick={exportCsv}
-          disabled={!data || data.totals.responses === 0}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
+        <Button variant="outline" onClick={exportCsv} disabled={!data || data.totals.responses === 0}>
           <Download className="h-4 w-4" /> Export CSV
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -163,37 +190,24 @@ export default function InsightsClient({
                 <button
                   key={d}
                   onClick={() => setDim(d)}
+                  aria-pressed={dim === d}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${dim === d ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 >
                   {DIM_LABELS[d]}
                 </button>
               ))}
             </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-xs font-medium uppercase text-gray-500">
-                  <th className="px-2 py-2">{DIM_LABELS[dim].replace("By ", "")}</th>
-                  <th className="px-2 py-2 w-1/2">Responses</th>
-                  <th className="px-2 py-2">Avg rating</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {rows.map((r, i) => (
-                  <tr key={i}>
-                    <td className="px-2 py-2 text-gray-800">{r.label}</td>
-                    <td className="px-2 py-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 flex-1 rounded-full bg-gray-100">
-                          <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${(r.responses / maxResponses) * 100}%` }} />
-                        </div>
-                        <span className="w-8 text-right text-xs text-gray-500">{r.responses}</span>
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 text-gray-700">{r.avg_rating != null ? `${r.avg_rating}` : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              columns={breakdownColumns}
+              rows={rows}
+              rowKey={(r) => r.label}
+              initialSort="-responses"
+              ariaLabel={`Evaluation results ${DIM_LABELS[dim].toLowerCase()}`}
+              emptyState={{
+                icon: <BarChart3 className="h-10 w-10" aria-hidden="true" />,
+                title: "No evaluation responses match these filters.",
+              }}
+            />
           </div>
 
           {/* Testimonials */}

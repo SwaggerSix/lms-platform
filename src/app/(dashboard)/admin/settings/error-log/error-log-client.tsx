@@ -1,12 +1,10 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
   Download,
-  ChevronDown,
-  ChevronRight,
   AlertTriangle,
   AlertOctagon,
   AlertCircle,
@@ -16,6 +14,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 export interface ErrorLogEntry {
   id: string;
@@ -83,16 +83,7 @@ export default function ErrorLogClient({ initialEntries }: ErrorLogClientProps) 
   const [severityFilter, setSeverityFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState<"All" | "Unresolved" | "Resolved">("Unresolved");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  const toggleRow = (id: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   const filtered = useMemo(
     () =>
@@ -177,6 +168,94 @@ export default function ErrorLogClient({ initialEntries }: ErrorLogClientProps) 
     exportCSV(data, `error_log_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
+  const columns: DataTableColumn<ErrorLogEntry>[] = [
+    {
+      key: "time",
+      header: "Time",
+      sortValue: (e) => e.createdAt,
+      render: (entry) => (
+        <span className="text-sm text-gray-500 whitespace-nowrap">{formatTimestamp(entry.createdAt)}</span>
+      ),
+    },
+    {
+      key: "severity",
+      header: "Severity",
+      sortValue: (e) => e.severity,
+      render: (entry) => {
+        const sev = severityStyles[entry.severity] ?? severityStyles.error;
+        const SevIcon = sev.icon;
+        return (
+          <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", sev.badge)}>
+            <SevIcon className="h-3 w-3" />
+            {entry.severity}
+          </span>
+        );
+      },
+    },
+    {
+      key: "source",
+      header: "Source",
+      sortValue: (e) => e.source,
+      render: (entry) => (
+        <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", sourceStyles[entry.source] ?? "bg-gray-100 text-gray-600")}>
+          {entry.source}
+        </span>
+      ),
+    },
+    {
+      key: "message",
+      header: "Message",
+      className: "max-w-md",
+      render: (entry) => <span className="line-clamp-1 text-sm text-gray-900">{entry.message}</span>,
+    },
+    {
+      key: "location",
+      header: "Location",
+      sortValue: (e) => e.path,
+      render: (entry) =>
+        entry.path ? (
+          <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+            {entry.method ? `${entry.method} ` : ""}
+            {entry.path}
+          </code>
+        ) : (
+          <span className="text-xs text-gray-500">—</span>
+        ),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "w-20 text-right",
+      render: (entry) => (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            disabled={busyId === entry.id}
+            onClick={() => toggleResolved(entry)}
+            title={entry.resolved ? "Reopen" : "Mark resolved"}
+            className={cn(
+              "rounded-lg p-1.5 transition-colors disabled:opacity-50",
+              entry.resolved
+                ? "text-amber-600 hover:bg-amber-50"
+                : "text-green-600 hover:bg-green-50"
+            )}
+          >
+            {entry.resolved ? <RotateCcw className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+            <span className="sr-only">{entry.resolved ? "Reopen" : "Mark resolved"}</span>
+          </button>
+          <button
+            disabled={busyId === entry.id}
+            onClick={() => deleteEntry(entry.id)}
+            title="Delete"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Delete</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -187,20 +266,14 @@ export default function ErrorLogClient({ initialEntries }: ErrorLogClientProps) 
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.refresh()}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-          >
+          <Button variant="outline" onClick={() => router.refresh()}>
             <RefreshCw className="h-4 w-4" />
             Refresh
-          </button>
-          <button
-            onClick={handleExport}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-          >
+          </Button>
+          <Button variant="outline" onClick={handleExport} disabled={filtered.length === 0}>
             <Download className="h-4 w-4" />
             Export
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -267,152 +340,56 @@ export default function ErrorLogClient({ initialEntries }: ErrorLogClientProps) 
             <option value="client">Client</option>
             <option value="cron">Cron</option>
           </select>
-          <button
-            onClick={clearResolved}
-            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="outline" size="sm" className="ml-auto" onClick={clearResolved}>
             <Trash2 className="h-4 w-4" />
             Clear Resolved
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="w-8 px-4 py-3" />
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Time</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Severity</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Source</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Message</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Location</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-500">
-                  <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-green-500" />
-                  No errors match the current filters. The platform is running smoothly.
-                </td>
-              </tr>
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        rowKey={(entry) => entry.id}
+        ariaLabel="Error log"
+        rowClassName={(entry) => (entry.resolved ? "opacity-60" : undefined)}
+        renderExpanded={(entry) => (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500">
+              {entry.statusCode != null && <span>Status: <strong className="text-gray-700">{entry.statusCode}</strong></span>}
+              {entry.digest && <span>Digest: <code className="text-gray-700">{entry.digest}</code></span>}
+              {entry.resolved && (
+                <span className="text-green-600">
+                  Resolved{entry.resolverName ? ` by ${entry.resolverName}` : ""}
+                  {entry.resolvedAt ? ` on ${formatTimestamp(entry.resolvedAt)}` : ""}
+                </span>
+              )}
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-semibold text-gray-600">Message</p>
+              <pre className="overflow-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 whitespace-pre-wrap">{entry.message}</pre>
+            </div>
+            {entry.stack && (
+              <div>
+                <p className="mb-1 text-xs font-semibold text-gray-600">Stack Trace</p>
+                <pre className="max-h-64 overflow-auto rounded-lg border border-red-100 bg-red-50 p-3 text-xs text-red-800 whitespace-pre-wrap">{entry.stack}</pre>
+              </div>
             )}
-            {filtered.map((entry) => {
-              const isExpanded = expanded.has(entry.id);
-              const sev = severityStyles[entry.severity] ?? severityStyles.error;
-              const SevIcon = sev.icon;
-              return (
-                <Fragment key={entry.id}>
-                  <tr
-                    className={cn(
-                      "hover:bg-gray-50 transition-colors cursor-pointer",
-                      entry.resolved && "opacity-60"
-                    )}
-                    onClick={() => toggleRow(entry.id)}
-                  >
-                    <td className="px-4 py-3">
-                      {isExpanded ? (
-                        <ChevronDown className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-gray-400" />
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
-                      {formatTimestamp(entry.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", sev.badge)}>
-                        <SevIcon className="h-3 w-3" />
-                        {entry.severity}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", sourceStyles[entry.source] ?? "bg-gray-100 text-gray-600")}>
-                        {entry.source}
-                      </span>
-                    </td>
-                    <td className="max-w-md px-4 py-3 text-sm text-gray-900">
-                      <span className="line-clamp-1">{entry.message}</span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">
-                      {entry.path ? (
-                        <code className="rounded bg-gray-100 px-1.5 py-0.5">
-                          {entry.method ? `${entry.method} ` : ""}
-                          {entry.path}
-                        </code>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          disabled={busyId === entry.id}
-                          onClick={() => toggleResolved(entry)}
-                          title={entry.resolved ? "Reopen" : "Mark resolved"}
-                          className={cn(
-                            "rounded-lg p-1.5 transition-colors disabled:opacity-50",
-                            entry.resolved
-                              ? "text-amber-600 hover:bg-amber-50"
-                              : "text-green-600 hover:bg-green-50"
-                          )}
-                        >
-                          {entry.resolved ? <RotateCcw className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                        </button>
-                        <button
-                          disabled={busyId === entry.id}
-                          onClick={() => deleteEntry(entry.id)}
-                          title="Delete"
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {isExpanded && (
-                    <tr className="bg-gray-50/50">
-                      <td colSpan={7} className="px-8 py-4">
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500">
-                            {entry.statusCode != null && <span>Status: <strong className="text-gray-700">{entry.statusCode}</strong></span>}
-                            {entry.digest && <span>Digest: <code className="text-gray-700">{entry.digest}</code></span>}
-                            {entry.resolved && (
-                              <span className="text-green-600">
-                                Resolved{entry.resolverName ? ` by ${entry.resolverName}` : ""}
-                                {entry.resolvedAt ? ` on ${formatTimestamp(entry.resolvedAt)}` : ""}
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="mb-1 text-xs font-semibold text-gray-600">Message</p>
-                            <pre className="overflow-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 whitespace-pre-wrap">{entry.message}</pre>
-                          </div>
-                          {entry.stack && (
-                            <div>
-                              <p className="mb-1 text-xs font-semibold text-gray-600">Stack Trace</p>
-                              <pre className="max-h-64 overflow-auto rounded-lg border border-red-100 bg-red-50 p-3 text-xs text-red-800 whitespace-pre-wrap">{entry.stack}</pre>
-                            </div>
-                          )}
-                          {entry.context && Object.keys(entry.context).length > 0 && (
-                            <div>
-                              <p className="mb-1 text-xs font-semibold text-gray-600">Context</p>
-                              <pre className="overflow-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800">{JSON.stringify(entry.context, null, 2)}</pre>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+            {entry.context && Object.keys(entry.context).length > 0 && (
+              <div>
+                <p className="mb-1 text-xs font-semibold text-gray-600">Context</p>
+                <pre className="overflow-auto rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800">{JSON.stringify(entry.context, null, 2)}</pre>
+              </div>
+            )}
+          </div>
+        )}
+        emptyState={{
+          icon: <CheckCircle2 className="h-10 w-10 text-green-500" aria-hidden="true" />,
+          title: "No errors match the current filters.",
+          description: "The platform is running smoothly.",
+        }}
+      />
     </div>
   );
 }
