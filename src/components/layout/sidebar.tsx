@@ -153,7 +153,7 @@ const navSections: NavSection[] = [
       { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookMarked },
     ],
     roles: ["instructor"],
-    bgClass: "bg-[#F8F9FA]",
+    bgClass: "bg-gray-500/5",
   },
   {
     header: "Management",
@@ -168,7 +168,7 @@ const navSections: NavSection[] = [
       { label: "Nudges", href: "/manager/nudges", icon: Zap, featureKey: "nudges" },
     ],
     roles: ["manager", "admin", "super_admin"],
-    bgClass: "bg-[#F8F9FA]",
+    bgClass: "bg-gray-500/5",
   },
   {
     header: "Admin · People & Courses",
@@ -245,7 +245,7 @@ const navSections: NavSection[] = [
       { label: "Catalog Import", href: "/admin/catalog-import", icon: FileText },
     ],
     roles: ["super_admin"],
-    bgClass: "bg-[#FDF3DA]",
+    bgClass: "bg-[#F0A800]/10",
   },
   {
     // Platform administration — reserved for gC / GGS Super Admins. These manage
@@ -260,7 +260,7 @@ const navSections: NavSection[] = [
       { label: "Teams", href: "/admin/settings/integrations/teams", icon: MessageSquareMore },
     ],
     roles: ["super_admin"],
-    bgClass: "bg-[#FDF3DA]",
+    bgClass: "bg-[#F0A800]/10",
   },
   // Settings always sits at the very bottom of the sidebar.
   {
@@ -388,7 +388,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       )}
     >
       {/* Logo — tenant logo/name when branded, LearnHub default otherwise */}
-      <div className="flex h-16 items-center border-b border-[#DEE2E6] bg-white px-3">
+      <div className="flex h-16 items-center border-b border-[var(--brand-sidebar-border,#DEE2E6)] bg-white px-3">
         {branding.logoUrl ? (
           <img
             src={branding.logoUrl}
@@ -435,7 +435,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </button>
             )}
             {section.header && collapsed && (
-              <div className="my-3 border-t border-[#DEE2E6]" aria-hidden="true" />
+              <div className="my-3 border-t border-[var(--brand-sidebar-border,#DEE2E6)]" aria-hidden="true" />
             )}
             {!isSectionCollapsed && (
             <ul role="list" className="space-y-0.5">
@@ -478,7 +478,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </nav>
 
       {/* User area */}
-      <div className="border-t border-[#DEE2E6] p-3">
+      <div className="border-t border-[var(--brand-sidebar-border,#DEE2E6)] p-3">
         <div className="relative" data-user-menu>
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -511,7 +511,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
           {userMenuOpen && (
             <div
-              className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-[#DEE2E6] bg-white py-1 shadow-xl"
+              className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-[var(--brand-sidebar-border,#DEE2E6)] bg-white py-1 shadow-xl"
               role="menu"
               aria-label="User menu"
             >
@@ -543,13 +543,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Language selector */}
-      <div className="border-t border-[#DEE2E6] px-3 py-2">
+      <div className="border-t border-[var(--brand-sidebar-border,#DEE2E6)] px-3 py-2">
         <LanguageSelector currentLocale={locale} compact={collapsed} />
       </div>
 
       {/* Collapse toggle */}
       {onToggle && (
-        <div className="border-t border-[#DEE2E6] p-3">
+        <div className="border-t border-[var(--brand-sidebar-border,#DEE2E6)] p-3">
           <button
             onClick={onToggle}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}

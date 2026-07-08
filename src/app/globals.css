@@ -34,6 +34,15 @@
   --color-gray-800: #e6ebf3;
   --color-gray-900: #f2f5f9; /* headings / strongest text */
   --color-gray-950: #f8fafc;
+
+  /* Brand tint shades mix toward the dark canvas instead of white, so
+   * primary-tinted chips/tiles sit naturally on dark cards. (primary-50
+   * follows --brand-primary-light, re-derived per theme by the branding
+   * store; 500+ are the brand colors themselves and don't change.) */
+  --color-primary-100: color-mix(in srgb, var(--brand-primary, #91c53c) 24%, #0f1626);
+  --color-primary-200: color-mix(in srgb, var(--brand-primary, #91c53c) 34%, #0f1626);
+  --color-primary-300: color-mix(in srgb, var(--brand-primary, #91c53c) 48%, #0f1626);
+  --color-primary-400: color-mix(in srgb, var(--brand-primary, #91c53c) 70%, #0f1626);
 }
 
 /* Cards and other white surfaces become dark surfaces (slightly lighter
