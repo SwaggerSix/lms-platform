@@ -1,20 +1,19 @@
 'use client';
 
-import { Fragment, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import {
   Plus,
   Search,
   ClipboardCheck,
-  MoreHorizontal,
   Edit,
   Trash2,
   Eye,
-  ChevronDown,
-  ChevronRight,
   CheckCircle2,
   ListChecks,
   ToggleLeft,
@@ -113,8 +112,6 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
   const router = useRouter();
   const [assessments, setAssessments] = useState<Assessment[]>(initialAssessments);
   const [search, setSearch] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   // Modal states
   const [formOpen, setFormOpen] = useState(false);
@@ -162,7 +159,6 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
   }, []);
 
   const openEditModal = useCallback((assessment: Assessment) => {
-    setOpenMenu(null);
     setEditingId(assessment.id);
     // Find course_id by matching course title
     const matchedCourse = courses.find((c) => c.title === assessment.course);
@@ -279,7 +275,6 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
   }, [editingId, form, courses, closeModal, router]);
 
   const handleDeleteClick = useCallback((assessment: Assessment) => {
-    setOpenMenu(null);
     setDeleteConfirm(assessment);
   }, []);
 
@@ -305,7 +300,6 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
   }, [deleteConfirm, router]);
 
   const handlePreview = useCallback((assessment: Assessment) => {
-    setOpenMenu(null);
     router.push(`/learn/assessments/${assessment.id}`);
   }, [router]);
 
@@ -391,6 +385,112 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
     }
   }, [aiGeneratedQuestions, aiQuizTarget, router, toast]);
 
+  const assessmentColumns: DataTableColumn<Assessment>[] = [
+    {
+      key: 'title',
+      header: 'Title',
+      sortValue: (assessment) => assessment.title.toLowerCase(),
+      render: (assessment) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <ClipboardCheck className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">{assessment.title}</p>
+            <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset capitalize mt-0.5', statusBadge[assessment.status])}>
+              {assessment.status}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'course',
+      header: 'Course',
+      sortValue: (assessment) => assessment.course.toLowerCase(),
+      render: (assessment) => <span className="text-sm text-gray-500">{assessment.course}</span>,
+    },
+    {
+      key: 'questions',
+      header: 'Questions',
+      className: 'text-center',
+      sortValue: (assessment) => assessment.questionCount,
+      render: (assessment) => <span className="text-sm font-medium text-gray-900">{assessment.questionCount}</span>,
+    },
+    {
+      key: 'passing',
+      header: 'Passing',
+      className: 'text-center',
+      sortValue: (assessment) => assessment.passingScore,
+      render: (assessment) => <span className="text-sm text-gray-500">{assessment.passingScore}%</span>,
+    },
+    {
+      key: 'avgScore',
+      header: 'Avg Score',
+      className: 'text-center',
+      sortValue: (assessment) => assessment.avgScore,
+      render: (assessment) => (
+        <span className={cn('text-sm font-medium', assessment.avgScore >= assessment.passingScore ? 'text-green-600' : assessment.avgScore > 0 ? 'text-amber-600' : 'text-gray-500')}>
+          {assessment.avgScore > 0 ? `${assessment.avgScore}%` : '--'}
+        </span>
+      ),
+    },
+    {
+      key: 'attempts',
+      header: 'Attempts',
+      className: 'text-center',
+      sortValue: (assessment) => assessment.attempts,
+      render: (assessment) => (
+        <span className="text-sm text-gray-500">{assessment.attempts > 0 ? assessment.attempts.toLocaleString() : '--'}</span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      className: 'text-right',
+      render: (assessment) => (
+        <RowActionsMenu
+          label={`Actions for ${assessment.title}`}
+          actions={[
+            { label: 'Preview', icon: <Eye className="h-3.5 w-3.5" />, onSelect: () => handlePreview(assessment) },
+            { label: 'Settings', icon: <Edit className="h-3.5 w-3.5" />, onSelect: () => openEditModal(assessment), disabled: !!loadingAction },
+            { label: 'Edit Questions', icon: <ListChecks className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/assessments/${assessment.id}/edit`) },
+            { label: 'AI Questions', icon: <Sparkles className="h-3.5 w-3.5" />, onSelect: () => openAiQuizModal(assessment.id) },
+            { label: 'Delete', icon: <Trash2 className="h-3.5 w-3.5" />, onSelect: () => handleDeleteClick(assessment), disabled: !!loadingAction, destructive: true },
+          ]}
+        />
+      ),
+    },
+  ];
+
+  const renderQuestionsPreview = (assessment: Assessment) => (
+    <div>
+      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Questions Preview</h4>
+      <div className="space-y-2">
+        {assessment.questions.map((q, i) => {
+          const QIcon = questionTypeIcons[q.type];
+          return (
+            <div key={q.id} className="flex items-center gap-3 rounded-lg bg-white px-4 py-3 border border-gray-100">
+              <span className="text-xs font-bold text-gray-500 w-5">{i + 1}</span>
+              <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize', questionTypeBadge[q.type])}>
+                <QIcon className="h-3 w-3" aria-hidden="true" />
+                {q.type.replace('-', ' ')}
+              </span>
+              <p className="flex-1 text-sm text-gray-700">{q.text}</p>
+              <span className="text-xs text-gray-500">{q.points} pts</span>
+            </div>
+          );
+        })}
+        {assessment.questions.length === 0 && (
+          <p className="text-xs text-gray-500 py-2">No questions yet.</p>
+        )}
+        {assessment.questionCount > assessment.questions.length && (
+          <p className="text-xs text-gray-500 text-center py-2">+ {assessment.questionCount - assessment.questions.length} more questions</p>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -427,137 +527,28 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-8 px-4 py-3"></th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Course</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Questions</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Passing</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Avg Score</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Attempts</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filtered.map((assessment) => (
-              <Fragment key={assessment.id}>
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4">
-                    <button onClick={() => setExpandedId(expandedId === assessment.id ? null : assessment.id)} className="text-gray-400 hover:text-gray-600">
-                      {expandedId === assessment.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </button>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                        <ClipboardCheck className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{assessment.title}</p>
-                        <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset capitalize mt-0.5', statusBadge[assessment.status])}>
-                          {assessment.status}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{assessment.course}</td>
-                  <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">{assessment.questionCount}</td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-500">{assessment.passingScore}%</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={cn('text-sm font-medium', assessment.avgScore >= assessment.passingScore ? 'text-green-600' : assessment.avgScore > 0 ? 'text-amber-600' : 'text-gray-400')}>
-                      {assessment.avgScore > 0 ? `${assessment.avgScore}%` : '--'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center text-sm text-gray-500">{assessment.attempts > 0 ? assessment.attempts.toLocaleString() : '--'}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="relative inline-block">
-                      <button onClick={() => setOpenMenu(openMenu === assessment.id ? null : assessment.id)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </button>
-                      {openMenu === assessment.id && (
-                        <div className="absolute right-0 z-10 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                          <button
-                            onClick={() => handlePreview(assessment)}
-                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            <Eye className="h-3.5 w-3.5" /> Preview
-                          </button>
-                          <button
-                            onClick={() => openEditModal(assessment)}
-                            disabled={!!loadingAction}
-                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                          >
-                            <Edit className="h-3.5 w-3.5" /> Settings
-                          </button>
-                          <button
-                            onClick={() => { setOpenMenu(null); router.push(`/admin/assessments/${assessment.id}/edit`); }}
-                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            <ListChecks className="h-3.5 w-3.5" /> Edit Questions
-                          </button>
-                          <button
-                            onClick={() => { setOpenMenu(null); openAiQuizModal(assessment.id); }}
-                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
-                          >
-                            <Sparkles className="h-3.5 w-3.5" /> AI Questions
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(assessment)}
-                            disabled={!!loadingAction}
-                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                {expandedId === assessment.id && (
-                  <tr key={`${assessment.id}-detail`}>
-                    <td colSpan={8} className="bg-gray-50/50 px-10 py-4">
-                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Questions Preview</h4>
-                      <div className="space-y-2">
-                        {assessment.questions.map((q, i) => {
-                          const QIcon = questionTypeIcons[q.type];
-                          return (
-                            <div key={q.id} className="flex items-center gap-3 rounded-lg bg-white px-4 py-3 border border-gray-100">
-                              <span className="text-xs font-bold text-gray-400 w-5">{i + 1}</span>
-                              <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize', questionTypeBadge[q.type])}>
-                                <QIcon className="h-3 w-3" />
-                                {q.type.replace('-', ' ')}
-                              </span>
-                              <p className="flex-1 text-sm text-gray-700">{q.text}</p>
-                              <span className="text-xs text-gray-400">{q.points} pts</span>
-                            </div>
-                          );
-                        })}
-                        {assessment.questionCount > assessment.questions.length && (
-                          <p className="text-xs text-gray-400 text-center py-2">+ {assessment.questionCount - assessment.questions.length} more questions</p>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-6 py-12 text-center">
-                  <ClipboardCheck className="mx-auto h-8 w-8 text-gray-300" />
-                  <p className="mt-2 text-sm font-medium text-gray-500">No assessments found</p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    {search ? 'Try adjusting your search terms.' : 'Create your first assessment to get started.'}
-                  </p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={assessmentColumns}
+        rows={filtered}
+        rowKey={(assessment) => assessment.id}
+        ariaLabel="Assessments"
+        renderExpanded={renderQuestionsPreview}
+        emptyState={
+          assessments.length === 0
+            ? {
+                icon: <ClipboardCheck className="h-10 w-10" aria-hidden="true" />,
+                title: 'No assessments yet',
+                description: 'Create your first assessment to get started.',
+                action: (
+                  <Button onClick={openCreateModal}>
+                    <Plus className="h-4 w-4" />
+                    Create Assessment
+                  </Button>
+                ),
+              }
+            : undefined
+        }
+      />
 
       {/* Create / Edit Modal */}
       {formOpen && (

@@ -6,6 +6,8 @@ import { cn } from '@/utils/cn';
 import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHelp } from "@/lib/help-content";
@@ -14,8 +16,6 @@ import {
   Plus,
   LayoutGrid,
   List,
-  Filter,
-  MoreHorizontal,
   Edit,
   Copy,
   Archive,
@@ -35,7 +35,6 @@ import {
   FolderOpen,
   Image as ImageIcon,
 } from 'lucide-react';
-import Link from 'next/link';
 import { CourseCover } from '@/components/course/course-cover';
 
 export interface CourseItem {
@@ -116,7 +115,6 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [difficultyFilter, setDifficultyFilter] = useState('All Levels');
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
@@ -136,7 +134,6 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   // --- Action handlers ---
 
   const handleEdit = useCallback(async (course: CourseItem) => {
-    setOpenMenu(null);
     setEditModal(course);
     setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty, availableFrom: course.availableFrom ? course.availableFrom.slice(0, 10) : null, availableUntil: course.availableUntil ? course.availableUntil.slice(0, 10) : null });
     setNasbaForm(NASBA_EMPTY);
@@ -261,7 +258,6 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   }, [editModal, toast]);
 
   const handleDuplicate = useCallback(async (course: CourseItem) => {
-    setOpenMenu(null);
     setLoadingAction({ id: course.id, action: 'duplicate' });
     try {
       // Send only real, correctly-named columns to the API.
@@ -308,7 +304,6 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
   }, []);
 
   const handleArchive = useCallback((course: CourseItem) => {
-    setOpenMenu(null);
     setArchiveConfirm(course);
   }, []);
 
@@ -356,6 +351,106 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   };
+
+  const courseColumns: DataTableColumn<CourseItem>[] = [
+    {
+      key: 'course',
+      header: 'Course',
+      sortValue: (course) => course.title.toLowerCase(),
+      render: (course) => (
+        <div className="flex items-center gap-3">
+          <CourseCover
+            thumbnailUrl={course.coverUrl}
+            title={course.title}
+            gradientClassName={course.thumbnail}
+            className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center"
+            scrim={false}
+          >
+            {!course.coverUrl && <BookOpen className="h-4 w-4 text-white/70" />}
+          </CourseCover>
+          <div>
+            <p className="text-sm font-medium text-gray-900">{course.title}</p>
+            <p className="text-xs text-gray-500">{course.category}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortValue: (course) => course.status,
+      render: (course) => (
+        <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[course.status])}>{course.status}</span>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      sortValue: (course) => course.type,
+      render: (course) => (
+        <span className={cn('whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium capitalize', typeBadge[course.type])}>{course.type.replace('-', ' ')}</span>
+      ),
+    },
+    {
+      key: 'enrolled',
+      header: 'Enrolled',
+      sortValue: (course) => course.enrolled,
+      render: (course) => <span className="text-sm text-gray-500">{formatNumber(course.enrolled)}</span>,
+    },
+    {
+      key: 'completion',
+      header: 'Completion',
+      sortValue: (course) => course.completionRate,
+      render: (course) => (
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-20 rounded-full bg-gray-100">
+            <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#91C53C' }} />
+          </div>
+          <span className="text-xs text-gray-500">{formatPercent(course.completionRate)}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'duration',
+      header: 'Duration',
+      sortValue: (course) => course.duration,
+      render: (course) => (
+        <div className="text-sm text-gray-500">
+          <div>{formatDuration(course.duration)}</div>
+          {course.updatedAt && (
+            <div className="mt-0.5 text-xs text-gray-500">Updated {formatDate(course.updatedAt)}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      className: 'text-right',
+      render: (course) => (
+        <RowActionsMenu
+          label={`Actions for ${course.title}`}
+          actions={[
+            { label: 'Edit', icon: <Edit className="h-3.5 w-3.5" />, onSelect: () => handleEdit(course), disabled: !!loadingAction },
+            {
+              label: 'Duplicate',
+              icon: isLoading(course.id, 'duplicate') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Copy className="h-3.5 w-3.5" />,
+              onSelect: () => handleDuplicate(course),
+              disabled: !!loadingAction,
+            },
+            {
+              label: 'Archive',
+              icon: isLoading(course.id, 'archive') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />,
+              onSelect: () => handleArchive(course),
+              disabled: !!loadingAction || course.status === 'archived',
+            },
+            { label: 'Course Content', icon: <FolderOpen className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/courses/${course.slug}/resources`) },
+            { label: 'One-Pager', icon: <FileText className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/courses/${course.slug}/one-pager`) },
+          ]}
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -445,7 +540,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       </div>
 
       {/* Empty state */}
-      {paginatedCourses.length === 0 && (
+      {filtered.length === 0 && (
         <EmptyState
           icon={<BookOpen className="h-10 w-10" aria-hidden="true" />}
           title="No courses found"
@@ -467,7 +562,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       )}
 
       {/* Grid View */}
-      {paginatedCourses.length === 0 ? null : viewMode === 'grid' ? (
+      {filtered.length === 0 ? null : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {paginatedCourses.map((course) => (
             <div key={course.id} className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -542,85 +637,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         </div>
       ) : (
         /* List View */
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Course</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Enrolled</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Completion</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Duration</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {paginatedCourses.map((course) => (
-                <tr key={course.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <CourseCover
-                        thumbnailUrl={course.coverUrl}
-                        title={course.title}
-                        gradientClassName={course.thumbnail}
-                        className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center"
-                        scrim={false}
-                      >
-                        {!course.coverUrl && <BookOpen className="h-4 w-4 text-white/70" />}
-                      </CourseCover>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                        <p className="text-xs text-gray-400">{course.category}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize', statusBadge[course.status])}>{course.status}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium capitalize', typeBadge[course.type])}>{course.type.replace('-', ' ')}</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatNumber(course.enrolled)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 rounded-full bg-gray-100">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${course.completionRate}%`, backgroundColor: course.completionRate === 100 ? '#22c55e' : '#91C53C' }} />
-                      </div>
-                      <span className="text-xs text-gray-500">{formatPercent(course.completionRate)}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div>{formatDuration(course.duration)}</div>
-                    {course.updatedAt && (
-                      <div className="mt-0.5 text-xs text-gray-400">Updated {formatDate(course.updatedAt)}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="relative inline-block">
-                      <button onClick={() => setOpenMenu(openMenu === course.id ? null : course.id)} aria-label="Course actions" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
-                        <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                      {openMenu === course.id && (
-                        <div className="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                          <button onClick={() => handleEdit(course)} disabled={!!loadingAction} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"><Edit className="h-3.5 w-3.5" /> Edit</button>
-                          <button onClick={() => handleDuplicate(course)} disabled={!!loadingAction} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
-                            {isLoading(course.id, 'duplicate') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Copy className="h-3.5 w-3.5" />} Duplicate
-                          </button>
-                          <button onClick={() => handleArchive(course)} disabled={!!loadingAction || course.status === 'archived'} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
-                            {isLoading(course.id, 'archive') ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />} Archive
-                          </button>
-                          <Link href={`/admin/courses/${course.slug}/resources`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FolderOpen className="h-3.5 w-3.5" /> Course Content</Link>
-                          <Link href={`/admin/courses/${course.slug}/one-pager`} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"><FileText className="h-3.5 w-3.5" /> One-Pager</Link>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={courseColumns}
+          rows={filtered}
+          rowKey={(course) => course.id}
+          pageSize={12}
+          ariaLabel="Courses"
+        />
       )}
 
       {/* Edit Modal */}
@@ -915,8 +938,8 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         </div>
       )}
 
-      {/* Pagination */}
-      {filtered.length > 0 && (
+      {/* Pagination (grid view; the list view paginates inside DataTable) */}
+      {viewMode === 'grid' && filtered.length > 0 && (
         <div className="flex items-center justify-between mt-6">
           <p className="text-sm text-gray-500">
             Showing {showStart + 1}-{showEnd} of {filtered.length} courses
