@@ -335,7 +335,7 @@ export default function XAPIClient({
             onClick={() => setActiveTab("connections")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "connections"
-                ? "border-blue-600 text-blue-600"
+                ? "border-primary-600 text-primary-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -348,7 +348,7 @@ export default function XAPIClient({
             onClick={() => setActiveTab("explorer")}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "explorer"
-                ? "border-blue-600 text-blue-600"
+                ? "border-primary-600 text-primary-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -375,7 +375,7 @@ export default function XAPIClient({
                     resetForm();
                     setView("add");
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add Connection
@@ -394,7 +394,7 @@ export default function XAPIClient({
                       resetForm();
                       setView("add");
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Add Connection
@@ -460,7 +460,7 @@ export default function XAPIClient({
                             <button
                               onClick={() => handleSync(config.id, "push")}
                               disabled={syncing === config.id}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
                             >
                               {syncing === config.id ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -544,7 +544,7 @@ export default function XAPIClient({
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g., Company LRS, Watershed, Learning Locker"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
@@ -558,7 +558,7 @@ export default function XAPIClient({
                     value={formEndpoint}
                     onChange={(e) => setFormEndpoint(e.target.value)}
                     placeholder="https://lrs.example.com/xapi"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
@@ -570,7 +570,7 @@ export default function XAPIClient({
                   <select
                     value={formAuthType}
                     onChange={(e) => setFormAuthType(e.target.value as "basic" | "oauth")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="basic">Basic Authentication</option>
                     <option value="oauth">OAuth / Bearer Token</option>
@@ -588,7 +588,7 @@ export default function XAPIClient({
                         type="text"
                         value={formUsername}
                         onChange={(e) => setFormUsername(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     <div>
@@ -602,7 +602,7 @@ export default function XAPIClient({
                         type="password"
                         value={formPassword}
                         onChange={(e) => setFormPassword(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                   </div>
@@ -621,7 +621,7 @@ export default function XAPIClient({
                       type="password"
                       value={formToken}
                       onChange={(e) => setFormToken(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                 )}
@@ -634,7 +634,7 @@ export default function XAPIClient({
                   <select
                     value={formSyncDirection}
                     onChange={(e) => setFormSyncDirection(e.target.value as "push" | "pull" | "both")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="push">Push (send statements to LRS)</option>
                     <option value="pull">Pull (import statements from LRS)</option>
@@ -648,7 +648,7 @@ export default function XAPIClient({
                     type="button"
                     onClick={() => setFormIsActive(!formIsActive)}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
-                      formIsActive ? "bg-blue-600" : "bg-gray-200"
+                      formIsActive ? "bg-primary-600" : "bg-gray-200"
                     }`}
                   >
                     <span
@@ -667,7 +667,7 @@ export default function XAPIClient({
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
                   >
                     {saving ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -708,7 +708,7 @@ export default function XAPIClient({
                   <Filter className="w-3.5 h-3.5" />
                   Filters
                   {(filterVerb || filterActivity || filterSince || filterUntil) && (
-                    <span className="bg-blue-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">
+                    <span className="bg-primary-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">
                       !
                     </span>
                   )}
@@ -716,7 +716,7 @@ export default function XAPIClient({
                 <button
                   onClick={() => fetchStatements(1)}
                   disabled={statementsLoading}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
                 >
                   {statementsLoading ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -738,7 +738,7 @@ export default function XAPIClient({
                       value={filterVerb}
                       onChange={(e) => setFilterVerb(e.target.value)}
                       placeholder="e.g., http://adlnet.gov/..."
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div>
@@ -748,7 +748,7 @@ export default function XAPIClient({
                       value={filterActivity}
                       onChange={(e) => setFilterActivity(e.target.value)}
                       placeholder="Activity ID"
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div>
@@ -757,7 +757,7 @@ export default function XAPIClient({
                       type="datetime-local"
                       value={filterSince}
                       onChange={(e) => setFilterSince(e.target.value)}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                   <div>
@@ -766,14 +766,14 @@ export default function XAPIClient({
                       type="datetime-local"
                       value={filterUntil}
                       onChange={(e) => setFilterUntil(e.target.value)}
-                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => fetchStatements(1)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 rounded hover:bg-primary-700 transition-colors"
                   >
                     <Search className="w-3 h-3" />
                     Apply Filters

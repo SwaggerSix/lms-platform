@@ -139,7 +139,7 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
             setProductForm({ ...emptyProductForm });
             setShowProductForm((s) => !s);
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700"
         >
           <Plus className="h-4 w-4" /> Add product
         </button>
@@ -305,7 +305,7 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+              className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-60"
             >
               {saving ? "Saving…" : editingId ? "Save changes" : "Add product"}
             </button>
@@ -378,7 +378,7 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <button
                       onClick={() => startEdit(p)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600"
+                      className="p-1.5 text-gray-400 hover:text-primary-600"
                       aria-label="Edit"
                     >
                       <Pencil className="h-4 w-4" />

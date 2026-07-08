@@ -54,7 +54,7 @@ export default function ImportTab({ storeId, onReload }: ImportTabProps) {
         <li>Upload that file below. Products are matched by name/SKU, so re-importing updates rather than duplicates.</li>
         <li>Review the products in the Products tab and tidy up anything that needs it.</li>
       </ol>
-      <label className="mt-6 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-10 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
+      <label className="mt-6 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-10 cursor-pointer hover:border-primary-400 hover:bg-primary-50/40 transition-colors">
         <Upload className="h-7 w-7 text-gray-400" />
         <span className="text-sm font-medium">
           {importing ? "Importing…" : "Click to choose your CSV file"}

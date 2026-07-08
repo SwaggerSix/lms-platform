@@ -85,7 +85,7 @@ export default function DiscountsTab({ storeId, volumeDiscountsEnabled, notify }
             placeholder="e.g. 10"
           />
         </div>
-        <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+        <button type="submit" className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700">
           Add tier
         </button>
       </form>

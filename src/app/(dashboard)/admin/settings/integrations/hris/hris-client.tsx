@@ -301,7 +301,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
           </div>
           <button
             onClick={() => { resetWizard(); setView("add"); }}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add Integration
@@ -312,7 +312,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
         <div className="grid grid-cols-3 gap-4">
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex items-center gap-2">
-              <Plug className="h-5 w-5 text-blue-500" />
+              <Plug className="h-5 w-5 text-primary-500" />
               <div>
                 <p className="text-2xl font-bold text-gray-900">{integrations.length}</p>
                 <p className="text-xs text-gray-500">Total Integrations</p>
@@ -373,7 +373,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
             <p className="mt-1 text-sm text-gray-500">Connect your HRIS or CRM to sync user data</p>
             <button
               onClick={() => { resetWizard(); setView("add"); }}
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="mt-4 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
             >
               Add Your First Integration
             </button>
@@ -409,7 +409,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
               <div className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold",
                 wizardStep === step
-                  ? "bg-blue-600 text-white"
+                  ? "bg-primary-600 text-white"
                   : (["provider", "credentials", "mappings", "review"].indexOf(wizardStep) > i)
                   ? "bg-green-100 text-green-700"
                   : "bg-gray-100 text-gray-400"
@@ -485,7 +485,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                 type="text"
                 value={newIntegration.name}
                 onChange={(e) => setNewIntegration((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
               />
             </div>
 
@@ -501,7 +501,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                         config: { ...prev.config, [field.key]: e.target.value },
                       }))
                     }
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none bg-white"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none bg-white"
                   >
                     {field.options?.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -520,7 +520,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                       }))
                     }
                     placeholder={field.placeholder}
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
                   />
                 )}
                 {field.help && (
@@ -535,7 +535,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                 <select
                   value={newIntegration.sync_direction}
                   onChange={(e) => setNewIntegration((prev) => ({ ...prev, sync_direction: e.target.value }))}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
                 >
                   <option value="import">Import Only</option>
                   <option value="export">Export Only</option>
@@ -547,7 +547,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                 <select
                   value={newIntegration.sync_frequency}
                   onChange={(e) => setNewIntegration((prev) => ({ ...prev, sync_frequency: e.target.value }))}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 outline-none"
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 outline-none"
                 >
                   <option value="manual">Manual</option>
                   <option value="hourly">Hourly</option>
@@ -585,7 +585,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
               </button>
               <button
                 onClick={() => setWizardStep("review")}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
               >
                 Continue
               </button>
@@ -638,7 +638,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
               <button
                 onClick={handleCreate}
                 disabled={creating}
-                className="flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-md bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
               >
                 {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Create Integration
@@ -688,7 +688,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
               className={cn(
                 "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
                 configTab === tab.id
-                  ? "border-blue-600 text-blue-600"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               )}
             >
