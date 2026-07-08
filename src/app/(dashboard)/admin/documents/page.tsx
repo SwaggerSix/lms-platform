@@ -7,7 +7,7 @@ import type {
   FolderWithMeta,
   AcknowledgmentWithUser,
   VersionHistoryEntry,
-} from "./documents-client";
+} from "./documents-types";
 
 export default async function AdminDocumentsPage() {
   const supabase = await createClient();
