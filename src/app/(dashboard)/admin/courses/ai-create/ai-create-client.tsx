@@ -55,7 +55,7 @@ export default function AICreateClient({ hasApiKey }: { hasApiKey: boolean }) {
       <div className="mx-auto max-w-2xl py-16">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-amber-500" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-900">OpenAI API Key Not Configured</h2>
+          <h2 className="mt-4 text-lg font-semibold text-gray-900">Anthropic API Key Not Configured</h2>
           <p className="mt-2 text-sm text-gray-600">
             To use AI course creation, you need to set the <code className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-mono">ANTHROPIC_API_KEY</code> environment variable in your server configuration.
           </p>

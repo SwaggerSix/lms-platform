@@ -5,10 +5,7 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronRight,
-  Download,
   Eye,
-  Pencil,
-  Play,
   Trash2,
   Users,
   XCircle,
@@ -176,23 +173,12 @@ export default function SchedulesTable({
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <button
-                        title="Edit"
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        title="Run Now"
-                        className="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-                      >
-                        <Play className="h-4 w-4" />
-                      </button>
-                      <button
                         title="Delete"
                         onClick={() => onDelete(report.id)}
                         className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete {report.name}</span>
                       </button>
                     </div>
                   </td>
@@ -241,21 +227,16 @@ export default function SchedulesTable({
                       <td className="px-4 py-2.5 text-right text-sm text-gray-500">{entry.fileSize}</td>
                       <td className="px-4 py-2.5 text-right">
                         {entry.status === "success" ? (
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const parent = reports.find((r) => r.id === expandedReport);
-                                if (parent) onViewRun(parent, entry);
-                              }}
-                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
-                            >
-                              <Eye className="h-3 w-3" /> View
-                            </button>
-                            <button className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
-                              <Download className="h-3 w-3" /> Download
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const parent = reports.find((r) => r.id === expandedReport);
+                              if (parent) onViewRun(parent, entry);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                          >
+                            <Eye className="h-3 w-3" /> View
+                          </button>
                         ) : (
                           <span className="text-xs text-gray-400">N/A</span>
                         )}

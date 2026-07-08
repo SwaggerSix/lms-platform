@@ -71,11 +71,12 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
 
   // Stats
   const activeCount = reports.filter((r) => r.is_active).length;
+  const now = new Date();
   const reportsSentThisMonth = reports
     .flatMap((r) => r.runHistory)
     .filter((h) => {
       const d = new Date(h.runDate);
-      return d.getMonth() === 2 && d.getFullYear() === 2026 && h.status === "success";
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && h.status === "success";
     }).length;
   const nextScheduled = reports
     .filter((r) => r.is_active && r.next_run_at)
