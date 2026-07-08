@@ -157,7 +157,7 @@ export default function SchedulesTable({
                       aria-label={`${report.name} active`}
                       className={cn(
                         "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                        report.is_active ? "bg-indigo-600" : "bg-gray-300"
+                        report.is_active ? "bg-primary-600" : "bg-gray-300"
                       )}
                     >
                       <span
@@ -233,7 +233,7 @@ export default function SchedulesTable({
                               const parent = reports.find((r) => r.id === expandedReport);
                               if (parent) onViewRun(parent, entry);
                             }}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-primary-600 hover:bg-primary-50 transition-colors"
                           >
                             <Eye className="h-3 w-3" /> View
                           </button>

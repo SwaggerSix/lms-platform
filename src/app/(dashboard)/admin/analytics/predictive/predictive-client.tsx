@@ -126,7 +126,7 @@ export default function PredictiveAnalyticsClient({
               onClick={() => setActiveTab(tab.key as any)}
               className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? "border-indigo-600 text-indigo-600"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               }`}
             >
@@ -306,7 +306,7 @@ export default function PredictiveAnalyticsClient({
                       {!alert.is_read && (
                         <button
                           onClick={() => markAlertRead(alert.id)}
-                          className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                         >
                           Mark Read
                         </button>

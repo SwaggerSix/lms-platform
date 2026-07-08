@@ -218,7 +218,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
               className={cn(
                 "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                 dateRange === range
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-primary-600 text-white"
                   : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
               )}
             >
@@ -253,7 +253,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
         <div className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
             <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-indigo-600" />
+              <BarChart3 className="h-5 w-5 text-primary-600" />
               <h2 className="text-lg font-semibold text-gray-900">Team Progress Report</h2>
             </div>
             <Button variant="outline" size="sm" onClick={handleExportTableCSV}>
@@ -290,7 +290,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                   <tr key={member.name} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
                           {member.initials}
                         </div>
                         <span className="text-sm font-medium text-gray-900">{member.name}</span>
@@ -328,8 +328,8 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="rounded-lg bg-indigo-50 p-2.5">
-                  <BarChart3 className="h-5 w-5 text-indigo-600" />
+                <div className="rounded-lg bg-primary-50 p-2.5">
+                  <BarChart3 className="h-5 w-5 text-primary-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Team Completion Report</h3>
@@ -355,7 +355,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                   {data.teamMembers.map((m) => (
                     <div key={m.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
                           {m.initials}
                         </div>
                         <span className="text-sm text-gray-900">{m.name}</span>
@@ -404,7 +404,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                   {data.teamMembers.map((m) => (
                     <div key={m.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
                           {m.initials}
                         </div>
                         <span className="text-sm text-gray-900">{m.name}</span>
@@ -467,7 +467,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
                   return (
                     <div key={month.month} className="flex flex-1 flex-col items-center gap-1">
                       <div className="flex items-end gap-0.5" style={{ height: 100 }}>
-                        <div className="w-4 rounded-t bg-indigo-400 transition-all" style={{ height: `${barHeight}%` }} title={`${month.hours}h`} />
+                        <div className="w-4 rounded-t bg-primary-400 transition-all" style={{ height: `${barHeight}%` }} title={`${month.hours}h`} />
                         <div className="w-4 rounded-t bg-green-400 transition-all" style={{ height: `${compHeight}%` }} title={`${month.completions}`} />
                       </div>
                       <span className="text-[10px] font-medium text-gray-500">{month.month}</span>
@@ -477,7 +477,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
               </div>
               <div className="mt-3 flex items-center justify-center gap-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded bg-indigo-400" />
+                  <div className="h-2.5 w-2.5 rounded bg-primary-400" />
                   <span className="text-xs text-gray-500">Learning Hours</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -602,7 +602,7 @@ export default function ReportsClient({ data }: { data: ReportsData }) {
           <button
             onClick={handleExportAll}
             disabled={exportingAll}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             {exportingAll ? (
               <Loader2 className="h-4 w-4 animate-spin" />

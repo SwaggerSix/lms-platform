@@ -211,7 +211,7 @@ export default function DescribeStep({ options, onOptionsChange, onGenerated }: 
       <button
         onClick={handleGenerate}
         disabled={generating}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-primary-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
       >
         {generating ? (
           <>

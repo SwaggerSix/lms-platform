@@ -203,10 +203,10 @@ export default function CreateCoursePage() {
       </div>
 
       {/* AI Assist Banner */}
-      <div className="rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-4">
+      <div className="rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-primary-50 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-primary-600">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -216,7 +216,7 @@ export default function CreateCoursePage() {
           </div>
           <a
             href="/admin/courses/ai-create"
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-primary-700 transition-all"
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
@@ -235,7 +235,7 @@ export default function CreateCoursePage() {
                   step > s.num
                     ? 'bg-green-500 text-white'
                     : step === s.num
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-primary-600 text-white'
                       : 'bg-gray-100 text-gray-400'
                 )}
               >

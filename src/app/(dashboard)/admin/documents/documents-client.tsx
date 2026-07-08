@@ -216,8 +216,8 @@ export default function DocumentsClient({
         <div className="grid grid-cols-3 gap-4 mt-5">
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <FileStack className="h-5 w-5 text-indigo-600" />
+              <div className="p-2 bg-primary-100 rounded-lg">
+                <FileStack className="h-5 w-5 text-primary-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
@@ -285,7 +285,7 @@ export default function DocumentsClient({
                 placeholder="Search documents..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
 
@@ -299,7 +299,7 @@ export default function DocumentsClient({
                     if (e.target.value) handleBulkMove(e.target.value);
                   }}
                   defaultValue=""
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="" disabled>
                     Move to...
@@ -325,7 +325,7 @@ export default function DocumentsClient({
             <nav className="flex items-center gap-1 text-sm text-gray-500 mb-4">
               <button
                 onClick={() => selectFolder(null)}
-                className="hover:text-indigo-600"
+                className="hover:text-primary-600"
               >
                 All Documents
               </button>

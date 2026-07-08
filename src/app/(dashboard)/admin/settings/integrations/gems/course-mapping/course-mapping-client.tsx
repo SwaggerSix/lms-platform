@@ -171,7 +171,7 @@ export default function CourseMappingClient({
         </Link>
         <h1 className="mt-2 text-2xl font-semibold text-gray-900">
           GEMS Course Mapping{" "}
-          <span className="ml-2 inline-block rounded-full bg-indigo-100 px-2 py-0.5 align-middle text-xs font-medium text-indigo-700">
+          <span className="ml-2 inline-block rounded-full bg-primary-100 px-2 py-0.5 align-middle text-xs font-medium text-primary-700">
             {catalog.length} GEMS courses available
           </span>
         </h1>
@@ -200,7 +200,7 @@ export default function CourseMappingClient({
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Search courses…"
-            className="w-full rounded border border-gray-300 px-8 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded border border-gray-300 px-8 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <label className="inline-flex items-center gap-1.5 text-sm text-gray-700">
@@ -262,7 +262,7 @@ export default function CourseMappingClient({
             }))
           }
           aria-label={`GEMS course code for ${c.title}`}
-          className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
           <option value="">— Not mapped —</option>
           {catalog?.map((cat) => (

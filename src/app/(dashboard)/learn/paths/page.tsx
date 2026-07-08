@@ -6,7 +6,7 @@ import PathsClient from "./paths-client";
 import type { LearningPath } from "./paths-client";
 
 const GRADIENT_PALETTE = [
-  "from-purple-500 to-indigo-600",
+  "from-purple-500 to-primary-600",
   "from-emerald-500 to-teal-600",
   "from-orange-500 to-red-600",
   "from-pink-500 to-rose-600",

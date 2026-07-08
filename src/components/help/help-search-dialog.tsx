@@ -147,9 +147,9 @@ export function HelpSearchDialog({ open, onClose }: { open: boolean; onClose: ()
                     key={m.role}
                     href={`/help/${m.role}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
+                    className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-primary-300 hover:bg-primary-50"
                   >
-                    <BookOpen className="h-4 w-4 text-indigo-600" />
+                    <BookOpen className="h-4 w-4 text-primary-600" />
                     {ROLE_LABELS[m.role]}
                   </Link>
                 ))}
@@ -172,9 +172,9 @@ export function HelpSearchDialog({ open, onClose }: { open: boolean; onClose: ()
                     >
                       <span className="mt-0.5">
                         {r.entry.kind === "faq" ? (
-                          <HelpCircle className="h-4 w-4 text-indigo-500" />
+                          <HelpCircle className="h-4 w-4 text-primary-500" />
                         ) : (
-                          <BookOpen className="h-4 w-4 text-indigo-500" />
+                          <BookOpen className="h-4 w-4 text-primary-500" />
                         )}
                       </span>
                       <div className="min-w-0">

@@ -49,7 +49,7 @@ const PROVIDERS = [
   { id: "adp", name: "ADP", type: "hris", description: "Sync HR data from ADP Workforce Now", color: "border-red-200 bg-red-50 hover:bg-red-100" },
   { id: "salesforce", name: "Salesforce", type: "crm", description: "Sync contacts and push training data", color: "border-blue-200 bg-blue-50 hover:bg-blue-100" },
   { id: "hubspot", name: "HubSpot", type: "crm", description: "Sync contacts and training data with HubSpot", color: "border-orange-200 bg-orange-50 hover:bg-orange-100" },
-  { id: "gems", name: "GEMS", type: "scheduling", description: "Import training events from GEMS as ILT sessions", color: "border-indigo-200 bg-indigo-50 hover:bg-indigo-100" },
+  { id: "gems", name: "GEMS", type: "scheduling", description: "Import training events from GEMS as ILT sessions", color: "border-primary-200 bg-primary-50 hover:bg-primary-100" },
   { id: "sharepoint_rosters", name: "SharePoint Rosters", type: "documents", description: "Import attendee rosters from SharePoint .xlsx files", color: "border-cyan-200 bg-cyan-50 hover:bg-cyan-100" },
   { id: "custom_webhook", name: "Custom Webhook", type: "hr_system", description: "Connect via custom webhook", color: "border-gray-200 bg-gray-50 hover:bg-gray-100" },
 ];
@@ -347,7 +347,7 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
         {integrations.some((i) => i.provider === "gems") && (
           <a
             href="/admin/settings/integrations/gems/course-mapping"
-            className="mb-4 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+            className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-100"
           >
             Map existing LMS courses to GEMS course codes →
           </a>

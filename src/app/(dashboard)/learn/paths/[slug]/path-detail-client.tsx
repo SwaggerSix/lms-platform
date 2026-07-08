@@ -130,7 +130,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                           course.status === "completed"
                             ? "bg-green-400"
                             : course.status === "in_progress"
-                            ? "bg-indigo-300"
+                            ? "bg-primary-300"
                             : "border-l-2 border-dashed border-gray-300"
                         )}
                         style={{ height: "calc(100% - 2.5rem)" }}
@@ -144,7 +144,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                           <CheckCircle2 className="h-5 w-5" />
                         </div>
                       ) : course.status === "in_progress" ? (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-600 text-white">
                           <span className="text-sm font-bold">{course.sequence}</span>
                         </div>
                       ) : (
@@ -159,7 +159,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                       className={cn(
                         "flex-1 rounded-xl border bg-white p-5 shadow-sm",
                         course.status === "in_progress"
-                          ? "border-indigo-200 ring-1 ring-indigo-100"
+                          ? "border-primary-200 ring-1 ring-primary-100"
                           : course.status === "completed"
                           ? "border-green-200"
                           : "border-gray-200"
@@ -187,11 +187,11 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                         <div className="mt-4">
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-500">Progress</span>
-                            <span className="font-medium text-indigo-600">{course.progress}%</span>
+                            <span className="font-medium text-primary-600">{course.progress}%</span>
                           </div>
                           <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-200">
                             <div
-                              className="h-full rounded-full bg-indigo-600"
+                              className="h-full rounded-full bg-primary-600"
                               style={{ width: `${course.progress}%` }}
                             />
                           </div>
@@ -207,7 +207,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                       {course.status === "in_progress" && (
                         <Link
                           href={`/learn/player/${course.id}?from=/learn/paths/${path.slug}`}
-                          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
                         >
                           Continue Learning
                         </Link>
@@ -279,7 +279,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                     <button
                       onClick={handleEnroll}
                       disabled={enrolling}
-                      className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                      className="w-full rounded-lg bg-primary-600 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50"
                     >
                       {enrolling ? "Enrolling…" : "Enroll in Path"}
                     </button>
@@ -297,7 +297,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                   {path.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600"
+                      className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-600"
                     >
                       {skill}
                     </span>

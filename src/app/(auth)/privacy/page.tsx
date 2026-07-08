@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage() {
     <div className="rounded-2xl bg-white p-8 shadow-2xl">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-200">
           <GraduationCap className="h-8 w-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Privacy Policy</h1>
@@ -113,21 +113,21 @@ export default function PrivacyPolicyPage() {
         <div className="flex items-center gap-3 text-sm">
           <Link
             href="/login"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
+            className="font-semibold text-primary-600 hover:text-primary-700"
           >
             Sign in
           </Link>
           <span className="text-gray-300">|</span>
           <Link
             href="/register"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
+            className="font-semibold text-primary-600 hover:text-primary-700"
           >
             Register
           </Link>
           <span className="text-gray-300">|</span>
           <Link
             href="/terms"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
+            className="font-semibold text-primary-600 hover:text-primary-700"
           >
             Terms of Service
           </Link>

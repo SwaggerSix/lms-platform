@@ -194,7 +194,7 @@ export function FileUpload({
         className={cn(
           "relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-8 transition-colors",
           isDragging
-            ? "border-indigo-500 bg-indigo-50"
+            ? "border-primary-500 bg-primary-50"
             : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
         )}
         onDragOver={(e) => {
@@ -255,7 +255,7 @@ export function FileUpload({
                     {file.status === "uploading" && (
                       <div className="h-1.5 flex-1 rounded-full bg-gray-200">
                         <div
-                          className="h-full rounded-full bg-indigo-500 transition-all"
+                          className="h-full rounded-full bg-primary-500 transition-all"
                           style={{ width: `${file.progress}%` }}
                         />
                       </div>
@@ -267,7 +267,7 @@ export function FileUpload({
                 </div>
                 <div className="shrink-0">
                   {file.status === "uploading" && (
-                    <Loader2 className="h-4 w-4 animate-spin text-indigo-500" aria-label="Uploading" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary-500" aria-label="Uploading" />
                   )}
                   {file.status === "success" && (
                     <CheckCircle className="h-4 w-4 text-green-500" aria-label="Upload complete" />

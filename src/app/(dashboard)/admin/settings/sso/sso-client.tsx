@@ -346,7 +346,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   onChange={(e) => setFormName(e.target.value)}
                   required
                   placeholder="e.g. Okta, Azure AD, OneLogin"
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -356,7 +356,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                 <select
                   value={formType}
                   onChange={(e) => setFormType(e.target.value as "saml" | "oidc")}
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="saml">SAML 2.0</option>
                   <option value="oidc">OIDC</option>
@@ -371,7 +371,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   value={formEntityId}
                   onChange={(e) => setFormEntityId(e.target.value)}
                   placeholder="https://idp.example.com/entity-id"
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -383,7 +383,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   value={formMetadataUrl}
                   onChange={(e) => setFormMetadataUrl(e.target.value)}
                   placeholder="https://idp.example.com/saml/metadata"
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -396,7 +396,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   onChange={(e) => setFormDomain(e.target.value)}
                   required
                   placeholder="acme.com"
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Users with this email domain will be routed to this SSO provider during login.
@@ -414,7 +414,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   type="checkbox"
                   checked={formAutoProvision}
                   onChange={(e) => setFormAutoProvision(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
                 <div>
                   <span className="text-sm font-medium text-gray-700">
@@ -433,7 +433,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                 <select
                   value={formDefaultRole}
                   onChange={(e) => setFormDefaultRole(e.target.value)}
-                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   {roles.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -468,7 +468,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                       }))
                     }
                     placeholder={`IdP attribute for ${field.replace(/_/g, " ")}`}
-                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               ))}
@@ -528,7 +528,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {view === "add" ? "Create Provider" : "Save Changes"}
@@ -556,7 +556,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <Link href="/admin/settings" className="hover:text-indigo-600">
+            <Link href="/admin/settings" className="hover:text-primary-600">
               Settings
             </Link>
             <span>/</span>
@@ -764,7 +764,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   <button
                     onClick={() => handleGenerateScimToken(provider.id)}
                     disabled={generatingToken === provider.id}
-                    className="ml-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                    className="ml-1 text-xs font-medium text-primary-600 hover:text-primary-800 disabled:opacity-50"
                   >
                     {generatingToken === provider.id ? (
                       <Loader2 className="inline h-3 w-3 animate-spin" />
@@ -790,7 +790,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                     href={provider.metadata_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800"
+                    className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800"
                   >
                     <ExternalLink className="h-3 w-3" />
                     View Metadata

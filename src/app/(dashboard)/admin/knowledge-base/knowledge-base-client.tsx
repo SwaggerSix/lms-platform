@@ -89,7 +89,7 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BookOpen className="h-8 w-8 text-indigo-600" />
+            <BookOpen className="h-8 w-8 text-primary-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Knowledge Base Management</h1>
               <p className="mt-1 text-gray-500">Create and manage help articles, FAQs, and categories</p>
@@ -129,13 +129,13 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
                   aria-pressed={activeTab === tab.key}
                   className={cn(
                     "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-                    activeTab === tab.key ? "text-indigo-600" : "text-gray-500 hover:text-gray-700"
+                    activeTab === tab.key ? "text-primary-600" : "text-gray-500 hover:text-gray-700"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {tab.label}
                   {activeTab === tab.key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
                   )}
                 </button>
               );

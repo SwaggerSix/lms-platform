@@ -118,7 +118,7 @@ export default function DailyFeed({ initialNuggets = [] }: DailyFeedProps) {
             onClick={() => handleFilterChange(f.key)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               activeFilter === f.key
-                ? "bg-indigo-600 text-white"
+                ? "bg-primary-600 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >

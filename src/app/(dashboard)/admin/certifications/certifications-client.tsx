@@ -136,7 +136,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
             issuedCount: 0,
             activeCount: 0,
             expiredCount: 0,
-            color: 'from-indigo-500 to-blue-600',
+            color: 'from-primary-500 to-blue-600',
           },
           ...prev,
         ]);
@@ -177,14 +177,14 @@ export default function CertificationsClient({ certifications: initialCerts }: C
         <div className="flex items-center gap-3">
           <Link
             href="/admin/certifications/designer"
-            className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 shadow-sm hover:bg-indigo-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary-200 bg-primary-50 px-4 py-2.5 text-sm font-medium text-primary-700 shadow-sm hover:bg-primary-100 transition-colors"
           >
             <Palette className="h-4 w-4" />
             Certificate Designer
           </Link>
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Create Certification
@@ -226,7 +226,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
 
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
                 <BookOpen className="h-4 w-4 text-gray-400" />
-                <span>Linked: <span className="font-medium text-indigo-600">{cert.linkedCourse}</span></span>
+                <span>Linked: <span className="font-medium text-primary-600">{cert.linkedCourse}</span></span>
               </div>
 
               {/* Stats */}
@@ -323,7 +323,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   required
                   value={formData.name}
                   onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Certification name"
                 />
               </div>
@@ -333,7 +333,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   value={formData.description}
                   onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Describe the certification"
                 />
               </div>
@@ -343,7 +343,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   type="text"
                   value={formData.validity_period}
                   onChange={(e) => setFormData((f) => ({ ...f, validity_period: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="e.g. 1 year, 6 months"
                 />
               </div>
@@ -353,7 +353,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   type="text"
                   value={formData.course_requirements}
                   onChange={(e) => setFormData((f) => ({ ...f, course_requirements: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Required course name or ID"
                 />
               </div>
@@ -368,7 +368,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {editingCert ? 'Save Changes' : 'Create'}

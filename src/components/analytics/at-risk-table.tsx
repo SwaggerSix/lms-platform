@@ -49,7 +49,7 @@ export default function AtRiskTable({ learners, onRefresh, loading }: AtRiskTabl
 
   function SortIcon({ field }: { field: typeof sortField }) {
     if (sortField !== field) return <span className="text-gray-300 ml-1">&#8645;</span>;
-    return <span className="text-indigo-600 ml-1">{sortDir === "asc" ? "&#8593;" : "&#8595;"}</span>;
+    return <span className="text-primary-600 ml-1">{sortDir === "asc" ? "&#8593;" : "&#8595;"}</span>;
   }
 
   function formatFactors(factors: Record<string, number | string>) {
@@ -67,7 +67,7 @@ export default function AtRiskTable({ learners, onRefresh, loading }: AtRiskTabl
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
         <div className="inline-flex items-center gap-2">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
           <span className="text-sm text-gray-500">Loading at-risk learners...</span>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function AtRiskTable({ learners, onRefresh, loading }: AtRiskTabl
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => setExpandedRow(isExpanded ? null : rowKey)}
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      className="text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
                       {isExpanded ? "Hide" : "View Actions"}
                     </button>
@@ -189,7 +189,7 @@ export default function AtRiskTable({ learners, onRefresh, loading }: AtRiskTabl
             <ul className="space-y-2">
               {learner.recommendedActions.map((action, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-medium">
+                  <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-medium">
                     {i + 1}
                   </span>
                   <span className="text-sm text-gray-700">{action}</span>

@@ -103,11 +103,11 @@ function CourseCard({ course }: { course: RecommendedCourse }) {
       </CourseCover>
       <div className="p-4">
         {/* Why recommended tag */}
-        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-600">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-600">
           <Sparkles className="h-3 w-3" />
           {course.reason}
         </span>
-        <h3 className="mt-2 font-semibold text-gray-900 group-hover:text-indigo-600">
+        <h3 className="mt-2 font-semibold text-gray-900 group-hover:text-primary-600">
           {course.title}
         </h3>
         <p className="mt-0.5 text-sm text-gray-500">By {course.instructor}</p>
@@ -134,10 +134,10 @@ function AiCourseCard({ course }: { course: AiRecommendation }) {
   return (
     <a
       href={`/learn/catalog/${course.slug}`}
-      className="group relative overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-indigo-300"
+      className="group relative overflow-hidden rounded-xl border border-primary-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg hover:border-primary-300"
     >
       {/* AI badge */}
-      <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
+      <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
         <Zap className="h-2.5 w-2.5" />
         AI Pick
       </div>
@@ -155,7 +155,7 @@ function AiCourseCard({ course }: { course: AiRecommendation }) {
           <Sparkles className="h-3 w-3" />
           {course.reason}
         </span>
-        <h3 className="mt-2 font-semibold text-gray-900 group-hover:text-indigo-600">
+        <h3 className="mt-2 font-semibold text-gray-900 group-hover:text-primary-600">
           {course.title}
         </h3>
         <p className="mt-0.5 text-sm text-gray-500">By {course.instructor}</p>
@@ -292,8 +292,8 @@ export default function RecommendationsClient({
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
-              <Sparkles className="h-5 w-5 text-indigo-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+              <Sparkles className="h-5 w-5 text-primary-600" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -333,12 +333,12 @@ export default function RecommendationsClient({
             <Section
               title="Recommended For You"
               icon={
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-primary-600">
                   <Zap className="h-4 w-4 text-white" />
                 </div>
               }
               badge={
-                <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-100 to-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-100 to-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">
                   <Sparkles className="h-3 w-3" />
                   Personalized for you
                 </span>
@@ -376,7 +376,7 @@ export default function RecommendationsClient({
               <div className="mb-6 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-900">
-                    Building: <span className="text-indigo-600">{adaptivePath.skill}</span>
+                    Building: <span className="text-primary-600">{adaptivePath.skill}</span>
                   </p>
                   <div className="mt-2 flex items-center gap-2">
                     <span className="text-xs text-gray-500">Level {adaptivePath.currentLevel}</span>
@@ -417,7 +417,7 @@ export default function RecommendationsClient({
                             onClick={() => handleSkillChange(skill.id)}
                             className={cn(
                               "flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-gray-50",
-                              skill.id === selectedSkill && "bg-indigo-50 text-indigo-700"
+                              skill.id === selectedSkill && "bg-primary-50 text-primary-700"
                             )}
                           >
                             <span>{skill.name}</span>
@@ -440,7 +440,7 @@ export default function RecommendationsClient({
                     <a
                       key={course.id}
                       href={`/learn/catalog/${course.slug}`}
-                      className="group relative flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200 sm:gap-5"
+                      className="group relative flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-primary-200 sm:gap-5"
                     >
                       {/* Step number */}
                       <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-lg font-bold text-white shadow-md sm:h-16 sm:w-16 sm:text-xl">
@@ -449,7 +449,7 @@ export default function RecommendationsClient({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600">
+                          <h3 className="font-semibold text-gray-900 group-hover:text-primary-600">
                             {course.title}
                           </h3>
                           <DifficultyBadge level={course.difficulty_level} />
@@ -468,7 +468,7 @@ export default function RecommendationsClient({
                         </div>
                       </div>
 
-                      <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-gray-300 transition-colors group-hover:text-indigo-500" />
+                      <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-gray-300 transition-colors group-hover:text-primary-500" />
                     </a>
                   ))}
 
@@ -546,7 +546,7 @@ export default function RecommendationsClient({
                               key={i}
                               className={cn(
                                 "h-2 w-6 rounded-full",
-                                i <= 5 - item.gap ? "bg-indigo-500" : "bg-gray-200"
+                                i <= 5 - item.gap ? "bg-primary-500" : "bg-gray-200"
                               )}
                             />
                           ))}
@@ -555,7 +555,7 @@ export default function RecommendationsClient({
                         <ArrowRight className="h-3 w-3 text-gray-400" />
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="h-2 w-6 rounded-full bg-indigo-500" />
+                            <div key={i} className="h-2 w-6 rounded-full bg-primary-500" />
                           ))}
                         </div>
                         <span className="text-xs text-gray-400">Required</span>

@@ -100,7 +100,7 @@ export default function WorkflowRunsClient({
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-indigo-600" />
+            <Clock className="w-5 h-5 text-primary-600" />
             Run History
           </h1>
           <p className="text-sm text-gray-500">{workflow.name}</p>
@@ -112,7 +112,7 @@ export default function WorkflowRunsClient({
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+          className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none"
         >
           <option value="">All Statuses</option>
           <option value="completed">Completed</option>

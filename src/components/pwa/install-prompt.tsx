@@ -60,28 +60,28 @@ export default function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-indigo-200 bg-indigo-50 px-4 py-3 shadow-lg sm:bottom-4 sm:left-4 sm:right-auto sm:w-96 sm:rounded-xl sm:border">
+    <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-primary-200 bg-primary-50 px-4 py-3 shadow-lg sm:bottom-4 sm:left-4 sm:right-auto sm:w-96 sm:rounded-xl sm:border">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white">
           <Download className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-indigo-900">
+          <p className="text-sm font-semibold text-primary-900">
             Install LMS Platform
           </p>
-          <p className="mt-0.5 text-xs text-indigo-700">
+          <p className="mt-0.5 text-xs text-primary-700">
             Add to your home screen for a faster, app-like experience with offline access.
           </p>
           <div className="mt-2.5 flex items-center gap-2">
             <button
               onClick={handleInstall}
-              className="rounded-md bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+              className="rounded-md bg-primary-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
             >
               Install
             </button>
             <button
               onClick={handleDismiss}
-              className="rounded-md px-3.5 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100"
+              className="rounded-md px-3.5 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-100"
             >
               Not now
             </button>
@@ -89,7 +89,7 @@ export default function InstallPrompt() {
         </div>
         <button
           onClick={handleDismiss}
-          className="shrink-0 rounded p-0.5 text-indigo-400 hover:text-indigo-600"
+          className="shrink-0 rounded p-0.5 text-primary-400 hover:text-primary-600"
           aria-label="Dismiss install prompt"
         >
           <X className="h-4 w-4" />

@@ -61,15 +61,15 @@ export default async function HelpLandingPage() {
       </header>
 
       {/* Suggested manual based on role */}
-      <div className="mb-8 rounded-xl border border-indigo-200 bg-indigo-50 p-6">
-        <div className="text-xs font-medium uppercase tracking-wider text-indigo-600">Recommended for you</div>
+      <div className="mb-8 rounded-xl border border-primary-200 bg-primary-50 p-6">
+        <div className="text-xs font-medium uppercase tracking-wider text-primary-600">Recommended for you</div>
         <h2 className="mt-1 text-xl font-bold text-gray-900">
           {helpManuals.find((m) => m.role === myRole)?.title ?? "Learner Manual"}
         </h2>
         <p className="mt-1 text-sm text-gray-700">{ROLE_BLURB[myRole]}</p>
         <Link
           href={`/help/${myRole}`}
-          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           Open {helpManuals.find((m) => m.role === myRole)?.title ?? "Learner Manual"}
           <ArrowRight className="h-4 w-4" />
@@ -85,22 +85,22 @@ export default async function HelpLandingPage() {
             <Link
               key={m.role}
               href={`/help/${m.role}`}
-              className="group flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 hover:border-indigo-300 hover:shadow-md transition-all"
+              className="group flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 hover:border-primary-300 hover:shadow-md transition-all"
             >
-              <div className="rounded-lg bg-indigo-100 p-2.5 text-indigo-700">
+              <div className="rounded-lg bg-primary-100 p-2.5 text-primary-700">
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-gray-900">{m.title}</h3>
                   {m.role === myRole && (
-                    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-medium uppercase text-indigo-700">
+                    <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-medium uppercase text-primary-700">
                       Yours
                     </span>
                   )}
                 </div>
                 <p className="mt-1 text-sm text-gray-600">{ROLE_BLURB[m.role]}</p>
-                <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 group-hover:underline">
+                <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary-600 group-hover:underline">
                   <BookOpen className="h-3.5 w-3.5" />
                   {m.groups.reduce((n, g) => n + g.chapters.length, 0)} chapters
                 </div>

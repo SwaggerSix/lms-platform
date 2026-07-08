@@ -65,7 +65,7 @@ const ICON_MAP: Record<string, typeof Rocket> = {
 };
 
 const ICON_BG: Record<string, string> = {
-  Rocket: "bg-indigo-100 text-indigo-600",
+  Rocket: "bg-primary-100 text-primary-600",
   BookOpen: "bg-blue-100 text-blue-600",
   Award: "bg-amber-100 text-amber-600",
   Wrench: "bg-red-100 text-red-600",
@@ -104,16 +104,16 @@ function CategoryCard({ category, onClick }: { category: KBCategoryView; onClick
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col items-start rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all hover:border-indigo-300 hover:shadow-md"
+      className="group flex flex-col items-start rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all hover:border-primary-300 hover:shadow-md"
     >
       <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg", iconBg)}>
         <IconComponent className="h-6 w-6" />
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
+      <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-primary-600">
         {category.name}
       </h3>
       <p className="mt-1 text-sm text-gray-500 line-clamp-2">{category.description}</p>
-      <div className="mt-4 flex items-center gap-1 text-sm text-indigo-600">
+      <div className="mt-4 flex items-center gap-1 text-sm text-primary-600">
         <span>{category.articleCount} {category.articleCount === 1 ? 'article' : 'articles'}</span>
         <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </div>
@@ -148,7 +148,7 @@ function FAQItem({ article, searchQuery }: { article: KBArticleView; searchQuery
           </p>
           <Link
             href={`/learn/knowledge-base/${article.slug}`}
-            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
           >
             Read full article <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -225,7 +225,7 @@ function SearchResults({
     <div className="space-y-8">
       <p className="text-sm text-gray-500">
         Found <span className="font-medium text-gray-900">{articles.length}</span> results for{" "}
-        <span className="font-medium text-indigo-600">&quot;{searchQuery}&quot;</span>
+        <span className="font-medium text-primary-600">&quot;{searchQuery}&quot;</span>
       </p>
       {Object.entries(grouped).map(([categoryName, catArticles]) => (
         <div key={categoryName}>
@@ -237,7 +237,7 @@ function SearchResults({
               <Link
                 key={article.id}
                 href={`/learn/knowledge-base/${article.slug}`}
-                className="block rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-indigo-300 hover:shadow-sm"
+                className="block rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-primary-300 hover:shadow-sm"
               >
                 <h4 className="font-medium text-gray-900">
                   {highlightMatch(article.title, searchQuery)}
@@ -305,10 +305,10 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">How can we help you?</h1>
-          <p className="mt-3 text-lg text-indigo-200">
+          <p className="mt-3 text-lg text-primary-200">
             Search our knowledge base or browse categories below
           </p>
           <div className="relative mt-8">
@@ -321,7 +321,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
                 if (e.target.value.trim()) setSelectedCategory(null);
               }}
               placeholder="Search for articles, topics, or keywords..."
-              className="w-full rounded-xl border-0 bg-white py-4 pl-12 pr-4 text-gray-900 shadow-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="w-full rounded-xl border-0 bg-white py-4 pl-12 pr-4 text-gray-900 shadow-lg placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-300"
             />
             {searchQuery && (
               <button
@@ -341,7 +341,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
           <div className="mb-6 flex items-center gap-2 text-sm">
             <button
               onClick={() => setSelectedCategory(null)}
-              className="text-indigo-600 hover:text-indigo-700"
+              className="text-primary-600 hover:text-primary-700"
             >
               Knowledge Base
             </button>
@@ -374,7 +374,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
                 <Link
                   key={article.id}
                   href={`/learn/knowledge-base/${article.slug}`}
-                  className="block rounded-lg border border-gray-200 bg-white p-5 transition-all hover:border-indigo-300 hover:shadow-sm"
+                  className="block rounded-lg border border-gray-200 bg-white p-5 transition-all hover:border-primary-300 hover:shadow-sm"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -432,8 +432,8 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
             {/* FAQ Section */}
             <section className="mt-16">
               <div className="flex items-center gap-3 mb-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
-                  <HelpCircle className="h-5 w-5 text-indigo-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100">
+                  <HelpCircle className="h-5 w-5 text-primary-600" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
@@ -474,7 +474,7 @@ export default function KnowledgeBaseClient({ categories, articles }: KnowledgeB
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-gray-900 truncate">{article.title}</h4>
                         <div className="mt-0.5 flex items-center gap-3 text-xs text-gray-500">
-                          <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                          <span className="inline-flex items-center rounded-full bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700">
                             {article.categoryName}
                           </span>
                           <span className="flex items-center gap-1">

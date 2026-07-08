@@ -96,7 +96,7 @@ const statusBadge: Record<string, string> = {
 const typeBadge: Record<string, string> = {
   'self-paced': 'bg-blue-50 text-blue-700',
   'instructor-led': 'bg-purple-50 text-purple-700',
-  blended: 'bg-indigo-50 text-indigo-700',
+  blended: 'bg-primary-50 text-primary-700',
 };
 
 const diffBadge: Record<string, string> = {
@@ -466,7 +466,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         <div className="flex items-center gap-3">
           <a
             href="/admin/courses/ai-create"
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-purple-700 hover:to-primary-700 transition-all"
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
@@ -480,7 +480,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           </a>
           <a
             href="/admin/courses/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Create Course
@@ -516,24 +516,24 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             placeholder="Search courses..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           />
         </div>
-        <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
           <option>All Categories</option>
           {categoryOptions.map((c) => <option key={c.id}>{c.name}</option>)}
         </select>
-        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
           {types.map((t) => <option key={t}>{t}</option>)}
         </select>
-        <select value={difficultyFilter} onChange={(e) => { setDifficultyFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        <select value={difficultyFilter} onChange={(e) => { setDifficultyFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
           {difficulties.map((d) => <option key={d}>{d}</option>)}
         </select>
         <div className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white p-1">
-          <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600')}>
+          <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600')}>
             <LayoutGrid className="h-4 w-4" aria-hidden="true" />
           </button>
-          <button onClick={() => setViewMode('list')} aria-label="List view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600')}>
+          <button onClick={() => setViewMode('list')} aria-label="List view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600')}>
             <List className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
@@ -552,7 +552,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           action={
             <a
               href="/admin/courses/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
             >
               <Plus className="h-4 w-4" />
               Create Course
@@ -612,7 +612,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 <button
                   onClick={() => handleEdit(course)}
                   disabled={!!loadingAction}
-                  className="flex-1 rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex-1 rounded-md bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Edit className="inline h-3 w-3 mr-1" />Edit
                 </button>
@@ -664,7 +664,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                   type="text"
                   value={editForm.title || ''}
                   onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 />
               </div>
 
@@ -727,7 +727,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     id="edit-course-status"
                     value={editForm.status || ''}
                     onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value as CourseItem['status'] }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="published">Published</option>
                     <option value="draft">Draft</option>
@@ -740,7 +740,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     id="edit-course-type"
                     value={editForm.type || ''}
                     onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value as CourseItem['type'] }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="self-paced">Self-Paced</option>
                     <option value="instructor-led">Instructor-Led</option>
@@ -755,7 +755,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     id="edit-course-category"
                     value={editForm.categoryId || ''}
                     onChange={(e) => setEditForm((f) => ({ ...f, categoryId: e.target.value }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="">Uncategorized</option>
                     {categoryOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -767,7 +767,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                     id="edit-course-difficulty"
                     value={editForm.difficulty || ''}
                     onChange={(e) => setEditForm((f) => ({ ...f, difficulty: e.target.value as CourseItem['difficulty'] }))}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
@@ -791,7 +791,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                           : new Date().toISOString().slice(0, 10),
                       }))
                     }
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   Available forever (no end date)
                 </label>
@@ -807,7 +807,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                       type="date"
                       value={editForm.availableFrom || ''}
                       onChange={(e) => setEditForm((f) => ({ ...f, availableFrom: e.target.value || null }))}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                     />
                     <p className="mt-1 text-xs text-gray-400">Blank = available now.</p>
                   </div>
@@ -819,7 +819,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                         type="date"
                         value={editForm.availableUntil || ''}
                         onChange={(e) => setEditForm((f) => ({ ...f, availableUntil: e.target.value || null }))}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                       />
                       <p className="mt-1 text-xs text-gray-400">Access is cut after this day.</p>
                     </div>
@@ -892,7 +892,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
               <button
                 onClick={handleEditSubmit}
                 disabled={isLoading(editModal.id, 'edit')}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading(editModal.id, 'edit') && <Loader2 className="h-4 w-4 animate-spin" />}
                 Save Changes
@@ -958,7 +958,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 onClick={() => setCurrentPage(p)}
                 className={cn(
                   'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium',
-                  currentPage === p ? 'bg-indigo-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  currentPage === p ? 'bg-primary-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                 )}
               >
                 {p}

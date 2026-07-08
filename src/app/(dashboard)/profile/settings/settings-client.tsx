@@ -254,12 +254,12 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                   onClick={() => setActiveTab(tab.key)}
                   className={cn(
                     "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-                    activeTab === tab.key ? "text-indigo-600" : "text-gray-500 hover:text-gray-700"
+                    activeTab === tab.key ? "text-primary-600" : "text-gray-500 hover:text-gray-700"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {tab.label}
-                  {activeTab === tab.key && <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded bg-indigo-600" />}
+                  {activeTab === tab.key && <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded bg-primary-600" />}
                 </button>
               );
             })}
@@ -276,7 +276,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
 
               {/* Avatar upload area */}
               <div className="mt-6 flex items-center gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-600 text-2xl font-bold text-white">
                   {data.initials}
                 </div>
                 <div>
@@ -293,7 +293,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -302,7 +302,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -338,7 +338,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -380,7 +380,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                           role="switch"
                           aria-checked={notif.inApp}
                           aria-label={`${notif.label} in-app notifications`}
-                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-indigo-600" : "bg-gray-200")}
+                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.inApp ? "bg-primary-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.inApp && "translate-x-5")} />
                         </button>
@@ -392,7 +392,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                           role="switch"
                           aria-checked={notif.email}
                           aria-label={`${notif.label} email notifications`}
-                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-indigo-600" : "bg-gray-200")}
+                          className={cn("relative h-6 w-11 rounded-full transition-colors", notif.email ? "bg-primary-600" : "bg-gray-200")}
                         >
                           <span className={cn("absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", notif.email && "translate-x-5")} />
                         </button>
@@ -429,7 +429,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                         type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-10 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-10 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                       />
                       <button
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -445,7 +445,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                   </div>
                   <div>
@@ -454,7 +454,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                   </div>
                   <Button
@@ -487,7 +487,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     {locales.map((loc) => (
                       <option key={loc} value={loc}>
@@ -505,7 +505,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                   <select
                     value={timezone}
                     onChange={(e) => setTimezone(e.target.value)}
-                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="America/New_York">Eastern Time (ET)</option>
                     <option value="America/Chicago">Central Time (CT)</option>
@@ -525,7 +525,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                   <select
                     value={dateFormat}
                     onChange={(e) => setDateFormat(e.target.value)}
-                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     <option value="DD/MM/YYYY">DD/MM/YYYY</option>

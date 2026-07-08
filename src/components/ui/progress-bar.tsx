@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/utils/cn";
 
 const colorClasses = {
-  default: "bg-indigo-600",
+  default: "bg-primary-600",
   success: "bg-green-500",
   warning: "bg-amber-500",
   danger: "bg-red-500",

@@ -198,7 +198,7 @@ export default function DocumentsClient({
             className={cn(
               "w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors",
               selectedFolderId === null
-                ? "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-600"
+                ? "bg-primary-50 text-primary-700 border-r-2 border-primary-600"
                 : "text-gray-700 hover:bg-gray-50"
             )}
           >
@@ -216,7 +216,7 @@ export default function DocumentsClient({
               className={cn(
                 "w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors",
                 selectedFolderId === folder.id
-                  ? "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-600"
+                  ? "bg-primary-50 text-primary-700 border-r-2 border-primary-600"
                   : "text-gray-700 hover:bg-gray-50"
               )}
             >
@@ -240,7 +240,7 @@ export default function DocumentsClient({
               <nav className="flex items-center gap-1 text-sm text-gray-500 mb-1">
                 <button
                   onClick={() => setSelectedFolderId(null)}
-                  className="hover:text-indigo-600 flex items-center gap-1"
+                  className="hover:text-primary-600 flex items-center gap-1"
                 >
                   <Home className="h-3.5 w-3.5" />
                   Documents
@@ -272,7 +272,7 @@ export default function DocumentsClient({
                   id="mobile-folder-select"
                   value={selectedFolderId ?? ""}
                   onChange={(e) => setSelectedFolderId(e.target.value || null)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">All Documents ({documents.length})</option>
                   {folders.map((folder) => (
@@ -307,7 +307,7 @@ export default function DocumentsClient({
                   className={cn(
                     "p-2 transition-colors",
                     viewMode === "list"
-                      ? "bg-indigo-50 text-indigo-600"
+                      ? "bg-primary-50 text-primary-600"
                       : "text-gray-400 hover:bg-gray-50"
                   )}
                   title="List view"
@@ -319,7 +319,7 @@ export default function DocumentsClient({
                   className={cn(
                     "p-2 transition-colors",
                     viewMode === "grid"
-                      ? "bg-indigo-50 text-indigo-600"
+                      ? "bg-primary-50 text-primary-600"
                       : "text-gray-400 hover:bg-gray-50"
                   )}
                   title="Grid view"
@@ -338,7 +338,7 @@ export default function DocumentsClient({
               placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
         </header>
@@ -381,7 +381,7 @@ export default function DocumentsClient({
                             {doc.title}
                           </h3>
                           {doc.is_policy && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
                               <ShieldCheck className="h-3 w-3" />
                               Policy
                             </span>
@@ -454,7 +454,7 @@ export default function DocumentsClient({
                           href={`/api/documents/${doc.id}/download`}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                          className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 transition-colors"
                           title="Download"
                         >
                           <Download className="h-4 w-4" />
@@ -495,7 +495,7 @@ export default function DocumentsClient({
                     </h3>
 
                     {doc.is_policy && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 mt-2 w-fit">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700 mt-2 w-fit">
                         <ShieldCheck className="h-3 w-3" />
                         Policy
                       </span>
@@ -549,7 +549,7 @@ export default function DocumentsClient({
                         href={`/api/documents/${doc.id}/download`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                        className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 transition-colors"
                         title="Download"
                       >
                         <Download className="h-4 w-4" />

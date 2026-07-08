@@ -36,7 +36,7 @@ export default async function RoleManualPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      <Link href="/help" className="mb-6 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+      <Link href="/help" className="mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
         <ArrowLeft className="h-4 w-4" />
         All manuals
       </Link>

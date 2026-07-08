@@ -72,7 +72,7 @@ export function RowActionsMenu({
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
       >
         <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
       </button>

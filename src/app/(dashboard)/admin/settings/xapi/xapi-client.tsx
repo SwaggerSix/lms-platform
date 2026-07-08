@@ -836,7 +836,7 @@ export default function XAPIClient({
                           }
                         >
                           <td className="px-4 py-3">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-50 text-primary-700">
                               {stmt.verb_display || verbLabel(stmt.verb)}
                             </span>
                           </td>

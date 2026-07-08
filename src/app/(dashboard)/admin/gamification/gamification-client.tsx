@@ -177,7 +177,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
             category: badgeCriteriaType,
             criteria: {
               emoji: badgeIcon || "\uD83C\uDFC6",
-              color: "bg-indigo-100",
+              color: "bg-primary-100",
               type: badgeCriteriaType,
               count: badgeCriteriaCount,
               points: badgePoints,
@@ -227,15 +227,15 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       sortValue: (r) => r.action,
       render: (rule) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-            {rule.action === "Course Completion" && <BookOpen className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Quiz Pass" && <Target className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Perfect Score" && <Star className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Discussion Post" && <MessageSquare className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Daily Login" && <Calendar className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Learning Streak (7-day)" && <Flame className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Enrollment" && <Zap className="h-4 w-4 text-indigo-600" />}
-            {rule.action === "Path Completion" && <Trophy className="h-4 w-4 text-indigo-600" />}
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100">
+            {rule.action === "Course Completion" && <BookOpen className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Quiz Pass" && <Target className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Perfect Score" && <Star className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Discussion Post" && <MessageSquare className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Daily Login" && <Calendar className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Learning Streak (7-day)" && <Flame className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Enrollment" && <Zap className="h-4 w-4 text-primary-600" />}
+            {rule.action === "Path Completion" && <Trophy className="h-4 w-4 text-primary-600" />}
           </div>
           <span className="font-medium text-gray-900 text-sm">{rule.action}</span>
         </div>
@@ -252,7 +252,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
           value={rule.points}
           onChange={(e) => updateRulePoints(rule.id, parseInt(e.target.value) || 0)}
           aria-label={`Points for ${rule.action}`}
-          className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm font-semibold text-indigo-700 text-center focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm font-semibold text-primary-700 text-center focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
         />
       ),
     },
@@ -272,7 +272,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
           role="switch"
           aria-checked={rule.enabled}
           aria-label={`${rule.action} enabled`}
-          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", rule.enabled ? "bg-indigo-600" : "bg-gray-300")}
+          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", rule.enabled ? "bg-primary-600" : "bg-gray-300")}
         >
           <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", rule.enabled ? "translate-x-6" : "translate-x-1")} />
         </button>
@@ -313,7 +313,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       sortValue: (u) => u.name,
       render: (user) => (
         <div className="flex items-center gap-3">
-          <div className={cn("flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white", user.rank === 1 ? "bg-amber-500" : "bg-indigo-500")}>
+          <div className={cn("flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white", user.rank === 1 ? "bg-amber-500" : "bg-primary-500")}>
             {user.avatar}
           </div>
           <span className={cn("font-medium", user.rank === 1 ? "text-amber-900" : "text-gray-900")}>{user.name}</span>
@@ -326,7 +326,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
       className: "text-center",
       sortValue: (u) => u.level,
       render: (user) => (
-        <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">Lvl {user.level}</span>
+        <span className="inline-flex items-center rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-semibold text-primary-700">Lvl {user.level}</span>
       ),
     },
     {
@@ -369,7 +369,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
               onClick={() => setActiveTab(tab)}
               className={cn(
                 "border-b-2 pb-3 text-sm font-medium transition-colors",
-                activeTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                activeTab === tab ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               )}
             >
               {tab}
@@ -434,7 +434,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                       };
                       setRuleDescription(descs[e.target.value] || "");
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="">— Select an action —</option>
                     <option value="Course Completion">Course Completion</option>
@@ -457,7 +457,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     min={1}
                     value={rulePoints}
                     onChange={(e) => setRulePoints(parseInt(e.target.value) || 0)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -467,7 +467,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     value={ruleDescription}
                     onChange={(e) => setRuleDescription(e.target.value)}
                     placeholder="Describe when these points are awarded"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
@@ -505,20 +505,20 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} placeholder="Badge name..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} placeholder="Badge name..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea rows={2} value={badgeDescription} onChange={(e) => setBadgeDescription(e.target.value)} placeholder="Badge description..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <textarea rows={2} value={badgeDescription} onChange={(e) => setBadgeDescription(e.target.value)} placeholder="Badge description..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Icon (emoji)</label>
-                    <input type="text" value={badgeIcon} onChange={(e) => setBadgeIcon(e.target.value)} placeholder="e.g. \uD83C\uDFC6" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="text" value={badgeIcon} onChange={(e) => setBadgeIcon(e.target.value)} placeholder="e.g. \uD83C\uDFC6" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Criteria Type</label>
-                      <select value={badgeCriteriaType} onChange={(e) => setBadgeCriteriaType(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <select value={badgeCriteriaType} onChange={(e) => setBadgeCriteriaType(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         <option value="course_completion">Course Completion</option>
                         <option value="quiz_pass">Quiz Pass</option>
                         <option value="streak">Streak</option>
@@ -529,12 +529,12 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Criteria Count</label>
-                      <input type="number" min={1} value={badgeCriteriaCount} onChange={(e) => setBadgeCriteriaCount(parseInt(e.target.value) || 1)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                      <input type="number" min={1} value={badgeCriteriaCount} onChange={(e) => setBadgeCriteriaCount(parseInt(e.target.value) || 1)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Points Reward</label>
-                    <input type="number" min={0} value={badgePoints} onChange={(e) => setBadgePoints(parseInt(e.target.value) || 0)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="number" min={0} value={badgePoints} onChange={(e) => setBadgePoints(parseInt(e.target.value) || 0)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
@@ -561,7 +561,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                   </div>
                   <button
                     onClick={() => openEditBadge(badge)}
-                    className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+                    className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-primary-600 transition-colors"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>

@@ -34,7 +34,7 @@ export default function ReviewStep({ basicInfo, modules, settings, categories }:
             <div><span className="text-xs text-gray-500">Type</span><p className="text-sm text-gray-700">{basicInfo.courseType}</p></div>
             <div><span className="text-xs text-gray-500">Difficulty</span><p className="text-sm text-gray-700">{basicInfo.difficulty}</p></div>
             <div><span className="text-xs text-gray-500">Duration</span><p className="text-sm text-gray-700">{formatDuration(basicInfo.duration)}</p></div>
-            <div><span className="text-xs text-gray-500">Tags</span><div className="flex flex-wrap gap-1 mt-1">{basicInfo.tags.map((t) => <span key={t} className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700">{t}</span>)}</div></div>
+            <div><span className="text-xs text-gray-500">Tags</span><div className="flex flex-wrap gap-1 mt-1">{basicInfo.tags.map((t) => <span key={t} className="rounded-full bg-primary-50 px-2 py-0.5 text-xs text-primary-700">{t}</span>)}</div></div>
           </div>
         </div>
         <div className="space-y-4">
@@ -49,7 +49,7 @@ export default function ReviewStep({ basicInfo, modules, settings, categories }:
                 <p className="text-xs text-gray-500">
                   {m.lessons.length} lessons
                   {m.dripType !== 'immediate' && (
-                    <span className="ml-2 text-indigo-600">
+                    <span className="ml-2 text-primary-600">
                       {m.dripType === 'after_days' && `(unlocks ${m.dripDays} days after enrollment)`}
                       {m.dripType === 'on_date' && `(unlocks on ${m.dripDate || 'TBD'})`}
                       {m.dripType === 'after_previous' && '(unlocks after previous module)'}

@@ -115,7 +115,7 @@ export default function InsightsClient({
       render: (r) => (
         <div className="flex items-center gap-2">
           <div className="h-2 flex-1 rounded-full bg-gray-100">
-            <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${(r.responses / maxResponses) * 100}%` }} />
+            <div className="h-2 rounded-full bg-primary-500" style={{ width: `${(r.responses / maxResponses) * 100}%` }} />
           </div>
           <span className="w-8 text-right text-xs text-gray-500">{r.responses}</span>
         </div>
@@ -160,7 +160,7 @@ export default function InsightsClient({
         {anyFilter && (
           <button
             onClick={() => setFilters({ course_id: "", category_id: "", instructor_id: "", tenant_id: "", level: "", date_from: "", date_to: "" })}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
+            className="text-sm text-primary-600 hover:text-primary-800"
           >
             Clear
           </button>
@@ -180,7 +180,7 @@ export default function InsightsClient({
             <Card icon={<Users className="h-5 w-5 text-blue-600" />} bg="bg-blue-100" value={String(data.totals.responses)} label={`Responses · ${data.totals.respondents} learners`} />
             <Card icon={<Star className="h-5 w-5 text-amber-600" />} bg="bg-amber-100" value={data.totals.avg_rating != null ? `${data.totals.avg_rating}` : "—"} label={`Avg rating · ${data.totals.rating_count} rated`} />
             <Card icon={<TrendingUp className="h-5 w-5 text-green-600" />} bg="bg-green-100" value={data.totals.nps != null ? `${data.totals.nps}` : "—"} label={`NPS · ${data.totals.nps_count} scored`} />
-            <Card icon={<BarChart3 className="h-5 w-5 text-indigo-600" />} bg="bg-indigo-100" value={String(data.totals.courses)} label="Courses covered" />
+            <Card icon={<BarChart3 className="h-5 w-5 text-primary-600" />} bg="bg-primary-100" value={String(data.totals.courses)} label="Courses covered" />
           </div>
 
           {/* Breakdown */}
@@ -191,7 +191,7 @@ export default function InsightsClient({
                   key={d}
                   onClick={() => setDim(d)}
                   aria-pressed={dim === d}
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${dim === d ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${dim === d ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 >
                   {DIM_LABELS[d]}
                 </button>
@@ -213,7 +213,7 @@ export default function InsightsClient({
           {/* Testimonials */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <MessageSquareQuote className="h-4 w-4 text-indigo-600" /> Testimonials
+              <MessageSquareQuote className="h-4 w-4 text-primary-600" /> Testimonials
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-normal text-gray-500">{data.testimonials.length}</span>
             </h2>
             {data.testimonials.length === 0 ? (
@@ -221,7 +221,7 @@ export default function InsightsClient({
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {data.testimonials.slice(0, 40).map((t, i) => (
-                  <blockquote key={i} className="rounded-lg border-l-4 border-indigo-200 bg-gray-50 p-3">
+                  <blockquote key={i} className="rounded-lg border-l-4 border-primary-200 bg-gray-50 p-3">
                     <p className="text-sm text-gray-700">“{t.text}”</p>
                     <footer className="mt-1.5 text-xs text-gray-400">
                       {[t.course, t.instructor, t.client].filter(Boolean).join(" · ")}

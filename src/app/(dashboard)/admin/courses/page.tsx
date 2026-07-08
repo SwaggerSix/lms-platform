@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const GRADIENTS = [
   "bg-gradient-to-br from-green-400 to-emerald-600",
-  "bg-gradient-to-br from-blue-400 to-indigo-600",
+  "bg-gradient-to-br from-blue-400 to-primary-600",
   "bg-gradient-to-br from-purple-400 to-violet-600",
   "bg-gradient-to-br from-emerald-400 to-teal-600",
   "bg-gradient-to-br from-amber-400 to-orange-600",

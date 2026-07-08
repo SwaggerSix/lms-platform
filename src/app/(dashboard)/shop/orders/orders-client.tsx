@@ -58,7 +58,7 @@ export default function OrdersClient() {
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
           <p className="text-gray-500 mt-1">View your purchase history</p>
         </div>
-        <Link href="/shop" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+        <Link href="/shop" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
           Browse Marketplace
         </Link>
       </div>
@@ -72,7 +72,7 @@ export default function OrdersClient() {
           <p className="text-gray-500 mb-4">Purchase your first course from the marketplace</p>
           <Link
             href="/shop"
-            className="inline-flex px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            className="inline-flex px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
           >
             Browse Courses
           </Link>
@@ -114,12 +114,12 @@ export default function OrdersClient() {
               <div className="border-t border-gray-100 pt-3 space-y-2">
                 {(order.order_items || []).map((item: any) => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-12 h-9 bg-gradient-to-br from-indigo-100 to-purple-100 rounded overflow-hidden shrink-0">
+                    <div className="w-12 h-9 bg-gradient-to-br from-primary-100 to-purple-100 rounded overflow-hidden shrink-0">
                       {item.product?.course?.thumbnail_url ? (
                         <img src={item.product.course.thumbnail_url} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
                         </div>

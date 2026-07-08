@@ -243,7 +243,7 @@ export default function WorkflowEditorClient({
           <button
             onClick={saveAll}
             disabled={saving || !hasChanges}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {saving ? "Saving..." : "Save"}
@@ -267,7 +267,7 @@ export default function WorkflowEditorClient({
                   type="text"
                   value={wfName}
                   onChange={(e) => { setWfName(e.target.value); markChanged(); }}
-                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
@@ -276,7 +276,7 @@ export default function WorkflowEditorClient({
                   value={wfDescription}
                   onChange={(e) => { setWfDescription(e.target.value); markChanged(); }}
                   rows={3}
-                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -285,7 +285,7 @@ export default function WorkflowEditorClient({
                   onClick={() => { setWfActive(!wfActive); markChanged(); }}
                   className={cn(
                     "relative w-10 h-5 rounded-full transition-colors",
-                    wfActive ? "bg-indigo-600" : "bg-gray-300"
+                    wfActive ? "bg-primary-600" : "bg-gray-300"
                   )}
                 >
                   <span

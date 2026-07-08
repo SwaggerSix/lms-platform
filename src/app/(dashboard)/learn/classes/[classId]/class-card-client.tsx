@@ -143,11 +143,11 @@ export default function ClassCardClient({ classId }: { classId: string }) {
       <div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">{course?.title}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-primary-600">{course?.title}</p>
             <h1 className="mt-1 text-2xl font-bold text-gray-900">{cls.title}</h1>
             {cls.description && <p className="mt-2 text-sm text-gray-600">{cls.description}</p>}
           </div>
-          <span className="shrink-0 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium capitalize text-indigo-700">
+          <span className="shrink-0 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium capitalize text-primary-700">
             {cls.status.replace("_", " ")}
           </span>
         </div>
@@ -181,7 +181,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={instructor.avatar_url} alt={instructor.name} className="h-16 w-16 shrink-0 rounded-full object-cover" />
             ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-600">
                 {initials}
               </div>
             )}
@@ -229,7 +229,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
       {contract && (contract.number || contract.url) && (
         <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <span className="text-indigo-600"><FileSignature className="h-4 w-4" /></span>
+            <span className="text-primary-600"><FileSignature className="h-4 w-4" /></span>
             Contract
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">Admin only</span>
           </h2>
@@ -247,7 +247,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                 href={contract.url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-600 hover:bg-primary-50"
               >
                 <ExternalLink className="h-3.5 w-3.5" /> Open in SharePoint
               </a>
@@ -298,7 +298,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                         <button
                           onClick={() => register(s.id)}
                           disabled={registering === s.id}
-                          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                          className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
                         >
                           {registering === s.id ? "..." : "Register"}
                         </button>
@@ -310,7 +310,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                       href={s.meeting_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
                       <Video className="h-3.5 w-3.5" /> Join meeting
                     </a>
@@ -320,7 +320,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                       href={s.recording_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 ml-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      className="mt-2 ml-3 inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                     >
                       <Video className="h-3.5 w-3.5" /> Recording
                     </a>
@@ -351,7 +351,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                   href={`/api/course-resources/${m.id}/download`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                 >
                   <Download className="h-3.5 w-3.5" /> Download
                 </a>
@@ -377,7 +377,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                 </div>
                 <Link
                   href={`/learn/assessments/${e.id}?class_id=${cls.id}`}
-                  className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
+                  className="rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-600 hover:bg-primary-50"
                 >
                   Start
                 </Link>
@@ -414,7 +414,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                   ) : (
                     <Link
                       href="/learn/evaluations"
-                      className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
+                      className="rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-600 hover:bg-primary-50"
                     >
                       Take survey
                     </Link>
@@ -445,7 +445,7 @@ function Section({
   return (
     <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-        <span className="text-indigo-600">{icon}</span>
+        <span className="text-primary-600">{icon}</span>
         {title}
         <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-normal text-gray-500">{count}</span>
       </h2>

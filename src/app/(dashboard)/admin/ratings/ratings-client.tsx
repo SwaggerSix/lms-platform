@@ -124,7 +124,7 @@ export default function RatingsClient({
           <input type="date" value={filters.date_to} onChange={(e) => set("date_to", e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm" /></div>
         {anyFilter && (
           <button onClick={() => setFilters({ instructor_id: "", course_id: "", class_id: "", tenant_id: "", date_from: "", date_to: "" })}
-            className="text-sm text-indigo-600 hover:text-indigo-800">Clear</button>
+            className="text-sm text-primary-600 hover:text-primary-800">Clear</button>
         )}
       </div>
 
@@ -139,14 +139,14 @@ export default function RatingsClient({
           <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
             <Card icon={<Star className="h-5 w-5 text-amber-600" />} bg="bg-amber-100" value={String(data.totals.ratings)} label="Total ratings" />
             <Card icon={<BookOpen className="h-5 w-5 text-blue-600" />} bg="bg-blue-100" value={data.totals.course_avg != null ? `${data.totals.course_avg}★` : "—"} label={`Course avg · ${data.totals.course_count}`} />
-            <Card icon={<GraduationCap className="h-5 w-5 text-indigo-600" />} bg="bg-indigo-100" value={data.totals.instructor_avg != null ? `${data.totals.instructor_avg}★` : "—"} label={`Instructor avg · ${data.totals.instructor_count}`} />
+            <Card icon={<GraduationCap className="h-5 w-5 text-primary-600" />} bg="bg-primary-100" value={data.totals.instructor_avg != null ? `${data.totals.instructor_avg}★` : "—"} label={`Instructor avg · ${data.totals.instructor_count}`} />
           </div>
 
           <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center gap-2">
               {(Object.keys(DIM_LABELS) as DimKey[]).map((d) => (
                 <button key={d} onClick={() => setDim(d)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${dim === d ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${dim === d ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                   {DIM_LABELS[d]}
                 </button>
               ))}
@@ -166,7 +166,7 @@ export default function RatingsClient({
 
           {data.trend.length > 1 && (
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900"><TrendingUp className="h-4 w-4 text-indigo-600" /> Over time (monthly)</h2>
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900"><TrendingUp className="h-4 w-4 text-primary-600" /> Over time (monthly)</h2>
               <DataTable
                 columns={trendColumns}
                 rows={data.trend}

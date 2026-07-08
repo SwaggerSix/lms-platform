@@ -121,7 +121,7 @@ export default function NominationManager({
           <p className="text-xs text-gray-500 mt-1">Pending</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-indigo-600">
+          <p className="text-2xl font-bold text-primary-600">
             {Object.keys(bySubject).length}
           </p>
           <p className="text-xs text-gray-500 mt-1">Subjects</p>
@@ -135,7 +135,7 @@ export default function NominationManager({
           className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors rounded-xl"
         >
           <span className="flex items-center gap-2 font-medium text-gray-900">
-            <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Add Nomination
@@ -161,12 +161,12 @@ export default function NominationManager({
                   placeholder="Search users..."
                   value={searchSubject}
                   onChange={(e) => setSearchSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
                 <select
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Select subject...</option>
                   {filteredSubjects.map((u) => (
@@ -187,12 +187,12 @@ export default function NominationManager({
                   placeholder="Search users..."
                   value={searchReviewer}
                   onChange={(e) => setSearchReviewer(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-1 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
                 <select
                   value={reviewerId}
                   onChange={(e) => setReviewerId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Select reviewer...</option>
                   {filteredReviewers.map((u) => (
@@ -211,7 +211,7 @@ export default function NominationManager({
                 <select
                   value={relationship}
                   onChange={(e) => setRelationship(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mt-[calc(0.25rem+2px+32px)] focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mt-[calc(0.25rem+2px+32px)] focus:ring-2 focus:ring-primary-500"
                 >
                   {RELATIONSHIPS.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -226,7 +226,7 @@ export default function NominationManager({
               <button
                 onClick={handleAdd}
                 disabled={!subjectId || !reviewerId || isAdding}
-                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isAdding ? "Adding..." : "Add Nomination"}
               </button>
@@ -244,7 +244,7 @@ export default function NominationManager({
             <div key={subjectIdKey} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-semibold text-sm">
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold text-sm">
                     {subject?.first_name?.[0]}
                     {subject?.last_name?.[0]}
                   </div>

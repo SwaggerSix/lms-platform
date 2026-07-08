@@ -66,21 +66,21 @@ export default function ServiceWorkerRegister() {
   if (!showUpdate) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-[90] flex items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 shadow-lg">
-      <RefreshCw className="h-5 w-5 shrink-0 text-indigo-600" />
+    <div className="fixed bottom-4 left-4 z-[90] flex items-center gap-3 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3 shadow-lg">
+      <RefreshCw className="h-5 w-5 shrink-0 text-primary-600" />
       <div className="flex-1">
-        <p className="text-sm font-medium text-indigo-900">New version available</p>
-        <p className="text-xs text-indigo-600">Refresh to get the latest features.</p>
+        <p className="text-sm font-medium text-primary-900">New version available</p>
+        <p className="text-xs text-primary-600">Refresh to get the latest features.</p>
       </div>
       <button
         onClick={handleUpdate}
-        className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+        className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700"
       >
         Refresh
       </button>
       <button
         onClick={() => setShowUpdate(false)}
-        className="rounded p-0.5 text-indigo-400 hover:text-indigo-600"
+        className="rounded p-0.5 text-primary-400 hover:text-primary-600"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />

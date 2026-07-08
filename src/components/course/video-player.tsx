@@ -353,7 +353,7 @@ export function VideoPlayer({
           />
           {/* Progress */}
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-indigo-500"
+            className="absolute inset-y-0 left-0 rounded-full bg-primary-500"
             style={{ width: `${progress}%` }}
           />
           {/* Thumb */}
@@ -430,7 +430,7 @@ export function VideoPlayer({
                 onClick={() => setCaptionsEnabled(!captionsEnabled)}
                 className={cn(
                   "rounded p-1 hover:text-white",
-                  captionsEnabled ? "text-indigo-400" : "text-white/70"
+                  captionsEnabled ? "text-primary-400" : "text-white/70"
                 )}
                 aria-label={captionsEnabled ? "Disable captions" : "Enable captions"}
               >
@@ -466,7 +466,7 @@ export function VideoPlayer({
                         className={cn(
                           "rounded px-2 py-1 text-xs font-medium transition-colors",
                           playbackRate === rate
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-primary-600 text-white"
                             : "text-white/70 hover:bg-white/10 hover:text-white"
                         )}
                       >

@@ -107,7 +107,7 @@ export default function CoverImportClient() {
 
       <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-white p-6">
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 text-center">
-          <FileSpreadsheet className="h-10 w-10 text-indigo-400" />
+          <FileSpreadsheet className="h-10 w-10 text-primary-400" />
           <span className="text-sm font-medium text-gray-700">{file ? file.name : "Choose your spreadsheet"}</span>
           <span className="text-xs text-gray-400">.xlsx or .csv</span>
           <input
@@ -121,7 +121,7 @@ export default function CoverImportClient() {
 
       <div className="mt-4">
         <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm hover:bg-gray-50">
-          <Upload className="h-4 w-4 text-indigo-500" />
+          <Upload className="h-4 w-4 text-primary-500" />
           <span className="font-medium text-gray-700">
             {images.length ? `${images.length} image file${images.length > 1 ? "s" : ""} attached` : "Attach image files (optional) — for rows that use a filename"}
           </span>
@@ -144,7 +144,7 @@ export default function CoverImportClient() {
       <button
         onClick={submit}
         disabled={!file || uploading}
-        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
       >
         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
         Import covers

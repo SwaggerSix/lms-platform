@@ -159,13 +159,13 @@ export function MemberManager({
         <div className="flex gap-2">
           <button
             onClick={() => setTab("members")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg ${tab === "members" ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-100"}`}
+            className={`px-4 py-2 text-sm font-medium rounded-lg ${tab === "members" ? "bg-primary-100 text-primary-700" : "text-gray-600 hover:bg-gray-100"}`}
           >
             Members ({members.length})
           </button>
           <button
             onClick={() => setTab("invitations")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg ${tab === "invitations" ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-100"}`}
+            className={`px-4 py-2 text-sm font-medium rounded-lg ${tab === "invitations" ? "bg-primary-100 text-primary-700" : "text-gray-600 hover:bg-gray-100"}`}
           >
             Invitations ({invitations.filter((i) => !i.accepted_at).length})
           </button>
@@ -179,7 +179,7 @@ export function MemberManager({
           </button>
           <button
             onClick={() => setAddMode(addMode === "invite" ? null : "invite")}
-            className="px-3 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-3 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             Invite by Email
           </button>
@@ -196,7 +196,7 @@ export function MemberManager({
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Select a user...</option>
                 {availableUsers.map((u) => (
@@ -211,7 +211,7 @@ export function MemberManager({
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -221,7 +221,7 @@ export function MemberManager({
             <button
               onClick={handleAddMember}
               disabled={!selectedUserId || loading}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {loading ? "Adding..." : "Add"}
             </button>
@@ -241,7 +241,7 @@ export function MemberManager({
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div className="w-36">
@@ -249,7 +249,7 @@ export function MemberManager({
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -259,7 +259,7 @@ export function MemberManager({
             <button
               onClick={handleInvite}
               disabled={!inviteEmail || loading}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {loading ? "Sending..." : "Send"}
             </button>

@@ -69,8 +69,8 @@ const PROVIDER_META: Record<string, { label: string; color: string; bgColor: str
   },
   gems: {
     label: "GEMS",
-    color: "text-indigo-700",
-    bgColor: "bg-indigo-50 border-indigo-200",
+    color: "text-primary-700",
+    bgColor: "bg-primary-50 border-primary-200",
     description: "Import training events scheduled in GEMS as ILT sessions",
   },
   sharepoint_rosters: {

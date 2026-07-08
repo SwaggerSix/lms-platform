@@ -30,14 +30,14 @@ export interface DashboardData {
 }
 
 const quickActions = [
-  { label: 'Create Course', icon: Plus, href: '/admin/courses/new', color: 'bg-indigo-600 hover:bg-indigo-700 text-white' },
+  { label: 'Create Course', icon: Plus, href: '/admin/courses/new', color: 'bg-primary-600 hover:bg-primary-700 text-white' },
   { label: 'Add User', icon: UserPlus, href: '/admin/users', color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300' },
   { label: 'View Reports', icon: BarChart3, href: '/admin/reports', color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300' },
   { label: 'Manage Compliance', icon: ClipboardCheck, href: '/admin/compliance', color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300' },
 ];
 
 const activityIcons: Record<string, { icon: typeof CheckCircle2; color: string }> = {
-  enrolled: { icon: GraduationCap, color: 'text-indigo-600 bg-indigo-50' },
+  enrolled: { icon: GraduationCap, color: 'text-primary-600 bg-primary-50' },
   completed: { icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
   added: { icon: UserCheck, color: 'text-blue-600 bg-blue-50' },
   scored: { icon: Award, color: 'text-amber-600 bg-amber-50' },
@@ -47,7 +47,7 @@ const activityIcons: Record<string, { icon: typeof CheckCircle2; color: string }
 export default function DashboardClient({ data }: { data: DashboardData }) {
   const platformStats = [
     { label: 'Total Users', value: data.totalUsers, icon: Users, color: 'bg-blue-500' },
-    { label: 'Active Courses', value: data.activeCourses, icon: BookOpen, color: 'bg-indigo-500' },
+    { label: 'Active Courses', value: data.activeCourses, icon: BookOpen, color: 'bg-primary-500' },
     { label: 'Enrollments This Month', value: data.enrollmentsThisMonth, icon: GraduationCap, color: 'bg-purple-500' },
     { label: 'Completion Rate', value: data.completionRate, icon: TrendingUp, color: 'bg-green-500', isPercent: true },
     { label: 'Avg Score', value: data.avgScore, icon: Award, color: 'bg-amber-500', isPercent: true },
@@ -121,7 +121,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                       course.completionRate >= 90
                         ? 'bg-green-500'
                         : course.completionRate >= 75
-                          ? 'bg-indigo-500'
+                          ? 'bg-primary-500'
                           : 'bg-amber-500'
                     )}
                     style={{ width: `${course.completionRate}%` }}
@@ -151,7 +151,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <p className="text-sm text-gray-700">
                       <span className="font-semibold text-gray-900">{activity.user}</span>{' '}
                       {activity.action}{' '}
-                      <span className="font-medium text-indigo-600">{activity.target}</span>
+                      <span className="font-medium text-primary-600">{activity.target}</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400">

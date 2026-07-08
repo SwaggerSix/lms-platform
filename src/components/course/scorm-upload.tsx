@@ -43,7 +43,7 @@ export default function ScormUpload({ lessonId, initialUrl, onUploaded }: ScormU
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
       <div className="mb-2 flex items-center gap-2">
-        <Package className="h-4 w-4 text-indigo-600" />
+        <Package className="h-4 w-4 text-primary-600" />
         <h3 className="text-sm font-semibold text-gray-900">SCORM Package (e-learning)</h3>
       </div>
       <p className="mb-3 text-xs text-gray-500">
@@ -72,11 +72,11 @@ export default function ScormUpload({ lessonId, initialUrl, onUploaded }: ScormU
           const f = e.dataTransfer.files?.[0];
           if (f) upload(f);
         }}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/40"
+        className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-primary-400 hover:bg-primary-50/40"
       >
         {status === "uploading" ? (
           <>
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+            <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
             <p className="mt-2 text-sm text-gray-600">Extracting &amp; uploading {fileName}…</p>
           </>
         ) : status === "done" ? (
@@ -89,7 +89,7 @@ export default function ScormUpload({ lessonId, initialUrl, onUploaded }: ScormU
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="mt-1 text-xs text-indigo-600 hover:underline"
+                className="mt-1 text-xs text-primary-600 hover:underline"
               >
                 Preview launch file
               </a>

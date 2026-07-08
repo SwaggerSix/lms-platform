@@ -31,8 +31,8 @@ const stepOptions: Array<{
     label: "Action",
     description: "Send email, enroll user, call webhook...",
     icon: Zap,
-    color: "text-indigo-600",
-    bg: "bg-indigo-50 hover:bg-indigo-100",
+    color: "text-primary-600",
+    bg: "bg-primary-50 hover:bg-primary-100",
   },
   {
     type: "condition",
@@ -123,7 +123,7 @@ export function AddStepMenu({ onAdd }: AddStepMenuProps) {
           "flex items-center gap-2 px-5 py-2.5 rounded-xl shadow-lg transition-all text-sm font-medium",
           isOpen
             ? "bg-gray-700 text-white"
-            : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-xl"
+            : "bg-primary-600 text-white hover:bg-primary-700 hover:shadow-xl"
         )}
       >
         {isOpen ? (

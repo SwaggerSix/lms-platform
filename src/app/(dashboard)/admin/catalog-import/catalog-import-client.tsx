@@ -44,7 +44,7 @@ export default function CatalogImportClient() {
 
       <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-white p-6">
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 text-center">
-          <FileSpreadsheet className="h-10 w-10 text-indigo-400" />
+          <FileSpreadsheet className="h-10 w-10 text-primary-400" />
           <span className="text-sm font-medium text-gray-700">
             {file ? file.name : "Choose the completed audit spreadsheet"}
           </span>
@@ -61,7 +61,7 @@ export default function CatalogImportClient() {
       <button
         onClick={submit}
         disabled={!file || uploading}
-        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
       >
         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
         Import content

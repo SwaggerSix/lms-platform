@@ -59,7 +59,7 @@ const reportTemplates = [
   { id: "3", name: "Skills Gap Report", description: "Identify skill gaps across teams", icon: <BarChart3 className="h-6 w-6" />, color: "text-purple-600", bgColor: "bg-purple-100" },
   { id: "4", name: "Engagement Report", description: "Measure learner engagement metrics", icon: <TrendingUp className="h-6 w-6" />, color: "text-orange-600", bgColor: "bg-orange-100" },
   { id: "5", name: "Course Effectiveness", description: "Analyze course performance and ratings", icon: <Target className="h-6 w-6" />, color: "text-red-600", bgColor: "bg-red-100" },
-  { id: "6", name: "Learner Progress", description: "Individual and team progress tracking", icon: <Users className="h-6 w-6" />, color: "text-indigo-600", bgColor: "bg-indigo-100" },
+  { id: "6", name: "Learner Progress", description: "Individual and team progress tracking", icon: <Users className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
 ];
 
 const reportFields = ["User Name", "Department", "Course", "Status", "Score", "Completion Date", "Time Spent", "Certificate"];
@@ -306,7 +306,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
               </div>
               <h3 className="mt-3 font-semibold text-gray-900">{template.name}</h3>
               <p className="mt-1 text-sm text-gray-500">{template.description}</p>
-              <button onClick={() => fetchReport(template.name)} disabled={loadingReport !== null} className="mt-4 w-full rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-50">
+              <button onClick={() => fetchReport(template.name)} disabled={loadingReport !== null} className="mt-4 w-full rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-100 transition-colors disabled:opacity-50">
                 {loadingReport === template.name ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate"}
               </button>
             </div>
@@ -316,7 +316,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
 
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-5">
-          <Filter className="h-5 w-5 text-indigo-600" />
+          <Filter className="h-5 w-5 text-primary-600" />
           <h2 className="text-lg font-semibold text-gray-900">Custom Report Builder</h2>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -325,7 +325,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
             <div className="grid grid-cols-2 gap-2">
               {reportFields.map((field) => (
                 <label key={field} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input type="checkbox" checked={selectedFields.has(field)} onChange={() => toggleField(field)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                  <input type="checkbox" checked={selectedFields.has(field)} onChange={() => toggleField(field)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                   <span className="text-sm text-gray-700">{field}</span>
                 </label>
               ))}
@@ -335,14 +335,14 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
               <div className="flex items-center gap-3">
-                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 <span className="text-sm text-gray-500">to</span>
-                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-              <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="All">All Departments</option>
                 <option value="Executive">Executive</option>
                 <option value="HR">HR</option>
@@ -354,7 +354,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="All">All Roles</option>
                 <option value="Instructor">Instructor</option>
                 <option value="Learner">Learner</option>
@@ -362,7 +362,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
                 <option value="Admin">Admin</option>
               </select>
             </div>
-            <button onClick={() => fetchReport()} disabled={loadingReport !== null} className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50">
+            <button onClick={() => fetchReport()} disabled={loadingReport !== null} className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50">
               {loadingReport === "__custom__" ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate Custom Report"}
             </button>
           </div>
@@ -373,7 +373,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
             <div className="flex items-center gap-2">
-              <Table className="h-5 w-5 text-indigo-600" />
+              <Table className="h-5 w-5 text-primary-600" />
               <h2 className="text-lg font-semibold text-gray-900">Report Preview</h2>
               <span className="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{reportData.length} rows</span>
             </div>

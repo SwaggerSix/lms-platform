@@ -41,7 +41,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             onChange={(e) => onChange?.(e.target.value)}
             className={cn(
               "h-10 w-full appearance-none rounded-md border bg-white px-3 pr-10 text-sm text-gray-900 transition-colors",
-              "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+              "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
               "disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
               error
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500"

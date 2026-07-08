@@ -222,7 +222,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           aria-checked={n.enabled}
           aria-label={`Toggle ${n.name} notifications`}
           onClick={() => toggleNotification(n.id)}
-          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", n.enabled ? "bg-indigo-600" : "bg-gray-300")}
+          className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", n.enabled ? "bg-primary-600" : "bg-gray-300")}
         >
           <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", n.enabled ? "translate-x-6" : "translate-x-1")} />
         </button>
@@ -286,7 +286,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               onClick={() => setActiveTab(tab)}
               className={cn(
                 "border-b-2 pb-3 text-sm font-medium transition-colors",
-                activeTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                activeTab === tab ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               )}
             >
               {tab}
@@ -299,13 +299,13 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-            <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
             <div className="relative max-w-md">
               <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="America/New_York">Eastern Time (ET)</option>
                 <option value="America/Chicago">Central Time (CT)</option>
                 <option value="America/Denver">Mountain Time (MT)</option>
@@ -318,7 +318,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Default Language</label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
               <option value="en">English</option>
               <option value="es">Spanish</option>
               <option value="fr">French</option>
@@ -329,7 +329,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date Format</label>
-            <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <select value={dateFormat} onChange={(e) => setDateFormat(e.target.value)} className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
               <option value="MM/DD/YYYY">MM/DD/YYYY</option>
               <option value="DD/MM/YYYY">DD/MM/YYYY</option>
               <option value="YYYY-MM-DD">YYYY-MM-DD</option>
@@ -339,7 +339,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <button
               disabled={saving === "general"}
               onClick={() => saveSetting("general", { companyName, timezone, language, dateFormat })}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               {saving === "general" && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
@@ -350,12 +350,12 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
 
       {activeTab === "Branding" && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+          <div className="flex items-center justify-between rounded-lg border border-primary-200 bg-primary-50 p-4">
             <div>
-              <p className="text-sm font-medium text-indigo-900">Advanced Branding</p>
-              <p className="text-xs text-indigo-700">Full portal customization with live preview, theme presets, and login page styling</p>
+              <p className="text-sm font-medium text-primary-900">Advanced Branding</p>
+              <p className="text-xs text-primary-700">Full portal customization with live preview, theme presets, and login page styling</p>
             </div>
-            <a href="/admin/settings/branding" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
+            <a href="/admin/settings/branding" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors">
               Open Branding Studio
             </a>
           </div>
@@ -377,14 +377,14 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
             <div className="flex items-center gap-3 max-w-md">
-              <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+              <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               <div className="h-10 w-10 rounded-lg border border-gray-300 shadow-inner" style={{ backgroundColor: primaryColor }} />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Accent Color</label>
             <div className="flex items-center gap-3 max-w-md">
-              <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+              <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               <div className="h-10 w-10 rounded-lg border border-gray-300 shadow-inner" style={{ backgroundColor: accentColor }} />
             </div>
           </div>
@@ -406,7 +406,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <button
               disabled={saving === "branding"}
               onClick={() => saveSetting("branding", { primaryColor, accentColor })}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               {saving === "branding" && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
@@ -429,7 +429,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email Footer Text</label>
-            <textarea value={emailFooter} onChange={(e) => setEmailFooter(e.target.value)} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+            <textarea value={emailFooter} onChange={(e) => setEmailFooter(e.target.value)} rows={3} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -447,7 +447,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <button
               disabled={saving === "notifications"}
               onClick={() => saveSetting("notifications", { types: notifications, emailFooter, webhookUrl, selectedWebhookEvents: Array.from(selectedWebhookEvents) })}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               {saving === "notifications" && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
@@ -464,7 +464,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 <p className="text-sm font-medium text-gray-900">{feature.name}</p>
                 <p className="text-sm text-gray-500">{feature.description}</p>
               </div>
-              <button onClick={() => toggleFeature(feature.id)} className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-4", feature.enabled ? "bg-indigo-600" : "bg-gray-300")}>
+              <button onClick={() => toggleFeature(feature.id)} className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-4", feature.enabled ? "bg-primary-600" : "bg-gray-300")}>
                 <span className={cn("inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm", feature.enabled ? "translate-x-6" : "translate-x-1")} />
               </button>
             </div>
@@ -473,7 +473,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <button
               disabled={saving === "features"}
               onClick={() => saveSetting("features", features)}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
               {saving === "features" && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
@@ -534,14 +534,14 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             <h3 className="text-sm font-semibold text-gray-900">Webhooks</h3>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
-              <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://your-api.com/webhooks" />
+              <input type="url" value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" placeholder="https://your-api.com/webhooks" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Webhook Events</label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {webhookEvents.map((event) => (
                   <label key={event} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input type="checkbox" checked={selectedWebhookEvents.has(event)} onChange={() => toggleWebhookEvent(event)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    <input type="checkbox" checked={selectedWebhookEvents.has(event)} onChange={() => toggleWebhookEvent(event)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                     <span className="text-sm text-gray-700">{event}</span>
                   </label>
                 ))}
@@ -551,7 +551,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
               <button
                 disabled={saving === "webhooks"}
                 onClick={() => saveSetting("webhooks", { webhookUrl, selectedWebhookEvents: Array.from(selectedWebhookEvents) })}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
               >
                 {saving === "webhooks" && <Loader2 className="h-4 w-4 animate-spin" />}
                 Save Changes
@@ -570,7 +570,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             </div>
             <a
               href="/admin/settings/integrations"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               Manage Integrations
             </a>
@@ -587,7 +587,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             </div>
             <a
               href="/admin/automation"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               Manage Automation
             </a>
@@ -604,7 +604,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             </div>
             <a
               href="/admin/audit-log"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               View Audit Log
             </a>
@@ -621,7 +621,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             </div>
             <a
               href="/admin/settings/error-log"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               View Error Log
             </a>

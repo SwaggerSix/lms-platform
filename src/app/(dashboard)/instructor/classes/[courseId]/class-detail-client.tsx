@@ -246,7 +246,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
             </p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+            <span className="rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700">
               {course.courseType.replace("_", " ")}
             </span>
             <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium capitalize text-gray-600">
@@ -264,7 +264,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
         <button
           onClick={messageClass}
           disabled={messaging}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
         >
           {messaging ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -287,7 +287,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                 onClick={() => setTab(t.key)}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                   active
-                    ? "border-indigo-600 text-indigo-600"
+                    ? "border-primary-600 text-primary-600"
                     : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 }`}
               >
@@ -319,7 +319,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
           )}
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <CalendarDays className="h-4 w-4 text-indigo-600" />
+              <CalendarDays className="h-4 w-4 text-primary-600" />
               Scheduled sessions
             </h2>
             {data.sessions.length === 0 ? (
@@ -356,7 +356,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                               href={s.meetingUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-indigo-600 hover:underline"
+                              className="text-primary-600 hover:underline"
                             >
                               Join link
                             </a>
@@ -504,7 +504,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
         <section className="space-y-6">
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <Plus className="h-4 w-4 text-indigo-600" />
+              <Plus className="h-4 w-4 text-primary-600" />
               Deploy an evaluation
             </h2>
             {data.evaluationTemplates.length === 0 ? (
@@ -521,7 +521,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                   <select
                     value={templateId}
                     onChange={(e) => setTemplateId(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="">Select a template…</option>
                     {data.evaluationTemplates.map((t) => (
@@ -542,13 +542,13 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                     onChange={(e) =>
                       setDelayDays(Math.max(0, Number(e.target.value) || 0))
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <button
                   onClick={deployEvaluation}
                   disabled={deploying}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
                 >
                   {deploying ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

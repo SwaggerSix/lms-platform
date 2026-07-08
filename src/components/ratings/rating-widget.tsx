@@ -141,7 +141,7 @@ export default function RatingWidget({
           <button
             onClick={submit}
             disabled={saving || (!courseStars && !instrStars)}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
             {summary?.my_rating ? "Update rating" : "Submit rating"}

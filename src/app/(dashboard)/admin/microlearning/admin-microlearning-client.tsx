@@ -217,7 +217,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Total Nuggets", value: stats.totalNuggets, color: "bg-indigo-100 text-indigo-600" },
+          { label: "Total Nuggets", value: stats.totalNuggets, color: "bg-primary-100 text-primary-600" },
           { label: "Total Views", value: stats.totalViews.toLocaleString(), color: "bg-blue-100 text-blue-600" },
           { label: "Completions", value: stats.totalCompletions, color: "bg-green-100 text-green-600" },
           { label: "Embed Widgets", value: stats.totalWidgets, color: "bg-amber-100 text-amber-600" },
@@ -271,7 +271,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     type="text"
                     value={nuggetForm.title}
                     onChange={(e) => setNuggetForm((p) => ({ ...p, title: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Enter nugget title"
                   />
                 </div>
@@ -281,7 +281,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     <select
                       value={nuggetForm.content_type}
                       onChange={(e) => setNuggetForm((p) => ({ ...p, content_type: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       {Object.entries(typeLabels).map(([k, v]) => (
                         <option key={k} value={k}>{v}</option>
@@ -293,7 +293,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     <select
                       value={nuggetForm.difficulty}
                       onChange={(e) => setNuggetForm((p) => ({ ...p, difficulty: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="beginner">Beginner</option>
                       <option value="intermediate">Intermediate</option>
@@ -307,7 +307,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                 <textarea
                   value={nuggetForm.content}
                   onChange={(e) => setNuggetForm((p) => ({ ...p, content: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
                   rows={4}
                   placeholder='{"text": "Your tip content here..."}'
                 />
@@ -319,7 +319,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     type="text"
                     value={nuggetForm.tags}
                     onChange={(e) => setNuggetForm((p) => ({ ...p, tags: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="javascript, react, frontend"
                   />
                 </div>
@@ -329,7 +329,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     type="number"
                     value={nuggetForm.estimated_seconds}
                     onChange={(e) => setNuggetForm((p) => ({ ...p, estimated_seconds: parseInt(e.target.value) || 60 }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -382,7 +382,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     type="text"
                     value={widgetForm.name}
                     onChange={(e) => setWidgetForm((p) => ({ ...p, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="My Learning Widget"
                   />
                 </div>
@@ -391,7 +391,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                   <select
                     value={widgetForm.widget_type}
                     onChange={(e) => setWidgetForm((p) => ({ ...p, widget_type: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="nugget_feed">Nugget Feed</option>
                     <option value="course_card">Course Card</option>
@@ -407,7 +407,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                   type="text"
                   value={widgetForm.allowed_domains}
                   onChange={(e) => setWidgetForm((p) => ({ ...p, allowed_domains: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="example.com, mysite.org"
                 />
               </div>
@@ -447,7 +447,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                     </code>
                     <button
                       onClick={() => setSelectedWidget(selectedWidget?.id === widget.id ? null : widget)}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap"
+                      className="text-xs text-primary-600 hover:text-primary-800 font-medium whitespace-nowrap"
                     >
                       {selectedWidget?.id === widget.id ? "Hide Code" : "Get Code"}
                     </button>

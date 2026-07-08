@@ -39,7 +39,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {!notification.is_read && (
-          <span className="h-2 w-2 rounded-full bg-indigo-600" aria-label="Unread" />
+          <span className="h-2 w-2 rounded-full bg-primary-600" aria-label="Unread" />
         )}
         <span className="text-xs text-gray-500">{formatWhen(notification.created_at)}</span>
       </div>
@@ -48,7 +48,7 @@ function NotificationRow({ notification }: { notification: Notification }) {
 
   const rowClass = cn(
     "block border-b border-gray-100 px-4 py-3 transition-colors last:border-b-0",
-    !notification.is_read && "bg-indigo-50/50"
+    !notification.is_read && "bg-primary-50/50"
   );
 
   if (notification.link) {

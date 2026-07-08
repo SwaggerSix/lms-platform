@@ -190,7 +190,7 @@ export default function AdminClassesClient({
           )}
           <div className="sm:col-span-2 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-            <button type="submit" disabled={creating} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+            <button type="submit" disabled={creating} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
               {creating && <Loader2 className="h-4 w-4 animate-spin" />} Create Class
             </button>
           </div>
@@ -222,7 +222,7 @@ export default function AdminClassesClient({
                       <span className="inline-flex items-center gap-1 text-gray-500"><FileSignature className="h-3.5 w-3.5" />{c.contract_number}</span>
                     )}
                     {isAdmin && c.contract_url && (
-                      <a href={c.contract_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+                      <a href={c.contract_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700">
                         <ExternalLink className="h-3.5 w-3.5" /> Contract
                       </a>
                     )}
@@ -397,7 +397,7 @@ function ContractPanel({
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="SharePoint link to contract" className="rounded-lg border border-gray-300 px-3 py-2 text-sm sm:col-span-2" />
       </div>
       <div className="mt-2 flex items-center gap-2">
-        <button onClick={save} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+        <button onClick={save} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
           {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save contract
         </button>
         {error && <span className="text-xs text-red-600">{error}</span>}
@@ -468,7 +468,7 @@ function InvitePanel({ classId, onClose }: { classId: string; onClose: () => voi
           <option value="instructor">Instructor</option>
           <option value="observer">Observer</option>
         </select>
-        <button onClick={send} disabled={sending} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+        <button onClick={send} disabled={sending} className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 disabled:opacity-60">
           {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />} Send invitations
         </button>
         {result && <span className="text-xs text-gray-500">{result}</span>}

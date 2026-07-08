@@ -164,7 +164,7 @@ export default function RuleForm({
                 className={cn(
                   "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   (formConditions.role ?? []).includes(role)
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    ? "border-primary-500 bg-primary-50 text-primary-700"
                     : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
                 )}
               >
@@ -184,7 +184,7 @@ export default function RuleForm({
               const selected = Array.from(e.target.selectedOptions, (o) => o.value);
               updateCondition("organization_id", selected);
             }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           >
             {organizations.map((org) => (
               <option key={org.id} value={org.id}>
@@ -203,7 +203,7 @@ export default function RuleForm({
             value={formConditions.job_title_contains ?? ""}
             onChange={(e) => updateCondition("job_title_contains", e.target.value || undefined)}
             placeholder="e.g. Engineer, Manager"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           />
         </div>
 
@@ -217,7 +217,7 @@ export default function RuleForm({
               value={formConditions.hire_date_within_days ?? ""}
               onChange={(e) => updateCondition("hire_date_within_days", e.target.value ? parseInt(e.target.value) : undefined)}
               placeholder="30"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             />
           </div>
         )}
@@ -229,7 +229,7 @@ export default function RuleForm({
             <select
               value={formConditions.completed_course_id ?? ""}
               onChange={(e) => updateCondition("completed_course_id", e.target.value || undefined)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             >
               <option value="">Select a course...</option>
               {courses.map((c) => (
@@ -252,7 +252,7 @@ export default function RuleForm({
           <button
             type="button"
             onClick={() => setFormActions((prev) => [...prev, emptyAction()])}
-            className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800"
+            className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800"
           >
             <Plus className="h-3.5 w-3.5" /> Add Action
           </button>
@@ -282,7 +282,7 @@ export default function RuleForm({
                   prev.map((a, i) => (i === idx ? { type: newType } : a))
                 );
               }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             >
               {ACTION_TYPES.map((at) => (
                 <option key={at.value} value={at.value}>
@@ -301,7 +301,7 @@ export default function RuleForm({
                       prev.map((a, i) => (i === idx ? { ...a, course_id: e.target.value || undefined } : a))
                     )
                   }
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select a course...</option>
                   {courses.map((c) => (
@@ -324,7 +324,7 @@ export default function RuleForm({
                       )
                     }
                     placeholder="e.g. 30"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </>
@@ -338,7 +338,7 @@ export default function RuleForm({
                     prev.map((a, i) => (i === idx ? { ...a, path_id: e.target.value || undefined } : a))
                   )
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Select a learning path...</option>
                 {paths.map((p) => (
@@ -357,7 +357,7 @@ export default function RuleForm({
                     prev.map((a, i) => (i === idx ? { ...a, badge_id: e.target.value || undefined } : a))
                   )
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Select a badge...</option>
                 {badges.map((b) => (
@@ -378,7 +378,7 @@ export default function RuleForm({
                 }
                 placeholder="Notification message..."
                 rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             )}
           </div>
@@ -414,7 +414,7 @@ export default function RuleForm({
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g. Onboarding Enrollment for New Hires"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -426,7 +426,7 @@ export default function RuleForm({
               onChange={(e) => setFormDescription(e.target.value)}
               placeholder="What does this rule do?"
               rows={2}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
@@ -445,7 +445,7 @@ export default function RuleForm({
                     className={cn(
                       "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors text-left",
                       formTriggerType === tt.value
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
                         : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                     )}
                   >
@@ -466,7 +466,7 @@ export default function RuleForm({
               onClick={() => setFormActive(!formActive)}
               className={cn(
                 "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                formActive ? "bg-indigo-600" : "bg-gray-300"
+                formActive ? "bg-primary-600" : "bg-gray-300"
               )}
             >
               <span
@@ -494,16 +494,16 @@ export default function RuleForm({
           <hr className="border-gray-200" />
 
           {/* Preview */}
-          <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-4">
+          <div className="rounded-lg bg-primary-50 border border-primary-200 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-semibold text-indigo-800">Preview</h4>
+                <h4 className="text-sm font-semibold text-primary-800">Preview</h4>
                 {matchPreview !== null ? (
-                  <p className="text-sm text-indigo-600 mt-1">
+                  <p className="text-sm text-primary-600 mt-1">
                     This rule would match approximately <strong>{matchPreview}</strong> user{matchPreview !== 1 ? "s" : ""}.
                   </p>
                 ) : (
-                  <p className="text-xs text-indigo-500 mt-1">Click to estimate how many users match these conditions.</p>
+                  <p className="text-xs text-primary-500 mt-1">Click to estimate how many users match these conditions.</p>
                 )}
               </div>
               <Button type="button" size="sm" onClick={handlePreview} disabled={loadingPreview}>

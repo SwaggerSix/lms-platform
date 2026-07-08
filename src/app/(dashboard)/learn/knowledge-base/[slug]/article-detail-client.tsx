@@ -168,7 +168,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/learn/knowledge-base" className="hover:text-indigo-600 transition-colors">
+          <Link href="/learn/knowledge-base" className="hover:text-primary-600 transition-colors">
             Knowledge Base
           </Link>
           <ChevronRight className="h-4 w-4" />
@@ -185,7 +185,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
                 {/* Header */}
                 <div className="mb-8">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
                       {article.categoryName}
                     </span>
                     {article.isPinned && (
@@ -277,7 +277,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
             <div className="mt-6">
               <Link
                 href="/learn/knowledge-base"
-                className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 <ArrowLeft className="h-4 w-4" /> Back to Knowledge Base
               </Link>

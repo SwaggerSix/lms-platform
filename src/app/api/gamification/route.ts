@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       category: criteria_type || "achievement",
       criteria: {
         emoji: icon || "🏆",
-        color: "bg-indigo-100",
+        color: "bg-primary-100",
         type: criteria_type || "achievement",
         count: criteria_count || 1,
         points: points || 0,

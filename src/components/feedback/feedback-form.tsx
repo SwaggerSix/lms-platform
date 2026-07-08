@@ -126,12 +126,12 @@ export default function FeedbackForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-purple-600 rounded-xl p-6 text-white">
         <h2 className="text-xl font-semibold">Feedback for {subjectName}</h2>
-        <p className="text-indigo-100 mt-1">
+        <p className="text-primary-100 mt-1">
           {relationshipLabel[relationship] || relationship}
         </p>
-        <p className="text-indigo-200 text-sm mt-2">
+        <p className="text-primary-200 text-sm mt-2">
           Your honest and constructive feedback helps growth and development.
           {relationship !== "self" && " Responses may be anonymized."}
         </p>
@@ -145,7 +145,7 @@ export default function FeedbackForm({
             className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
           >
             <div className="flex items-start gap-3 mb-4">
-              <span className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-semibold">
+              <span className="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-sm font-semibold">
                 {index + 1}
               </span>
               <div>
@@ -217,7 +217,7 @@ export default function FeedbackForm({
                   disabled={isSubmitting}
                   rows={4}
                   placeholder="Share your feedback..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
               </div>
             )}
@@ -237,7 +237,7 @@ export default function FeedbackForm({
                       checked={answers[question.id] === option}
                       onChange={() => updateAnswer(question.id, option)}
                       disabled={isSubmitting}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                      className="w-4 h-4 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm text-gray-700">{option}</span>
                   </label>
@@ -272,7 +272,7 @@ export default function FeedbackForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? "Submitting..." : "Submit Feedback"}
           </button>

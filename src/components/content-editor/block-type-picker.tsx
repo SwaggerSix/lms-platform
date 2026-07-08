@@ -126,7 +126,7 @@ export default function BlockTypePicker({ onSelect, onClose }: BlockTypePickerPr
             placeholder="Search blocks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             autoFocus
           />
         </div>
@@ -146,9 +146,9 @@ export default function BlockTypePicker({ onSelect, onClose }: BlockTypePickerPr
                       onSelect(meta.type);
                       onClose();
                     }}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all text-left group"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/50 transition-all text-left group"
                   >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 group-hover:bg-indigo-100 flex items-center justify-center text-gray-500 group-hover:text-indigo-600 transition-colors">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gray-50 group-hover:bg-primary-100 flex items-center justify-center text-gray-500 group-hover:text-primary-600 transition-colors">
                       <BlockIcon name={meta.icon} />
                     </div>
                     <div className="min-w-0">

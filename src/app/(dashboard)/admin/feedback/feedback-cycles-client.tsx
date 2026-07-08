@@ -85,7 +85,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
         </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -107,7 +107,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Q1 2026 Performance Review"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -115,7 +115,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
               <select
                 value={formData.cycle_type}
                 onChange={(e) => setFormData({ ...formData, cycle_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="360">360-Degree</option>
                 <option value="peer">Peer Review</option>
@@ -130,7 +130,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={2}
                 placeholder="Describe the purpose and scope of this feedback cycle..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 resize-none"
               />
             </div>
             <div>
@@ -139,7 +139,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -148,7 +148,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                 type="date"
                 value={formData.end_date}
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                 checked={formData.anonymous}
                 onChange={(e) => setFormData({ ...formData, anonymous: e.target.checked })}
                 id="anonymous"
-                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
               <label htmlFor="anonymous" className="text-sm text-gray-700">Anonymous feedback</label>
             </div>
@@ -173,7 +173,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
             <button
               type="submit"
               disabled={creating || !formData.name}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
             >
               {creating ? "Creating..." : "Create Cycle"}
             </button>
@@ -189,7 +189,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
             onClick={() => setFilterStatus(status)}
             className={`px-3 py-1.5 text-sm rounded-lg capitalize transition-colors ${
               filterStatus === status
-                ? "bg-indigo-100 text-indigo-700 font-medium"
+                ? "bg-primary-100 text-primary-700 font-medium"
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
@@ -211,12 +211,12 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
             <Link
               key={cycle.id}
               href={`/admin/feedback/${cycle.id}`}
-              className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-indigo-300 hover:shadow-md transition-all group"
+              className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-primary-300 hover:shadow-md transition-all group"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                       {cycle.name}
                     </h3>
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
@@ -250,7 +250,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                     )}
                   </div>
                 </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>

@@ -288,7 +288,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
               onClick={() => setActiveTab(tab)}
               className={cn(
                 "border-b-2 pb-3 text-sm font-medium transition-colors",
-                activeTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                activeTab === tab ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               )}
             >
               {tab}
@@ -310,11 +310,11 @@ export default function NotificationsClient({ announcements, templates }: Notifi
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="Announcement title..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <input type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="Announcement title..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-                  <textarea rows={4} value={formBody} onChange={(e) => setFormBody(e.target.value)} placeholder="Write your announcement..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                  <textarea rows={4} value={formBody} onChange={(e) => setFormBody(e.target.value)} placeholder="Write your announcement..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
@@ -326,13 +326,13 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                         { value: "role", label: "Specific Role" },
                       ].map((opt) => (
                         <label key={opt.value} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                          <input type="radio" name="audienceType" value={opt.value} checked={formAudienceType === opt.value} onChange={() => setFormAudienceType(opt.value)} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <input type="radio" name="audienceType" value={opt.value} checked={formAudienceType === opt.value} onChange={() => setFormAudienceType(opt.value)} className="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500" />
                           {opt.label}
                         </label>
                       ))}
                     </div>
                     {formAudienceType === "department" && (
-                      <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         <option value="executive">Executive</option>
                         <option value="hr">HR</option>
                         <option value="operations">Operations</option>
@@ -342,7 +342,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                       </select>
                     )}
                     {formAudienceType === "role" && (
-                      <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <select value={formAudience} onChange={(e) => setFormAudience(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         <option value="instructor">Instructor</option>
                         <option value="learner">Learner</option>
                         <option value="manager">Manager</option>
@@ -354,20 +354,20 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Schedule</label>
                       <div className="flex gap-3">
-                        <button onClick={() => setFormSchedule("now")} className={cn("flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors", formSchedule === "now" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-700 hover:bg-gray-50")}>
+                        <button onClick={() => setFormSchedule("now")} className={cn("flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors", formSchedule === "now" ? "border-primary-600 bg-primary-50 text-primary-700" : "border-gray-300 text-gray-700 hover:bg-gray-50")}>
                           Send Now
                         </button>
-                        <button onClick={() => setFormSchedule("later")} className={cn("flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors", formSchedule === "later" ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-300 text-gray-700 hover:bg-gray-50")}>
+                        <button onClick={() => setFormSchedule("later")} className={cn("flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors", formSchedule === "later" ? "border-primary-600 bg-primary-50 text-primary-700" : "border-gray-300 text-gray-700 hover:bg-gray-50")}>
                           Schedule for Later
                         </button>
                       </div>
                       {formSchedule === "later" && (
-                        <input type="datetime-local" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                        <input type="datetime-local" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                       )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                      <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                         <option value="Normal">Normal</option>
                         <option value="High">High</option>
                         <option value="Urgent">Urgent</option>
@@ -408,11 +408,11 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-                    <textarea rows={4} value={editBody} onChange={(e) => setEditBody(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <textarea rows={4} value={editBody} onChange={(e) => setEditBody(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
@@ -434,7 +434,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
             {announcements.map((announcement) => (
               <div key={announcement.id} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                 <div className="flex items-start gap-4 p-5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600">
                     <Megaphone className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -478,7 +478,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEditModal(announcement)}
-                      className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+                      className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-primary-600 transition-colors"
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
@@ -511,15 +511,15 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input type="text" value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="text" value={templateName} onChange={(e) => setTemplateName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <input type="text" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <input type="text" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Preview Text</label>
-                    <textarea rows={3} value={templatePreview} onChange={(e) => setTemplatePreview(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                    <textarea rows={3} value={templatePreview} onChange={(e) => setTemplatePreview(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
@@ -569,7 +569,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
         <div className="space-y-6">
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <Settings className="h-5 w-5 text-indigo-600" />
+              <Settings className="h-5 w-5 text-primary-600" />
               <h3 className="text-sm font-semibold text-gray-900">Default Channels</h3>
             </div>
             <div className="space-y-3">
@@ -581,7 +581,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                   </div>
                   <button
                     onClick={() => toggleChannel(idx)}
-                    className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", channel.enabled ? "bg-indigo-600" : "bg-gray-300")}
+                    className={cn("relative inline-flex h-6 w-11 items-center rounded-full transition-colors", channel.enabled ? "bg-primary-600" : "bg-gray-300")}
                   >
                     <span className={cn("inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform", channel.enabled ? "translate-x-6" : "translate-x-1")} />
                   </button>
@@ -596,12 +596,12 @@ export default function NotificationsClient({ announcements, templates }: Notifi
             <div className="flex items-center gap-3 max-w-md">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">From</label>
-                <input type="time" value={quietFrom} onChange={(e) => setQuietFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="time" value={quietFrom} onChange={(e) => setQuietFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
               <span className="text-sm text-gray-500 mt-5">to</span>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">To</label>
-                <input type="time" value={quietTo} onChange={(e) => setQuietTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="time" value={quietTo} onChange={(e) => setQuietTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
             </div>
           </div>
@@ -611,7 +611,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
             <div className="space-y-3 max-w-md">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Digest Frequency</label>
-                <select value={digestFrequency} onChange={(e) => setDigestFrequency(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <select value={digestFrequency} onChange={(e) => setDigestFrequency(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                   <option value="immediate">Immediate (no digest)</option>
                   <option value="daily">Daily Digest</option>
                   <option value="weekly">Weekly Digest</option>
@@ -619,7 +619,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Digest Send Time</label>
-                <input type="time" value={digestTime} onChange={(e) => setDigestTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                <input type="time" value={digestTime} onChange={(e) => setDigestTime(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
               </div>
             </div>
           </div>

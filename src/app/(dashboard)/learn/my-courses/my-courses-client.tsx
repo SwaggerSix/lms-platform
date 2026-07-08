@@ -78,7 +78,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                   className={cn(
                     "relative pb-3 text-sm font-medium transition-colors",
                     activeTab === tab.key
-                      ? "text-indigo-600"
+                      ? "text-primary-600"
                       : "text-gray-500 hover:text-gray-700"
                   )}
                 >
@@ -87,14 +87,14 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                     className={cn(
                       "ml-1.5 rounded-full px-2 py-0.5 text-xs",
                       activeTab === tab.key
-                        ? "bg-indigo-100 text-indigo-600"
+                        ? "bg-primary-100 text-primary-600"
                         : "bg-gray-100 text-gray-500"
                     )}
                   >
                     {count}
                   </span>
                   {activeTab === tab.key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
                   )}
                 </button>
               );
@@ -137,7 +137,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                         <div
                           className={cn(
                             "h-full rounded-full transition-all",
-                            course.progress === 100 ? "bg-green-500" : "bg-indigo-600"
+                            course.progress === 100 ? "bg-green-500" : "bg-primary-600"
                           )}
                           style={{ width: `${course.progress}%` }}
                         />
@@ -183,7 +183,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
                       className={cn(
                         "mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors",
                         course.status === "in_progress"
-                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                          ? "bg-primary-600 text-white hover:bg-primary-700"
                           : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                       )}
                     >
@@ -210,7 +210,7 @@ export default function MyCoursesClient({ courses }: { courses: MyCourse[] }) {
             action={
               <a
                 href="/learn/catalog"
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
               >
                 Browse Catalog
                 <ArrowRight className="h-4 w-4" />

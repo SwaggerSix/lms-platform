@@ -242,7 +242,7 @@ export default function MentorshipClient({
               onClick={() => setActiveTab(tab.key as any)}
               className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? "border-indigo-600 text-indigo-600"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               }`}
             >
@@ -254,11 +254,11 @@ export default function MentorshipClient({
 
       {/* Request form modal */}
       {showRequestForm && (
-        <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+        <div className="mb-6 rounded-xl border border-primary-200 bg-primary-50 p-5">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Request Mentorship
             {selectedMentorId && (
-              <span className="text-indigo-600 font-normal"> (specific mentor selected)</span>
+              <span className="text-primary-600 font-normal"> (specific mentor selected)</span>
             )}
           </h3>
           {requestError && (
@@ -274,7 +274,7 @@ export default function MentorshipClient({
               <select
                 value={requestType}
                 onChange={(e) => setRequestType(e.target.value as "traditional" | "reverse" | "peer")}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="traditional">Traditional — learn from someone more senior</option>
                 <option value="reverse">Reverse — share fresh perspective with a senior colleague</option>
@@ -290,7 +290,7 @@ export default function MentorshipClient({
                 onChange={(e) => setRequestGoals(e.target.value)}
                 rows={3}
                 placeholder="I want to improve my leadership skills, learn about project management..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -302,7 +302,7 @@ export default function MentorshipClient({
                 value={requestAreas}
                 onChange={(e) => setRequestAreas(e.target.value)}
                 placeholder="Leadership, Project Management, Python"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="flex gap-3 justify-end">
@@ -318,7 +318,7 @@ export default function MentorshipClient({
               <button
                 onClick={submitRequest}
                 disabled={isRequesting}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
               >
                 {isRequesting ? "Submitting..." : "Submit Request"}
               </button>
@@ -354,7 +354,7 @@ export default function MentorshipClient({
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search by name or bio..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -362,7 +362,7 @@ export default function MentorshipClient({
               <select
                 value={availabilityFilter}
                 onChange={(e) => setAvailabilityFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Any</option>
                 <option value="available">Available</option>
@@ -375,7 +375,7 @@ export default function MentorshipClient({
               <select
                 value={expertiseFilter}
                 onChange={(e) => setExpertiseFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Any</option>
                 {expertiseOptions.map((opt) => (
@@ -391,7 +391,7 @@ export default function MentorshipClient({
               {(searchInput || availabilityFilter || expertiseFilter) && !browsing && (
                 <button
                   onClick={() => { setSearchInput(""); setAvailabilityFilter(""); setExpertiseFilter(""); }}
-                  className="ml-3 text-xs text-indigo-600 hover:text-indigo-700"
+                  className="ml-3 text-xs text-primary-600 hover:text-primary-700"
                 >
                   Clear filters
                 </button>
@@ -402,7 +402,7 @@ export default function MentorshipClient({
                 setSelectedMentorId(null);
                 setShowRequestForm(true);
               }}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
             >
               Request Any Mentor
             </button>
@@ -445,7 +445,7 @@ export default function MentorshipClient({
               <p className="text-sm text-gray-500">No mentorship requests yet.</p>
               <button
                 onClick={() => setActiveTab("browse")}
-                className="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                className="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700"
               >
                 Browse mentors to get started
               </button>
@@ -469,7 +469,7 @@ export default function MentorshipClient({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
                         {partnerName[0] ?? "?"}
                       </div>
                       <div>
@@ -563,7 +563,7 @@ export default function MentorshipClient({
                   value={profileExpertise}
                   onChange={(e) => setProfileExpertise(e.target.value)}
                   placeholder="JavaScript, Leadership, Data Science"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
@@ -576,7 +576,7 @@ export default function MentorshipClient({
                   onChange={(e) => setProfileBio(e.target.value)}
                   rows={4}
                   placeholder="Tell potential mentees about yourself..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
@@ -591,7 +591,7 @@ export default function MentorshipClient({
                     onChange={(e) => setProfileYears(parseInt(e.target.value) || 0)}
                     min={0}
                     max={50}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
 
@@ -602,7 +602,7 @@ export default function MentorshipClient({
                   <select
                     value={profileAvailability}
                     onChange={(e) => setProfileAvailability(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="available">Available</option>
                     <option value="limited">Limited</option>
@@ -620,7 +620,7 @@ export default function MentorshipClient({
                     onChange={(e) => setProfileMaxMentees(parseInt(e.target.value) || 1)}
                     min={1}
                     max={20}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
 
@@ -633,7 +633,7 @@ export default function MentorshipClient({
                     value={profileTimezone}
                     onChange={(e) => setProfileTimezone(e.target.value)}
                     placeholder="America/New_York"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
 
@@ -644,7 +644,7 @@ export default function MentorshipClient({
                   <select
                     value={profileFrequency}
                     onChange={(e) => setProfileFrequency(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="weekly">Weekly</option>
                     <option value="biweekly">Biweekly</option>
@@ -667,7 +667,7 @@ export default function MentorshipClient({
                       value={profileLanguages}
                       onChange={(e) => setProfileLanguages(e.target.value)}
                       placeholder="e.g. English, Spanish"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     />
                   </div>
                   <div>
@@ -679,7 +679,7 @@ export default function MentorshipClient({
                       value={profileAffinity}
                       onChange={(e) => setProfileAffinity(e.target.value)}
                       placeholder="e.g. Women in Tech, BIPOC, LGBTQ+, Veterans"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     />
                     <p className="mt-1 text-xs text-gray-500">
                       Self-identified. Shown on your mentor card so mentees can find affinity matches; never used to gate access.
@@ -692,7 +692,7 @@ export default function MentorshipClient({
                 <button
                   onClick={handleSaveProfile}
                   disabled={profileSaving}
-                  className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
                 >
                   {profileSaving
                     ? "Saving..."

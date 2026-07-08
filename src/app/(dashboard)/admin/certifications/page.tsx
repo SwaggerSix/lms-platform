@@ -5,7 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 const GRADIENTS = [
   'from-green-500 to-emerald-600',
-  'from-blue-500 to-indigo-600',
+  'from-blue-500 to-primary-600',
   'from-purple-500 to-violet-600',
   'from-amber-500 to-orange-600',
   'from-red-500 to-rose-600',

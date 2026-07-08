@@ -486,10 +486,10 @@ export default function TeamClient({
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <Users className="h-8 w-8 text-indigo-600" />
+            <Users className="h-8 w-8 text-primary-600" />
             <h1 className="text-3xl font-bold text-gray-900">My Team</h1>
             <InfoTooltip content={getHelp("manager.team").details} label="About My Team" side="bottom" />
-            <span className="ml-2 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
+            <span className="ml-2 rounded-full bg-primary-100 px-3 py-1 text-sm font-semibold text-primary-700">
               {stats.teamSize} members
             </span>
           </div>
@@ -516,8 +516,8 @@ export default function TeamClient({
             label: "Team Size",
             value: stats.teamSize,
             icon: Users,
-            color: "text-indigo-600",
-            bg: "bg-indigo-50",
+            color: "text-primary-600",
+            bg: "bg-primary-50",
           },
           {
             label: "Avg Completion Rate",
@@ -572,7 +572,7 @@ export default function TeamClient({
               placeholder="Search team members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -580,7 +580,7 @@ export default function TeamClient({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -590,7 +590,7 @@ export default function TeamClient({
             <select
               value={complianceFilter}
               onChange={(e) => setComplianceFilter(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="all">All Compliance</option>
               <option value="compliant">Compliant</option>
@@ -599,7 +599,7 @@ export default function TeamClient({
             <select
               value={activityFilter}
               onChange={(e) => setActivityFilter(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="all">All Activity</option>
               <option value="recent">Active (last 3 days)</option>
@@ -613,7 +613,7 @@ export default function TeamClient({
             className={cn(
               "rounded-md p-2 transition-colors",
               viewMode === "table"
-                ? "bg-indigo-100 text-indigo-600"
+                ? "bg-primary-100 text-primary-600"
                 : "text-gray-400 hover:text-gray-600"
             )}
           >
@@ -624,7 +624,7 @@ export default function TeamClient({
             className={cn(
               "rounded-md p-2 transition-colors",
               viewMode === "grid"
-                ? "bg-indigo-100 text-indigo-600"
+                ? "bg-primary-100 text-primary-600"
                 : "text-gray-400 hover:text-gray-600"
             )}
           >
@@ -674,7 +674,7 @@ export default function TeamClient({
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-semibold text-primary-700">
                           {member.avatar}
                         </div>
                         <div>
@@ -817,7 +817,7 @@ export default function TeamClient({
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700">
                     {member.avatar}
                   </div>
                   <div>
@@ -958,7 +958,7 @@ export default function TeamClient({
             </div>
             <div className="px-6 py-5">
               <div className="mb-6 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-700">
                   {profileMember.avatar}
                 </div>
                 <div>
@@ -1122,7 +1122,7 @@ export default function TeamClient({
                     placeholder="Search courses..."
                     value={courseSearch}
                     onChange={(e) => setCourseSearch(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
@@ -1138,7 +1138,7 @@ export default function TeamClient({
                         className={cn(
                           "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50",
                           selectedCourse === course.id &&
-                            "bg-indigo-50 text-indigo-700"
+                            "bg-primary-50 text-primary-700"
                         )}
                       >
                         <div>
@@ -1148,7 +1148,7 @@ export default function TeamClient({
                           </p>
                         </div>
                         {selectedCourse === course.id && (
-                          <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                          <CheckCircle2 className="h-4 w-4 text-primary-600" />
                         )}
                       </button>
                     ))
@@ -1165,7 +1165,7 @@ export default function TeamClient({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -1180,8 +1180,8 @@ export default function TeamClient({
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
                   selectedCourse && dueDate && !assigning
-                    ? "bg-indigo-600 hover:bg-indigo-700"
-                    : "bg-indigo-300 cursor-not-allowed"
+                    ? "bg-primary-600 hover:bg-primary-700"
+                    : "bg-primary-300 cursor-not-allowed"
                 )}
               >
                 {assigning ? (
@@ -1225,9 +1225,9 @@ export default function TeamClient({
                     Find an existing employee
                   </label>
                   {selectedExistingId ? (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
-                      <span className="flex items-center gap-2 text-sm text-indigo-900">
-                        <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2">
+                      <span className="flex items-center gap-2 text-sm text-primary-900">
+                        <CheckCircle2 className="h-4 w-4 text-primary-600" />
                         {memberForm.firstName} {memberForm.lastName} will be
                         added to your team.
                       </span>
@@ -1237,7 +1237,7 @@ export default function TeamClient({
                           setMemberForm(emptyForm);
                           resetEmployeeSearch();
                         }}
-                        className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
+                        className="text-xs font-medium text-primary-600 hover:text-primary-800"
                       >
                         Clear
                       </button>
@@ -1255,7 +1255,7 @@ export default function TeamClient({
                               setEmployeeDropdownOpen(true);
                           }}
                           placeholder="Search by name or email..."
-                          className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                         />
                         {employeeLoading && (
                           <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
@@ -1268,7 +1268,7 @@ export default function TeamClient({
                               <button
                                 type="button"
                                 onClick={() => selectExistingEmployee(emp)}
-                                className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-indigo-50"
+                                className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-primary-50"
                               >
                                 <span className="text-sm font-medium text-gray-900">
                                   {emp.firstName} {emp.lastName}
@@ -1307,7 +1307,7 @@ export default function TeamClient({
                       setMemberForm({ ...memberForm, firstName: e.target.value })
                     }
                     disabled={Boolean(selectedExistingId)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 </div>
                 <div>
@@ -1321,7 +1321,7 @@ export default function TeamClient({
                       setMemberForm({ ...memberForm, lastName: e.target.value })
                     }
                     disabled={Boolean(selectedExistingId)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 </div>
               </div>
@@ -1336,7 +1336,7 @@ export default function TeamClient({
                     setMemberForm({ ...memberForm, email: e.target.value })
                   }
                   disabled={Boolean(selectedExistingId)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </div>
               <div>
@@ -1350,7 +1350,7 @@ export default function TeamClient({
                     setMemberForm({ ...memberForm, jobTitle: e.target.value })
                   }
                   disabled={Boolean(selectedExistingId)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </div>
               {!selectedExistingId && (
@@ -1363,7 +1363,7 @@ export default function TeamClient({
                     onChange={(e) =>
                       setMemberStatus(e.target.value as TeamMember["status"])
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -1393,7 +1393,7 @@ export default function TeamClient({
               <button
                 onClick={handleSaveMember}
                 disabled={savingMember}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
               >
                 {savingMember ? (
                   <span className="flex items-center gap-2">
@@ -1445,7 +1445,7 @@ export default function TeamClient({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-indigo-400 hover:bg-indigo-50/50"
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center transition-colors hover:border-primary-400 hover:bg-primary-50/50"
               >
                 <Upload className="h-6 w-6 text-gray-400" />
                 <span className="text-sm font-medium text-gray-700">
@@ -1505,7 +1505,7 @@ export default function TeamClient({
               <button
                 onClick={handleImportSubmit}
                 disabled={importRows.length === 0 || importing}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
               >
                 {importing ? (
                   <span className="flex items-center gap-2">

@@ -180,7 +180,7 @@ export function TwoFactorCard() {
           <button
             onClick={startEnrollment}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             {busy && <Loader2 className="h-4 w-4 animate-spin" />}
             <ShieldCheck className="h-4 w-4" />
@@ -223,12 +223,12 @@ export function TwoFactorCard() {
               maxLength={6}
               required
               placeholder="123456"
-              className="block w-36 rounded-lg border border-gray-300 px-4 py-2.5 text-center font-mono text-base tracking-[0.3em] text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="block w-36 rounded-lg border border-gray-300 px-4 py-2.5 text-center font-mono text-base tracking-[0.3em] text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
             <button
               type="submit"
               disabled={busy || code.length !== 6}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               Verify &amp; enable

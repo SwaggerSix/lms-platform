@@ -44,7 +44,7 @@ export default function BlockToolbar({
           <>
             <button
               onClick={() => updateSettings("alignment", "left")}
-              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "left" ? "text-indigo-600 bg-indigo-50" : "text-gray-400"}`}
+              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "left" ? "text-primary-600 bg-primary-50" : "text-gray-400"}`}
               title="Align left"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -53,7 +53,7 @@ export default function BlockToolbar({
             </button>
             <button
               onClick={() => updateSettings("alignment", "center")}
-              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "center" ? "text-indigo-600 bg-indigo-50" : "text-gray-400"}`}
+              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "center" ? "text-primary-600 bg-primary-50" : "text-gray-400"}`}
               title="Align center"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -62,7 +62,7 @@ export default function BlockToolbar({
             </button>
             <button
               onClick={() => updateSettings("alignment", "right")}
-              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "right" ? "text-indigo-600 bg-indigo-50" : "text-gray-400"}`}
+              className={`p-1 rounded hover:bg-gray-100 ${block.settings.alignment === "right" ? "text-primary-600 bg-primary-50" : "text-gray-400"}`}
               title="Align right"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

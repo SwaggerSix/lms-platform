@@ -68,7 +68,7 @@ function statusBadge(status: string) {
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-2 text-sm text-gray-700">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
       {label}
     </label>
   );
@@ -81,7 +81,7 @@ export default function ManagerNudgesClient({ teamMembers, initialAssignments, a
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
           <Zap className="h-5 w-5" />
         </div>
         <div>
@@ -333,7 +333,7 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
                         type="checkbox"
                         checked={selectedActionIds.includes(a.id)}
                         onChange={() => toggleAction(a.id)}
-                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <div className="min-w-0">
                         <p className="font-medium text-gray-900">{a.title}</p>

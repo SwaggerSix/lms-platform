@@ -22,7 +22,7 @@ export interface ScheduledReportWithHistory extends ScheduledReport {
 export const reportTypeConfig: Record<string, { label: string; color: string; bg: string }> = {
   completion: { label: "Completion", color: "text-green-700", bg: "bg-green-100" },
   compliance: { label: "Compliance", color: "text-blue-700", bg: "bg-blue-100" },
-  enrollment: { label: "Enrollment", color: "text-indigo-700", bg: "bg-indigo-100" },
+  enrollment: { label: "Enrollment", color: "text-primary-700", bg: "bg-primary-100" },
   skills_gap: { label: "Skills Gap", color: "text-purple-700", bg: "bg-purple-100" },
   engagement: { label: "Engagement", color: "text-orange-700", bg: "bg-orange-100" },
   learner_progress: { label: "Learner Progress", color: "text-teal-700", bg: "bg-teal-100" },
