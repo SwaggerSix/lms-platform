@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Lightbulb } from "lucide-react";
 import EmbedCodeGenerator from "@/components/microlearning/embed-code-generator";
 import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Nugget {
   id: string;
@@ -145,6 +147,65 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
     }
   };
 
+  const nuggetColumns: DataTableColumn<Nugget>[] = [
+    {
+      key: "title",
+      header: "Title",
+      sortValue: (n) => n.title,
+      render: (nugget) => (
+        <p className="text-sm font-medium text-gray-900 truncate max-w-xs">{nugget.title}</p>
+      ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      sortValue: (n) => n.content_type,
+      render: (nugget) => (
+        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+          {typeLabels[nugget.content_type] || nugget.content_type}
+        </span>
+      ),
+    },
+    {
+      key: "difficulty",
+      header: "Difficulty",
+      sortValue: (n) => n.difficulty ?? null,
+      render: (nugget) => (
+        <span className="text-xs text-gray-600 capitalize">{nugget.difficulty || "-"}</span>
+      ),
+    },
+    {
+      key: "views",
+      header: "Views",
+      sortValue: (n) => n.view_count,
+      render: (nugget) => <span className="text-sm text-gray-700">{nugget.view_count}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortValue: (n) => (n.is_active ? "Active" : "Inactive"),
+      render: (nugget) => (
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${nugget.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+          {nugget.is_active ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      className: "text-right",
+      render: (nugget) => (
+        <button
+          onClick={() => handleDeleteNugget(nugget.id)}
+          className="text-xs text-red-500 hover:text-red-700"
+        >
+          Delete
+          <span className="sr-only">, {nugget.title}</span>
+        </button>
+      ),
+    },
+  ];
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -172,6 +233,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
         <button
           onClick={() => setActiveTab("nuggets")}
+          aria-pressed={activeTab === "nuggets"}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === "nuggets" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
           }`}
@@ -180,6 +242,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
         </button>
         <button
           onClick={() => setActiveTab("widgets")}
+          aria-pressed={activeTab === "widgets"}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === "widgets" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
           }`}
@@ -271,12 +334,9 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                 </div>
               </div>
               <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowCreateNugget(false)}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-                >
+                <Button variant="ghost" onClick={() => setShowCreateNugget(false)}>
                   Cancel
-                </button>
+                </Button>
                 <Button
                   onClick={handleCreateNugget}
                   disabled={creating || !nuggetForm.title}
@@ -288,61 +348,17 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
           )}
 
           {/* Nuggets Table */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left text-xs font-medium text-gray-500 px-5 py-3">Title</th>
-                  <th className="text-left text-xs font-medium text-gray-500 px-5 py-3">Type</th>
-                  <th className="text-left text-xs font-medium text-gray-500 px-5 py-3">Difficulty</th>
-                  <th className="text-left text-xs font-medium text-gray-500 px-5 py-3">Views</th>
-                  <th className="text-left text-xs font-medium text-gray-500 px-5 py-3">Status</th>
-                  <th className="text-right text-xs font-medium text-gray-500 px-5 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {nuggets.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-12 text-gray-500 text-sm">
-                      No nuggets yet. Create your first one above.
-                    </td>
-                  </tr>
-                ) : (
-                  nuggets.map((nugget) => (
-                    <tr key={nugget.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-5 py-3">
-                        <p className="text-sm font-medium text-gray-900 truncate max-w-xs">{nugget.title}</p>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                          {typeLabels[nugget.content_type] || nugget.content_type}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-xs text-gray-600 capitalize">{nugget.difficulty || "-"}</span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className="text-sm text-gray-700">{nugget.view_count}</span>
-                      </td>
-                      <td className="px-5 py-3">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${nugget.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                          {nugget.is_active ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <button
-                          onClick={() => handleDeleteNugget(nugget.id)}
-                          className="text-xs text-red-500 hover:text-red-700"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={nuggetColumns}
+            rows={nuggets}
+            rowKey={(nugget) => nugget.id}
+            ariaLabel="Learning nuggets"
+            emptyState={{
+              icon: <Lightbulb className="h-10 w-10" aria-hidden="true" />,
+              title: "No nuggets yet",
+              description: "Create your first one above.",
+            }}
+          />
         </div>
       )}
 
@@ -396,7 +412,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                 />
               </div>
               <div className="flex justify-end gap-3">
-                <button onClick={() => setShowCreateWidget(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+                <Button variant="ghost" onClick={() => setShowCreateWidget(false)}>Cancel</Button>
                 <Button
                   onClick={handleCreateWidget}
                   disabled={creating || !widgetForm.name}

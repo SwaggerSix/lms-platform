@@ -50,6 +50,8 @@ export interface DataTableProps<Row> {
   renderExpanded?: (row: Row) => React.ReactNode;
   /** With renderExpanded: rows for which this returns false get no toggle. Defaults to every row expandable. */
   isExpandable?: (row: Row) => boolean;
+  /** Extra classes for a body row (e.g. dim resolved/inactive rows). */
+  rowClassName?: (row: Row) => string | undefined;
 }
 
 /**
@@ -69,6 +71,7 @@ export default function DataTable<Row>({
   className,
   renderExpanded,
   isExpandable,
+  rowClassName,
 }: DataTableProps<Row>) {
   const [sortKey, setSortKey] = useState<string | null>(
     initialSort ? initialSort.replace(/^-/, "") : null
@@ -194,7 +197,7 @@ export default function DataTable<Row>({
             const isOpen = expandable && expandedKeys.has(key);
             return (
               <Fragment key={key}>
-                <TableRow>
+                <TableRow className={rowClassName?.(row)}>
                   {renderExpanded && (
                     <TableCell className="w-8">
                       {expandable && (

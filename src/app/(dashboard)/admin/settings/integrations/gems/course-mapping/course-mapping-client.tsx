@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Loader2, Save, Search, ArrowLeft } from "lucide-react";
+import { AlertCircle, CheckCircle2, Save, Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface CourseRow {
   id: string;
@@ -68,7 +70,6 @@ export default function CourseMappingClient({
   const [courses] = useState<CourseRow[]>(initialCourses);
   const [catalog] = useState<CatalogRow[]>(initialCatalog);
   const [catalogError] = useState<string | null>(initialCatalogError);
-  const catalogLoading = false;
   const [mappings, setMappings] = useState<Record<string, string | null>>(() => {
     // Seed with saved gems_course_code, then auto-suggest for unmapped courses.
     const base = Object.fromEntries(
@@ -135,6 +136,30 @@ export default function CourseMappingClient({
     }
   }
 
+  const columns: DataTableColumn<CourseRow>[] = [
+    {
+      key: "title",
+      header: "LMS Course",
+      sortValue: (c) => c.title,
+      render: (c) => <span className="text-sm text-gray-900">{c.title}</span>,
+    },
+    {
+      key: "typeStatus",
+      header: "Type / Status",
+      sortValue: (c) => c.course_type,
+      render: (c) => (
+        <span className="text-xs text-gray-500">
+          {c.course_type ?? "—"} · {c.status ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "gemsCode",
+      header: "GEMS Course Code",
+      render: (c) => mappingCell(c),
+    },
+  ];
+
   return (
     <div className="container mx-auto max-w-7xl p-6">
       <div className="mb-6">
@@ -196,87 +221,62 @@ export default function CourseMappingClient({
               <CheckCircle2 className="h-4 w-4 text-green-600" /> {saveResult}
             </span>
           )}
-          <button
+          <Button
+            size="sm"
             onClick={handleSave}
-            disabled={saving || dirtyIds.length === 0 || !catalog}
-            className="inline-flex items-center gap-1.5 rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            disabled={dirtyIds.length === 0 || !catalog}
+            loading={saving}
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {!saving && <Save className="h-4 w-4" />}
             Save {dirtyIds.length > 0 ? `(${dirtyIds.length})` : ""}
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                LMS Course
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Type / Status
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                GEMS Course Code
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
-                  No courses match the current filters.
-                </td>
-              </tr>
-            )}
-            {filtered.map((c) => {
-              const suggested = catalog ? suggestMatch(c.title, catalog) : null;
-              const current = mappings[c.id] ?? "";
-              const isSuggestion =
-                !!suggested && current === suggested.product_code && !c.gems_course_code;
-              return (
-                <tr key={c.id}>
-                  <td className="px-4 py-2 text-sm text-gray-900">{c.title}</td>
-                  <td className="px-4 py-2 text-xs text-gray-500">
-                    {c.course_type ?? "—"} · {c.status ?? "—"}
-                  </td>
-                  <td className="px-4 py-2">
-                    {catalogLoading ? (
-                      <span className="text-xs text-gray-400">Loading…</span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={current}
-                          onChange={(e) =>
-                            setMappings((prev) => ({
-                              ...prev,
-                              [c.id]: e.target.value || null,
-                            }))
-                          }
-                          className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                        >
-                          <option value="">— Not mapped —</option>
-                          {catalog?.map((cat) => (
-                            <option key={cat.course_product_id} value={cat.product_code}>
-                              {cat.product_code} — {cat.product_description}
-                            </option>
-                          ))}
-                        </select>
-                        {isSuggestion && (
-                          <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
-                            Suggested
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={filtered}
+        rowKey={(c) => c.id}
+        pageSize={0}
+        ariaLabel="GEMS course mapping"
+        emptyState={{
+          title: "No courses match the current filters.",
+        }}
+      />
     </div>
   );
+
+  function mappingCell(c: CourseRow) {
+    const suggested = catalog ? suggestMatch(c.title, catalog) : null;
+    const current = mappings[c.id] ?? "";
+    const isSuggestion =
+      !!suggested && current === suggested.product_code && !c.gems_course_code;
+    return (
+      <div className="flex items-center gap-2">
+        <select
+          value={current}
+          onChange={(e) =>
+            setMappings((prev) => ({
+              ...prev,
+              [c.id]: e.target.value || null,
+            }))
+          }
+          aria-label={`GEMS course code for ${c.title}`}
+          className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">— Not mapped —</option>
+          {catalog?.map((cat) => (
+            <option key={cat.course_product_id} value={cat.product_code}>
+              {cat.product_code} — {cat.product_description}
+            </option>
+          ))}
+        </select>
+        {isSuggestion && (
+          <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+            Suggested
+          </span>
+        )}
+      </div>
+    );
+  }
 }
