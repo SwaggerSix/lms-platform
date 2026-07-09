@@ -133,7 +133,7 @@ export default function PathsClient({ paths }: Props) {
                           </div>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">Not started</span>
+                        <span className="text-sm text-gray-500">Not started</span>
                       )}
                     </div>
                     <Link

@@ -31,7 +31,7 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
       }
       footer={
         timestamp ? (
-          <p className={`text-[10px] text-gray-400 mt-1 ${isUser ? "text-right" : "text-left"}`}>
+          <p className={`text-[10px] text-gray-500 mt-1 ${isUser ? "text-right" : "text-left"}`}>
             {new Date(timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",

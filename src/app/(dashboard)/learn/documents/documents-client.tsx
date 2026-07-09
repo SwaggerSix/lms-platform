@@ -204,7 +204,7 @@ export default function DocumentsClient({
           >
             <FolderOpen className="h-4 w-4 shrink-0" />
             <span>All Documents</span>
-            <span className="ml-auto text-xs text-gray-400">
+            <span className="ml-auto text-xs text-gray-500">
               {documents.length}
             </span>
           </button>
@@ -222,7 +222,7 @@ export default function DocumentsClient({
             >
               <Folder className="h-4 w-4 shrink-0" />
               <span className="truncate">{folder.name}</span>
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-gray-500">
                 {folder.document_count}
               </span>
             </button>
@@ -400,7 +400,7 @@ export default function DocumentsClient({
                           {doc.description}
                         </p>
 
-                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <HardDrive className="h-3 w-3" />
                             {formatFileSize(doc.file_size)}
@@ -517,14 +517,14 @@ export default function DocumentsClient({
                           </span>
                         ))}
                         {doc.tags.length > 3 && (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500">
                             +{doc.tags.length - 3}
                           </span>
                         )}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                    <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
                       <span>{formatFileSize(doc.file_size)}</span>
                       <span>{formatDate(doc.updated_at)}</span>
                     </div>

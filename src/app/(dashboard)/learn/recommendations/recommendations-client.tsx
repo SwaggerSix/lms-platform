@@ -428,7 +428,7 @@ export default function RecommendationsClient({
                             )}
                           >
                             <span>{skill.name}</span>
-                            <span className="text-xs text-gray-400">Level {skill.currentLevel}/5</span>
+                            <span className="text-xs text-gray-500">Level {skill.currentLevel}/5</span>
                           </button>
                         ))}
                       </div>
@@ -558,14 +558,14 @@ export default function RecommendationsClient({
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-400">Current</span>
+                        <span className="text-xs text-gray-500">Current</span>
                         <ArrowRight className="h-3 w-3 text-gray-400" />
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map((i) => (
                             <div key={i} className="h-2 w-6 rounded-full bg-primary-500" />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-400">Required</span>
+                        <span className="text-xs text-gray-500">Required</span>
                       </div>
                     </div>
                     <a

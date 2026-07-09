@@ -263,7 +263,7 @@ export default function NominationManager({
                       <span className="text-sm text-gray-700">
                         {nom.reviewer?.first_name} {nom.reviewer?.last_name}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-500">
                         ({nom.reviewer?.email})
                       </span>
                     </div>

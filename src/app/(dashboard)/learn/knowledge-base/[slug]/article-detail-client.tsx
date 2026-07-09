@@ -288,7 +288,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
           <div className="lg:col-span-1">
             {/* Article Info */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
                 Article Info
               </h3>
               <dl className="mt-4 space-y-4">
@@ -326,7 +326,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
             {/* Related Articles */}
             {relatedArticles.length > 0 && (
               <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
                   <BookOpen className="h-4 w-4" />
                   Related Articles
                 </h3>
@@ -340,7 +340,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
                       <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
                         {related.title}
                       </h4>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                      <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
                         <Eye className="h-3 w-3" /> {formatNumber(related.viewCount)} views
                       </div>
                     </Link>

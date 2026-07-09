@@ -57,7 +57,7 @@ export default function MyClassesClient() {
         <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
           <GraduationCap className="mx-auto mb-3 h-10 w-10 text-gray-300" />
           <p className="text-sm text-gray-500">You're not enrolled in any classes yet.</p>
-          <p className="text-xs text-gray-400">When you're invited to a class, it will appear here.</p>
+          <p className="text-xs text-gray-500">When you're invited to a class, it will appear here.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

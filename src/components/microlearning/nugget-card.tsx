@@ -79,7 +79,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
               {nugget.content.text || nugget.content.body || ""}
             </p>
             {nugget.content.source && (
-              <p className="mt-3 text-xs text-gray-400 italic">Source: {nugget.content.source as string}</p>
+              <p className="mt-3 text-xs text-gray-500 italic">Source: {nugget.content.source as string}</p>
             )}
           </div>
         );
@@ -94,12 +94,12 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
               {!flipped ? (
                 <>
                   <p className="text-gray-700 font-medium">{nugget.content.front as string}</p>
-                  <p className="mt-3 text-xs text-gray-400">Tap to flip</p>
+                  <p className="mt-3 text-xs text-gray-500">Tap to flip</p>
                 </>
               ) : (
                 <>
                   <p className="text-primary-700 font-medium">{nugget.content.back as string}</p>
-                  <p className="mt-3 text-xs text-gray-400">Tap to flip back</p>
+                  <p className="mt-3 text-xs text-gray-500">Tap to flip back</p>
                 </>
               )}
             </div>
@@ -178,7 +178,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
                 className="w-full rounded-lg"
               />
             ) : (
-              <div className="bg-gray-100 rounded-lg aspect-[4/3] flex items-center justify-center text-gray-400 text-sm">
+              <div className="bg-gray-100 rounded-lg aspect-[4/3] flex items-center justify-center text-gray-500 text-sm">
                 Infographic placeholder
               </div>
             )}

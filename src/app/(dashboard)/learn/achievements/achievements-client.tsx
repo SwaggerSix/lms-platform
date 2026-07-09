@@ -215,7 +215,7 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
             />
           </div>
           {/* Level names */}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
             {Object.entries(LEVEL_NAMES).map(([lvl, name]) => (
               <span key={lvl} className={cn(Number(lvl) === currentLevel && "font-semibold text-primary-600")}>
                 Lv {lvl}: {name}
