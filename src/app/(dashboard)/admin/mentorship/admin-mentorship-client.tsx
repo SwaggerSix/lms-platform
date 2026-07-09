@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardList, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Stats {
@@ -435,13 +436,26 @@ export default function AdminMentorshipClient({
 
       {/* Assign mentor modal */}
       {assignOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={resetAssign}>
-          <div
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-gray-900">Assign a Mentor</h3>
-            <p className="mt-1 text-sm text-gray-500">
+        <Modal
+          isOpen
+          onClose={resetAssign}
+          title="Assign a Mentor"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={resetAssign} disabled={assigning}>
+                Cancel
+              </Button>
+              <Button
+                onClick={submitAssign}
+                disabled={assigning || !assignMentorId || !assignMenteeId}
+              >
+                {assigning ? "Assigning..." : "Assign Mentor"}
+              </Button>
+            </>
+          }
+        >
+            <p className="text-sm text-gray-500">
               Pair a mentee with an available mentor. This creates an active mentorship right away.
             </p>
 
@@ -516,19 +530,7 @@ export default function AdminMentorshipClient({
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={resetAssign} disabled={assigning}>
-                Cancel
-              </Button>
-              <Button
-                onClick={submitAssign}
-                disabled={assigning || !assignMentorId || !assignMenteeId}
-              >
-                {assigning ? "Assigning..." : "Assign Mentor"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Stats grid */}
@@ -729,12 +731,25 @@ export default function AdminMentorshipClient({
 
       {/* Create-circle modal */}
       {circleOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={resetCircleForm}>
-          <div
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-gray-900">New Mentorship Circle</h3>
+        <Modal
+          isOpen
+          onClose={resetCircleForm}
+          title="New Mentorship Circle"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={resetCircleForm} disabled={circleSaving}>
+                Cancel
+              </Button>
+              <Button
+                onClick={submitCircle}
+                disabled={circleSaving || !circleName.trim() || !circleMentorId}
+              >
+                {circleSaving ? "Creating..." : "Create Circle"}
+              </Button>
+            </>
+          }
+        >
             {circleError && (
               <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{circleError}</div>
             )}
@@ -788,19 +803,7 @@ export default function AdminMentorshipClient({
                 />
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={resetCircleForm} disabled={circleSaving}>
-                Cancel
-              </Button>
-              <Button
-                onClick={submitCircle}
-                disabled={circleSaving || !circleName.trim() || !circleMentorId}
-              >
-                {circleSaving ? "Creating..." : "Create Circle"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Requests table */}
