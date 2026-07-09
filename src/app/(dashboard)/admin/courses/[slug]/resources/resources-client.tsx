@@ -212,7 +212,7 @@ export default function CourseResourcesClient({
             {uploading ? "Uploading…" : "Add content"}
           </button>
         </div>
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-gray-500">
           Up to 500MB. Supports PDF, PowerPoint, Word, Excel, video, audio, images, and zip.
         </p>
       </div>

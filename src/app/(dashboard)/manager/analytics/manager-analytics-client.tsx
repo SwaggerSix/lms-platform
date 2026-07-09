@@ -69,12 +69,12 @@ export default function ManagerAnalyticsClient({
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Team Size</p>
           <p className="mt-1 text-2xl font-bold text-gray-900">{totalTeam}</p>
-          <p className="mt-0.5 text-xs text-gray-400">direct reports</p>
+          <p className="mt-0.5 text-xs text-gray-500">direct reports</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Engagement</p>
           <p className="mt-1 text-2xl font-bold text-primary-600">{avgEngagement}%</p>
-          <p className="mt-0.5 text-xs text-gray-400">team average</p>
+          <p className="mt-0.5 text-xs text-gray-500">team average</p>
         </div>
         <div className={`rounded-xl border p-5 ${atRiskCount > 0 ? "border-red-200 bg-red-50" : "border-gray-200 bg-white"}`}>
           <p className={`text-xs font-medium uppercase tracking-wider ${atRiskCount > 0 ? "text-red-600" : "text-gray-500"}`}>
@@ -83,14 +83,14 @@ export default function ManagerAnalyticsClient({
           <p className={`mt-1 text-2xl font-bold ${atRiskCount > 0 ? "text-red-700" : "text-gray-900"}`}>
             {atRiskCount}
           </p>
-          <p className={`mt-0.5 text-xs ${atRiskCount > 0 ? "text-red-500" : "text-gray-400"}`}>
+          <p className={`mt-0.5 text-xs ${atRiskCount > 0 ? "text-red-500" : "text-gray-500"}`}>
             need attention
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Progress</p>
           <p className="mt-1 text-2xl font-bold text-gray-900">{avgCompletion}%</p>
-          <p className="mt-0.5 text-xs text-gray-400">across courses</p>
+          <p className="mt-0.5 text-xs text-gray-500">across courses</p>
         </div>
       </div>
 
@@ -122,7 +122,7 @@ export default function ManagerAnalyticsClient({
             </div>
 
             {sorted.length === 0 ? (
-              <div className="p-8 text-center text-sm text-gray-400">
+              <div className="p-8 text-center text-sm text-gray-500">
                 No direct reports found
               </div>
             ) : (
@@ -176,7 +176,7 @@ export default function ManagerAnalyticsClient({
                         <RiskIndicator level={member.riskLevel} size="sm" />
 
                         {/* Stats */}
-                        <div className="hidden md:flex items-center gap-3 text-xs text-gray-400">
+                        <div className="hidden md:flex items-center gap-3 text-xs text-gray-500">
                           <span>{member.coursesEnrolled} enrolled</span>
                           <span>{member.coursesCompleted} done</span>
                           {member.loginStreak > 0 && (
@@ -267,7 +267,7 @@ export default function ManagerAnalyticsClient({
           ) : (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
               <User className="mx-auto h-10 w-10 text-gray-300" strokeWidth={1.5} />
-              <p className="mt-2 text-sm text-gray-400">
+              <p className="mt-2 text-sm text-gray-500">
                 Select a team member to view details
               </p>
             </div>

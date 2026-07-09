@@ -189,7 +189,7 @@ const columns: DataTableColumn<SessionRow>[] = [
             {s.course_code}
           </span>
         )}
-        {s.course_title ?? <span className="text-gray-400">—</span>}
+        {s.course_title ?? <span className="text-gray-500">—</span>}
       </>
     ),
   },
@@ -198,7 +198,7 @@ const columns: DataTableColumn<SessionRow>[] = [
     header: "Instructor",
     sortValue: (s) => s.instructor_name ?? s.instructor_email,
     render: (s) =>
-      s.instructor_name ?? s.instructor_email ?? <span className="text-gray-400">—</span>,
+      s.instructor_name ?? s.instructor_email ?? <span className="text-gray-500">—</span>,
   },
   {
     key: "location",
@@ -236,7 +236,7 @@ const columns: DataTableColumn<SessionRow>[] = [
           GEMS #{s.external_id}
         </span>
       ) : (
-        <span className="text-xs text-gray-400">Manual</span>
+        <span className="text-xs text-gray-500">Manual</span>
       ),
   },
 ];

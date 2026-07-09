@@ -91,7 +91,7 @@ export default function GradingClient() {
                 {item.pending_answers.map((a) => (
                   <div key={a.question_id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                     <p className="text-sm font-medium text-gray-800">{a.question_text}</p>
-                    <p className="mt-1 whitespace-pre-wrap rounded-md bg-white p-2 text-sm text-gray-600">{a.text_answer || <span className="text-gray-400">(no answer)</span>}</p>
+                    <p className="mt-1 whitespace-pre-wrap rounded-md bg-white p-2 text-sm text-gray-600">{a.text_answer || <span className="text-gray-500">(no answer)</span>}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <label className="text-xs text-gray-500">Award points (max {a.points})</label>
                       <input

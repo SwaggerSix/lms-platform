@@ -192,7 +192,7 @@ export default function RuleForm({
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-400 mt-1">Hold Cmd/Ctrl to select multiple</p>
+          <p className="text-xs text-gray-500 mt-1">Hold Cmd/Ctrl to select multiple</p>
         </div>
 
         {/* Job title contains */}

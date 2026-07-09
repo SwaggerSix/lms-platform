@@ -304,7 +304,7 @@ export default function CustomizeStep({
           maxLength={160}
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
         />
-        <p className="mt-1 text-xs text-gray-400">{courseData.shortDescription.length}/160</p>
+        <p className="mt-1 text-xs text-gray-500">{courseData.shortDescription.length}/160</p>
       </div>
 
       {/* Category */}
@@ -436,7 +436,7 @@ export default function CustomizeStep({
                           onChange={(e) => updateLesson(mod.id, lesson.id, { duration: parseInt(e.target.value) || 0 })}
                           className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 text-center focus:outline-none"
                         />
-                        <span className="text-[10px] text-gray-400">min</span>
+                        <span className="text-[10px] text-gray-500">min</span>
                         <button
                           onClick={() => handleGenerateContent(mod.id, lesson.id)}
                           disabled={isGeneratingThis || generatingContent !== null}

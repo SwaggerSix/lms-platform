@@ -48,7 +48,7 @@ export default function CatalogImportClient() {
           <span className="text-sm font-medium text-gray-700">
             {file ? file.name : "Choose the completed audit spreadsheet"}
           </span>
-          <span className="text-xs text-gray-400">.xlsx</span>
+          <span className="text-xs text-gray-500">.xlsx</span>
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

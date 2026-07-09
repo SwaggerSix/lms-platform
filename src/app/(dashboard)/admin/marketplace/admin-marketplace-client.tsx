@@ -128,7 +128,7 @@ export default function AdminMarketplaceClient({ initialProviders, stats }: Prop
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-5">
             <p className="text-2xl font-bold text-gray-900">{s.value}</p>
             <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
-            {s.sub && <p className="text-xs text-gray-400">{s.sub}</p>}
+            {s.sub && <p className="text-xs text-gray-500">{s.sub}</p>}
           </div>
         ))}
       </div>

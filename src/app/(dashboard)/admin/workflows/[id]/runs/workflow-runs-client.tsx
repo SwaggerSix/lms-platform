@@ -125,7 +125,7 @@ export default function WorkflowRunsClient({
 
       {/* Runs */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400">
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">
           <Clock className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p className="font-medium">No runs yet</p>
           <p className="text-sm mt-1">Run the workflow to see execution history here</p>
@@ -168,7 +168,7 @@ export default function WorkflowRunsClient({
                   >
                     {run.status}
                   </span>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-500">
                     {run.step_logs.length} steps
                   </div>
                   {isExpanded ? (
@@ -205,7 +205,7 @@ export default function WorkflowRunsClient({
                       Step Execution
                     </h4>
                     {run.step_logs.length === 0 ? (
-                      <p className="text-sm text-gray-400">No step logs</p>
+                      <p className="text-sm text-gray-500">No step logs</p>
                     ) : (
                       <div className="space-y-2">
                         {run.step_logs.map((log, idx) => {
@@ -258,7 +258,7 @@ export default function WorkflowRunsClient({
                                 </div>
 
                                 {log.started_at && (
-                                  <div className="text-xs text-gray-400 mt-0.5">
+                                  <div className="text-xs text-gray-500 mt-0.5">
                                     {formatDuration(log.started_at, log.completed_at)}
                                   </div>
                                 )}

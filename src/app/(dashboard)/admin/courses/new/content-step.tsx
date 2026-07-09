@@ -181,7 +181,7 @@ export default function ContentStep({ modules, onChange }: ContentStepProps) {
                       onChange={(e) => updateLesson(mod.id, lesson.id, { duration: parseInt(e.target.value) || 0 })}
                       className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 text-center focus:outline-none"
                     />
-                    <span className="text-[10px] text-gray-400">min</span>
+                    <span className="text-[10px] text-gray-500">min</span>
                     <label className="flex items-center gap-1.5 text-xs text-gray-500">
                       <input
                         type="checkbox"

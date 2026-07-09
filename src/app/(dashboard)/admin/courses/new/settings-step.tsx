@@ -107,7 +107,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Passing Score: {value.passingScore}%</label>
         <input type="range" min={0} max={100} value={value.passingScore} onChange={(e) => set('passingScore', parseInt(e.target.value))} className="w-full accent-primary-600" />
-        <div className="flex justify-between text-xs text-gray-400"><span>0%</span><span>100%</span></div>
+        <div className="flex justify-between text-xs text-gray-500"><span>0%</span><span>100%</span></div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Attempts</label>
@@ -197,7 +197,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
                 onChange={(e) => setPrereqMinScore(parseInt(e.target.value) || 0)}
                 className="w-16 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
-              <span className="text-xs text-gray-400">%</span>
+              <span className="text-xs text-gray-500">%</span>
             </div>
           )}
         </div>
@@ -234,7 +234,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
                         onChange={(e) => updatePrerequisiteScore(prereq.course_id, parseInt(e.target.value) || 0)}
                         className="w-14 rounded-md border border-gray-200 px-2 py-1 text-xs text-center focus:outline-none"
                       />
-                      <span className="text-xs text-gray-400">%</span>
+                      <span className="text-xs text-gray-500">%</span>
                     </div>
                   )}
                   <button
@@ -249,7 +249,7 @@ export default function SettingsStep({ value, onChange }: SettingsStepProps) {
           </div>
         )}
         {value.prerequisites.length === 0 && (
-          <p className="text-xs text-gray-400 italic">No prerequisites added. This course will be open to all learners.</p>
+          <p className="text-xs text-gray-500 italic">No prerequisites added. This course will be open to all learners.</p>
         )}
       </div>
       <div>

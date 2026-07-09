@@ -246,7 +246,7 @@ export default function DocumentFormModal({
                     <p className="text-sm text-gray-500">
                       Drag & drop a file here, or click to browse
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       PDF, DOCX, XLSX, PPTX, images up to 50MB
                     </p>
                   </>

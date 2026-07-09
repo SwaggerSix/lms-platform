@@ -109,7 +109,7 @@ export default function CoverImportClient() {
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 text-center">
           <FileSpreadsheet className="h-10 w-10 text-primary-400" />
           <span className="text-sm font-medium text-gray-700">{file ? file.name : "Choose your spreadsheet"}</span>
-          <span className="text-xs text-gray-400">.xlsx or .csv</span>
+          <span className="text-xs text-gray-500">.xlsx or .csv</span>
           <input
             type="file"
             accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
@@ -133,7 +133,7 @@ export default function CoverImportClient() {
             onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
           />
         </label>
-        <p className="mt-1 text-xs text-gray-400">Rows with a <code>filename</code> use these; rows with an <code>image_url</code> are fetched from the web.</p>
+        <p className="mt-1 text-xs text-gray-500">Rows with a <code>filename</code> use these; rows with an <code>image_url</code> are fetched from the web.</p>
       </div>
 
       <label className="mt-4 flex items-center gap-2 text-sm text-gray-700">
@@ -185,7 +185,7 @@ export default function CoverImportClient() {
                 <tbody className="divide-y divide-gray-100">
                   {result.results.map((r) => (
                     <tr key={r.row} className={r.status === "error" ? "bg-red-50/40" : undefined}>
-                      <td className="px-3 py-2 text-gray-400">{r.row}</td>
+                      <td className="px-3 py-2 text-gray-500">{r.row}</td>
                       <td className="px-3 py-2 text-gray-800">{r.course}</td>
                       <td className="px-3 py-2">
                         <span className={

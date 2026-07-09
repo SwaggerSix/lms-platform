@@ -109,7 +109,7 @@ export default function DocumentTable({
               <tr>
                 <td
                   colSpan={8}
-                  className="px-4 py-12 text-center text-gray-400"
+                  className="px-4 py-12 text-center text-gray-500"
                 >
                   <FileText className="h-10 w-10 mx-auto mb-2" />
                   <p className="font-medium">No documents found</p>
@@ -143,7 +143,7 @@ export default function DocumentTable({
                           <p className="font-medium text-gray-900 text-sm truncate">
                             {doc.title}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-gray-500 truncate">
                             {doc.file_name}
                           </p>
                           {doc.tags.length > 0 && (
@@ -214,7 +214,7 @@ export default function DocumentTable({
                     <td className="px-4 py-3 text-sm text-gray-500">
                       <div>
                         <p>{formatDate(doc.updated_at)}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-500">
                           v{doc.version}
                         </p>
                       </div>

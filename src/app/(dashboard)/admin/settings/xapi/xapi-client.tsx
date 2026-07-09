@@ -412,7 +412,7 @@ export default function XAPIClient({
                           </div>
                           <p className="text-sm text-gray-500 font-mono">{config.endpoint_url}</p>
                           {config.last_sync_at && (
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs text-gray-500 mt-1">
                               Last synced: {formatDate(config.last_sync_at)}
                             </p>
                           )}
@@ -578,7 +578,7 @@ export default function XAPIClient({
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Password / Secret
                         {view === "edit" && editingConfig?.has_password && (
-                          <span className="text-xs text-gray-400 ml-1">(leave blank to keep)</span>
+                          <span className="text-xs text-gray-500 ml-1">(leave blank to keep)</span>
                         )}
                       </label>
                       <input
@@ -597,7 +597,7 @@ export default function XAPIClient({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Bearer Token
                       {view === "edit" && editingConfig?.has_token && (
-                        <span className="text-xs text-gray-400 ml-1">(leave blank to keep)</span>
+                        <span className="text-xs text-gray-500 ml-1">(leave blank to keep)</span>
                       )}
                     </label>
                     <input
@@ -827,7 +827,7 @@ export default function XAPIClient({
                             <div className="text-sm text-gray-900 truncate max-w-xs">
                               {stmt.object_name || stmt.object_id}
                             </div>
-                            <div className="text-xs text-gray-400 truncate max-w-xs">
+                            <div className="text-xs text-gray-500 truncate max-w-xs">
                               {stmt.object_id}
                             </div>
                           </td>

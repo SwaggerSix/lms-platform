@@ -107,7 +107,7 @@ function TreeNode({
         <span className={cn('text-sm font-medium', selectedId === node.id ? 'text-primary-700' : 'text-gray-700')}>
           {node.name}
         </span>
-        <span className="ml-auto text-xs text-gray-400">{node.memberCount} members</span>
+        <span className="ml-auto text-xs text-gray-500">{node.memberCount} members</span>
       </div>
       {expanded && hasChildren && (
         <div>

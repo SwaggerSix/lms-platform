@@ -444,7 +444,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                   )}
                 </div>
                 {m.lessons.length === 0 ? (
-                  <p className="px-4 py-3 text-sm text-gray-400">
+                  <p className="px-4 py-3 text-sm text-gray-500">
                     No lessons in this module.
                   </p>
                 ) : (
@@ -462,7 +462,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                               <p className="truncate text-sm font-medium text-gray-900">
                                 {l.title}
                               </p>
-                              <p className="text-xs capitalize text-gray-400">
+                              <p className="text-xs capitalize text-gray-500">
                                 {l.contentType}
                                 {l.duration ? ` · ${l.duration} min` : ""}
                               </p>
@@ -550,7 +550,7 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                 </button>
               </div>
             )}
-            <p className="mt-3 text-xs text-gray-400">
+            <p className="mt-3 text-xs text-gray-500">
               Deployed evaluations are sent to participants automatically when
               they complete the course (after the configured delay).
             </p>

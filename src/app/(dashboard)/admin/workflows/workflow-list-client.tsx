@@ -276,7 +276,7 @@ export default function WorkflowListClient({
                   <div className="text-xs text-gray-500 w-20 text-right">
                     <div className="font-medium">{workflow.run_count} runs</div>
                     {workflow.last_run_at && (
-                      <div className="text-gray-400">
+                      <div className="text-gray-500">
                         {new Date(workflow.last_run_at).toLocaleDateString()}
                       </div>
                     )}

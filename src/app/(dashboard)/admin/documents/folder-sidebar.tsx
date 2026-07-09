@@ -42,7 +42,7 @@ export default function FolderSidebar({
         >
           <FolderOpen className="h-4 w-4 shrink-0" />
           <span>All Documents</span>
-          <span className="ml-auto text-xs text-gray-400">
+          <span className="ml-auto text-xs text-gray-500">
             {documents.length}
           </span>
         </button>
@@ -64,7 +64,7 @@ export default function FolderSidebar({
               {folder.visibility === "managers" && (
                 <Users className="h-3 w-3 text-gray-400 shrink-0" />
               )}
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-gray-500">
                 {documents.filter((d) => d.folder_id === folder.id).length}
               </span>
             </button>

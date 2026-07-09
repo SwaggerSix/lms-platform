@@ -238,7 +238,7 @@ export default function SchedulesTable({
                             <Eye className="h-3 w-3" /> View
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-400">N/A</span>
+                          <span className="text-xs text-gray-500">N/A</span>
                         )}
                       </td>
                     </tr>

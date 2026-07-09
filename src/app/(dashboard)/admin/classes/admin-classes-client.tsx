@@ -212,7 +212,7 @@ export default function AdminClassesClient({
                   <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-gray-500">
                     {c.start_date && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(c.start_date).toLocaleDateString()}</span>}
                     <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{c.participant_count} enrolled</span>
-                    <span className="capitalize text-gray-400">{c.status.replace("_", " ")}</span>
+                    <span className="capitalize text-gray-500">{c.status.replace("_", " ")}</span>
                     {c.nasba_certified && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
                         NASBA{c.nasba_cpe_credits != null ? ` · ${c.nasba_cpe_credits} CPE` : ""}
@@ -313,7 +313,7 @@ function ExamsPanel({ classId, onClose }: { classId: string; onClose: () => void
       {loading ? (
         <div className="py-4 text-center text-gray-400"><Loader2 className="mx-auto h-4 w-4 animate-spin" /></div>
       ) : items.length === 0 ? (
-        <p className="py-2 text-xs text-gray-400">This class's course has no assessments yet.</p>
+        <p className="py-2 text-xs text-gray-500">This class's course has no assessments yet.</p>
       ) : (
         <>
           <p className="mb-2 text-[11px] text-gray-500">
@@ -324,7 +324,7 @@ function ExamsPanel({ classId, onClose }: { classId: string; onClose: () => void
           <ul className="space-y-1">
             {items.map((a) => (
               <li key={a.id} className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm">
-                <span className="text-gray-700">{a.title} <span className="text-[10px] capitalize text-gray-400">· {a.status}</span></span>
+                <span className="text-gray-700">{a.title} <span className="text-[10px] capitalize text-gray-500">· {a.status}</span></span>
                 <label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
                   <input
                     type="checkbox"
@@ -478,9 +478,9 @@ function InvitePanel({ classId, onClose }: { classId: string; onClose: () => voi
         <ul className="mt-3 divide-y divide-gray-200 border-t border-gray-200 pt-2">
           {invitations.map((inv) => (
             <li key={inv.id} className="flex items-center justify-between py-1.5 text-xs">
-              <span className="text-gray-600">{inv.email} · <span className="capitalize text-gray-400">{inv.invited_role}</span></span>
+              <span className="text-gray-600">{inv.email} · <span className="capitalize text-gray-500">{inv.invited_role}</span></span>
               <span className="flex items-center gap-2">
-                <span className={`capitalize ${inv.status === "accepted" ? "text-green-600" : inv.status === "pending" ? "text-amber-600" : "text-gray-400"}`}>{inv.status}</span>
+                <span className={`capitalize ${inv.status === "accepted" ? "text-green-600" : inv.status === "pending" ? "text-amber-600" : "text-gray-500"}`}>{inv.status}</span>
                 {inv.status === "pending" && (
                   <button onClick={() => revoke(inv.id)} className="text-red-500 hover:text-red-600">Revoke</button>
                 )}

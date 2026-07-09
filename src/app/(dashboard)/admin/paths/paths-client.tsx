@@ -531,7 +531,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               <div className="border-t border-gray-100 bg-gray-50/50 px-6 py-4">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Course Sequence</h4>
                 {path.courses.length === 0 ? (
-                  <p className="text-sm text-gray-400 italic">No courses added to this path yet.</p>
+                  <p className="text-sm text-gray-500 italic">No courses added to this path yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {path.courses.map((course, i) => (
@@ -543,8 +543,8 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">{course.title}</p>
                         </div>
-                        <span className="text-xs text-gray-400">{course.type}</span>
-                        <span className="text-xs text-gray-400">{formatDuration(course.duration)}</span>
+                        <span className="text-xs text-gray-500">{course.type}</span>
+                        <span className="text-xs text-gray-500">{formatDuration(course.duration)}</span>
                       </div>
                     ))}
                   </div>
@@ -607,7 +607,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                 <Clock className="h-4 w-4 text-gray-400" />
                 <span>{totalDuration > 0 ? formatDuration(totalDuration) : '—'}</span>
               </div>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 Sum of the {formData.selectedCourseIds.length} selected course
                 {formData.selectedCourseIds.length === 1 ? '' : 's'}.
               </p>
@@ -678,12 +678,12 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             {/* Course list */}
             <div className="max-h-48 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
               {loadingCourses ? (
-                <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+                <div className="flex items-center justify-center py-8 text-sm text-gray-500">
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Loading courses...
                 </div>
               ) : filteredAvailableCourses.length === 0 ? (
-                <div className="py-6 text-center text-sm text-gray-400">
+                <div className="py-6 text-center text-sm text-gray-500">
                   {courseSearch ? 'No courses match your search.' : 'No published courses available.'}
                 </div>
               ) : (
@@ -706,10 +706,10 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{course.title}</p>
                       </div>
-                      <span className="text-xs text-gray-400 shrink-0">
+                      <span className="text-xs text-gray-500 shrink-0">
                         {courseTypeMap[course.course_type] ?? course.course_type}
                       </span>
-                      <span className="text-xs text-gray-400 shrink-0">
+                      <span className="text-xs text-gray-500 shrink-0">
                         {formatDuration(course.estimated_duration)}
                       </span>
                     </label>
@@ -830,12 +830,12 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           {/* User list */}
           <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
             {loadingUsers ? (
-              <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+              <div className="flex items-center justify-center py-8 text-sm text-gray-500">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Loading users...
               </div>
             ) : assignableUsers.length === 0 ? (
-              <div className="py-6 text-center text-sm text-gray-400">
+              <div className="py-6 text-center text-sm text-gray-500">
                 {userSearch ? 'No users match your search.' : 'No active users found.'}
               </div>
             ) : (
@@ -857,7 +857,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{userLabel(u)}</p>
-                      <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                      <p className="text-xs text-gray-500 truncate">{u.email}</p>
                     </div>
                   </label>
                 );

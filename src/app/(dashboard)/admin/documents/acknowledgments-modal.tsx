@@ -33,7 +33,7 @@ export default function AcknowledgmentsModal({
             {acknowledgments.length} user(s) have acknowledged this document.
           </p>
           {acknowledgments.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-gray-500">
               <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
               <p className="text-sm">No acknowledgments yet</p>
             </div>
@@ -55,7 +55,7 @@ export default function AcknowledgmentsModal({
                       {ack.user_email}
                     </p>
                   </div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {formatDateTime(ack.acknowledged_at)}
                   </p>
                 </div>

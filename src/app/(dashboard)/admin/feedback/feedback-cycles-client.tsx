@@ -229,7 +229,7 @@ export default function FeedbackCyclesClient({ cycles: initialCycles }: { cycles
                   {cycle.description && (
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{cycle.description}</p>
                   )}
-                  <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
+                  <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                     {cycle.creator && (
                       <span>Created by {cycle.creator.first_name} {cycle.creator.last_name}</span>
                     )}

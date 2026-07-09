@@ -338,7 +338,7 @@ function AssignmentsTab({ teamMembers, initialAssignments, actions }: Props) {
                       <div className="min-w-0">
                         <p className="font-medium text-gray-900">{a.title}</p>
                         <p className="text-xs text-gray-500 line-clamp-2">{a.description}</p>
-                        <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-400"><Clock className="h-3 w-3" />~{a.estimated_minutes} min</span>
+                        <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-500"><Clock className="h-3 w-3" />~{a.estimated_minutes} min</span>
                       </div>
                     </label>
                   ))}
@@ -559,7 +559,7 @@ function ActivityTab() {
                     <p className="text-sm text-gray-900"><span className="font-medium capitalize">{e.action}</span> · {e.actionTitle}</p>
                     {e.reflection && <p className="mt-1 text-sm italic text-gray-500">&ldquo;{e.reflection}&rdquo;</p>}
                   </div>
-                  <span className="shrink-0 text-xs text-gray-400">{e.date}</span>
+                  <span className="shrink-0 text-xs text-gray-500">{e.date}</span>
                 </div>
               ))}
             </CardContent>

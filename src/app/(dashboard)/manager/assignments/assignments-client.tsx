@@ -714,7 +714,7 @@ export default function AssignmentsClient({
                 </div>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
                   {filteredPaths.length === 0 ? (
-                    <p className="px-3 py-4 text-center text-sm text-gray-400">
+                    <p className="px-3 py-4 text-center text-sm text-gray-500">
                       No published learning paths available.
                     </p>
                   ) : (
@@ -741,7 +741,7 @@ export default function AssignmentsClient({
                     ))
                   )}
                 </div>
-                <p className="mt-1.5 text-xs text-gray-400">
+                <p className="mt-1.5 text-xs text-gray-500">
                   Assigning a path enrolls the member in the path and all of its
                   courses.
                 </p>

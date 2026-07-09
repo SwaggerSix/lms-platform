@@ -18,7 +18,7 @@ interface Cert {
 }
 
 function expiry(expiry: string | null): { label: string; cls: string; bucket: string } {
-  if (!expiry) return { label: "No expiry", cls: "text-gray-400", bucket: "none" };
+  if (!expiry) return { label: "No expiry", cls: "text-gray-500", bucket: "none" };
   const days = Math.ceil((new Date(expiry).getTime() - Date.now()) / 86400000);
   if (days < 0) return { label: "Expired", cls: "text-red-600", bucket: "expired" };
   if (days <= 60) return { label: `${days}d left`, cls: "text-amber-600", bucket: "expiring" };
@@ -115,7 +115,7 @@ const columns: DataTableColumn<CertRow>[] = [
     render: (r) => (
       <>
         <p className="font-medium text-gray-900">{r.instructor}</p>
-        <p className="text-xs text-gray-400">{r.email}</p>
+        <p className="text-xs text-gray-500">{r.email}</p>
       </>
     ),
   },
@@ -124,7 +124,7 @@ const columns: DataTableColumn<CertRow>[] = [
     header: "Credential",
     sortValue: (r) => r.name,
     render: (r) => (
-      <span className="text-gray-700">{r.name}<span className="ml-1 text-[10px] uppercase text-gray-400">{r.credential_type}</span></span>
+      <span className="text-gray-700">{r.name}<span className="ml-1 text-[10px] uppercase text-gray-500">{r.credential_type}</span></span>
     ),
   },
   {

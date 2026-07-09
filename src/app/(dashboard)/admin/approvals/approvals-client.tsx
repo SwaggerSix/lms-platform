@@ -523,7 +523,7 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
           <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
             <ClipboardCheck className="mx-auto h-12 w-12 text-gray-300" />
             <p className="mt-4 text-gray-500">No approval requests found.</p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500">
               {searchQuery || departmentFilter !== "all" || managerFilter !== "all"
                 ? "Try adjusting your search or filter criteria."
                 : "No requests to display."}
@@ -582,7 +582,7 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
                 className="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               />
               {rejectionReason.trim() === "" && (
-                <p className="mt-1 text-xs text-gray-400">A reason is required to reject a request.</p>
+                <p className="mt-1 text-xs text-gray-500">A reason is required to reject a request.</p>
               )}
             </div>
             <div className="flex items-center justify-end gap-3 border-t border-gray-200 p-6">

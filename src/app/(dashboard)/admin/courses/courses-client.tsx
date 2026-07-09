@@ -501,7 +501,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             value: tab,
             label: (
               <>
-                {tab} <span className="ml-1 text-xs text-gray-400">({count})</span>
+                {tab} <span className="ml-1 text-xs text-gray-500">({count})</span>
               </>
             ),
           };
@@ -606,7 +606,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                   </div>
                 </div>
                 {course.updatedAt && (
-                  <p className="mt-2 text-[11px] text-gray-400">Last updated on {formatDate(course.updatedAt)}</p>
+                  <p className="mt-2 text-[11px] text-gray-500">Last updated on {formatDate(course.updatedAt)}</p>
                 )}
               </div>
               <div className="border-t border-gray-100 px-4 py-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -673,7 +673,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cover image
-                  <span className="ml-1 font-normal text-gray-400">(optional — falls back to generated art)</span>
+                  <span className="ml-1 font-normal text-gray-500">(optional — falls back to generated art)</span>
                 </label>
                 <div className="flex items-center gap-4">
                   <div className="h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
@@ -717,7 +717,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                         <X className="h-3.5 w-3.5" /> Remove
                       </button>
                     )}
-                    <p className="text-xs text-gray-400">JPEG, PNG, WebP, or GIF · up to 5MB</p>
+                    <p className="text-xs text-gray-500">JPEG, PNG, WebP, or GIF · up to 5MB</p>
                   </div>
                 </div>
               </div>
@@ -810,7 +810,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                       onChange={(e) => setEditForm((f) => ({ ...f, availableFrom: e.target.value || null }))}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                     />
-                    <p className="mt-1 text-xs text-gray-400">Blank = available now.</p>
+                    <p className="mt-1 text-xs text-gray-500">Blank = available now.</p>
                   </div>
                   {!!editForm.availableUntil && (
                     <div>
@@ -822,7 +822,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                         onChange={(e) => setEditForm((f) => ({ ...f, availableUntil: e.target.value || null }))}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                       />
-                      <p className="mt-1 text-xs text-gray-400">Access is cut after this day.</p>
+                      <p className="mt-1 text-xs text-gray-500">Access is cut after this day.</p>
                     </div>
                   )}
                 </div>

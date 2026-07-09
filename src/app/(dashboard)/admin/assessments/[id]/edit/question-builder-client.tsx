@@ -286,7 +286,7 @@ export default function QuestionBuilderClient({
                 <button onClick={() => addOption(qi)} className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700">
                   <Plus className="h-3.5 w-3.5" /> Add option
                 </button>
-                <p className="text-[11px] text-gray-400">{q.question_type === "multiple_choice" ? "Select the single correct option." : "Tick all correct options."}</p>
+                <p className="text-[11px] text-gray-500">{q.question_type === "multiple_choice" ? "Select the single correct option." : "Tick all correct options."}</p>
               </div>
             )}
 

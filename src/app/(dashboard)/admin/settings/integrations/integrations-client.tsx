@@ -510,7 +510,7 @@ export default function IntegrationsClient({ initialIntegrations }: Integrations
                     </div>
                     <p className="mt-1 text-sm text-gray-500">{meta.description}</p>
                     {integration && (
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-gray-500">
                         Last updated: {new Date(integration.updated_at).toLocaleDateString()}
                       </p>
                     )}

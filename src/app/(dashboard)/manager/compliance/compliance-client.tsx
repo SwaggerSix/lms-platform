@@ -287,7 +287,7 @@ export default function ComplianceClient({
           <p className="text-sm font-medium text-gray-700">
             Compliance Rate
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {totalCompleted}/{totalRequired} completed
           </p>
         </div>
@@ -347,7 +347,7 @@ export default function ComplianceClient({
                   <p className="mt-1 text-3xl font-bold text-gray-900">
                     {stat.value}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400">
+                  <p className="mt-0.5 text-xs text-gray-500">
                     {stat.subtitle}
                   </p>
                 </div>
@@ -597,7 +597,7 @@ export default function ComplianceClient({
                                         {style.label}
                                       </span>
                                       {member.status === "in-progress" && (
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-gray-500">
                                           {formatPercent(member.progress)}
                                         </span>
                                       )}

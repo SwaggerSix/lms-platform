@@ -223,7 +223,7 @@ export default function AutomationClient({
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-500 uppercase">Inactive</p>
-          <p className="text-2xl font-bold text-gray-400 mt-1">{rules.filter((r) => !r.is_active).length}</p>
+          <p className="text-2xl font-bold text-gray-500 mt-1">{rules.filter((r) => !r.is_active).length}</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-medium text-gray-500 uppercase">Total Executions</p>
