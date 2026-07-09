@@ -22,6 +22,7 @@ import {
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface Announcement {
   id: string;
@@ -280,22 +281,15 @@ export default function NotificationsClient({ announcements, templates }: Notifi
         </Button>
       </div>
 
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-8">
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <TabsList>
           {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "border-b-2 pb-3 text-sm font-medium transition-colors",
-                activeTab === tab ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              )}
-            >
+            <TabsTrigger key={tab} value={tab}>
               {tab}
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {activeTab === "Announcements" && (
         <div className="space-y-6">

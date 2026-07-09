@@ -5,6 +5,7 @@ import { Upload, Plus, Send, Globe, Loader2, Copy, KeyRound } from "lucide-react
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 
 export interface ApiKey {
@@ -278,22 +279,15 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
         <p className="mt-1 text-sm text-gray-500">Manage your LMS platform configuration and preferences</p>
       </div>
 
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-8">
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <TabsList>
           {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "border-b-2 pb-3 text-sm font-medium transition-colors",
-                activeTab === tab ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              )}
-            >
+            <TabsTrigger key={tab} value={tab}>
               {tab}
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {activeTab === "General" && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">

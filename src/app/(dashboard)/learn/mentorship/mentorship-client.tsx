@@ -5,6 +5,7 @@ import MentorCard from "@/components/mentorship/mentor-card";
 import MatchResults from "@/components/mentorship/match-results";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getHelp } from "@/lib/help-content";
 
 interface MentorshipClientProps {
@@ -233,24 +234,15 @@ export default function MentorshipClient({
       )}
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6" aria-label="Mentorship sections">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as typeof activeTab)} className="mb-6">
+        <TabsList aria-label="Mentorship sections">
           {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              aria-pressed={activeTab === tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
+            <TabsTrigger key={tab.key} value={tab.key}>
               {tab.label}
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Request form modal */}
       {showRequestForm && (

@@ -17,6 +17,7 @@ import {
 import { cn } from "@/utils/cn";
 import Link from "next/link";
 import { PageIntro } from "@/components/ui/page-intro";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getHelp } from "@/lib/help-content";
 import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 
@@ -269,30 +270,18 @@ export default function MyObservationsClient({ asObserver, asSubject, templates,
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200" aria-label="Filter observations by role">
-        <button
-          aria-pressed={tab === "observer"}
-          onClick={() => setTab("observer")}
-          className={cn(
-            "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-            tab === "observer" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
-          )}
-        >
-          <Eye className="h-3.5 w-3.5" />
-          As Observer ({asObserver.length})
-        </button>
-        <button
-          aria-pressed={tab === "subject"}
-          onClick={() => setTab("subject")}
-          className={cn(
-            "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-            tab === "subject" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
-          )}
-        >
-          <User className="h-3.5 w-3.5" />
-          As Subject ({asSubject.length})
-        </button>
-      </div>
+      <Tabs value={tab} onChange={(v) => setTab(v as typeof tab)}>
+        <TabsList aria-label="Filter observations by role">
+          <TabsTrigger value="observer">
+            <Eye className="h-3.5 w-3.5" />
+            As Observer ({asObserver.length})
+          </TabsTrigger>
+          <TabsTrigger value="subject">
+            <User className="h-3.5 w-3.5" />
+            As Subject ({asSubject.length})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Observation list */}
       {observations.length > 0 ? (

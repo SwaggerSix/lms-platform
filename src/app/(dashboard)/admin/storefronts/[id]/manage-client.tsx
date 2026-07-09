@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Order, Product, Storefront } from "./store-shared";
 import ProductsTab from "./products-tab";
 import OrdersTab from "./orders-tab";
@@ -88,22 +89,15 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
         </div>
       )}
 
-      <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            aria-pressed={tab === t.key}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px ${
-              tab === t.key
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-800"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={tab} onChange={(v) => setTab(v as Tab)} className="mb-6">
+        <TabsList>
+          {tabs.map((t) => (
+            <TabsTrigger key={t.key} value={t.key}>
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {tab === "products" && (
         <ProductsTab storeId={storeId} products={products} notify={notify} onReload={load} />

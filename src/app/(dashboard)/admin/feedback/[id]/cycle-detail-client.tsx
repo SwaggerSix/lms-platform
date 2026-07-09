@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import NominationManager from "@/components/feedback/nomination-manager";
 import FeedbackReport from "@/components/feedback/feedback-report";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
   id: string;
@@ -209,32 +210,24 @@ export default function CycleDetailClient({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex gap-6">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList>
           {([
             { key: "nominations", label: "Nominations", count: totalNoms },
             { key: "template", label: "Template" },
             { key: "report", label: "Reports" },
           ] as const).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
+            <TabsTrigger key={tab.key} value={tab.key}>
               {tab.label}
               {"count" in tab && tab.count !== undefined && (
-                <span className="ml-1.5 px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
                   {tab.count}
                 </span>
               )}
-            </button>
+            </TabsTrigger>
           ))}
-        </div>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Tab Content */}
       {activeTab === "nominations" && (

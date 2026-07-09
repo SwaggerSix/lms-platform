@@ -7,6 +7,7 @@ import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { MemberManager } from "@/components/tenants/member-manager";
 import { BrandingEditor } from "@/components/tenants/branding-editor";
 import { FeatureToggles } from "@/components/tenants/feature-toggles";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TenantDetailProps {
   tenant: any;
@@ -209,23 +210,15 @@ export default function TenantDetailClient({
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-6">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as Tab)} className="mb-6">
+        <TabsList>
           {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.key
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
+            <TabsTrigger key={tab.key} value={tab.key}>
               {tab.label}
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Overview Tab */}
       {activeTab === "overview" && (

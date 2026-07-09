@@ -16,6 +16,7 @@ import {
   Plug,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProviderCard, { type ProviderInfo } from "@/components/integrations/provider-card";
 import FieldMapper, { type FieldMappingItem } from "@/components/integrations/field-mapper";
 import SyncStatus from "@/components/integrations/sync-status";
@@ -676,27 +677,20 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-gray-200">
-          {[
-            { id: "settings" as const, label: "Settings", icon: Settings },
-            { id: "mappings" as const, label: "Field Mappings", icon: Database },
-            { id: "sync" as const, label: "Sync History", icon: RefreshCw },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setConfigTab(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-                configTab === tab.id
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              )}
-            >
-              <tab.icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <Tabs value={configTab} onChange={(v) => setConfigTab(v as typeof configTab)}>
+          <TabsList>
+            {[
+              { id: "settings" as const, label: "Settings", icon: Settings },
+              { id: "mappings" as const, label: "Field Mappings", icon: Database },
+              { id: "sync" as const, label: "Sync History", icon: RefreshCw },
+            ].map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id}>
+                <tab.icon className="h-3.5 w-3.5" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Tab content */}
         {configTab === "settings" && (
