@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MentorCard from "@/components/mentorship/mentor-card";
+import { Avatar } from "@/components/ui/avatar";
 import MatchResults from "@/components/mentorship/match-results";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Button } from "@/components/ui/button";
@@ -461,9 +462,12 @@ export default function MentorshipClient({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
-                        {partnerName[0] ?? "?"}
-                      </div>
+                      <Avatar
+                        size="md"
+                        fallback={partnerName[0] ?? "?"}
+                        colorClass="bg-gradient-to-br from-primary-500 to-purple-600 text-white"
+                        className="font-semibold"
+                      />
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           {partnerName}

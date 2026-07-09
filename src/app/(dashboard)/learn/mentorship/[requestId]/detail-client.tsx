@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, Star, Calendar } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
 import AddToCalendar from "@/components/calendar/add-to-calendar";
 import { Button } from "@/components/ui/button";
@@ -363,9 +364,12 @@ export default function MentorshipDetailClient({
       <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">
-              {partnerName[0] ?? "?"}
-            </div>
+            <Avatar
+              size="lg"
+              fallback={partnerName[0] ?? "?"}
+              colorClass="bg-gradient-to-br from-primary-500 to-purple-600 text-white"
+              className="font-bold"
+            />
             <div>
               <h1 className="text-xl font-bold text-gray-900">{partnerName}</h1>
               <p className="text-sm text-gray-500">
