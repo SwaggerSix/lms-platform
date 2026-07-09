@@ -213,7 +213,7 @@ export default function DocumentsClient({
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-5">
+        <div className="grid grid-cols-1 gap-4 mt-5 sm:grid-cols-3">
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary-100 rounded-lg">
@@ -260,7 +260,7 @@ export default function DocumentsClient({
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <FolderSidebar
           folders={folders}
           documents={documents}

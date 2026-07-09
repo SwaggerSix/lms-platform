@@ -16,16 +16,16 @@ export default function AdminDocumentsLoading() {
             <Skeleton className="h-10 w-40 rounded-md" />
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-4">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-20 rounded-lg" />
           ))}
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         {/* Folder sidebar */}
-        <div className="min-h-[calc(100vh-200px)] w-72 border-r border-gray-200 bg-white">
+        <div className="w-full border-b border-gray-200 bg-white md:min-h-[calc(100vh-200px)] md:w-72 md:border-b-0 md:border-r">
           <div className="border-b border-gray-200 px-5 py-4">
             <Skeleton className="h-4 w-20" />
           </div>
