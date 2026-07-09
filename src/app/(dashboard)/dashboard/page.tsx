@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { VIEW_AS_COOKIE, resolveViewAsRole } from "@/lib/auth/view-as";
 import LearnerDashboardClient from "./dashboard-client";
 import type { LearnerDashboardData } from "./dashboard-client";
 
@@ -125,7 +127,14 @@ export default async function DashboardPage() {
   }
 
   // Admins land on the platform-overview dashboard rather than the learner view.
-  if (dbUser.role === "admin" || dbUser.role === "super_admin") {
+  // Honor a read-only role preview (§2.12): an admin previewing a lower role
+  // should see that role's learner dashboard, not bounce to /admin/dashboard
+  // (which the middleware would then redirect back — an infinite loop).
+  const cookieStore = await cookies();
+  const effectiveRole =
+    resolveViewAsRole(dbUser.role, cookieStore.get(VIEW_AS_COOKIE)?.value ?? null) ??
+    dbUser.role;
+  if (effectiveRole === "admin" || effectiveRole === "super_admin") {
     redirect("/admin/dashboard");
   }
 

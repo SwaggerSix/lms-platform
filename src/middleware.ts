@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { isSuperAdminOnlyPath } from "@/lib/auth/roles";
+import { VIEW_AS_COOKIE, resolveViewAsRole } from "@/lib/auth/view-as";
 import { getFeatureForPath } from "@/lib/features/routes";
 import { resolveEnabledFeatures } from "@/lib/features/resolve";
 
@@ -153,6 +154,43 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Read-only role preview (§2.12): while an admin is previewing another role,
+  // block every state-changing API request. The preview is a read-only lens —
+  // an admin must exit it to mutate data. The view-as endpoint itself is exempt
+  // so the preview can always be started/stopped.
+  if (
+    user &&
+    request.method !== "GET" &&
+    request.method !== "HEAD" &&
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/auth/view-as") &&
+    request.cookies.get(VIEW_AS_COOKIE)?.value
+  ) {
+    const serviceClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: profile } = await serviceClient
+      .from("users")
+      .select("role")
+      .eq("auth_id", user.id)
+      .single();
+    const previewing = resolveViewAsRole(
+      profile?.role,
+      request.cookies.get(VIEW_AS_COOKIE)?.value
+    );
+    if (previewing) {
+      return NextResponse.json(
+        {
+          error:
+            "You're previewing another role (read-only). Exit preview mode to make changes.",
+        },
+        { status: 403 }
+      );
+    }
+  }
+
   // Token-authenticated nudge routes: reachable by anyone (logged in or not)
   // straight from an email link, with no redirect either way.
   const nudgeTokenPaths = ["/nudge/", "/api/nudge-respond", "/api/nudge-swap-link"];
@@ -282,7 +320,14 @@ export async function middleware(request: NextRequest) {
       .eq("auth_id", user.id)
       .single();
 
-    const role = profile?.role;
+    // Read-only role preview (§2.12): protect routes by the *previewed* role so
+    // an admin viewing as a lower role is redirected out of areas that role
+    // can't reach — keeping the preview faithful (and matching the dashboard's
+    // own effective-role redirect, so the two never bounce each other).
+    const realRole = profile?.role;
+    const role =
+      resolveViewAsRole(realRole, request.cookies.get(VIEW_AS_COOKIE)?.value) ??
+      realRole;
 
     // Instructors share a few admin-area management pages (Documents, Knowledge
     // Base) so they can add and edit content alongside admins.
