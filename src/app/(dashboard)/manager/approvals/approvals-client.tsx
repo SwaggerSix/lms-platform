@@ -9,8 +9,6 @@ import {
   Search,
   ArrowUpDown,
   ChevronDown,
-  X,
-  AlertTriangle,
   Timer,
   ThumbsUp,
   ThumbsDown,
@@ -18,6 +16,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import type { ApprovalStatus } from "@/types/database";
@@ -446,27 +445,43 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
 
       {/* Reject Modal */}
       {rejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 p-6">
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-red-100 p-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">Reject Request</h2>
-              </div>
-              <button
+        <Modal
+          isOpen
+          onClose={() => {
+            setRejectModalOpen(false);
+            setRejectingId(null);
+            setRejectionReason("");
+          }}
+          title="Reject Request"
+          size="md"
+          footer={
+            <>
+              <Button
+                variant="outline"
                 onClick={() => {
                   setRejectModalOpen(false);
                   setRejectingId(null);
                   setRejectionReason("");
                 }}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
               >
-                <X className="h-5 w-5" />
+                Cancel
+              </Button>
+              <button
+                onClick={handleReject}
+                disabled={!rejectionReason.trim() || actionLoading}
+                className={cn(
+                  "rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors",
+                  rejectionReason.trim() && !actionLoading
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "cursor-not-allowed bg-red-300"
+                )}
+              >
+                {actionLoading ? "Rejecting..." : "Reject Request"}
               </button>
-            </div>
-            <div className="p-6">
+            </>
+          }
+        >
+            <div>
               {rejectingId && (
                 <div className="mb-4 rounded-lg bg-gray-50 p-3">
                   <p className="text-sm text-gray-600">
@@ -493,32 +508,7 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
                 <p className="mt-1 text-xs text-gray-500">A reason is required to reject a request.</p>
               )}
             </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 p-6">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setRejectModalOpen(false);
-                  setRejectingId(null);
-                  setRejectionReason("");
-                }}
-              >
-                Cancel
-              </Button>
-              <button
-                onClick={handleReject}
-                disabled={!rejectionReason.trim() || actionLoading}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors",
-                  rejectionReason.trim() && !actionLoading
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "cursor-not-allowed bg-red-300"
-                )}
-              >
-                {actionLoading ? "Rejecting..." : "Reject Request"}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
