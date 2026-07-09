@@ -22,6 +22,7 @@ import {
 import { cn } from "@/utils/cn";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface Announcement {
@@ -391,14 +392,25 @@ export default function NotificationsClient({ announcements, templates }: Notifi
 
           {/* Edit announcement modal */}
           {editingId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Edit Announcement</h2>
-                  <button onClick={() => setEditingId(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
+            <Modal
+              isOpen
+              onClose={() => setEditingId(null)}
+              title="Edit Announcement"
+              size="md"
+              footer={
+                <>
+                  <Button variant="outline" onClick={() => setEditingId(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => handleEditAnnouncement(editingId)}
+                    disabled={saving || !editTitle.trim() || !editBody.trim()}
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </>
+              }
+            >
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -409,19 +421,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     <textarea rows={4} value={editBody} onChange={(e) => setEditBody(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
-                <div className="mt-6 flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setEditingId(null)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => handleEditAnnouncement(editingId)}
-                    disabled={saving || !editTitle.trim() || !editBody.trim()}
-                  >
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            </Modal>
           )}
 
           <div className="space-y-3">
@@ -494,14 +494,22 @@ export default function NotificationsClient({ announcements, templates }: Notifi
         <div className="space-y-3">
           {/* Template edit modal */}
           {editingTemplate && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Edit Template</h2>
-                  <button onClick={() => setEditingTemplate(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
+            <Modal
+              isOpen
+              onClose={() => setEditingTemplate(null)}
+              title="Edit Template"
+              size="md"
+              footer={
+                <>
+                  <Button variant="outline" onClick={() => setEditingTemplate(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveTemplate}>
+                    Save Template
+                  </Button>
+                </>
+              }
+            >
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -516,16 +524,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     <textarea rows={3} value={templatePreview} onChange={(e) => setTemplatePreview(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
-                <div className="mt-6 flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setEditingTemplate(null)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveTemplate}>
-                    Save Template
-                  </Button>
-                </div>
-              </div>
-            </div>
+            </Modal>
           )}
 
           {templates.map((template) => (
