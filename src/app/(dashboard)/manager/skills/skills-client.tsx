@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 
 export interface TeamMemberSkills {
   id: string;
@@ -484,21 +485,13 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
 
       {/* Recommended Courses Modal */}
       {coursesModalSkill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div role="dialog" aria-modal="true" aria-label={`Recommended Courses: ${coursesModalSkill}`} className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Recommended Courses: {coursesModalSkill}
-              </h2>
-              <button
-                onClick={() => setCoursesModalSkill(null)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label="Close recommended courses"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="px-6 py-4 space-y-3">
+        <Modal
+          isOpen
+          onClose={() => setCoursesModalSkill(null)}
+          title={`Recommended Courses: ${coursesModalSkill}`}
+          size="md"
+        >
+            <div className="space-y-3">
               {(recommendedCourses[coursesModalSkill] || []).map((course) => (
                 <button
                   key={course}
@@ -527,8 +520,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
                 Browse All {coursesModalSkill} Courses
               </Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
