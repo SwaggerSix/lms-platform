@@ -9,6 +9,7 @@ import {
   Briefcase,
   type LucideIcon,
 } from "lucide-react";
+import { ConversationListItem } from "@/components/ui/conversation-list-item";
 
 interface Session {
   id: string;
@@ -80,58 +81,55 @@ export default function ChatSidebar({
             {sessions.map((session) => {
               const ContextIcon =
                 CONTEXT_ICONS[session.context_type] || CONTEXT_ICONS.general;
+              const active = activeSessionId === session.id;
               return (
-              <div
+              <ConversationListItem
                 key={session.id}
-                className={`group relative px-3 py-2.5 cursor-pointer transition-colors ${
-                  activeSessionId === session.id
-                    ? "bg-primary-50 border-r-2 border-primary-600"
-                    : "hover:bg-gray-100"
-                }`}
                 onClick={() => onSelectSession(session.id)}
-              >
-                <div className="flex items-start gap-2.5">
+                active={active}
+                activeAccent
+                className="group gap-2.5 px-3 py-2.5 hover:bg-gray-100"
+                leading={
                   <ContextIcon
                     className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                      activeSessionId === session.id ? "text-primary-600" : "text-gray-400"
+                      active ? "text-primary-600" : "text-gray-400"
                     }`}
                     strokeWidth={1.5}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-sm font-medium truncate ${
-                        activeSessionId === session.id ? "text-primary-900" : "text-gray-900"
-                      }`}
-                    >
-                      {session.title || "New Conversation"}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] text-gray-400">
-                        {session.message_count} msgs
-                      </span>
-                      {session.last_message_at && (
-                        <>
-                          <span className="text-gray-300">|</span>
-                          <span className="text-[10px] text-gray-400">
-                            {formatRelativeTime(session.last_message_at)}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Delete button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteSession(session.id);
-                  }}
-                  className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+                }
+                trailing={
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteSession(session.id);
+                    }}
+                    className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                }
+              >
+                <p
+                  className={`text-sm font-medium truncate ${
+                    active ? "text-primary-900" : "text-gray-900"
+                  }`}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                  {session.title || "New Conversation"}
+                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-gray-400">
+                    {session.message_count} msgs
+                  </span>
+                  {session.last_message_at && (
+                    <>
+                      <span className="text-gray-300">|</span>
+                      <span className="text-[10px] text-gray-400">
+                        {formatRelativeTime(session.last_message_at)}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </ConversationListItem>
               );
             })}
           </div>
