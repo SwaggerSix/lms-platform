@@ -25,8 +25,12 @@ export default async function SkillsManagementPage() {
     redirect("/login");
   }
 
-  // Fetch all skills with user_skills count, course_skills count, and avg proficiency
-  const { data: skillsRaw } = await service
+  // Fetch all skills with user_skills count, course_skills count, and avg proficiency.
+  // Cap the outer skills fetch for performance (UX review §1.5); the client surfaces
+  // a "showing first N of M" notice when the total exceeds the cap. The nested
+  // user_skills/course_skills embeds are per-skill counts and stay uncapped.
+  const LIST_CAP = 500;
+  const { data: skillsRaw, count: skillsCount } = await service
     .from("skills")
     .select(`
       id,
@@ -41,8 +45,9 @@ export default async function SkillsManagementPage() {
       course_skills (
         skill_id
       )
-    `)
-    .order("name", { ascending: true });
+    `, { count: "exact" })
+    .order("name", { ascending: true })
+    .limit(LIST_CAP);
 
   const skills: Skill[] = (skillsRaw || []).map((s: any) => {
     const userSkills = Array.isArray(s.user_skills) ? s.user_skills : [];
@@ -68,5 +73,5 @@ export default async function SkillsManagementPage() {
     };
   });
 
-  return <SkillsClient skills={skills} />;
+  return <SkillsClient skills={skills} totalSkills={skillsCount ?? skills.length} />;
 }

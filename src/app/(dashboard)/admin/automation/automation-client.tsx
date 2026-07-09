@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import { getHelp } from "@/lib/help-content";
 import { TRIGGER_TYPES, type EnrollmentRule, type SelectOption } from "./automation-shared";
 import RulesTable from "./rules-table";
@@ -13,6 +14,7 @@ import RuleDetail from "./rule-detail";
 
 interface AutomationClientProps {
   initialRules: EnrollmentRule[];
+  totalRules?: number;
   courses: SelectOption[];
   paths: SelectOption[];
   badges: SelectOption[];
@@ -21,6 +23,7 @@ interface AutomationClientProps {
 
 export default function AutomationClient({
   initialRules,
+  totalRules,
   courses,
   paths,
   badges,
@@ -229,6 +232,8 @@ export default function AutomationClient({
       </div>
 
       {/* Rules table */}
+      <ResultLimitNotice shown={rules.length} total={totalRules ?? rules.length} noun="rules" className="mb-3" />
+
       <RulesTable
         rules={filtered}
         organizations={organizations}

@@ -5,6 +5,7 @@ import { BarChart3, BookOpen, FileText, FolderOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
+import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import type { AdminArticle, AdminCategory } from "./kb-shared";
 import ArticlesTab from "./articles-tab";
 import CategoriesTab from "./categories-tab";
@@ -15,6 +16,8 @@ import CategoryModal from "./category-modal";
 export interface KnowledgeBaseClientProps {
   initialArticles: AdminArticle[];
   initialCategories: AdminCategory[];
+  /** Total articles matching in the DB (may exceed the loaded/capped set). */
+  totalArticles?: number;
   /** Full management rights (delete, analytics). Admins only; instructors can add/edit but not delete. */
   canManage?: boolean;
 }
@@ -27,7 +30,7 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function KnowledgeBaseClient({ initialArticles, initialCategories, canManage = true }: KnowledgeBaseClientProps) {
+export default function KnowledgeBaseClient({ initialArticles, initialCategories, totalArticles, canManage = true }: KnowledgeBaseClientProps) {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabKey>("articles");
   const [articles, setArticles] = useState(initialArticles);
@@ -133,16 +136,24 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
         </Tabs>
 
         {activeTab === "articles" && (
-          <ArticlesTab
-            articles={articles}
-            categories={categories}
-            canManage={canManage}
-            onEdit={(article) => {
-              setEditingArticle(article);
-              setShowArticleModal(true);
-            }}
-            onDelete={handleDeleteArticle}
-          />
+          <>
+            <ResultLimitNotice
+              shown={articles.length}
+              total={totalArticles ?? articles.length}
+              noun="articles"
+              className="mt-6 mb-3"
+            />
+            <ArticlesTab
+              articles={articles}
+              categories={categories}
+              canManage={canManage}
+              onEdit={(article) => {
+                setEditingArticle(article);
+                setShowArticleModal(true);
+              }}
+              onDelete={handleDeleteArticle}
+            />
+          </>
         )}
 
         {activeTab === "categories" && (

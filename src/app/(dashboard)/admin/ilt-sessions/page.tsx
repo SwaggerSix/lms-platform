@@ -34,19 +34,30 @@ export default async function AdminILTSessionsPage() {
   }
 
   // ─── Fetch sessions with course + instructor joins ────────────
-  const { data: sessionsRows } = await service
+  // Cap the list for performance (UX review §1.5); the client surfaces a
+  // "showing first N of M" notice when the total exceeds the cap.
+  const LIST_CAP = 500;
+  const { data: sessionsRows, count: sessionsCount } = await service
     .from("ilt_sessions")
     .select(
-      "*, course:courses(id, title), instructor:users!ilt_sessions_instructor_id_fkey(id, first_name, last_name, email)"
+      "*, course:courses(id, title), instructor:users!ilt_sessions_instructor_id_fkey(id, first_name, last_name, email)",
+      { count: "exact" }
     )
-    .order("session_date", { ascending: false });
+    .order("session_date", { ascending: false })
+    .limit(LIST_CAP);
 
-  // ─── Fetch attendance records for all sessions ────────────────
-  const { data: attendanceRows } = await service
-    .from("ilt_attendance")
-    .select(
-      "*, user:users!ilt_attendance_user_id_fkey(id, first_name, last_name, email)"
-    );
+  // ─── Fetch attendance for the shown sessions only ─────────────
+  // Scoped by the capped session ids rather than fetching every attendance
+  // row, so counts stay accurate while the query stays bounded.
+  const shownSessionIds = (sessionsRows ?? []).map((r: any) => r.id);
+  const { data: attendanceRows } = shownSessionIds.length
+    ? await service
+        .from("ilt_attendance")
+        .select(
+          "*, user:users!ilt_attendance_user_id_fkey(id, first_name, last_name, email)"
+        )
+        .in("session_id", shownSessionIds)
+    : { data: [] as any[] };
 
   // ─── Fetch courses for the create-session dropdown ────────────
   const { data: coursesRows } = await service
@@ -136,6 +147,7 @@ export default async function AdminILTSessionsPage() {
       initialSessions={sessions}
       courses={courses}
       instructors={instructors}
+      totalCount={sessionsCount ?? sessions.length}
     />
   );
 }

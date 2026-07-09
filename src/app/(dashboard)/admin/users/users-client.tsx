@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -63,7 +64,7 @@ const statusBadge: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
 };
 
-export default function UsersClient({ users, organizations = [], currentUserRole = 'admin' }: { users: UserItem[]; organizations?: OrgItem[]; currentUserRole?: UserRole }) {
+export default function UsersClient({ users, organizations = [], currentUserRole = 'admin', totalCount }: { users: UserItem[]; organizations?: OrgItem[]; currentUserRole?: UserRole; totalCount?: number }) {
   const toast = useToast();
   // Roles the current admin is permitted to assign. Only Super Admins (gC/GGS)
   // can grant the Super Admin role.
@@ -472,6 +473,12 @@ export default function UsersClient({ users, organizations = [], currentUserRole
       </div>
 
       {/* Table */}
+      <ResultLimitNotice
+        shown={users.length}
+        total={totalCount ?? users.length}
+        noun="users"
+        className="mb-3"
+      />
       <DataTable
         columns={userColumns}
         rows={filtered}
