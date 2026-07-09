@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Clock, Download, Mail, X } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import type { ReportFrequency, ReportFormat } from "@/types/database";
 import {
   dayOfWeekLabels,
@@ -106,19 +107,23 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">Create Report Schedule</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="space-y-6 px-6 py-5">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Create Report Schedule"
+      size="lg"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleCreateSchedule} disabled={!formName.trim()}>
+            Create Schedule
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-6">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Report Name</label>
@@ -408,17 +413,6 @@ export default function CreateScheduleModal({ onClose, onCreated }: CreateSchedu
             </div>
           </div>
         </div>
-
-        {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleCreateSchedule} disabled={!formName.trim()}>
-            Create Schedule
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

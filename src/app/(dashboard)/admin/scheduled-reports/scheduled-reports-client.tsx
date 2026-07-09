@@ -4,6 +4,7 @@ import { useState } from "react";
 import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import { AlertTriangle, Calendar, Plus, Send, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageIntro } from "@/components/ui/page-intro";
 import { ReportViewerModal, type ReportColumn } from "@/components/ui/report-viewer-modal";
 import {
   formatDate,
@@ -138,17 +139,16 @@ export default function ScheduledReportsClient({ initialReports }: ScheduledRepo
   return (
     <div className="space-y-8">
       <AdminAnalyticsTabs />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Scheduled Reports</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage automated report delivery and scheduling</p>
-        </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4" />
-          Create Schedule
-        </Button>
-      </div>
+      <PageIntro
+        title="Scheduled Reports"
+        description="Manage automated report delivery and scheduling"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4" />
+            Create Schedule
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
