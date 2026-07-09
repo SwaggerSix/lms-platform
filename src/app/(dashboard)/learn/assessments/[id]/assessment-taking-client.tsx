@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import {
   Clock,
   ChevronLeft,
@@ -182,50 +183,50 @@ export default function AssessmentTakingClient({ data, classId = null }: { data:
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ---- Submit Confirmation Modal ---- */}
-      {showSubmitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Submit Assessment?</h3>
-              <button onClick={() => setShowSubmitModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="mt-4 space-y-3 text-sm text-gray-600">
-              <p>
-                You have answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
-              </p>
-              {unansweredCount > 0 && (
-                <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-yellow-700">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>You have {unansweredCount} unanswered question(s).</span>
-                </div>
-              )}
-            </div>
-            {submitError && (
-              <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                {submitError}
-              </div>
-            )}
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => { setShowSubmitModal(false); setSubmitError(null); }}
-                disabled={isSubmitting}
-                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Review Answers
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex-1 rounded-lg bg-primary-600 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Submitting..." : "Submit Assessment"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        className="max-w-md"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">Submit Assessment?</h3>
+          <button onClick={() => setShowSubmitModal(false)} className="text-gray-400 hover:text-gray-600">
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      )}
+        <div className="mt-4 space-y-3 text-sm text-gray-600">
+          <p>
+            You have answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
+          </p>
+          {unansweredCount > 0 && (
+            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-yellow-700">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>You have {unansweredCount} unanswered question(s).</span>
+            </div>
+          )}
+        </div>
+        {submitError && (
+          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            {submitError}
+          </div>
+        )}
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={() => { setShowSubmitModal(false); setSubmitError(null); }}
+            disabled={isSubmitting}
+            className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Review Answers
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex-1 rounded-lg bg-primary-600 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Assessment"}
+          </button>
+        </div>
+      </Modal>
 
       {/* ---- Top Bar ---- */}
       <div className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6">

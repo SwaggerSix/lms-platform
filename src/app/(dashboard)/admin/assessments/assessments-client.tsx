@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import {
@@ -688,22 +689,13 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
       )}
 
       {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDeleteConfirm(null)}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">Delete Assessment</h3>
-                <p className="text-sm text-gray-500">This action cannot be undone.</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete <span className="font-medium text-gray-900">{deleteConfirm.title}</span>? All associated questions and attempt data will be permanently removed.
-            </p>
-            <div className="flex items-center justify-end gap-3">
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        size="sm"
+        footer={
+          deleteConfirm && (
+            <>
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
                 Cancel
               </Button>
@@ -715,10 +707,27 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                 {isLoading('delete', deleteConfirm.id) && <Loader2 className="h-4 w-4 animate-spin" />}
                 Delete
               </button>
+            </>
+          )
+        }
+      >
+        {deleteConfirm && (
+          <>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Delete Assessment</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone.</p>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete <span className="font-medium text-gray-900">{deleteConfirm.title}</span>? All associated questions and attempt data will be permanently removed.
+            </p>
+          </>
+        )}
+      </Modal>
 
       {/* AI Quiz Generation Modal */}
       {aiQuizOpen && (

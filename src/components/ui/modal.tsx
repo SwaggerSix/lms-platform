@@ -16,6 +16,9 @@ export interface ModalProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  /** Optional action row rendered in a bordered footer below the body —
+   * the standard right-aligned button group (Cancel / confirm). */
+  footer?: React.ReactNode;
   size?: keyof typeof sizeClasses;
   className?: string;
 }
@@ -28,6 +31,7 @@ function Modal({
   onClose,
   title,
   children,
+  footer,
   size = "md",
   className,
 }: ModalProps) {
@@ -140,6 +144,13 @@ function Modal({
 
         {/* Body */}
         <div className="px-6 py-4">{children}</div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
