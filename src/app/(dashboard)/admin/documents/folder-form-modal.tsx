@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
 import type { DocumentVisibility } from "@/types/database";
 import type { FolderWithMeta } from "./documents-types";
 
@@ -55,20 +55,23 @@ export default function FolderFormModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Edit Folder" : "Create Folder"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded hover:bg-gray-100 text-gray-400"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={isEdit ? "Edit Folder" : "Create Folder"}
+      size="md"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={!name.trim()}>
+            {isEdit ? "Save Changes" : "Create"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Folder Name
@@ -108,15 +111,6 @@ export default function FolderFormModal({
             </select>
           </div>
         </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={!name.trim()}>
-            {isEdit ? "Save Changes" : "Create"}
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
