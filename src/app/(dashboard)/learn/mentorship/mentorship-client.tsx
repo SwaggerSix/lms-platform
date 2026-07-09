@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import MatchResults from "@/components/mentorship/match-results";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getHelp } from "@/lib/help-content";
 
@@ -411,13 +412,13 @@ export default function MentorshipClient({
             ))}
           </div>
           {displayMentors.length === 0 && !browsing && (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-              <p className="text-sm text-gray-500">
-                {searchInput || availabilityFilter || expertiseFilter
+            <EmptyState
+              title={
+                searchInput || availabilityFilter || expertiseFilter
                   ? "No mentors match those filters. Try clearing some."
-                  : "No mentors available yet. Be the first to become a mentor!"}
-              </p>
-            </div>
+                  : "No mentors available yet. Be the first to become a mentor!"
+              }
+            />
           )}
         </div>
       )}
@@ -434,15 +435,17 @@ export default function MentorshipClient({
       {activeTab === "requests" && (
         <div className="space-y-4">
           {myRequests.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-              <p className="text-sm text-gray-500">No mentorship requests yet.</p>
-              <button
-                onClick={() => setActiveTab("browse")}
-                className="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700"
-              >
-                Browse mentors to get started
-              </button>
-            </div>
+            <EmptyState
+              title="No mentorship requests yet"
+              action={
+                <button
+                  onClick={() => setActiveTab("browse")}
+                  className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                >
+                  Browse mentors to get started
+                </button>
+              }
+            />
           ) : (
             myRequests.map((req: any) => {
               const mentee = req.mentee as any;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Users, RefreshCw } from "lucide-react";
 import MentorCard from "./mentor-card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface MentorMatch {
   mentorId: string;
@@ -78,10 +79,11 @@ export default function MatchResults({ onRequestMentor, isRequesting }: MatchRes
 
   if (matches.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
-        <Users className="mx-auto h-10 w-10 text-gray-400" strokeWidth={1.5} />
-        <p className="mt-3 text-sm text-gray-500">No mentor matches found. Try updating your goals and preferred areas.</p>
-      </div>
+      <EmptyState
+        icon={<Users className="h-10 w-10" strokeWidth={1.5} />}
+        title="No mentor matches found."
+        description="Try updating your goals and preferred areas."
+      />
     );
   }
 
