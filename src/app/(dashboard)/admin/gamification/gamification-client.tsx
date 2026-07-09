@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
@@ -400,12 +401,18 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
 
         {/* Add Rule Modal */}
         {showRuleModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add Point Rule</h3>
-                <button onClick={() => setShowRuleModal(false)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"><X className="h-5 w-5" /></button>
-              </div>
+          <Modal
+            isOpen
+            onClose={() => setShowRuleModal(false)}
+            title="Add Point Rule"
+            size="md"
+            footer={
+              <>
+                <Button variant="outline" onClick={() => setShowRuleModal(false)}>Cancel</Button>
+                <Button onClick={addRule} disabled={!ruleAction.trim()}>Add Rule</Button>
+              </>
+            }
+          >
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Action Name</label>
@@ -464,13 +471,8 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setShowRuleModal(false)}>Cancel</Button>
-                  <Button onClick={addRule} disabled={!ruleAction.trim()}>Add Rule</Button>
-                </div>
               </div>
-            </div>
-          </div>
+          </Modal>
         )}
         </div>
       )}
@@ -486,16 +488,25 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
 
           {/* Badge create/edit modal */}
           {showBadgeModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {editingBadgeId ? "Edit Badge" : "Create Badge"}
-                  </h2>
-                  <button onClick={resetBadgeModal} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
+            <Modal
+              isOpen
+              onClose={resetBadgeModal}
+              title={editingBadgeId ? "Edit Badge" : "Create Badge"}
+              size="md"
+              footer={
+                <>
+                  <Button variant="outline" onClick={resetBadgeModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveBadge}
+                    disabled={savingBadge || !badgeName.trim()}
+                  >
+                    {savingBadge ? "Saving..." : editingBadgeId ? "Save Changes" : "Create Badge"}
+                  </Button>
+                </>
+              }
+            >
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -531,19 +542,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
                     <input type="number" min={0} value={badgePoints} onChange={(e) => setBadgePoints(parseInt(e.target.value) || 0)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                   </div>
                 </div>
-                <div className="mt-6 flex justify-end gap-3">
-                  <Button variant="outline" onClick={resetBadgeModal}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSaveBadge}
-                    disabled={savingBadge || !badgeName.trim()}
-                  >
-                    {savingBadge ? "Saving..." : editingBadgeId ? "Save Changes" : "Create Badge"}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            </Modal>
           )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
