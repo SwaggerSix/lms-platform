@@ -16,6 +16,7 @@ import {
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { trackEvent } from "@/lib/analytics/track";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -298,23 +299,14 @@ export default function DiscussionsClient({
 
         {/* ---- Tabs & Search ---- */}
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter discussions">
-            {(["All Discussions", "My Posts", "Unanswered"] as TabFilter[]).map((tab) => (
-              <button
-                key={tab}
-                aria-pressed={activeTab === tab}
-                onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                  activeTab === tab
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Filter discussions"
+            value={activeTab}
+            onChange={(v) => { setActiveTab(v as TabFilter); setCurrentPage(1); }}
+            options={(["All Discussions", "My Posts", "Unanswered"] as TabFilter[]).map(
+              (tab) => ({ value: tab, label: tab })
+            )}
+          />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <select
               value={courseFilter}

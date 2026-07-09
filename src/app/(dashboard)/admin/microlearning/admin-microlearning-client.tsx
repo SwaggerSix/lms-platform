@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Lightbulb } from "lucide-react";
 import EmbedCodeGenerator from "@/components/microlearning/embed-code-generator";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Nugget {
@@ -230,26 +231,16 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
-        <button
-          onClick={() => setActiveTab("nuggets")}
-          aria-pressed={activeTab === "nuggets"}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === "nuggets" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Nuggets
-        </button>
-        <button
-          onClick={() => setActiveTab("widgets")}
-          aria-pressed={activeTab === "widgets"}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === "widgets" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Embed Widgets
-        </button>
-      </div>
+      <SegmentedControl
+        aria-label="Microlearning views"
+        className="mb-6"
+        value={activeTab}
+        onChange={(v) => setActiveTab(v as typeof activeTab)}
+        options={[
+          { value: "nuggets", label: "Nuggets" },
+          { value: "widgets", label: "Embed Widgets" },
+        ]}
+      />
 
       {/* Nuggets Tab */}
       {activeTab === "nuggets" && (
