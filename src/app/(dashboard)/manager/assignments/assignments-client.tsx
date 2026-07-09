@@ -12,7 +12,6 @@ import {
   XCircle,
   Send,
   MoreHorizontal,
-  X,
   ChevronDown,
   Trash2,
   CalendarPlus,
@@ -619,22 +618,44 @@ export default function AssignmentsClient({
 
       {/* Assign Course Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div role="dialog" aria-modal="true" aria-label="Assign Course" className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {assignType === "path" ? "Assign Learning Path" : "Assign Course"}
-              </h2>
+        <Modal
+          isOpen
+          onClose={resetModal}
+          title={assignType === "path" ? "Assign Learning Path" : "Assign Course"}
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={resetModal}>
+                Cancel
+              </Button>
               <button
-                onClick={resetModal}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label="Close assign dialog"
+                onClick={handleAssign}
+                disabled={
+                  !(assignType === "path" ? selectedPath : selectedCourse) ||
+                  selectedMembers.length === 0 ||
+                  !dueDate ||
+                  assigning
+                }
+                className={cn(
+                  "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
+                  (assignType === "path" ? selectedPath : selectedCourse) &&
+                    selectedMembers.length > 0 &&
+                    dueDate &&
+                    !assigning
+                    ? "bg-primary-600 hover:bg-primary-700"
+                    : "bg-primary-300 cursor-not-allowed"
+                )}
               >
-                <X className="h-5 w-5" aria-hidden="true" />
+                {assigning
+                  ? "Assigning..."
+                  : assignType === "path"
+                    ? "Assign Path"
+                    : "Assign Course"}
               </button>
-            </div>
-
-            <div className="max-h-[70vh] overflow-y-auto px-6 py-4 space-y-5">
+            </>
+          }
+        >
+            <div className="space-y-5">
               {/* What to assign: course or learning path */}
               <div className="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
                 {(["course", "path"] as const).map((t) => (
@@ -819,55 +840,31 @@ export default function AssignmentsClient({
                 />
               </div>
             </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button variant="outline" onClick={resetModal}>
-                Cancel
-              </Button>
-              <button
-                onClick={handleAssign}
-                disabled={
-                  !(assignType === "path" ? selectedPath : selectedCourse) ||
-                  selectedMembers.length === 0 ||
-                  !dueDate ||
-                  assigning
-                }
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
-                  (assignType === "path" ? selectedPath : selectedCourse) &&
-                    selectedMembers.length > 0 &&
-                    dueDate &&
-                    !assigning
-                    ? "bg-primary-600 hover:bg-primary-700"
-                    : "bg-primary-300 cursor-not-allowed"
-                )}
-              >
-                {assigning
-                  ? "Assigning..."
-                  : assignType === "path"
-                    ? "Assign Path"
-                    : "Assign Course"}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Extend Deadline Modal */}
       {showExtendModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div role="dialog" aria-modal="true" aria-label="Extend Deadline" className="w-full max-w-sm rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">Extend Deadline</h2>
-              <button
-                onClick={() => setShowExtendModal(false)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label="Close extend deadline dialog"
+        <Modal
+          isOpen
+          onClose={() => setShowExtendModal(false)}
+          title="Extend Deadline"
+          size="sm"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowExtendModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleExtendDeadline}
+                disabled={!extendDate || actionLoading === "extend"}
               >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="px-6 py-4 space-y-4">
+                {actionLoading === "extend" ? "Extending..." : "Extend Deadline"}
+              </Button>
+            </>
+          }
+        >
+            <div className="space-y-4">
               <p className="text-sm text-gray-600">
                 Select a new deadline for {extendTargetIds.length} assignment(s).
               </p>
@@ -881,19 +878,7 @@ export default function AssignmentsClient({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button variant="outline" onClick={() => setShowExtendModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleExtendDeadline}
-                disabled={!extendDate || actionLoading === "extend"}
-              >
-                {actionLoading === "extend" ? "Extending..." : "Extend Deadline"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Cancel Confirmation Modal */}
