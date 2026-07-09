@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { ChevronDown, Check } from "lucide-react";
 
 interface Tenant {
   id: string;
@@ -92,14 +93,9 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
                 <p className="text-xs text-gray-500 capitalize">{currentTenant.membership_role}</p>
               )}
             </div>
-            <svg
+            <ChevronDown
               className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            />
           </>
         ) : (
           <span className="text-sm text-gray-500">Select tenant</span>
@@ -146,9 +142,7 @@ export function TenantSwitcher({ currentTenantId, onSwitch }: TenantSwitcherProp
                   <p className="text-xs text-gray-500">{tenant.slug}.lms-platform.com</p>
                 </div>
                 {tenant.id === currentTenant?.id && (
-                  <svg className="w-4 h-4 text-primary-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-4 h-4 text-primary-600 flex-shrink-0" />
                 )}
               </button>
             ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Bookmark, Check, CheckCircle2 } from "lucide-react";
 
 interface NuggetData {
   id: string;
@@ -281,9 +282,7 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
               }`}
               title="Bookmark"
             >
-              <svg className="w-4 h-4" fill={nugget.user_status === "bookmarked" ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
+              <Bookmark className="w-4 h-4" fill={nugget.user_status === "bookmarked" ? "currentColor" : "none"} strokeWidth={2} />
             </button>
           )}
           {onComplete && nugget.user_status !== "completed" && nugget.content_type !== "quiz" && (
@@ -292,16 +291,12 @@ export default function NuggetCard({ nugget, onComplete, onBookmark }: NuggetCar
               className="p-1.5 rounded-lg text-gray-400 hover:text-green-500 hover:bg-green-50 transition-colors"
               title="Mark complete"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-4 h-4" strokeWidth={2} />
             </button>
           )}
           {nugget.user_status === "completed" && (
             <span className="text-xs text-green-600 font-medium flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <CheckCircle2 className="w-3.5 h-3.5" />
               Done
             </span>
           )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { type BlockType, blockTypesMeta, type BlockTypeMeta } from "@/lib/content/block-editor";
+import { Type, Heading, Minus, AlertCircle, Image as ImageIcon, Play, Code, Globe, HelpCircle, ChevronDown, Columns2, X } from "lucide-react";
 
 interface BlockTypePickerProps {
   onSelect: (type: BlockType) => void;
@@ -16,67 +17,17 @@ const categoryLabels: Record<string, string> = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  Type: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-    </svg>
-  ),
-  Heading: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h8" />
-    </svg>
-  ),
-  Minus: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
-    </svg>
-  ),
-  AlertCircle: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <circle cx="12" cy="12" r="10" />
-      <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-    </svg>
-  ),
-  Image: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="m21 15-5-5L5 21" />
-    </svg>
-  ),
-  Play: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  ),
-  Code: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
-    </svg>
-  ),
-  Globe: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <circle cx="12" cy="12" r="10" />
-      <path strokeLinecap="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  ),
-  HelpCircle: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <circle cx="12" cy="12" r="10" />
-      <path strokeLinecap="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01" />
-    </svg>
-  ),
-  ChevronDown: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-    </svg>
-  ),
-  Columns: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M12 3v18" />
-    </svg>
-  ),
+  Type: <Type className="w-6 h-6" strokeWidth={1.5} />,
+  Heading: <Heading className="w-6 h-6" strokeWidth={1.5} />,
+  Minus: <Minus className="w-6 h-6" strokeWidth={1.5} />,
+  AlertCircle: <AlertCircle className="w-6 h-6" strokeWidth={1.5} />,
+  Image: <ImageIcon className="w-6 h-6" strokeWidth={1.5} />,
+  Play: <Play className="w-6 h-6" strokeWidth={1.5} />,
+  Code: <Code className="w-6 h-6" strokeWidth={1.5} />,
+  Globe: <Globe className="w-6 h-6" strokeWidth={1.5} />,
+  HelpCircle: <HelpCircle className="w-6 h-6" strokeWidth={1.5} />,
+  ChevronDown: <ChevronDown className="w-6 h-6" strokeWidth={1.5} />,
+  Columns: <Columns2 className="w-6 h-6" strokeWidth={1.5} />,
 };
 
 function BlockIcon({ name }: { name: string }) {
@@ -116,9 +67,7 @@ export default function BlockTypePicker({ onSelect, onClose }: BlockTypePickerPr
               onClick={onClose}
               className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5" strokeWidth={2} />
             </button>
           </div>
           <input
