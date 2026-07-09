@@ -21,6 +21,7 @@ import { cn } from "@/utils/cn";
 import { formatDate, formatPercent } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 
 export interface Assignment {
@@ -896,42 +897,33 @@ export default function AssignmentsClient({
       )}
 
       {/* Cancel Confirmation Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div role="dialog" aria-modal="true" aria-label="Cancel Assignment" className="w-full max-w-sm rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">Cancel Assignment</h2>
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                aria-label="Close cancel assignment dialog"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="px-6 py-4">
-              <div className="flex items-center gap-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-                <p>
-                  Are you sure you want to cancel {cancelTargetIds.length} assignment(s)? This action cannot be undone.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-                Keep Assignments
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleCancelAssignment}
-                disabled={actionLoading === "cancel"}
-              >
-                {actionLoading === "cancel" ? "Cancelling..." : "Cancel Assignments"}
-              </Button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        title="Cancel Assignment"
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setShowCancelModal(false)}>
+              Keep Assignments
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelAssignment}
+              disabled={actionLoading === "cancel"}
+            >
+              {actionLoading === "cancel" ? "Cancelling..." : "Cancel Assignments"}
+            </Button>
+          </>
+        }
+      >
+        <div className="flex items-center gap-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          <p>
+            Are you sure you want to cancel {cancelTargetIds.length} assignment(s)? This action cannot be undone.
+          </p>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

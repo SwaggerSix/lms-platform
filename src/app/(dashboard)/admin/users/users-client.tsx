@@ -5,6 +5,7 @@ import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -495,9 +496,31 @@ export default function UsersClient({ users, organizations = [], currentUserRole
       />
 
       {/* Delete User Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => !isDeleting && setDeleteConfirm(null)}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => { if (!isDeleting) setDeleteConfirm(null); }}
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </>
+        }
+      >
+        {deleteConfirm && (
+          <>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -507,33 +530,17 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 <p className="text-sm text-gray-500">This action cannot be undone.</p>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600">
               Are you sure you want to permanently delete{' '}
               <span className="font-medium text-gray-900">{deleteConfirm.firstName} {deleteConfirm.lastName}</span>?
               Their account and access to the platform will be removed.
             </p>
             {error && (
-              <p className="mb-4 text-sm text-red-600">{error}</p>
+              <p className="mt-4 text-sm text-red-600">{error}</p>
             )}
-            <div className="flex items-center justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteConfirm(null)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
 
       {/* Invitation link modal */}
       {inviteResult && (

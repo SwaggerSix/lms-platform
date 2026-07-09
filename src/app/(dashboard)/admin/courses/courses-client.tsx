@@ -6,6 +6,7 @@ import { cn } from '@/utils/cn';
 import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -903,22 +904,13 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       )}
 
       {/* Archive Confirmation Dialog */}
-      {archiveConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-[fadeIn_150ms_ease-out]" onClick={() => setArchiveConfirm(null)}>
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl animate-[modalIn_200ms_ease-out]" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">Archive Course</h3>
-                <p className="text-sm text-gray-500">This action can be undone later.</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to archive <span className="font-medium text-gray-900">{archiveConfirm.title}</span>? It will no longer be visible to learners.
-            </p>
-            <div className="flex items-center justify-end gap-3">
+      <Modal
+        isOpen={!!archiveConfirm}
+        onClose={() => setArchiveConfirm(null)}
+        size="sm"
+        footer={
+          archiveConfirm && (
+            <>
               <Button
                 variant="outline"
                 onClick={() => setArchiveConfirm(null)}
@@ -933,10 +925,27 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
                 {isLoading(archiveConfirm.id, 'archive') && <Loader2 className="h-4 w-4 animate-spin" />}
                 Archive
               </button>
+            </>
+          )
+        }
+      >
+        {archiveConfirm && (
+          <>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Archive Course</h3>
+                <p className="text-sm text-gray-500">This action can be undone later.</p>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+            <p className="text-sm text-gray-600">
+              Are you sure you want to archive <span className="font-medium text-gray-900">{archiveConfirm.title}</span>? It will no longer be visible to learners.
+            </p>
+          </>
+        )}
+      </Modal>
 
       {/* Pagination (grid view; the list view paginates inside DataTable) */}
       {viewMode === 'grid' && filtered.length > 0 && (
