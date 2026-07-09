@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -362,9 +363,29 @@ export default function WorkflowListClient({
 
       {/* Create Modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Create Workflow</h2>
+        <Modal
+          isOpen
+          onClose={() => setShowCreate(false)}
+          title="Create Workflow"
+          size="md"
+          footer={
+            <>
+              <button
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createWorkflow}
+                disabled={!newName.trim() || creating}
+                className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creating ? "Creating..." : "Create Workflow"}
+              </button>
+            </>
+          }
+        >
             <p className="text-xs text-gray-500 mb-4">
               You'll be taken to the visual editor next, where you can add conditions, actions, branches, and delays.
             </p>
@@ -413,23 +434,7 @@ export default function WorkflowListClient({
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowCreate(false)}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createWorkflow}
-                disabled={!newName.trim() || creating}
-                className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {creating ? "Creating..." : "Create Workflow"}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
