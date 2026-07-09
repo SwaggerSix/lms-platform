@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import type { AdminCategory } from "./kb-shared";
 
@@ -78,17 +78,23 @@ export default function CategoryModal({ category, categoryCount, onClose, onSave
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {category ? "Edit Category" : "Create New Category"}
-          </h2>
-          <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="space-y-4 p-6">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={category ? "Edit Category" : "Create New Category"}
+      size="md"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveCategory}>
+            {category ? "Save Changes" : "Create Category"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
@@ -125,15 +131,6 @@ export default function CategoryModal({ category, categoryCount, onClose, onSave
             </select>
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveCategory}>
-            {category ? "Save Changes" : "Create Category"}
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

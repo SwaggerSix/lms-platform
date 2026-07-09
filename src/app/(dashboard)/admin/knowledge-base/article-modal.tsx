@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import type { KBArticleStatus } from "@/types/database";
 import { generateSlug, type AdminArticle, type AdminCategory } from "./kb-shared";
@@ -121,17 +121,23 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {article ? "Edit Article" : "Create New Article"}
-          </h2>
-          <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="space-y-4 p-6">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={article ? "Edit Article" : "Create New Article"}
+      size="lg"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveArticle}>
+            {article ? "Save Changes" : "Create Article"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
@@ -234,15 +240,6 @@ export default function ArticleModal({ article, categories, onClose, onSaved }: 
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveArticle}>
-            {article ? "Save Changes" : "Create Article"}
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
