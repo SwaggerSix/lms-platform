@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -87,9 +88,7 @@ export default function CheckoutForm({
     return (
       <div className="text-center py-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="w-8 h-8 text-green-600" />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Order Complete!</h3>
         <p className="text-gray-500">You have been enrolled in your purchased courses.</p>

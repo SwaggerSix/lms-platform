@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { User } from "lucide-react";
 import RiskIndicator from "@/components/analytics/risk-indicator";
 import EngagementChart from "@/components/analytics/engagement-chart";
 
@@ -265,9 +266,7 @@ export default function ManagerAnalyticsClient({
             </div>
           ) : (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
-              <svg className="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+              <User className="mx-auto h-10 w-10 text-gray-300" strokeWidth={1.5} />
               <p className="mt-2 text-sm text-gray-400">
                 Select a team member to view details
               </p>

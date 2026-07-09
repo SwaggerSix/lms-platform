@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Send } from "lucide-react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -77,9 +78,7 @@ export default function ChatInput({
           disabled={!message.trim() || disabled}
           className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7" />
-          </svg>
+          <Send className="w-4 h-4" />
         </button>
       </div>
       <p className="text-[10px] text-gray-400 text-center">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { BookOpen, Clock } from "lucide-react";
 
 interface Product {
   id: string;
@@ -112,9 +113,7 @@ export default function ProductCard({ product }: { product: Product }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <svg className="w-12 h-12 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <BookOpen className="w-12 h-12 text-primary-300" strokeWidth={1.5} />
             </div>
           )}
         </div>
@@ -151,9 +150,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <div className="flex items-center gap-3 text-xs text-gray-400">
             {product.course.estimated_duration && (
               <span className="flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <Clock className="w-3.5 h-3.5" />
                 {product.course.estimated_duration}h
               </span>
             )}

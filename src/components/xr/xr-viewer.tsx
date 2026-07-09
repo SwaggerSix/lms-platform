@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { PlayCircle, Camera, ExternalLink, Maximize2, Minimize2 } from "lucide-react";
 
 interface XRContent {
   id: string;
@@ -110,10 +111,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-900 to-purple-900">
                 <div className="text-center">
                   <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                    <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                    </svg>
+                    <PlayCircle className="w-10 h-10 text-white" strokeWidth={1.5} />
                   </div>
                   <h3 className="text-white text-lg font-semibold mb-2">Interactive VR Experience</h3>
                   <p className="text-gray-300 text-sm mb-4 max-w-sm mx-auto">
@@ -149,10 +147,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
           <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
             <div className="text-center p-8">
               <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                </svg>
+                <Camera className="w-8 h-8 text-white" strokeWidth={1.5} />
               </div>
               <h3 className="text-white text-lg font-semibold mb-2">AR Overlay</h3>
               <p className="text-gray-400 text-sm mb-4 max-w-sm mx-auto">
@@ -166,9 +161,7 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
                   className="inline-flex items-center gap-2 px-6 py-2.5 bg-cyan-600 text-white rounded-lg font-medium text-sm hover:bg-cyan-700 transition-colors"
                   onClick={() => handleStartSession()}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
+                  <ExternalLink className="w-4 h-4" strokeWidth={2} />
                   Open AR View
                 </a>
               ) : (
@@ -266,13 +259,9 @@ export default function XRViewer({ content, onSessionStart, onSessionEnd }: XRVi
             title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {isFullscreen ? (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
-              </svg>
+              <Minimize2 className="w-4 h-4" strokeWidth={2} />
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-              </svg>
+              <Maximize2 className="w-4 h-4" strokeWidth={2} />
             )}
           </button>
         </div>

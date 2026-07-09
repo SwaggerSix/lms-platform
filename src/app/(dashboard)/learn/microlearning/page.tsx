@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { CheckCircle2, Bookmark, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import DailyFeed from "@/components/microlearning/daily-feed";
@@ -74,9 +75,7 @@ export default async function MicrolearningPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
@@ -87,9 +86,7 @@ export default async function MicrolearningPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
+              <Bookmark className="w-5 h-5 text-amber-600" fill="currentColor" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.bookmarked}</p>
@@ -100,10 +97,7 @@ export default async function MicrolearningPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <Eye className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.viewed}</p>

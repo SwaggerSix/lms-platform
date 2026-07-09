@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft, Check } from "lucide-react";
 
 type Step = 1 | 2 | 3;
 
@@ -89,9 +90,7 @@ export default function CreateTenantWizard() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/tenants" className="text-gray-400 hover:text-gray-600">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Create New Tenant</h1>
       </div>
@@ -108,9 +107,7 @@ export default function CreateTenantWizard() {
               }`}
             >
               {step > s.num ? (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                <Check className="w-4 h-4" />
               ) : (
                 s.num
               )}

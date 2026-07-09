@@ -17,6 +17,7 @@ import {
   type TabsBlock,
 } from "@/lib/content/block-editor";
 import { v4 as uuidv4 } from "uuid";
+import { Image as ImageIcon, Play, Globe, X, ChevronDown } from "lucide-react";
 
 /** Only allow http/https URLs for iframes to prevent javascript: URI injection */
 function isSafeUrl(url: string): boolean {
@@ -120,11 +121,7 @@ function ImageBlockEditor({ block, editable, onUpdate }: { block: ImageBlock; ed
         <img src={block.content.url} alt={block.content.alt} className="rounded-lg max-w-full max-h-96 object-contain" />
       ) : (
         <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-          <svg className="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="m21 15-5-5L5 21" />
-          </svg>
+          <ImageIcon className="w-10 h-10 mx-auto text-gray-300 mb-2" strokeWidth={1.5} />
           <p className="text-sm text-gray-400">Paste an image URL below</p>
         </div>
       )}
@@ -192,9 +189,7 @@ function VideoBlockEditor({ block, editable, onUpdate }: { block: VideoBlock; ed
         </div>
       ) : (
         <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-          <svg className="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
+          <Play className="w-10 h-10 mx-auto text-gray-300 mb-2" strokeWidth={1.5} />
           <p className="text-sm text-gray-400">Paste a YouTube or Vimeo URL</p>
         </div>
       )}
@@ -282,10 +277,7 @@ function EmbedBlockEditor({ block, editable, onUpdate }: { block: EmbedBlock; ed
         </div>
       ) : (
         <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-          <svg className="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20" />
-          </svg>
+          <Globe className="w-10 h-10 mx-auto text-gray-300 mb-2" strokeWidth={1.5} />
           <p className="text-sm text-gray-400">Enter a URL to embed</p>
         </div>
       )}
@@ -388,9 +380,7 @@ function QuizInlineBlockEditor({ block, editable, onUpdate }: { block: QuizInlin
                 }}
                 className="p-1 text-gray-400 hover:text-red-500"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-4 h-4" strokeWidth={2} />
               </button>
             )}
           </div>
@@ -523,12 +513,10 @@ function AccordionBlockEditor({ block, editable, onUpdate }: { block: AccordionB
               className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors"
             >
               <span className="font-medium text-gray-900 text-sm">{item.title}</span>
-              <svg
+              <ChevronDown
                 className={`w-4 h-4 text-gray-400 transition-transform ${openId === item.id ? "rotate-180" : ""}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
-              </svg>
+                strokeWidth={2}
+              />
             </button>
             {openId === item.id && (
               <div className="px-4 pb-3 text-sm text-gray-600">{item.body}</div>
@@ -563,9 +551,7 @@ function AccordionBlockEditor({ block, editable, onUpdate }: { block: AccordionB
                 }}
                 className="p-1 text-gray-400 hover:text-red-500"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-4 h-4" strokeWidth={2} />
               </button>
             )}
           </div>
@@ -657,9 +643,7 @@ function TabsBlockEditor({ block, editable, onUpdate }: { block: TabsBlock; edit
                 }}
                 className="text-gray-400 hover:text-red-500"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-3 h-3" strokeWidth={2} />
               </button>
             )}
           </div>

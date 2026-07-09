@@ -8,6 +8,7 @@ import {
   reorderBlocks,
 } from "@/lib/content/block-editor";
 import { v4 as uuidv4 } from "uuid";
+import { ChevronRight, Loader2, Plus, GripVertical } from "lucide-react";
 import BlockRenderer from "./block-renderer";
 import BlockToolbar from "./block-toolbar";
 import BlockTypePicker from "./block-type-picker";
@@ -200,28 +201,19 @@ export default function ContentEditor({
               <a href={`/admin/courses`} className="text-gray-400 hover:text-gray-600 transition-colors">
                 Courses
               </a>
-              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
-              </svg>
+              <ChevronRight className="w-4 h-4 text-gray-300" strokeWidth={2} />
               <a href={`/admin/courses/${courseSlug}`} className="text-gray-400 hover:text-gray-600 transition-colors max-w-[150px] truncate">
                 {courseTitle}
               </a>
-              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
-              </svg>
+              <ChevronRight className="w-4 h-4 text-gray-300" strokeWidth={2} />
               <span className="text-gray-700 font-medium max-w-[200px] truncate">{lessonTitle}</span>
-              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
-              </svg>
+              <ChevronRight className="w-4 h-4 text-gray-300" strokeWidth={2} />
               <span className="text-primary-600 font-medium">Content Editor</span>
             </div>
             <div className="flex items-center gap-4">
               <span className={`text-xs font-medium ${statusColors[saveStatus]}`}>
                 {saveStatus === "saving" && (
-                  <svg className="w-3 h-3 animate-spin inline mr-1" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
                 )}
                 {statusLabels[saveStatus]}
               </span>
@@ -242,9 +234,7 @@ export default function ContentEditor({
         {blocks.length === 0 && (
           <div className="text-center py-20">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
+              <Plus className="w-8 h-8 text-gray-400" strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-1">Start building your lesson</h3>
             <p className="text-sm text-gray-500 mb-6">Add content blocks to create rich, interactive lessons.</p>
@@ -252,9 +242,7 @@ export default function ContentEditor({
               onClick={() => openPicker(0)}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
+              <Plus className="w-4 h-4" strokeWidth={2} />
               Add First Block
             </button>
           </div>
@@ -270,9 +258,7 @@ export default function ContentEditor({
                   onClick={() => openPicker(index)}
                   className="flex items-center gap-1.5 px-3 py-1 text-xs text-gray-400 hover:text-primary-600 opacity-0 group-hover/add:opacity-100 transition-all rounded-full hover:bg-primary-50"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                   Add block
                 </button>
               </div>
@@ -295,14 +281,7 @@ export default function ContentEditor({
               >
                 {/* Drag handle */}
                 <div className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-                  <svg className="w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="9" cy="6" r="1.5" />
-                    <circle cx="15" cy="6" r="1.5" />
-                    <circle cx="9" cy="12" r="1.5" />
-                    <circle cx="15" cy="12" r="1.5" />
-                    <circle cx="9" cy="18" r="1.5" />
-                    <circle cx="15" cy="18" r="1.5" />
-                  </svg>
+                  <GripVertical className="w-5 h-5 text-gray-300" />
                 </div>
 
                 {/* Block toolbar */}
@@ -337,9 +316,7 @@ export default function ContentEditor({
               onClick={() => openPicker(blocks.length)}
               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-primary-600 border-2 border-dashed border-gray-200 hover:border-primary-300 rounded-xl transition-all hover:bg-primary-50/50"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
+              <Plus className="w-4 h-4" strokeWidth={2} />
               Add block
             </button>
           </div>
