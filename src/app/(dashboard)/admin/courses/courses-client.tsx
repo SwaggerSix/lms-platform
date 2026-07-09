@@ -649,14 +649,30 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
 
       {/* Edit Modal */}
       {editModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-[fadeIn_150ms_ease-out]" onClick={() => { setEditModal(null); setEditForm({}); }}>
-          <div role="dialog" aria-modal="true" aria-label="Edit Course" className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl animate-[modalIn_200ms_ease-out]" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Edit Course</h2>
-              <button onClick={() => { setEditModal(null); setEditForm({}); }} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600" aria-label="Close edit course dialog">
-                <X className="h-5 w-5" aria-hidden="true" />
+        <Modal
+          isOpen
+          onClose={() => { setEditModal(null); setEditForm({}); }}
+          title="Edit Course"
+          size="md"
+          footer={
+            <>
+              <Button
+                variant="outline"
+                onClick={() => { setEditModal(null); setEditForm({}); }}
+              >
+                Cancel
+              </Button>
+              <button
+                onClick={handleEditSubmit}
+                disabled={isLoading(editModal.id, 'edit')}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isLoading(editModal.id, 'edit') && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save Changes
               </button>
-            </div>
+            </>
+          }
+        >
             <div className="space-y-4">
               <div>
                 <label htmlFor="edit-course-title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -883,24 +899,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
               )}
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => { setEditModal(null); setEditForm({}); }}
-              >
-                Cancel
-              </Button>
-              <button
-                onClick={handleEditSubmit}
-                disabled={isLoading(editModal.id, 'edit')}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading(editModal.id, 'edit') && <Loader2 className="h-4 w-4 animate-spin" />}
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Archive Confirmation Dialog */}
