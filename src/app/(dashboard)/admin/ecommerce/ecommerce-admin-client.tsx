@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Modal } from "@/components/ui/modal";
 
 function formatPrice(amount: number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
@@ -157,10 +158,32 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
 
       {/* Create Product Modal */}
       {showCreateProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Product</h2>
-            <form onSubmit={handleCreateProduct} className="space-y-4">
+        <Modal
+          isOpen
+          onClose={() => setShowCreateProduct(false)}
+          title="Create Product"
+          size="md"
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setShowCreateProduct(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="product-form"
+                disabled={creating}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                {creating ? "Creating..." : "Create Product"}
+              </button>
+            </>
+          }
+        >
+            <form id="product-form" onSubmit={handleCreateProduct} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
                 <select
@@ -278,25 +301,8 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
               {createError && (
                 <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{createError}</div>
               )}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateProduct(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
-                >
-                  {creating ? "Creating..." : "Create Product"}
-                </button>
-              </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

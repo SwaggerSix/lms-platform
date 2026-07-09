@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 
 interface Coupon {
@@ -147,10 +148,23 @@ export default function CouponsAdminClient() {
 
       {/* Create Coupon Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Coupon</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
+        <Modal
+          isOpen
+          onClose={() => setShowCreate(false)}
+          title="Create Coupon"
+          size="md"
+          footer={
+            <>
+              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" form="coupon-form" loading={creating}>
+                Create Coupon
+              </Button>
+            </>
+          }
+        >
+            <form id="coupon-form" onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                 <input
@@ -246,17 +260,8 @@ export default function CouponsAdminClient() {
               {error && (
                 <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>
               )}
-              <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1" loading={creating}>
-                  Create Coupon
-                </Button>
-              </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Coupons Table */}
