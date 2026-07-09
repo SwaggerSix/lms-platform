@@ -553,17 +553,27 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
 
       {/* Create / Edit Modal */}
       {formOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={closeModal}>
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingId ? 'Edit Assessment' : 'Create Assessment'}
-              </h2>
-              <button onClick={closeModal} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={editingId ? 'Edit Assessment' : 'Create Assessment'}
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={closeModal}>
+                Cancel
+              </Button>
+              <button
+                onClick={handleFormSubmit}
+                disabled={isLoading('create') || isLoading('edit')}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
+              >
+                {(isLoading('create') || isLoading('edit')) && <Loader2 className="h-4 w-4 animate-spin" />}
+                {editingId ? 'Save Changes' : 'Create Assessment'}
               </button>
-            </div>
-
+            </>
+          }
+        >
             {formError && (
               <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -671,21 +681,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <Button variant="outline" onClick={closeModal}>
-                Cancel
-              </Button>
-              <button
-                onClick={handleFormSubmit}
-                disabled={isLoading('create') || isLoading('edit')}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:opacity-50"
-              >
-                {(isLoading('create') || isLoading('edit')) && <Loader2 className="h-4 w-4 animate-spin" />}
-                {editingId ? 'Save Changes' : 'Create Assessment'}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Delete Confirmation Dialog */}
