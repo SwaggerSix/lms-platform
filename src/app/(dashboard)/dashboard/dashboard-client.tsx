@@ -71,6 +71,13 @@ function formatAwardedDate(dateStr: string): string {
 }
 
 export default function LearnerDashboardClient({ data }: { data: LearnerDashboardData }) {
+  // Brand-new learner: nothing started, completed, or earned yet. Drives the
+  // first-run getting-started card and the "browse" (vs "continue") CTA.
+  const isNewUser =
+    data.coursesInProgress === 0 &&
+    data.coursesCompleted === 0 &&
+    data.certificatesEarned === 0;
+
   const stats = [
     {
       label: "Courses in Progress",
@@ -114,16 +121,61 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
               : "Explore the catalog to start your next course."}
           </p>
           <a
-            href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].courseId}` : "/learn/my-courses"}
+            href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].courseId}` : "/learn/catalog"}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600"
           >
-            <Play className="h-4 w-4" aria-hidden="true" />
-            Continue Learning
+            {data.coursesInProgress > 0 ? (
+              <>
+                <Play className="h-4 w-4" aria-hidden="true" />
+                Continue Learning
+              </>
+            ) : (
+              <>
+                <BookOpen className="h-4 w-4" aria-hidden="true" />
+                Browse the catalog
+              </>
+            )}
           </a>
         </div>
         <div className="absolute -right-4 -top-4 h-40 w-40 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 right-20 h-32 w-32 rounded-full bg-white/5" />
       </div>
+
+      {/* First-run getting-started card */}
+      {isNewUser && (
+        <div className="rounded-2xl border border-primary-100 bg-primary-50 p-6">
+          <div className="flex items-start gap-4">
+            <div className="hidden rounded-lg bg-primary-100 p-2.5 sm:block">
+              <Sparkles className="h-5 w-5 text-primary-700" aria-hidden="true" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base font-semibold text-gray-900">
+                New here? Let&apos;s get you started
+              </h2>
+              <p className="mt-1 text-sm text-gray-600">
+                Browse the catalog to enroll in your first course, or read your
+                role guide to learn your way around the platform.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <a
+                  href="/learn/catalog"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+                >
+                  <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  Browse the catalog
+                </a>
+                <a
+                  href="/help"
+                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Read your guide
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
