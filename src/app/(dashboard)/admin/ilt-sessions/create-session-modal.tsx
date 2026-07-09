@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import type { ILTLocationType } from "@/types/database";
 import {
   PROVIDER_OPTIONS,
@@ -106,16 +106,26 @@ export default function CreateSessionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 w-full max-w-lg rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-bold text-gray-900">Create New Session</h2>
-          <button onClick={onClose} className="rounded p-1 hover:bg-gray-100">
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-4">
-          <div className="space-y-4">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Create New Session"
+      size="md"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateSession}
+            disabled={!formData.course_id || !formData.title || !formData.session_date}
+          >
+            Create Session
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Course</label>
               <select
@@ -314,19 +324,6 @@ export default function CreateSessionModal({
               </label>
             </div>
           </div>
-        </div>
-        <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateSession}
-            disabled={!formData.course_id || !formData.title || !formData.session_date}
-          >
-            Create Session
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
