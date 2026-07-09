@@ -153,7 +153,7 @@ export default function DescribeStep({ options, onOptionsChange, onGenerated }: 
             placeholder="Paste text from your documents, PDFs, notes, or any existing material. AI will analyze and structure it into a course..."
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono text-xs"
           />
-          <p className="mt-1 text-xs text-gray-400">Supports up to ~12,000 characters of source material</p>
+          <p className="mt-1 text-xs text-gray-500">Supports up to ~12,000 characters of source material</p>
         </div>
       )}
 

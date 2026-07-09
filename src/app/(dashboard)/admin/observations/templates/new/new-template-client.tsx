@@ -214,7 +214,7 @@ export default function NewTemplateClient() {
               />
             </>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-8">
+            <p className="text-sm text-gray-500 text-center py-8">
               Add checklist items in Edit mode to see a preview
             </p>
           )}

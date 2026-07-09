@@ -92,7 +92,7 @@ export default function EmailSettingsClient() {
             placeholder="LearnHub <noreply@yourverifieddomain.com>"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
           />
-          <p className="mt-1 text-xs text-gray-400">Must use a domain you've verified in Resend.</p>
+          <p className="mt-1 text-xs text-gray-500">Must use a domain you've verified in Resend.</p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Resend API key</label>
@@ -104,7 +104,7 @@ export default function EmailSettingsClient() {
             autoComplete="off"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono"
           />
-          <p className="mt-1 text-xs text-gray-400">Stored encrypted. Leave the dots unchanged to keep the existing key. Get a key at resend.com/api-keys.</p>
+          <p className="mt-1 text-xs text-gray-500">Stored encrypted. Leave the dots unchanged to keep the existing key. Get a key at resend.com/api-keys.</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60">

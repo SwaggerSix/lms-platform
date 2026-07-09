@@ -712,7 +712,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
               {/* Provider details */}
               <div className="mt-4 grid gap-3 border-t border-gray-100 pt-4 sm:grid-cols-3">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                  <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
                     Entity ID
                   </p>
                   <p className="mt-1 truncate text-sm text-gray-700">
@@ -720,7 +720,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                  <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
                     Default Role
                   </p>
                   <p className="mt-1 text-sm capitalize text-gray-700">
@@ -728,7 +728,7 @@ export default function SSOClient({ initialProviders, supabaseProjectUrl }: SSOC
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                  <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
                     Auto-Provision
                   </p>
                   <p className="mt-1 text-sm text-gray-700">

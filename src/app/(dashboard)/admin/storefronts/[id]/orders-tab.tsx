@@ -74,7 +74,7 @@ export default function OrdersTab({ storeId, orders, notify, onReload }: OrdersT
                 >
                   {o.status.replace("_", " ")}
                 </span>
-                <span className="text-gray-400 text-xs whitespace-nowrap">
+                <span className="text-gray-500 text-xs whitespace-nowrap">
                   {new Date(o.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -96,7 +96,7 @@ export default function OrdersTab({ storeId, orders, notify, onReload }: OrdersT
                 <div className="rounded-lg border border-gray-100 divide-y divide-gray-100">
                   {o.items.map((i) => (
                     <div key={i.id} className="flex justify-between px-3 py-2">
-                      <span>{i.product_name || i.product?.name || "Course"} <span className="text-gray-400">× {i.quantity} {i.quantity === 1 ? "seat" : "seats"}</span></span>
+                      <span>{i.product_name || i.product?.name || "Course"} <span className="text-gray-500">× {i.quantity} {i.quantity === 1 ? "seat" : "seats"}</span></span>
                       <span className="text-gray-600">{money(Number(i.price) * i.quantity, o.currency || "USD")}</span>
                     </div>
                   ))}

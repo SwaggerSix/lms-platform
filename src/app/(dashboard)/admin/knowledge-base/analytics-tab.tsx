@@ -85,7 +85,7 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{article.title}</p>
-                <p className="text-xs text-gray-400">{article.categoryName}</p>
+                <p className="text-xs text-gray-500">{article.categoryName}</p>
               </div>
               <span className="flex items-center gap-1 text-sm text-gray-500">
                 <Eye className="h-3.5 w-3.5" /> {formatNumber(article.viewCount)}
@@ -101,7 +101,7 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
           <h3 className="flex items-center gap-2 font-semibold text-gray-900">
             <AlertCircle className="h-5 w-5 text-amber-500" />
             Articles Needing Improvement
-            <span className="text-sm font-normal text-gray-400">(lowest helpful ratio with 10+ votes)</span>
+            <span className="text-sm font-normal text-gray-500">(lowest helpful ratio with 10+ votes)</span>
           </h3>
         </div>
         <div className="divide-y divide-gray-100">
@@ -112,7 +112,7 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
               <div key={article.id} className="flex items-center gap-4 px-6 py-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900">{article.title}</p>
-                  <p className="text-xs text-gray-400">{article.categoryName}</p>
+                  <p className="text-xs text-gray-500">{article.categoryName}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm">
@@ -136,7 +136,7 @@ export default function AnalyticsTab({ articles }: { articles: AdminArticle[] })
             );
           })}
           {leastHelpful.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+            <div className="flex items-center justify-center py-8 text-sm text-gray-500">
               No articles with enough votes to analyze yet.
             </div>
           )}

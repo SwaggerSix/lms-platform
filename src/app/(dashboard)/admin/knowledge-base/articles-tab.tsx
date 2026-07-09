@@ -87,7 +87,7 @@ export default function ArticlesTab({ articles, categories, canManage, onEdit, o
                 <td className="px-6 py-4">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{article.title}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">by {article.author} / {article.updatedAt}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">by {article.author} / {article.updatedAt}</p>
                   </div>
                 </td>
                 <td className="px-6 py-4">

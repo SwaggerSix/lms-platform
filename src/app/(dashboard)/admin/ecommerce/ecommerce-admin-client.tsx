@@ -179,7 +179,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
               {/* Optional shop display overrides */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name <span className="font-normal text-gray-400">(optional — defaults to course title)</span>
+                  Display Name <span className="font-normal text-gray-500">(optional — defaults to course title)</span>
                 </label>
                 <input
                   type="text"
@@ -191,7 +191,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description <span className="font-normal text-gray-400">(optional — defaults to course description)</span>
+                  Description <span className="font-normal text-gray-500">(optional — defaults to course description)</span>
                 </label>
                 <textarea
                   value={newProduct.description}
@@ -203,7 +203,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Image <span className="font-normal text-gray-400">(optional — defaults to course thumbnail)</span>
+                  Product Image <span className="font-normal text-gray-500">(optional — defaults to course thumbnail)</span>
                 </label>
                 {newProduct.image_url ? (
                   <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
             <h2 className="font-semibold text-gray-900">Recent Orders</h2>
           </div>
           {orders.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-sm">No orders yet</div>
+            <div className="p-8 text-center text-gray-500 text-sm">No orders yet</div>
           ) : (
             <div className="divide-y divide-gray-100">
               {orders.slice(0, 8).map((order) => (
@@ -335,7 +335,7 @@ export default function EcommerceAdminClient({ initialOrders, initialProducts, i
             <h2 className="font-semibold text-gray-900">Products</h2>
           </div>
           {products.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-sm">No products yet</div>
+            <div className="p-8 text-center text-gray-500 text-sm">No products yet</div>
           ) : (
             <div className="divide-y divide-gray-100">
               {products.slice(0, 8).map((product) => (

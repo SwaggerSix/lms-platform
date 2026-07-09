@@ -578,7 +578,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                 {inviteCopied ? 'Copied' : 'Copy link'}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-gray-400">This link lets the user set their password and sign in. It expires for security, so resend if it lapses.</p>
+            <p className="mt-2 text-xs text-gray-500">This link lets the user set their password and sign in. It expires for security, so resend if it lapses.</p>
           </div>
         </div>
       )}

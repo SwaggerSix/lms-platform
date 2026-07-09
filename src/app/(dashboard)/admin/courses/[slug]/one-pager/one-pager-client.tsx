@@ -92,7 +92,7 @@ export default function OnePagerClient({ data }: { data: OnePager }) {
             </section>
           )}
 
-          <p className="mt-8 border-t border-gray-200 pt-3 text-[10px] text-gray-400">
+          <p className="mt-8 border-t border-gray-200 pt-3 text-[10px] text-gray-500">
             Generated {new Date().toLocaleDateString()} · This overview reflects current course data.
           </p>
         </div>

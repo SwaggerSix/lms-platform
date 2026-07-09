@@ -183,7 +183,7 @@ function NotificationsTab({ initialWebhookUrl }: { initialWebhookUrl: string }) 
               placeholder="https://outlook.office.com/webhook/..."
               className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-400 outline-none"
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Create a Power Automate workflow for your Teams channel and paste
               the generated webhook URL here.
             </p>
@@ -420,17 +420,17 @@ function CalendarTab({ initialEnabled }: { initialEnabled: boolean }) {
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400" />
               <code className="font-mono">Calendars.ReadWrite</code>{" "}
-              <span className="text-gray-400">- Create and manage calendar events</span>
+              <span className="text-gray-500">- Create and manage calendar events</span>
             </li>
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400" />
               <code className="font-mono">Group.Read.All</code>{" "}
-              <span className="text-gray-400">- Read Teams/group membership for calendar targeting</span>
+              <span className="text-gray-500">- Read Teams/group membership for calendar targeting</span>
             </li>
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400" />
               <code className="font-mono">User.Read.All</code>{" "}
-              <span className="text-gray-400">- Resolve user identities for event invitations</span>
+              <span className="text-gray-500">- Resolve user identities for event invitations</span>
             </li>
           </ul>
         </div>
@@ -489,7 +489,7 @@ function CalendarTab({ initialEnabled }: { initialEnabled: boolean }) {
             </span>
           </div>
         </div>
-        <p className="mt-3 text-xs text-gray-400">
+        <p className="mt-3 text-xs text-gray-500">
           Calendar events are created via Microsoft Graph API using app-only
           authentication. Ensure the Azure AD app registration has
           Calendars.ReadWrite application permission granted with admin consent.
@@ -692,7 +692,7 @@ function BotTab() {
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             This is the production URL. Copy this value into the{" "}
             <strong>Messaging endpoint</strong> field in your Azure Bot Service
             configuration.

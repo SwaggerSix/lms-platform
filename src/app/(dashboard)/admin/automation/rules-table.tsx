@@ -66,7 +66,7 @@ export default function RulesTable({
                     {rule.name}
                   </button>
                   {rule.description && (
-                    <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{rule.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[200px]">{rule.description}</p>
                   )}
                 </td>
                 <td className="px-6 py-4 text-gray-600">{getTriggerLabel(rule.trigger_type)}</td>

@@ -265,10 +265,10 @@ export default function AdminMentorshipClient({
                 </span>
               ))
             ) : (
-              <span className="text-xs text-gray-400">-</span>
+              <span className="text-xs text-gray-500">-</span>
             )}
             {expertise.length > 4 && (
-              <span className="text-xs text-gray-400">+{expertise.length - 4}</span>
+              <span className="text-xs text-gray-500">+{expertise.length - 4}</span>
             )}
           </div>
         );
@@ -362,7 +362,7 @@ export default function AdminMentorshipClient({
             <p className="text-xs text-gray-500">{req.mentor.email}</p>
           </div>
         ) : (
-          <span className="text-xs text-gray-400">Unmatched</span>
+          <span className="text-xs text-gray-500">Unmatched</span>
         ),
     },
     {
@@ -390,7 +390,7 @@ export default function AdminMentorshipClient({
             {parseFloat(req.match_score).toFixed(0)}%
           </span>
         ) : (
-          <span className="text-xs text-gray-400">-</span>
+          <span className="text-xs text-gray-500">-</span>
         ),
     },
     {
@@ -627,7 +627,7 @@ export default function AdminMentorshipClient({
           </Button>
         </div>
         {circles.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-500">
             No circles yet. Create one to start a group mentorship.
           </div>
         ) : (

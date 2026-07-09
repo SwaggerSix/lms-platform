@@ -108,7 +108,7 @@ export default function BasicInfoStep({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Slug</label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">/courses/</span>
+          <span className="text-sm text-gray-500">/courses/</span>
           <input type="text" value={value.slug} onChange={(e) => set('slug', e.target.value)} className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function BasicInfoStep({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Learning Objectives</label>
         <textarea rows={4} value={value.learningObjectives} onChange={(e) => set('learningObjectives', e.target.value)} placeholder="One objective per line, e.g.&#10;Understand core concepts&#10;Apply best practices" className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-        <p className="mt-1 text-xs text-gray-400">One per line. Shown to learners as &ldquo;What you&rsquo;ll learn&rdquo;.</p>
+        <p className="mt-1 text-xs text-gray-500">One per line. Shown to learners as &ldquo;What you&rsquo;ll learn&rdquo;.</p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Optimal Audience</label>
@@ -158,7 +158,7 @@ export default function BasicInfoStep({
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Course Length (minutes)</label>
         <div className="flex items-center gap-2">
           <input type="number" min={0} value={value.duration} onChange={(e) => set('duration', parseInt(e.target.value) || 0)} className="w-32 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-          <span className="text-sm text-gray-400">({formatDuration(value.duration)})</span>
+          <span className="text-sm text-gray-500">({formatDuration(value.duration)})</span>
           <Button type="button" variant="secondary" size="sm" onClick={() => set('duration', contentDuration)}>
             Match content ({formatDuration(contentDuration)})
           </Button>
@@ -188,7 +188,7 @@ export default function BasicInfoStep({
             <div className="text-center">
               <Upload className="mx-auto h-8 w-8 text-gray-400" />
               <p className="mt-2 text-sm text-gray-500">Click to upload</p>
-              <p className="text-xs text-gray-400">PNG, JPG, WebP, GIF up to 5MB</p>
+              <p className="text-xs text-gray-500">PNG, JPG, WebP, GIF up to 5MB</p>
             </div>
             <input
               type="file"
@@ -201,7 +201,7 @@ export default function BasicInfoStep({
             />
           </label>
         )}
-        <p className="mt-1 text-xs text-gray-400">Optional. If omitted, a cover is generated automatically.</p>
+        <p className="mt-1 text-xs text-gray-500">Optional. If omitted, a cover is generated automatically.</p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags</label>

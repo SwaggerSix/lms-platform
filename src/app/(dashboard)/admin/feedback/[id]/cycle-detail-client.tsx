@@ -176,7 +176,7 @@ export default function CycleDetailClient({
               <span className="text-sm text-gray-500">
                 {cycle.cycle_type === "360" ? "360-Degree" : cycle.cycle_type} Feedback
               </span>
-              {cycle.anonymous && <span className="text-xs text-gray-400">Anonymous</span>}
+              {cycle.anonymous && <span className="text-xs text-gray-500">Anonymous</span>}
             </div>
           </div>
 

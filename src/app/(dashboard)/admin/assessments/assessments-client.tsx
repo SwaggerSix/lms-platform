@@ -853,7 +853,7 @@ export default function AssessmentsClient({ assessments: initialAssessments, cou
                             )}>
                               {q.question_type.replace('-', ' ')}
                             </span>
-                            <span className="text-[10px] text-gray-400">{q.points} pts</span>
+                            <span className="text-[10px] text-gray-500">{q.points} pts</span>
                           </div>
                           <p className="text-sm text-gray-900 font-medium">{q.question}</p>
                           {q.options && (

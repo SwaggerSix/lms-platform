@@ -363,7 +363,7 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                 <div className="text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400" />
                   <p className="mt-2 text-sm text-gray-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400">SVG, PNG, JPG (max. 2MB)</p>
+                  <p className="text-xs text-gray-500">SVG, PNG, JPG (max. 2MB)</p>
                 </div>
               )}
             </div>

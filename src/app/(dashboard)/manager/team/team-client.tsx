@@ -846,7 +846,7 @@ export default function TeamClient({
                     : member.status.charAt(0).toUpperCase() +
                       member.status.slice(1)}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500">
                   {member.department}
                 </span>
               </div>
@@ -890,7 +890,7 @@ export default function TeamClient({
                 </div>
               </div>
 
-              <p className="mb-4 text-xs text-gray-400">
+              <p className="mb-4 text-xs text-gray-500">
                 Last active: {formatRelativeTime(member.lastActive)}
               </p>
 
@@ -968,7 +968,7 @@ export default function TeamClient({
                   <p className="text-sm text-gray-500">
                     {profileMember.jobTitle}
                   </p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-500">
                     {profileMember.email}
                   </p>
                 </div>
@@ -1127,7 +1127,7 @@ export default function TeamClient({
                 </div>
                 <div className="mt-2 max-h-36 overflow-y-auto rounded-lg border border-gray-200">
                   {filteredCourses.length === 0 ? (
-                    <p className="px-3 py-4 text-center text-sm text-gray-400">
+                    <p className="px-3 py-4 text-center text-sm text-gray-500">
                       No courses available
                     </p>
                   ) : (
@@ -1143,7 +1143,7 @@ export default function TeamClient({
                       >
                         <div>
                           <p className="font-medium">{course.name}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-500">
                             {course.category} - {course.duration}
                           </p>
                         </div>
@@ -1286,7 +1286,7 @@ export default function TeamClient({
                         !employeeLoading &&
                         employeeQuery.trim().length >= 2 &&
                         employeeResults.length === 0 && (
-                          <p className="mt-1.5 text-xs text-gray-400">
+                          <p className="mt-1.5 text-xs text-gray-500">
                             No matching employee found. Fill in the details below
                             to create a new account.
                           </p>
@@ -1372,7 +1372,7 @@ export default function TeamClient({
                 </div>
               )}
               {!editMember && !selectedExistingId && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   A login will be created and the member will be prompted to set
                   a password on first sign-in.
                 </p>

@@ -266,7 +266,7 @@ export default function TenantDetailClient({
                     <span className="text-xs font-medium text-gray-500 capitalize">{m.role}</span>
                   </div>
                 ))}
-                {members.length === 0 && <p className="text-sm text-gray-400">No members yet</p>}
+                {members.length === 0 && <p className="text-sm text-gray-500">No members yet</p>}
               </div>
             </div>
           </div>
@@ -297,13 +297,13 @@ export default function TenantDetailClient({
                   Object.entries(tenantData.features).map(([key, val]) => (
                     <div key={key} className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 capitalize">{key.replace(/_/g, " ")}</span>
-                      <span className={`text-xs font-medium ${val ? "text-green-600" : "text-gray-400"}`}>
+                      <span className={`text-xs font-medium ${val ? "text-green-600" : "text-gray-500"}`}>
                         {val ? "Enabled" : "Disabled"}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-400">No features configured</p>
+                  <p className="text-sm text-gray-500">No features configured</p>
                 )}
               </div>
             </div>

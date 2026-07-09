@@ -137,7 +137,7 @@ export default function PredictiveAnalyticsClient({
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Predictions</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">{totalPredictions}</p>
-              <p className="mt-0.5 text-xs text-gray-400">Across all courses</p>
+              <p className="mt-0.5 text-xs text-gray-500">Across all courses</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <p className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -145,7 +145,7 @@ export default function PredictiveAnalyticsClient({
                 <InfoTooltip side="top" label="Average risk score" content="The mean predicted risk (0–100) across all learners with a prediction. Higher means more learners are trending at-risk." />
               </p>
               <p className="mt-1 text-2xl font-bold text-gray-900">{avgRiskScore}</p>
-              <p className="mt-0.5 text-xs text-gray-400">Out of 100</p>
+              <p className="mt-0.5 text-xs text-gray-500">Out of 100</p>
             </div>
             <div className="rounded-xl border border-red-200 bg-red-50 p-5">
               <p className="flex items-center gap-1 text-xs font-medium text-red-600 uppercase tracking-wider">
@@ -162,7 +162,7 @@ export default function PredictiveAnalyticsClient({
               <p className="mt-1 text-2xl font-bold text-gray-900">
                 {alerts.filter((a: any) => !a.is_read).length}
               </p>
-              <p className="mt-0.5 text-xs text-gray-400">Pending review</p>
+              <p className="mt-0.5 text-xs text-gray-500">Pending review</p>
             </div>
           </div>
 
@@ -200,14 +200,14 @@ export default function PredictiveAnalyticsClient({
                       </div>
                       <div className="w-16 text-right">
                         <span className={`text-sm font-medium ${c.text}`}>{count}</span>
-                        <span className="text-xs text-gray-400 ml-1">({pct.toFixed(0)}%)</span>
+                        <span className="text-xs text-gray-500 ml-1">({pct.toFixed(0)}%)</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">No predictions computed yet. Run the daily analytics cron.</p>
+              <p className="text-sm text-gray-500">No predictions computed yet. Run the daily analytics cron.</p>
             )}
           </div>
 
@@ -236,7 +236,7 @@ export default function PredictiveAnalyticsClient({
                 })}
               </div>
               {atRiskLearners.length > 24 && (
-                <p className="mt-2 text-xs text-gray-400">
+                <p className="mt-2 text-xs text-gray-500">
                   + {atRiskLearners.length - 24} more at-risk learners
                 </p>
               )}
@@ -291,7 +291,7 @@ export default function PredictiveAnalyticsClient({
                         {c && <span className="text-gray-500"> in {c.title}</span>}
                       </p>
                       <p className="mt-0.5 text-xs text-gray-500">{alert.message}</p>
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-gray-500">
                         {new Date(alert.created_at).toLocaleString()}
                       </p>
                     </div>
@@ -306,7 +306,7 @@ export default function PredictiveAnalyticsClient({
                       )}
                       <button
                         onClick={() => dismissAlert(alert.id)}
-                        className="text-xs text-gray-400 hover:text-gray-600"
+                        className="text-xs text-gray-500 hover:text-gray-600"
                       >
                         Dismiss
                       </button>

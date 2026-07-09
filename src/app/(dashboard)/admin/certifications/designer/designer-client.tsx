@@ -684,7 +684,7 @@ export default function DesignerClient({ templates: initialTemplates }: Designer
                   </div>
                 ))}
                 {design.elements.length === 0 && (
-                  <p className="text-sm text-gray-400 italic py-2">No elements. Add one above.</p>
+                  <p className="text-sm text-gray-500 italic py-2">No elements. Add one above.</p>
                 )}
               </div>
 

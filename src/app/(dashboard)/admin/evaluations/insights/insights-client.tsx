@@ -217,13 +217,13 @@ export default function InsightsClient({
               <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-normal text-gray-500">{data.testimonials.length}</span>
             </h2>
             {data.testimonials.length === 0 ? (
-              <p className="py-2 text-sm text-gray-400">No written feedback in this selection.</p>
+              <p className="py-2 text-sm text-gray-500">No written feedback in this selection.</p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {data.testimonials.slice(0, 40).map((t, i) => (
                   <blockquote key={i} className="rounded-lg border-l-4 border-primary-200 bg-gray-50 p-3">
                     <p className="text-sm text-gray-700">“{t.text}”</p>
-                    <footer className="mt-1.5 text-xs text-gray-400">
+                    <footer className="mt-1.5 text-xs text-gray-500">
                       {[t.course, t.instructor, t.client].filter(Boolean).join(" · ")}
                     </footer>
                   </blockquote>

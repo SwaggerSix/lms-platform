@@ -444,7 +444,7 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                       </span>
                     </div>
                     <p className="mt-1.5 text-sm text-gray-500 line-clamp-2">{announcement.body}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-400">
+                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
                         {announcement.targetAudience}

@@ -154,7 +154,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                       <span className="font-medium text-primary-600">{activity.target}</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
                     <Clock className="h-3 w-3" />
                     {activity.time}
                   </div>

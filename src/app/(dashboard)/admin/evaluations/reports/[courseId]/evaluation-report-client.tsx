@@ -147,7 +147,7 @@ export default function EvaluationReportClient({ course, assignments }: Props) {
                   <div key={q.id} className="border rounded-lg p-4 space-y-2">
                     <p className="font-medium text-gray-900 text-sm">{q.text}</p>
                     {qAnswers.length === 0 ? (
-                      <p className="text-sm text-gray-400 italic">No responses yet</p>
+                      <p className="text-sm text-gray-500 italic">No responses yet</p>
                     ) : ["rating", "nps"].includes(q.type) ? (
                       <RatingQuestionSummary answers={qAnswers as number[]} type={q.type} />
                     ) : q.type === "multiple_choice" && q.options ? (
@@ -242,7 +242,7 @@ function TextAnswersList({ answers }: { answers: string[] }) {
         <li key={i} className="text-sm text-gray-700 border-l-2 border-gray-200 pl-3 py-0.5">{a}</li>
       ))}
       {answers.length > 5 && (
-        <li className="text-xs text-gray-400">+ {answers.length - 5} more responses</li>
+        <li className="text-xs text-gray-500">+ {answers.length - 5} more responses</li>
       )}
     </ul>
   );
