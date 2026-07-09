@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, Star, Calendar } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { MessageBubble } from "@/components/ui/message-bubble";
 import SessionScheduler from "@/components/mentorship/session-scheduler";
 import AddToCalendar from "@/components/calendar/add-to-calendar";
 import { Button } from "@/components/ui/button";
@@ -756,20 +757,17 @@ export default function MentorshipDetailClient({
                 ? "You"
                 : `${s?.first_name ?? ""} ${s?.last_name ?? ""}`.trim() || "Partner";
               return (
-                <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                      mine
-                        ? "bg-primary-600 text-white"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
+                <MessageBubble
+                  key={m.id}
+                  mine={mine}
+                  header={
                     <p className={`mb-0.5 text-xs ${mine ? "text-primary-100" : "text-gray-500"}`}>
                       {senderName} · {new Date(m.created_at).toLocaleString()}
                     </p>
-                    <p className="whitespace-pre-wrap">{m.body}</p>
-                  </div>
-                </div>
+                  }
+                >
+                  <p className="whitespace-pre-wrap">{m.body}</p>
+                </MessageBubble>
               );
             })
           )}

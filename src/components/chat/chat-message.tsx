@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
+import { MessageBubble } from "@/components/ui/message-bubble";
 
 interface ChatMessageProps {
   role: "user" | "assistant" | "system";
@@ -12,30 +13,35 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
   const isUser = role === "user";
 
   return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
-      {/* Avatar */}
-      <Avatar
-        size="sm"
-        fallback={isUser ? "You" : "AI"}
-        colorClass={
-          isUser
-            ? "bg-primary-600 text-white"
-            : "bg-gradient-to-br from-emerald-400 to-teal-500 text-white"
-        }
-        className="font-bold"
-      />
-
-      {/* Message Bubble */}
-      <div className={`max-w-[75%] ${isUser ? "items-end" : "items-start"}`}>
-        <div
-          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+    <MessageBubble
+      mine={isUser}
+      tone="assistant"
+      className="leading-relaxed"
+      avatar={
+        <Avatar
+          size="sm"
+          fallback={isUser ? "You" : "AI"}
+          colorClass={
             isUser
-              ? "bg-primary-600 text-white rounded-br-md"
-              : "bg-white border border-gray-200 text-gray-800 rounded-bl-md shadow-sm"
-          }`}
-        >
-          {/* Render markdown-like content */}
-          {content.split("\n").map((line, i) => {
+              ? "bg-primary-600 text-white"
+              : "bg-gradient-to-br from-emerald-400 to-teal-500 text-white"
+          }
+          className="font-bold"
+        />
+      }
+      footer={
+        timestamp ? (
+          <p className={`text-[10px] text-gray-400 mt-1 ${isUser ? "text-right" : "text-left"}`}>
+            {new Date(timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        ) : undefined
+      }
+    >
+      {/* Render markdown-like content */}
+      {content.split("\n").map((line, i) => {
             if (line.startsWith("```")) {
               return null; // Simplified - skip code fence markers
             }
@@ -110,20 +116,6 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
               </p>
             );
           })}
-        </div>
-        {timestamp && (
-          <p
-            className={`text-[10px] text-gray-400 mt-1 ${
-              isUser ? "text-right" : "text-left"
-            }`}
-          >
-            {new Date(timestamp).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-        )}
-      </div>
-    </div>
+    </MessageBubble>
   );
 }
