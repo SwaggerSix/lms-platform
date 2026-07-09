@@ -13,11 +13,11 @@ import {
   XCircle,
   Edit,
   Trash2,
-  X,
   Loader2,
   Palette,
 } from 'lucide-react';
 import Link from 'next/link';
+import { Modal } from '@/components/ui/modal';
 
 export interface CertificationItem {
   id: string;
@@ -302,17 +302,33 @@ export default function CertificationsClient({ certifications: initialCerts }: C
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingCert ? 'Edit Certification' : 'Create Certification'}
-              </h2>
-              <button onClick={closeModal} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={editingCert ? 'Edit Certification' : 'Create Certification'}
+          size="md"
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
               </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <button
+                type="submit"
+                form="certification-form"
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {editingCert ? 'Save Changes' : 'Create'}
+              </button>
+            </>
+          }
+        >
+            <form id="certification-form" onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
               )}
@@ -357,26 +373,8 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   placeholder="Required course name or ID"
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingCert ? 'Save Changes' : 'Create'}
-                </button>
-              </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
