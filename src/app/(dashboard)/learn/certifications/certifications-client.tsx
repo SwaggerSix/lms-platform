@@ -13,13 +13,13 @@ import {
   Eye,
   Copy,
   Linkedin,
-  X,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DOMPurify from "dompurify";
@@ -447,33 +447,28 @@ export default function CertificationsClient({ certificates, userName }: Certifi
 
       {/* Certificate View Modal */}
       {viewingCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="relative max-h-[90vh] max-w-[90vw] overflow-auto rounded-xl bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-              <h3 className="text-lg font-semibold text-gray-900">Certificate Preview</h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    const w = window.open("", "_blank");
-                    if (w) { w.document.write(viewingCert.html); w.document.close(); }
-                  }}
-                >
-                  <Download className="h-4 w-4" /> Download PDF
-                </Button>
-                <button
-                  onClick={() => setViewingCert(null)}
-                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-            <div className="p-8 flex justify-center">
+        <Modal
+          isOpen
+          onClose={() => setViewingCert(null)}
+          title="Certificate Preview"
+          size="xl"
+          className="max-w-[90vw]"
+          footer={
+            <Button
+              variant="outline"
+              onClick={() => {
+                const w = window.open("", "_blank");
+                if (w) { w.document.write(viewingCert.html); w.document.close(); }
+              }}
+            >
+              <Download className="h-4 w-4" /> Download PDF
+            </Button>
+          }
+        >
+            <div className="flex justify-center">
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(viewingCert.svg) }} />
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
