@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { PageIntro } from "@/components/ui/page-intro";
 import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import type { ILTSessionStatus, AttendanceStatus } from "@/types/database";
@@ -230,16 +231,15 @@ export default function ILTSessionsClient({
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <AdminSessionsTabs />
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Webinars &amp; Open Learning Events</h1>
-            <p className="mt-1 text-gray-500">Post and manage webinars and open learning events — schedule, register attendees, and track attendance.</p>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="h-4 w-4" /> Create Session
-          </Button>
-        </div>
+        <PageIntro
+          title="Webinars & Open Learning Events"
+          description="Post and manage webinars and open learning events — schedule, register attendees, and track attendance."
+          actions={
+            <Button onClick={() => setShowCreateModal(true)}>
+              <Plus className="h-4 w-4" /> Create Session
+            </Button>
+          }
+        />
 
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
