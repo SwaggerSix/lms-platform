@@ -25,7 +25,24 @@ function formatTimestamp(ts: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-export default async function AuditLogPage() {
+// Maps a DataTable column key to the DB column used for server-side sort.
+const SORT_COLUMNS: Record<string, string> = {
+  timestamp: "created_at",
+  action: "action",
+  entityType: "entity_type",
+  entityName: "entity_id",
+};
+
+const ACTION_FILTERS = ["created", "updated", "deleted", "login", "export"];
+
+const PAGE_SIZE = 25;
+
+export default async function AuditLogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const sp = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -51,11 +68,46 @@ export default async function AuditLogPage() {
     redirect("/dashboard");
   }
 
-  const { data: auditRows } = await service
-    .from("audit_logs")
-    .select("*, user:users!user_id(id, first_name, last_name, email)")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  // ─── Server-driven paging / filtering / sorting (same pattern as /admin/users) ───
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  // Sanitize search: PostgREST .or()/ilike break on , ( ) % * \, so strip them.
+  const q = (sp.q ?? "").replace(/[,()%*\\]/g, " ").trim();
+  const actionParam =
+    sp.action && ACTION_FILTERS.includes(sp.action.toLowerCase())
+      ? sp.action.toLowerCase()
+      : null;
+  const entityParam = (sp.entity ?? "").replace(/[,()%*\\]/g, " ").trim() || null;
+  // Date bounds arrive as yyyy-mm-dd from <input type="date">.
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(sp.from ?? "") ? sp.from! : null;
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(sp.to ?? "") ? sp.to! : null;
+  const sort = sp.sort ?? "-timestamp";
+  const sortDesc = sort.startsWith("-");
+  const sortField = SORT_COLUMNS[sort.replace(/^-/, "")] ?? "created_at";
+
+  // Searching by user requires an inner join so the name/email filter applies
+  // to the joined row; without a search we keep the left join so "System"
+  // entries (null user) still appear.
+  const userSelect = q
+    ? "*, user:users!user_id!inner(id, first_name, last_name, email)"
+    : "*, user:users!user_id(id, first_name, last_name, email)";
+
+  let query = service.from("audit_logs").select(userSelect, { count: "exact" });
+
+  if (q) {
+    query = query.or(
+      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`,
+      { referencedTable: "user" }
+    );
+  }
+  // ilike with no wildcard = case-insensitive equality.
+  if (actionParam) query = query.ilike("action", actionParam);
+  if (entityParam) query = query.ilike("entity_type", entityParam);
+  if (from) query = query.gte("created_at", from);
+  if (to) query = query.lte("created_at", `${to}T23:59:59.999`);
+
+  const { data: auditRows, count } = await query
+    .order(sortField, { ascending: !sortDesc })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
   const entries: AuditEntry[] = (auditRows ?? []).map((row: any) => {
     const u = row.user as any;
@@ -89,5 +141,13 @@ export default async function AuditLogPage() {
     };
   });
 
-  return <AuditLogClient entries={entries} />;
+  return (
+    <AuditLogClient
+      entries={entries}
+      totalCount={count ?? entries.length}
+      page={page}
+      pageSize={PAGE_SIZE}
+      sort={sort}
+    />
+  );
 }
