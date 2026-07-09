@@ -5,11 +5,11 @@ import {
   ChevronDown,
   ChevronUp,
   Star,
-  X,
   ExternalLink,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -138,15 +138,19 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
     <div className="min-h-screen bg-gray-50">
       {/* Self-Assessment Modal */}
       {showAssessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div role="dialog" aria-modal="true" aria-label="Self-Assessment" className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Self-Assessment</h3>
-              <button onClick={() => setShowAssessModal(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close self-assessment dialog">
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="mt-4 space-y-4">
+        <Modal
+          isOpen
+          onClose={() => setShowAssessModal(false)}
+          title="Self-Assessment"
+          size="md"
+          footer={
+            <Button onClick={handleSubmitAssessment} disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Submit Assessment
+            </Button>
+          }
+        >
+            <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Skill</label>
                 <select
@@ -194,17 +198,8 @@ export default function SkillsClient({ data }: { data: SkillsData }) {
               {submitError && (
                 <p className="text-sm text-red-600">{submitError}</p>
               )}
-              <Button
-                onClick={handleSubmitAssessment}
-                disabled={submitting}
-                className="w-full"
-              >
-                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                Submit Assessment
-              </Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
