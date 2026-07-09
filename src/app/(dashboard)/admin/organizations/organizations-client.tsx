@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import {
   Building2,
   ChevronRight,
@@ -14,7 +15,6 @@ import {
   User,
   Briefcase,
   FolderTree,
-  X,
   Loader2,
 } from 'lucide-react';
 
@@ -383,17 +383,29 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingNode ? 'Edit Organization' : 'Add Organization'}
-              </h2>
-              <button onClick={closeModal} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={editingNode ? 'Edit Organization' : 'Add Organization'}
+          size="md"
+          footer={
+            <>
+              <Button type="button" variant="outline" onClick={closeModal}>
+                Cancel
+              </Button>
+              <button
+                type="submit"
+                form="organization-form"
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {editingNode ? 'Save Changes' : 'Add'}
               </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            </>
+          }
+        >
+          <form id="organization-form" onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
               )}
@@ -433,22 +445,8 @@ export default function OrganizationsClient({ orgTree: initialOrgTree }: Organiz
                   </select>
                 </div>
               )}
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingNode ? 'Save Changes' : 'Add'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          </form>
+        </Modal>
       )}
     </div>
   );
