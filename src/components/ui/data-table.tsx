@@ -52,6 +52,22 @@ export interface DataTableProps<Row> {
   isExpandable?: (row: Row) => boolean;
   /** Extra classes for a body row (e.g. dim resolved/inactive rows). */
   rowClassName?: (row: Row) => string | undefined;
+  /**
+   * Opt in to server-driven paging/sorting. When set, `rows` is treated as
+   * the current page exactly as given — no client slicing or sorting — and
+   * the footer pager reports `total`/`page` and calls `onPageChange`. Sort
+   * headers become controlled: they reflect `sort` ("field" / "-field") and
+   * call `onSortChange(key)` instead of sorting in the browser. Provide
+   * `onSortChange` to keep columns interactive; omit it for static headers.
+   */
+  serverMode?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    onPageChange: (page: number) => void;
+    sort?: string | null;
+    onSortChange?: (key: string) => void;
+  };
 }
 
 /**
@@ -72,13 +88,24 @@ export default function DataTable<Row>({
   renderExpanded,
   isExpandable,
   rowClassName,
+  serverMode,
 }: DataTableProps<Row>) {
-  const [sortKey, setSortKey] = useState<string | null>(
+  const [clientSortKey, setClientSortKey] = useState<string | null>(
     initialSort ? initialSort.replace(/^-/, "") : null
   );
-  const [sortDesc, setSortDesc] = useState(initialSort?.startsWith("-") ?? false);
-  const [page, setPage] = useState(1);
+  const [clientSortDesc, setClientSortDesc] = useState(initialSort?.startsWith("-") ?? false);
+  const [clientPage, setClientPage] = useState(1);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+
+  // In server mode, sort state is controlled by the parent via `serverMode`.
+  const sortKey = serverMode
+    ? serverMode.sort
+      ? serverMode.sort.replace(/^-/, "")
+      : null
+    : clientSortKey;
+  const sortDesc = serverMode
+    ? serverMode.sort?.startsWith("-") ?? false
+    : clientSortDesc;
 
   const colCount = columns.length + (renderExpanded ? 1 : 0);
 
@@ -91,8 +118,10 @@ export default function DataTable<Row>({
     });
   };
 
+  // Client-side sort only applies when NOT in server mode (the server has
+  // already sorted the given page).
   const sorted = useMemo(() => {
-    if (!sortKey) return rows;
+    if (serverMode || !sortKey) return rows;
     const column = columns.find((c) => c.key === sortKey);
     if (!column?.sortValue) return rows;
     const getValue = column.sortValue;
@@ -108,24 +137,49 @@ export default function DataTable<Row>({
           : String(av).localeCompare(String(bv));
       return sortDesc ? -cmp : cmp;
     });
-  }, [rows, columns, sortKey, sortDesc]);
+  }, [serverMode, rows, columns, sortKey, sortDesc]);
 
-  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
-  const currentPage = Math.min(page, totalPages);
-  const pageRows =
-    pageSize > 0
+  const serverPageSize = serverMode?.pageSize ?? pageSize;
+  const totalItems = serverMode ? serverMode.total : sorted.length;
+  const totalPages =
+    serverMode
+      ? Math.max(1, Math.ceil(serverMode.total / (serverMode.pageSize || 1)))
+      : pageSize > 0
+        ? Math.max(1, Math.ceil(sorted.length / pageSize))
+        : 1;
+  const currentPage = serverMode ? serverMode.page : Math.min(clientPage, totalPages);
+  // In server mode the given rows already ARE the current page.
+  const pageRows = serverMode
+    ? rows
+    : pageSize > 0
       ? sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize)
       : sorted;
+  const showPager = serverMode ? totalPages > 1 : pageSize > 0 && totalPages > 1;
+
+  const goToPage = (p: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, p));
+    if (serverMode) serverMode.onPageChange(clamped);
+    else setClientPage(clamped);
+  };
 
   const handleSort = (key: string) => {
-    if (sortKey === key) {
-      setSortDesc((d) => !d);
-    } else {
-      setSortKey(key);
-      setSortDesc(false);
+    if (serverMode) {
+      serverMode.onSortChange?.(key);
+      return;
     }
-    setPage(1);
+    if (sortKey === key) {
+      setClientSortDesc((d) => !d);
+    } else {
+      setClientSortKey(key);
+      setClientSortDesc(false);
+    }
+    setClientPage(1);
   };
+
+  // A sort header is interactive when the column is sortable AND (client mode
+  // OR the parent supplied a server sort handler).
+  const sortInteractive = (column: DataTableColumn<Row>) =>
+    !!column.sortValue && (!serverMode || !!serverMode.onSortChange);
 
   if (rows.length === 0 && emptyState) {
     return (
@@ -151,12 +205,13 @@ export default function DataTable<Row>({
             )}
             {columns.map((column) => {
               const isSorted = sortKey === column.key;
+              const interactive = sortInteractive(column);
               return (
                 <TableHead
                   key={column.key}
                   className={column.className}
                   aria-sort={
-                    column.sortValue
+                    interactive
                       ? isSorted
                         ? sortDesc
                           ? "descending"
@@ -165,7 +220,7 @@ export default function DataTable<Row>({
                       : undefined
                   }
                 >
-                  {column.sortValue ? (
+                  {interactive ? (
                     <button
                       type="button"
                       onClick={() => handleSort(column.key)}
@@ -243,20 +298,20 @@ export default function DataTable<Row>({
         </TableBody>
       </Table>
 
-      {pageSize > 0 && totalPages > 1 && (
+      {showPager && (
         <nav
           aria-label="Table pagination"
           className="flex items-center justify-between border-t border-gray-200 px-4 py-3"
         >
           <p className="text-sm text-gray-500">
-            Showing {(currentPage - 1) * pageSize + 1}–
-            {Math.min(currentPage * pageSize, sorted.length)} of {sorted.length}
+            Showing {totalItems === 0 ? 0 : (currentPage - 1) * serverPageSize + 1}–
+            {Math.min(currentPage * serverPageSize, totalItems)} of {totalItems}
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -268,7 +323,7 @@ export default function DataTable<Row>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
               Next

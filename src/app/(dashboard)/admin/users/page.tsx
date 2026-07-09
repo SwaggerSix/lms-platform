@@ -24,7 +24,24 @@ const statusMap: Record<string, UserItem['status']> = {
   suspended: 'inactive',
 };
 
-export default async function UsersPage() {
+// Maps a DataTable column key to the DB column used for server-side sort.
+const SORT_COLUMNS: Record<string, string> = {
+  name: "first_name",
+  email: "email",
+  role: "role",
+  department: "organization_id",
+  status: "status",
+  lastActive: "updated_at",
+};
+
+const PAGE_SIZE = 25;
+
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const sp = await searchParams;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -38,14 +55,35 @@ export default async function UsersPage() {
     .single();
   if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
 
-  // Cap the fetch for performance (UX review §1.5); the client surfaces a
-  // "showing first N of M" notice when the total exceeds the cap.
-  const LIST_CAP = 500;
-  const { data: rows, count, error } = await service
+  // ─── Server-driven paging / filtering / sorting (UX review §1.5) ───
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  // Sanitize search: PostgREST .or()/ilike break on , ( ) % * \, so strip them.
+  const q = (sp.q ?? "").replace(/[,()%*\\]/g, " ").trim();
+  const roleParam = sp.role && sp.role in roleMap ? sp.role : null;
+  const statusParam = sp.status ?? null; // "active" | "inactive" | "pending"
+  const deptId = sp.dept && sp.dept !== "all" ? sp.dept : null;
+  const sort = sp.sort ?? "-created_at";
+  const sortDesc = sort.startsWith("-");
+  const sortField = SORT_COLUMNS[sort.replace(/^-/, "")] ?? "created_at";
+
+  let query = service
     .from('users')
-    .select('*, organization:organizations(name)', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .limit(LIST_CAP);
+    .select('*, organization:organizations(name)', { count: 'exact' });
+
+  if (q) {
+    query = query.or(
+      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`
+    );
+  }
+  if (roleParam) query = query.eq('role', roleParam);
+  if (statusParam === 'active') query = query.eq('status', 'active');
+  else if (statusParam === 'inactive') query = query.in('status', ['inactive', 'suspended']);
+  else if (statusParam === 'pending') query = query.eq('status', 'pending');
+  if (deptId) query = query.eq('organization_id', deptId);
+
+  const { data: rows, count, error } = await query
+    .order(sortField, { ascending: !sortDesc })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
   const { data: orgRows } = await service
     .from('organizations')
@@ -74,6 +112,9 @@ export default async function UsersPage() {
       organizations={organizations}
       currentUserRole={dbUser.role}
       totalCount={count ?? users.length}
+      page={page}
+      pageSize={PAGE_SIZE}
+      sort={sort}
     />
   );
 }
