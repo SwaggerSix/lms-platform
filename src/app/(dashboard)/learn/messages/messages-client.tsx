@@ -17,6 +17,7 @@ import {
 import { cn } from "@/utils/cn";
 import { Avatar as UIAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { ConversationListItem } from "@/components/ui/conversation-list-item";
 import { useRealtimeSubscription, useRealtimeBroadcast } from "@/hooks/use-realtime";
@@ -259,20 +260,30 @@ function NewMessageModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">New Message</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close new message dialog"
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="New Message"
+      size="md"
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (selectedUsers.length > 0 && message.trim()) {
+                onSend(selectedUsers, message.trim());
+              }
+            }}
+            disabled={selectedUsers.length === 0 || !message.trim()}
           >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="p-6">
+            Send Message
+          </Button>
+        </>
+      }
+    >
+        <div>
           {/* Selected recipients */}
           {selectedUsers.length > 0 && (
             <div className="mb-3 flex flex-wrap gap-2">
@@ -387,24 +398,7 @@ function NewMessageModal({
             className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
-
-        <div className="flex justify-end gap-3 border-t px-6 py-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              if (selectedUsers.length > 0 && message.trim()) {
-                onSend(selectedUsers, message.trim());
-              }
-            }}
-            disabled={selectedUsers.length === 0 || !message.trim()}
-          >
-            Send Message
-          </Button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
