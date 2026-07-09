@@ -1,5 +1,7 @@
 "use client";
 
+import { Avatar } from "@/components/ui/avatar";
+
 interface ChatMessageProps {
   role: "user" | "assistant" | "system";
   content: string;
@@ -12,15 +14,16 @@ export default function ChatMessage({ role, content, timestamp }: ChatMessagePro
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
-      <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+      <Avatar
+        size="sm"
+        fallback={isUser ? "You" : "AI"}
+        colorClass={
           isUser
             ? "bg-primary-600 text-white"
             : "bg-gradient-to-br from-emerald-400 to-teal-500 text-white"
-        }`}
-      >
-        {isUser ? "You" : "AI"}
-      </div>
+        }
+        className="font-bold"
+      />
 
       {/* Message Bubble */}
       <div className={`max-w-[75%] ${isUser ? "items-end" : "items-start"}`}>

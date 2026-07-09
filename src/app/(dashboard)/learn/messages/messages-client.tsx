@@ -15,6 +15,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Avatar as UIAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useRealtimeSubscription, useRealtimeBroadcast } from "@/hooks/use-realtime";
 import { createClient } from "@/lib/supabase/client";
@@ -150,24 +151,16 @@ function Avatar({
   size?: "sm" | "md" | "lg";
   showOnline?: boolean;
 }) {
-  const sizeClasses = {
-    sm: "h-8 w-8 text-xs",
-    md: "h-10 w-10 text-sm",
-    lg: "h-12 w-12 text-base",
-  };
   const dotSizes = { sm: "h-2 w-2", md: "h-2.5 w-2.5", lg: "h-3 w-3" };
 
   return (
     <div className="relative flex-shrink-0">
-      <div
-        className={cn(
-          "flex items-center justify-center rounded-full font-semibold text-white",
-          user.avatarColor,
-          sizeClasses[size]
-        )}
-      >
-        {user.initials}
-      </div>
+      <UIAvatar
+        size={size}
+        fallback={user.initials}
+        colorClass={cn(user.avatarColor, "text-white")}
+        className={cn("font-semibold", size === "lg" && "h-12 w-12 text-base")}
+      />
       {showOnline && user.online && (
         <span
           className={cn(

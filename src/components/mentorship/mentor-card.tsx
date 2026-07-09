@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Star, Check } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
 
 interface MentorCardProps {
   mentor: {
@@ -58,9 +59,12 @@ export default function MentorCard({
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start gap-4">
         {/* Avatar */}
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-          {initials}
-        </div>
+        <Avatar
+          size="md"
+          fallback={initials}
+          colorClass="bg-gradient-to-br from-primary-500 to-purple-600 text-white"
+          className="h-12 w-12 font-semibold"
+        />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">

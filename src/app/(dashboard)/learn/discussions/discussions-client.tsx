@@ -14,6 +14,7 @@ import {
   Clock,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -383,9 +384,7 @@ export default function DiscussionsClient({
                     {/* Meta row */}
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                       <div className="flex items-center gap-1.5">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-100 text-[10px] font-medium text-primary-700">
-                          {thread.authorInitials}
-                        </div>
+                        <Avatar size="xs" fallback={thread.authorInitials} colorClass="bg-primary-100 text-primary-700" />
                         <span>{thread.author}</span>
                       </div>
                       <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", thread.courseColor)}>
@@ -420,9 +419,7 @@ export default function DiscussionsClient({
                     <div className="divide-y divide-gray-100">
                       {thread.mockReplies.map((reply) => (
                         <div key={reply.id} className="flex gap-3 px-5 py-4">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                            {reply.initials}
-                          </div>
+                          <Avatar size="sm" fallback={reply.initials} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-gray-900">{reply.author}</span>
@@ -436,9 +433,7 @@ export default function DiscussionsClient({
 
                     {/* Reply input */}
                     <div className="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-medium text-primary-700">
-                        {currentUserInitials}
-                      </div>
+                      <Avatar size="sm" fallback={currentUserInitials} colorClass="bg-primary-100 text-primary-700" />
                       <input
                         type="text"
                         placeholder="Write a reply..."
