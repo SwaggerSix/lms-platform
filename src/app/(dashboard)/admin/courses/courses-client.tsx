@@ -10,6 +10,7 @@ import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { getHelp } from "@/lib/help-content";
 import {
   Search,
@@ -489,23 +490,22 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 w-fit">
-        {tabs.map((tab) => {
+      <SegmentedControl
+        aria-label="Filter courses by status"
+        value={activeTab}
+        onChange={(v) => { setActiveTab(v as typeof tabs[number]); setCurrentPage(1); }}
+        options={tabs.map((tab) => {
           const count = tab === 'All' ? courses.length : courses.filter((c) => c.status === tab.toLowerCase()).length;
-          return (
-            <button
-              key={tab}
-              onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-              className={cn(
-                'rounded-md px-4 py-2 text-sm font-medium transition-colors',
-                activeTab === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              )}
-            >
-              {tab} <span className="ml-1 text-xs text-gray-400">({count})</span>
-            </button>
-          );
+          return {
+            value: tab,
+            label: (
+              <>
+                {tab} <span className="ml-1 text-xs text-gray-400">({count})</span>
+              </>
+            ),
+          };
         })}
-      </div>
+      />
 
       {/* Search & Filters */}
       <div className="flex flex-wrap items-center gap-3">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { cn } from "@/utils/cn";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 export type ProfileTab = "overview" | "skills";
 
@@ -10,9 +10,9 @@ const TAB_ROUTES: Record<ProfileTab, string> = {
   skills: "/profile/skills",
 };
 
-const TABS: { key: ProfileTab; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "skills", label: "Skills & Gaps" },
+const TABS = [
+  { value: "overview", label: "Overview" },
+  { value: "skills", label: "Skills & Gaps" },
 ];
 
 /**
@@ -24,28 +24,13 @@ export default function ProfileTabs({ active }: { active: ProfileTab }) {
   const router = useRouter();
 
   return (
-    <div
-      role="group"
+    <SegmentedControl
       aria-label="Profile section"
-      className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
-    >
-      {TABS.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => {
-            if (tab.key !== active) router.push(TAB_ROUTES[tab.key]);
-          }}
-          aria-pressed={active === tab.key}
-          className={cn(
-            "rounded-md px-4 py-2 text-sm font-medium transition-colors",
-            active === tab.key
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+      value={active}
+      options={TABS}
+      onChange={(value) => {
+        if (value !== active) router.push(TAB_ROUTES[value as ProfileTab]);
+      }}
+    />
   );
 }

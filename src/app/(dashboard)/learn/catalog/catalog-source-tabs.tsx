@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { cn } from "@/utils/cn";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 export type CatalogSourceTab = "internal" | "partner" | "store" | "forYou";
 
@@ -33,39 +33,25 @@ export default function CatalogSourceTabs({
 }) {
   const router = useRouter();
 
-  const tabs: { key: CatalogSourceTab; label: string }[] = [
-    { key: "internal", label: "Internal" },
-    ...(showPartner ? [{ key: "partner" as const, label: "Partner" }] : []),
-    ...(showStore ? [{ key: "store" as const, label: "Store" }] : []),
-    ...(showForYou ? [{ key: "forYou" as const, label: "For You" }] : []),
+  const tabs: { value: CatalogSourceTab; label: string }[] = [
+    { value: "internal", label: "Internal" },
+    ...(showPartner ? [{ value: "partner" as const, label: "Partner" }] : []),
+    ...(showStore ? [{ value: "store" as const, label: "Store" }] : []),
+    ...(showForYou ? [{ value: "forYou" as const, label: "For You" }] : []),
   ];
 
   if (tabs.length < 2) return null;
 
   return (
-    <div
-      role="group"
+    <SegmentedControl
       aria-label="Course source"
-      className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
-    >
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => {
-            if (onSelect?.(tab.key)) return;
-            router.push(TAB_ROUTES[tab.key]);
-          }}
-          aria-pressed={active === tab.key}
-          className={cn(
-            "rounded-md px-4 py-2 text-sm font-medium transition-colors",
-            active === tab.key
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+      value={active}
+      options={tabs}
+      onChange={(value) => {
+        const tab = value as CatalogSourceTab;
+        if (onSelect?.(tab)) return;
+        router.push(TAB_ROUTES[tab]);
+      }}
+    />
   );
 }
