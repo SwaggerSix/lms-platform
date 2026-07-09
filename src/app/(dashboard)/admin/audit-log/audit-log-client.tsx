@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, Download, Calendar } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,10 @@ export interface AuditEntry {
 
 export interface AuditLogClientProps {
   entries: AuditEntry[];
+  totalCount?: number;
+  page?: number;
+  pageSize?: number;
+  sort?: string;
 }
 
 const actionColors: Record<string, string> = {
@@ -46,31 +51,60 @@ const exportCSV = (data: Record<string, unknown>[], filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export default function AuditLogClient({ entries }: AuditLogClientProps) {
-  const [dateFrom, setDateFrom] = useState("2026-03-10");
-  const [dateTo, setDateTo] = useState("2026-03-16");
-  const [userSearch, setUserSearch] = useState("");
-  const [actionFilter, setActionFilter] = useState("All");
-  const [entityFilter, setEntityFilter] = useState("All");
+export default function AuditLogClient({
+  entries,
+  totalCount = 0,
+  page = 1,
+  pageSize = 25,
+  sort = "-timestamp",
+}: AuditLogClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const filteredEntries = (() => {
-    let result = entries.filter((entry) => {
-      const matchesUser = !userSearch || entry.userName.toLowerCase().includes(userSearch.toLowerCase());
-      const matchesAction = actionFilter === "All" || entry.action === actionFilter;
-      const matchesEntity = entityFilter === "All" || entry.entityType === entityFilter;
-      return matchesUser && matchesAction && matchesEntity;
-    });
-    if (dateFrom) {
-      result = result.filter(e => e.timestamp >= dateFrom);
+  // URL is the source of truth for search/filter/sort/page; every change
+  // pushes new params and the server refetches that page.
+  const updateParams = (patch: Record<string, string | null>, resetPage = true) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null || value === "") params.delete(key);
+      else params.set(key, value);
     }
-    if (dateTo) {
-      result = result.filter(e => e.timestamp <= dateTo + " 23:59:59");
+    if (resetPage && !("page" in patch)) params.delete("page");
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const sortKey = sort.replace(/^-/, "");
+  const sortDesc = sort.startsWith("-");
+  const toggleSort = (key: string) => {
+    const next = sortKey === key ? (sortDesc ? key : `-${key}`) : key;
+    updateParams({ sort: next });
+  };
+
+  // Filters live in the URL (server-authoritative). Search has a local mirror
+  // so typing is smooth, then debounces into the URL.
+  const dateFrom = searchParams.get("from") ?? "";
+  const dateTo = searchParams.get("to") ?? "";
+  const actionFilter = searchParams.get("action") ?? "";
+  const entityFilter = searchParams.get("entity") ?? "";
+  const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
+  const searchInitialized = useRef(false);
+  useEffect(() => {
+    // Skip the mount pass so we don't immediately re-push the current query.
+    if (!searchInitialized.current) {
+      searchInitialized.current = true;
+      return;
     }
-    return result;
-  })();
+    const handle = setTimeout(() => {
+      const current = searchParams.get("q") ?? "";
+      if (searchInput !== current) updateParams({ q: searchInput || null });
+    }, 350);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const handleExportLog = () => {
-    const dataToExport = filteredEntries.map(entry => ({
+    const dataToExport = entries.map(entry => ({
       Timestamp: entry.timestamp,
       User: entry.userName,
       Action: entry.action,
@@ -79,8 +113,10 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
       "IP Address": entry.ipAddress,
       Description: entry.description,
     }));
-    exportCSV(dataToExport, `audit_log_${dateFrom}_to_${dateTo}.csv`);
+    exportCSV(dataToExport, `audit_log_page_${page}.csv`);
   };
+
+  const hasActiveQuery = !!(searchInput || actionFilter || entityFilter || dateFrom || dateTo);
 
   return (
     <div className="space-y-6">
@@ -89,9 +125,9 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
           <h1 className="text-2xl font-bold text-gray-900">Audit Log</h1>
           <p className="mt-1 text-sm text-gray-500">Track all platform activities and changes</p>
         </div>
-        <Button variant="outline" onClick={handleExportLog} disabled={filteredEntries.length === 0}>
+        <Button variant="outline" onClick={handleExportLog} disabled={entries.length === 0}>
           <Download className="h-4 w-4" />
-          Export Log
+          Export Page
         </Button>
       </div>
 
@@ -99,39 +135,72 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-400" />
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => updateParams({ from: e.target.value || null })}
+              aria-label="From date"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
             <span className="text-sm text-gray-500">to</span>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => updateParams({ to: e.target.value || null })}
+              aria-label="To date"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search user..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+            <input
+              type="text"
+              placeholder="Search user..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="rounded-lg border border-gray-300 py-1.5 pl-9 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
           </div>
-          <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-            <option value="All">All Actions</option>
-            <option value="Created">Created</option>
-            <option value="Updated">Updated</option>
-            <option value="Deleted">Deleted</option>
-            <option value="Login">Login</option>
-            <option value="Export">Export</option>
+          <select
+            value={actionFilter}
+            onChange={(e) => updateParams({ action: e.target.value || null })}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          >
+            <option value="">All Actions</option>
+            <option value="created">Created</option>
+            <option value="updated">Updated</option>
+            <option value="deleted">Deleted</option>
+            <option value="login">Login</option>
+            <option value="export">Export</option>
           </select>
-          <select value={entityFilter} onChange={(e) => setEntityFilter(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-            <option value="All">All Entities</option>
-            <option value="User">User</option>
-            <option value="Course">Course</option>
-            <option value="Enrollment">Enrollment</option>
-            <option value="Assessment">Assessment</option>
-            <option value="Settings">Settings</option>
+          <select
+            value={entityFilter}
+            onChange={(e) => updateParams({ entity: e.target.value || null })}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          >
+            <option value="">All Entities</option>
+            <option value="user">User</option>
+            <option value="course">Course</option>
+            <option value="enrollment">Enrollment</option>
+            <option value="assessment">Assessment</option>
+            <option value="settings">Settings</option>
           </select>
         </div>
       </div>
 
       <DataTable
         columns={columns}
-        rows={filteredEntries}
+        rows={entries}
         rowKey={(entry) => entry.id}
-        pageSize={15}
         ariaLabel="Audit log"
+        serverMode={{
+          page,
+          pageSize,
+          total: totalCount,
+          onPageChange: (p) => updateParams({ page: String(p) }),
+          sort,
+          onSortChange: toggleSort,
+        }}
         isExpandable={(entry) => !!entry.details}
         renderExpanded={(entry) => (
           <div className="flex gap-6">
@@ -151,7 +220,9 @@ export default function AuditLogClient({ entries }: AuditLogClientProps) {
         )}
         emptyState={{
           title: "No audit activity found",
-          description: "Try widening the date range or clearing the filters.",
+          description: hasActiveQuery
+            ? "Try widening the date range or clearing the filters."
+            : "Platform activity appears here as it happens.",
         }}
       />
     </div>
@@ -168,7 +239,6 @@ const columns: DataTableColumn<AuditEntry>[] = [
   {
     key: "user",
     header: "User",
-    sortValue: (e) => e.userName,
     render: (entry) => (
       <div className="flex items-center gap-2">
         <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white", entry.userName === "System" ? "bg-gray-400" : "bg-primary-500")}>{entry.userAvatar}</div>
