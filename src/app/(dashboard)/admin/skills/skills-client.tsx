@@ -17,6 +17,7 @@ import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 
 export interface Skill {
   id: string;
@@ -32,6 +33,7 @@ export interface Skill {
 
 export interface SkillsClientProps {
   skills: Skill[];
+  totalSkills?: number;
 }
 
 const categories = ["All", "Technical", "Soft Skills", "Business"] as const;
@@ -48,7 +50,7 @@ const categoryColors: Record<string, string> = {
   Business: "bg-amber-100 text-amber-700",
 };
 
-export default function SkillsClient({ skills: initialSkills }: SkillsClientProps) {
+export default function SkillsClient({ skills: initialSkills, totalSkills }: SkillsClientProps) {
   const toast = useToast();
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
   const [activeCategory, setActiveCategory] = useState<string>("All");
@@ -305,6 +307,8 @@ export default function SkillsClient({ skills: initialSkills }: SkillsClientProp
           />
         </div>
       </div>
+
+      <ResultLimitNotice shown={skills.length} total={totalSkills ?? skills.length} noun="skills" className="mb-3" />
 
       <DataTable
         columns={columns}

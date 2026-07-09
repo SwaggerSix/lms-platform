@@ -26,11 +26,15 @@ export default async function AdminKnowledgeBasePage() {
     redirect("/login");
   }
 
-  // Fetch all articles (including drafts) with category and author joins
-  const { data: articleRows } = await service
+  // Fetch all articles (including drafts) with category and author joins.
+  // Cap the fetch for performance (UX review §1.5); the client surfaces a
+  // "showing first N of M" notice when the total exceeds the cap.
+  const LIST_CAP = 500;
+  const { data: articleRows, count: articleCount } = await service
     .from("kb_articles")
-    .select("*, category:kb_categories!category_id(id, name), author:users!author_id(id, first_name, last_name, email)")
-    .order("created_at", { ascending: false });
+    .select("*, category:kb_categories!category_id(id, name), author:users!author_id(id, first_name, last_name, email)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .limit(LIST_CAP);
 
   // Fetch all categories with article counts
   const { data: categoryRows } = await service
@@ -84,6 +88,7 @@ export default async function AdminKnowledgeBasePage() {
     <KnowledgeBaseClient
       initialArticles={articles}
       initialCategories={categories}
+      totalArticles={articleCount ?? articles.length}
       canManage={["admin", "super_admin"].includes(dbUser.role)}
     />
   );

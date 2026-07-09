@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import AdminSessionsTabs from "@/components/layout/admin-sessions-tabs";
 import type { ILTSessionStatus, AttendanceStatus } from "@/types/database";
 import type { AttendeeItem, CourseOption, InstructorOption, SessionItem } from "./sessions-shared";
@@ -24,12 +25,14 @@ interface ILTSessionsClientProps {
   initialSessions: SessionItem[];
   courses: CourseOption[];
   instructors: InstructorOption[];
+  totalCount?: number;
 }
 
 export default function ILTSessionsClient({
   initialSessions,
   courses,
   instructors,
+  totalCount,
 }: ILTSessionsClientProps) {
   const [sessions, setSessions] = useState<SessionItem[]>(initialSessions);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
@@ -352,6 +355,15 @@ export default function ILTSessionsClient({
             </button>
           </div>
         </div>
+
+        {viewMode === "list" && (
+          <ResultLimitNotice
+            shown={sessions.length}
+            total={totalCount ?? sessions.length}
+            noun="sessions"
+            className="mb-3"
+          />
+        )}
 
         {viewMode === "list" && (
           <SessionsList

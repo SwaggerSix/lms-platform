@@ -38,10 +38,14 @@ export default async function UsersPage() {
     .single();
   if (!dbUser || dbUser.role !== "admin" && dbUser.role !== "super_admin") redirect("/dashboard");
 
-  const { data: rows, error } = await service
+  // Cap the fetch for performance (UX review §1.5); the client surfaces a
+  // "showing first N of M" notice when the total exceeds the cap.
+  const LIST_CAP = 500;
+  const { data: rows, count, error } = await service
     .from('users')
-    .select('*, organization:organizations(name)')
-    .order('created_at', { ascending: false });
+    .select('*, organization:organizations(name)', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .limit(LIST_CAP);
 
   const { data: orgRows } = await service
     .from('organizations')
@@ -64,5 +68,12 @@ export default async function UsersPage() {
     avatar: `${(row.first_name ?? '?')[0]}${(row.last_name ?? '?')[0]}`.toUpperCase(),
   }));
 
-  return <UsersClient users={users} organizations={organizations} currentUserRole={dbUser.role} />;
+  return (
+    <UsersClient
+      users={users}
+      organizations={organizations}
+      currentUserRole={dbUser.role}
+      totalCount={count ?? users.length}
+    />
+  );
 }

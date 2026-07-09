@@ -28,11 +28,14 @@ export default async function AutomationPage() {
     redirect("/dashboard");
   }
 
-  // Fetch all rules
-  const { data: rules } = await service
+  // Fetch all rules. Cap the fetch for performance (UX review §1.5); the client
+  // surfaces a "showing first N of M" notice when the total exceeds the cap.
+  const LIST_CAP = 500;
+  const { data: rules, count: rulesCount } = await service
     .from("enrollment_rules")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .limit(LIST_CAP);
 
   // Fetch courses for the action builder
   const { data: courses } = await service
@@ -63,6 +66,7 @@ export default async function AutomationPage() {
   return (
     <AutomationClient
       initialRules={rules ?? []}
+      totalRules={rulesCount ?? (rules ?? []).length}
       courses={courses ?? []}
       paths={paths ?? []}
       badges={badges ?? []}
