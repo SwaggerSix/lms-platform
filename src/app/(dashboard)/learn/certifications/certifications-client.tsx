@@ -21,6 +21,7 @@ import { formatDate } from "@/utils/format";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DOMPurify from "dompurify";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -317,28 +318,15 @@ export default function CertificationsClient({ certificates, userName }: Certifi
         </div>
 
         {/* Tabs */}
-        <div className="mt-8 border-b border-gray-200">
-          <nav className="flex gap-6" aria-label="Filter certificates by status">
+        <Tabs value={activeTab} onChange={(v) => setActiveTab(v as TabKey)} className="mt-8">
+          <TabsList aria-label="Filter certificates by status">
             {TABS.map((tab) => (
-              <button
-                key={tab.key}
-                aria-pressed={activeTab === tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "relative pb-3 text-sm font-medium transition-colors",
-                  activeTab === tab.key
-                    ? "text-primary-600"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
+              <TabsTrigger key={tab.key} value={tab.key}>
                 {tab.label}
-                {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
-                )}
-              </button>
+              </TabsTrigger>
             ))}
-          </nav>
-        </div>
+          </TabsList>
+        </Tabs>
 
         {/* Certificate Cards */}
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Users,
@@ -276,21 +277,12 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6">
+      <Tabs value={tab} onChange={(v) => setTab(v as Tab)} className="mb-6">
+        <TabsList>
           {tabs.map((t) => {
             const Icon = t.icon;
-            const active = tab === t.key;
             return (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  active
-                    ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                }`}
-              >
+              <TabsTrigger key={t.key} value={t.key}>
                 <Icon className="h-4 w-4" />
                 {t.label}
                 {typeof t.count === "number" && (
@@ -298,11 +290,11 @@ export default function ClassDetailClient({ data }: { data: ClassDetailData }) {
                     {t.count}
                   </span>
                 )}
-              </button>
+              </TabsTrigger>
             );
           })}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Overview */}
       {tab === "overview" && (

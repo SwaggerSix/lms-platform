@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/utils/cn";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBrandingStore } from "@/stores/branding-store";
 import { brandPresets, defaultBranding, type BrandingConfig } from "@/lib/branding";
 import NextImage from "next/image";
@@ -134,28 +135,19 @@ export default function BrandingSettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-1" aria-label="Branding settings">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList aria-label="Branding settings">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-                  activeTab === tab.key
-                    ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                )}
-              >
+              <TabsTrigger key={tab.key} value={tab.key}>
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 {tab.label}
-              </button>
+              </TabsTrigger>
             );
           })}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* General Tab */}
       {activeTab === "general" && (

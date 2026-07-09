@@ -21,6 +21,7 @@ import {
 import { cn } from "@/utils/cn";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /* ------------------------------------------------------------------ */
 /*  Data Interfaces                                                    */
@@ -224,24 +225,15 @@ export default function AchievementsClient({ data }: { data: AchievementsData })
         </div>
 
         {/* ---- Main Tabs ---- */}
-        <div className="mt-8 border-b border-gray-200">
-          <nav className="flex gap-6" aria-label="Achievement views">
+        <Tabs value={mainTab} onChange={(v) => setMainTab(v as MainTab)} className="mt-8">
+          <TabsList aria-label="Achievement views">
             {(["Badges", "Leaderboard", "Activity"] as MainTab[]).map((tab) => (
-              <button
-                key={tab}
-                aria-pressed={mainTab === tab}
-                onClick={() => setMainTab(tab)}
-                className={cn(
-                  "relative pb-3 text-sm font-medium transition-colors",
-                  mainTab === tab ? "text-primary-600" : "text-gray-500 hover:text-gray-700"
-                )}
-              >
+              <TabsTrigger key={tab} value={tab}>
                 {tab}
-                {mainTab === tab && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded" />}
-              </button>
+              </TabsTrigger>
             ))}
-          </nav>
-        </div>
+          </TabsList>
+        </Tabs>
 
         {/* ======== BADGES TAB ======== */}
         {mainTab === "Badges" && (

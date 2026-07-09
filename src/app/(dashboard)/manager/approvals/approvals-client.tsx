@@ -18,6 +18,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import type { ApprovalStatus } from "@/types/database";
 
@@ -272,23 +273,14 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
-        <div className="flex gap-0">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as TabFilter)} className="mb-6">
+        <TabsList>
           {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                "relative px-5 py-3 text-sm font-medium transition-colors",
-                activeTab === tab.key
-                  ? "text-primary-600"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
+            <TabsTrigger key={tab.key} value={tab.key}>
               {tab.label}
               <span
                 className={cn(
-                  "ml-2 rounded-full px-2 py-0.5 text-xs font-semibold",
+                  "rounded-full px-2 py-0.5 text-xs font-semibold",
                   activeTab === tab.key
                     ? "bg-primary-100 text-primary-600"
                     : "bg-gray-100 text-gray-500"
@@ -296,13 +288,10 @@ export default function ApprovalsClient({ initialApprovals }: { initialApprovals
               >
                 {tab.count}
               </span>
-              {activeTab === tab.key && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
-              )}
-            </button>
+            </TabsTrigger>
           ))}
-        </div>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Search & Sort */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

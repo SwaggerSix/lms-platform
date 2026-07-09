@@ -5,6 +5,7 @@ import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import AtRiskTable from "@/components/analytics/at-risk-table";
 import RiskIndicator from "@/components/analytics/risk-indicator";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const RISK_LEVEL_DEFINITIONS = (
   <div className="space-y-1.5 text-left">
@@ -114,27 +115,19 @@ export default function PredictiveAnalyticsClient({
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex gap-6">
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as typeof activeTab)} className="mb-6">
+        <TabsList>
           {[
             { key: "overview", label: "Overview" },
             { key: "learners", label: `At-Risk Learners (${atRiskLearners.length})` },
             { key: "alerts", label: `Alerts (${alerts.filter((a: any) => !a.is_read).length})` },
           ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`whitespace-nowrap border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
+            <TabsTrigger key={tab.key} value={tab.key}>
               {tab.label}
-            </button>
+            </TabsTrigger>
           ))}
-        </nav>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Overview Tab */}
       {activeTab === "overview" && (

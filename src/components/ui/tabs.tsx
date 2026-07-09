@@ -42,7 +42,7 @@ function TabsList({
     <div
       role="tablist"
       className={cn(
-        "inline-flex items-center gap-1 border-b border-gray-200",
+        "flex max-w-full items-center gap-1 overflow-x-auto border-b border-gray-200",
         className
       )}
       {...props}
@@ -73,7 +73,7 @@ function TabsTrigger({
       aria-selected={isActive}
       onClick={() => onChange(value)}
       className={cn(
-        "inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors",
         "-mb-px border-b-2",
         isActive
           ? "border-primary-600 text-primary-600"

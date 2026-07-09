@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PendingReview {
   id: string;
@@ -100,37 +101,19 @@ export default function LearnerFeedbackClient({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex gap-6" aria-label="Feedback views">
-          <button
-            aria-pressed={activeTab === "pending"}
-            onClick={() => setActiveTab("pending")}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "pending"
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList aria-label="Feedback views">
+          <TabsTrigger value="pending">
             Pending Reviews
             {pendingReviews.length > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">
+              <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-medium">
                 {pendingReviews.length}
               </span>
             )}
-          </button>
-          <button
-            aria-pressed={activeTab === "reports"}
-            onClick={() => setActiveTab("reports")}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "reports"
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            My Feedback Reports
-          </button>
-        </div>
-      </div>
+          </TabsTrigger>
+          <TabsTrigger value="reports">My Feedback Reports</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Pending Reviews */}
       {activeTab === "pending" && (

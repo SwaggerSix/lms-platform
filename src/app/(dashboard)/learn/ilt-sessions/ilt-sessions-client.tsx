@@ -23,6 +23,7 @@ import { trackEvent } from "@/lib/analytics/track";
 import { formatZonedTime, timezoneAbbrev } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ILTSessionStatus, ILTLocationType, AttendanceStatus } from "@/types/database";
 
 export interface LearnerSession {
@@ -312,8 +313,8 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
         <p className="mt-1 text-gray-500">Browse open learning events and webinars, register, and review past attendance.</p>
 
         {/* Tabs */}
-        <div className="mt-6 border-b border-gray-200">
-          <nav className="flex gap-6" aria-label="Filter sessions by date">
+        <Tabs value={activeTab} onChange={(v) => setActiveTab(v as TabKey)} className="mt-6">
+          <TabsList aria-label="Filter sessions by date">
             {TABS.map((tab) => {
               const now = new Date().toISOString().split("T")[0];
               let count = 0;
@@ -325,21 +326,11 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                 count = sessions.length;
               }
               return (
-                <button
-                  key={tab.key}
-                  aria-pressed={activeTab === tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    "relative pb-3 text-sm font-medium transition-colors",
-                    activeTab === tab.key
-                      ? "text-primary-600"
-                      : "text-gray-500 hover:text-gray-700"
-                  )}
-                >
+                <TabsTrigger key={tab.key} value={tab.key}>
                   {tab.label}
                   <span
                     className={cn(
-                      "ml-1.5 rounded-full px-2 py-0.5 text-xs",
+                      "rounded-full px-2 py-0.5 text-xs",
                       activeTab === tab.key
                         ? "bg-primary-100 text-primary-600"
                         : "bg-gray-100 text-gray-500"
@@ -347,14 +338,11 @@ export default function ILTSessionsClient({ sessions: initialSessions, userTimeZ
                   >
                     {count}
                   </span>
-                  {activeTab === tab.key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
-                  )}
-                </button>
+                </TabsTrigger>
               );
             })}
-          </nav>
-        </div>
+          </TabsList>
+        </Tabs>
 
         {/* Session Cards */}
         {filtered.length > 0 ? (

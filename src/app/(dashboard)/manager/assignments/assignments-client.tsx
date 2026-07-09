@@ -20,6 +20,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate, formatPercent } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 
 export interface Assignment {
@@ -358,41 +359,35 @@ export default function AssignmentsClient({
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex items-center gap-6 border-b border-gray-200">
-        {(["active", "completed", "overdue"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setSelectedAssignments([]);
-            }}
-            className={cn(
-              "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-              activeTab === tab
-                ? "text-primary-600"
-                : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            {tab === "active" && <Clock className="h-4 w-4" />}
-            {tab === "completed" && <CheckCircle2 className="h-4 w-4" />}
-            {tab === "overdue" && <AlertTriangle className="h-4 w-4" />}
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-xs",
-                activeTab === tab
-                  ? "bg-primary-100 text-primary-700"
-                  : "bg-gray-100 text-gray-600"
-              )}
-            >
-              {tabCounts[tab]}
-            </span>
-            {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
-            )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        value={activeTab}
+        onChange={(v) => {
+          setActiveTab(v as typeof activeTab);
+          setSelectedAssignments([]);
+        }}
+        className="mb-6"
+      >
+        <TabsList>
+          {(["active", "completed", "overdue"] as const).map((tab) => (
+            <TabsTrigger key={tab} value={tab}>
+              {tab === "active" && <Clock className="h-4 w-4" />}
+              {tab === "completed" && <CheckCircle2 className="h-4 w-4" />}
+              {tab === "overdue" && <AlertTriangle className="h-4 w-4" />}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs",
+                  activeTab === tab
+                    ? "bg-primary-100 text-primary-700"
+                    : "bg-gray-100 text-gray-600"
+                )}
+              >
+                {tabCounts[tab]}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Search & Bulk Actions */}
       <div className="mb-4 flex items-center justify-between">

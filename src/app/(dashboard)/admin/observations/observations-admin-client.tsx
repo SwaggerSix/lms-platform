@@ -22,6 +22,7 @@ import { cn } from "@/utils/cn";
 import Link from "next/link";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getHelp } from "@/lib/help-content";
 import { ObservationDevelopmentNotice } from "@/components/observations/development-only-notice";
 
@@ -261,28 +262,18 @@ export default function ObservationsAdminClient({ initialTemplates, initialObser
 
       {/* Tabs + Search */}
       <div className="flex items-center justify-between border-b border-gray-200">
-        <div className="flex gap-1">
-          <button
-            onClick={() => setTab("templates")}
-            className={cn(
-              "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-              tab === "templates" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-            Templates
-          </button>
-          <button
-            onClick={() => setTab("observations")}
-            className={cn(
-              "flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
-              tab === "observations" ? "border-primary-600 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <List className="h-3.5 w-3.5" />
-            Observations
-          </button>
-        </div>
+        <Tabs value={tab} onChange={(v) => setTab(v as typeof tab)} className="w-auto">
+          <TabsList className="border-b-0">
+            <TabsTrigger value="templates">
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Templates
+            </TabsTrigger>
+            <TabsTrigger value="observations">
+              <List className="h-3.5 w-3.5" />
+              Observations
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         <div className="flex items-center gap-2 pb-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />

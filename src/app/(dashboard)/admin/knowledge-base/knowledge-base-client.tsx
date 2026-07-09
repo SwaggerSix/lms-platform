@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { BarChart3, BookOpen, FileText, FolderOpen, Plus } from "lucide-react";
-import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 import type { AdminArticle, AdminCategory } from "./kb-shared";
 import ArticlesTab from "./articles-tab";
@@ -118,30 +118,19 @@ export default function KnowledgeBaseClient({ initialArticles, initialCategories
         </div>
 
         {/* Tabs */}
-        <div className="mt-8 border-b border-gray-200">
-          <nav className="flex gap-6">
+        <Tabs value={activeTab} onChange={(v) => setActiveTab(v as TabKey)} className="mt-8">
+          <TabsList>
             {TABS.filter((tab) => canManage || tab.key !== "analytics").map((tab) => {
               const Icon = tab.icon;
               return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  aria-pressed={activeTab === tab.key}
-                  className={cn(
-                    "relative flex items-center gap-2 pb-3 text-sm font-medium transition-colors",
-                    activeTab === tab.key ? "text-primary-600" : "text-gray-500 hover:text-gray-700"
-                  )}
-                >
+                <TabsTrigger key={tab.key} value={tab.key}>
                   <Icon className="h-4 w-4" />
                   {tab.label}
-                  {activeTab === tab.key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
-                  )}
-                </button>
+                </TabsTrigger>
               );
             })}
-          </nav>
-        </div>
+          </TabsList>
+        </Tabs>
 
         {activeTab === "articles" && (
           <ArticlesTab

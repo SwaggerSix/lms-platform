@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -329,39 +330,21 @@ export default function XAPIClient({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-6">
-          <button
-            onClick={() => setActiveTab("connections")}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "connections"
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <span className="inline-flex items-center gap-2">
-              <Server className="w-4 h-4" />
-              LRS Connections
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as Tab)} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="connections">
+            <Server className="w-4 h-4" />
+            LRS Connections
+          </TabsTrigger>
+          <TabsTrigger value="explorer">
+            <Activity className="w-4 h-4" />
+            Statement Explorer
+            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+              {statementsTotal}
             </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("explorer")}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "explorer"
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <span className="inline-flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Statement Explorer
-              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-                {statementsTotal}
-              </span>
-            </span>
-          </button>
-        </nav>
-      </div>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* ─── Connections Tab ──────────────────────────────────────────────── */}
       {activeTab === "connections" && (
