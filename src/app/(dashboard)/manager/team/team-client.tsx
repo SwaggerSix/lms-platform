@@ -17,7 +17,6 @@ import {
   Send,
   BookOpen,
   Eye,
-  X,
   Loader2,
   UserPlus,
   Upload,
@@ -26,6 +25,7 @@ import {
 import { cn } from "@/utils/cn";
 import { formatDate, formatRelativeTime, formatPercent } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -943,20 +943,29 @@ export default function TeamClient({
 
       {/* Profile Detail Modal */}
       {profileMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Team Member Profile
-              </h2>
-              <button
-                onClick={() => setProfileMember(null)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        <Modal
+          isOpen
+          onClose={() => setProfileMember(null)}
+          title="Team Member Profile"
+          size="md"
+          footer={
+            <>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setProfileMember(null);
+                  router.push(`/profile/${profileMember.id}`);
+                }}
               >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="px-6 py-5">
+                View Full Profile
+              </Button>
+              <Button onClick={() => setProfileMember(null)}>
+                Close
+              </Button>
+            </>
+          }
+        >
+            <div>
               <div className="mb-6 flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-700">
                   {profileMember.avatar}
@@ -1074,42 +1083,44 @@ export default function TeamClient({
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setProfileMember(null);
-                  router.push(`/profile/${profileMember.id}`);
-                }}
-              >
-                View Full Profile
-              </Button>
-              <Button onClick={() => setProfileMember(null)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Assign Course Modal */}
       {assignMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Assign Course to {assignMember.firstName}{" "}
-                {assignMember.lastName}
-              </h2>
+        <Modal
+          isOpen
+          onClose={() => setAssignMember(null)}
+          title={`Assign Course to ${assignMember.firstName} ${assignMember.lastName}`}
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setAssignMember(null)}>
+                Cancel
+              </Button>
               <button
-                onClick={() => setAssignMember(null)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                onClick={handleSubmitAssignment}
+                disabled={!selectedCourse || !dueDate || assigning}
+                className={cn(
+                  "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
+                  selectedCourse && dueDate && !assigning
+                    ? "bg-primary-600 hover:bg-primary-700"
+                    : "bg-primary-300 cursor-not-allowed"
+                )}
               >
-                <X className="h-5 w-5" />
+                {assigning ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Assigning...
+                  </span>
+                ) : (
+                  "Assign Course"
+                )}
               </button>
-            </div>
-
-            <div className="max-h-[70vh] overflow-y-auto px-6 py-4 space-y-5">
+            </>
+          }
+        >
+            <div className="space-y-5">
               {/* Select Course */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -1169,56 +1180,52 @@ export default function TeamClient({
                 />
               </div>
             </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button variant="outline" onClick={() => setAssignMember(null)}>
-                Cancel
-              </Button>
-              <button
-                onClick={handleSubmitAssignment}
-                disabled={!selectedCourse || !dueDate || assigning}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors",
-                  selectedCourse && dueDate && !assigning
-                    ? "bg-primary-600 hover:bg-primary-700"
-                    : "bg-primary-300 cursor-not-allowed"
-                )}
-              >
-                {assigning ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Assigning...
-                  </span>
-                ) : (
-                  "Assign Course"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Add / Edit Member Modal */}
       {(showAddMember || editMember) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editMember ? "Edit Team Member" : "Add Team Member"}
-              </h2>
-              <button
+        <Modal
+          isOpen
+          onClose={() => {
+            setShowAddMember(false);
+            setEditMember(null);
+            resetEmployeeSearch();
+          }}
+          title={editMember ? "Edit Team Member" : "Add Team Member"}
+          size="md"
+          footer={
+            <>
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowAddMember(false);
                   setEditMember(null);
                   resetEmployeeSearch();
                 }}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
-                <X className="h-5 w-5" />
+                Cancel
+              </Button>
+              <button
+                onClick={handleSaveMember}
+                disabled={savingMember}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
+              >
+                {savingMember ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : editMember ? (
+                  "Save Changes"
+                ) : (
+                  "Add Member"
+                )}
               </button>
-            </div>
-
-            <div className="px-6 py-5 space-y-4">
+            </>
+          }
+        >
+            <div className="space-y-4">
               {!editMember && (
                 <div className="relative">
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -1378,56 +1385,41 @@ export default function TeamClient({
                 </p>
               )}
             </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAddMember(false);
-                  setEditMember(null);
-                  resetEmployeeSearch();
-                }}
-              >
-                Cancel
-              </Button>
-              <button
-                onClick={handleSaveMember}
-                disabled={savingMember}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
-              >
-                {savingMember ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </span>
-                ) : editMember ? (
-                  "Save Changes"
-                ) : (
-                  "Add Member"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Import CSV Modal */}
       {showImport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Import Team Members
-              </h2>
+        <Modal
+          isOpen
+          onClose={() => setShowImport(false)}
+          title="Import Team Members"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowImport(false)}>
+                Cancel
+              </Button>
               <button
-                onClick={() => setShowImport(false)}
-                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                onClick={handleImportSubmit}
+                disabled={importRows.length === 0 || importing}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
               >
-                <X className="h-5 w-5" />
+                {importing ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Importing...
+                  </span>
+                ) : (
+                  `Import ${importRows.length || ""} Member${
+                    importRows.length === 1 ? "" : "s"
+                  }`.trim()
+                )}
               </button>
-            </div>
-
-            <div className="px-6 py-5 space-y-4">
+            </>
+          }
+        >
+            <div className="space-y-4">
               <p className="text-sm text-gray-600">
                 Upload a CSV file with columns:{" "}
                 <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-700">
@@ -1497,30 +1489,7 @@ export default function TeamClient({
                 </div>
               )}
             </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
-              <Button variant="outline" onClick={() => setShowImport(false)}>
-                Cancel
-              </Button>
-              <button
-                onClick={handleImportSubmit}
-                disabled={importRows.length === 0 || importing}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300"
-              >
-                {importing ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Importing...
-                  </span>
-                ) : (
-                  `Import ${importRows.length || ""} Member${
-                    importRows.length === 1 ? "" : "s"
-                  }`.trim()
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
