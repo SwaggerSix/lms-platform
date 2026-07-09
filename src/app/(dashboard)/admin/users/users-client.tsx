@@ -598,14 +598,12 @@ export default function UsersClient({
 
       {/* Invitation link modal */}
       {inviteResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setInviteResult(null)}>
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Invitation for {inviteResult.email}</h2>
-              <button onClick={() => setInviteResult(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => setInviteResult(null)}
+          title={`Invitation for ${inviteResult.email}`}
+          size="md"
+        >
             <p className="mb-3 flex items-center gap-2 text-sm text-gray-600">
               {inviteResult.emailed ? (
                 <><Mail className="h-4 w-4 text-green-600" /> Emailed to {inviteResult.email}. You can also copy the link below to share directly.</>
@@ -626,20 +624,30 @@ export default function UsersClient({
               </Button>
             </div>
             <p className="mt-2 text-xs text-gray-500">This link lets the user set their password and sign in. It expires for security, so resend if it lapses.</p>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Edit User Modal */}
       {showEditModal && editUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Edit User</h2>
-              <button onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => { setShowEditModal(false); setEditUser(null); setError(null); }}
+          title="Edit User"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEditUser}
+                disabled={isSubmitting || !editEmail || !editFirstName || !editLastName}
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </>
+          }
+        >
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -690,31 +698,18 @@ export default function UsersClient({
             {error && showEditModal && (
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => { setShowEditModal(false); setEditUser(null); setError(null); }}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveEditUser}
-                disabled={isSubmitting || !editEmail || !editFirstName || !editLastName}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Generated Credentials Modal */}
       {credentials && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Login credentials</h2>
-              <button onClick={() => setCredentials(null)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => setCredentials(null)}
+          title="Login credentials"
+          size="md"
+          footer={<Button onClick={() => setCredentials(null)}>Done</Button>}
+        >
             <p className="text-sm text-gray-600 mb-4">
               Share these credentials with the user. This password will not be shown again — copy it now.
               On first login they will be prompted to set their own password.
@@ -747,25 +742,30 @@ export default function UsersClient({
                 </div>
               </div>
             </div>
-            <div className="mt-6 flex justify-end">
-              <Button onClick={() => setCredentials(null)}>
-                Done
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Add User Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Add New User</h2>
-              <button onClick={() => { resetForm(); setShowModal(false); }} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => { resetForm(); setShowModal(false); }}
+          title="Add New User"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => { resetForm(); setShowModal(false); }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddUser}
+                disabled={isSubmitting || !formEmail || !formFirstName || !formLastName}
+              >
+                {isSubmitting ? 'Adding...' : 'Add User'}
+              </Button>
+            </>
+          }
+        >
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -807,19 +807,7 @@ export default function UsersClient({
             {error && showModal && (
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => { resetForm(); setShowModal(false); }}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddUser}
-                disabled={isSubmitting || !formEmail || !formFirstName || !formLastName}
-              >
-                {isSubmitting ? 'Adding...' : 'Add User'}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
