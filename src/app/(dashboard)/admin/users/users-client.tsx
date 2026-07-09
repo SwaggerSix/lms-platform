@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
-import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -47,8 +47,6 @@ export interface OrgItem {
   name: string;
 }
 
-const statuses = ['All Status', 'Active', 'Inactive', 'Pending'];
-const departments = ['All Departments', 'Executive', 'HR', 'Operations', 'Finance', 'Training Delivery', 'Training Development'];
 
 const roleBadge: Record<string, string> = {
   super_admin: 'bg-primary-50 text-primary-700 ring-primary-600/20',
@@ -64,21 +62,72 @@ const statusBadge: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
 };
 
-export default function UsersClient({ users, organizations = [], currentUserRole = 'admin', totalCount }: { users: UserItem[]; organizations?: OrgItem[]; currentUserRole?: UserRole; totalCount?: number }) {
+export default function UsersClient({
+  users,
+  organizations = [],
+  currentUserRole = 'admin',
+  totalCount = 0,
+  page = 1,
+  pageSize = 25,
+  sort = '-created_at',
+}: {
+  users: UserItem[];
+  organizations?: OrgItem[];
+  currentUserRole?: UserRole;
+  totalCount?: number;
+  page?: number;
+  pageSize?: number;
+  sort?: string;
+}) {
   const toast = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL is the source of truth for search/filter/sort/page; every change
+  // pushes new params and the server refetches that page.
+  const updateParams = (patch: Record<string, string | null>, resetPage = true) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null || value === '') params.delete(key);
+      else params.set(key, value);
+    }
+    if (resetPage && !('page' in patch)) params.delete('page');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  // Sort column key derived from the "field" / "-field" URL value.
+  const sortKey = sort.replace(/^-/, '');
+  const sortDesc = sort.startsWith('-');
+  const toggleSort = (key: string) => {
+    // Same column → flip direction; new column → ascending.
+    const next = sortKey === key ? (sortDesc ? key : `-${key}`) : key;
+    updateParams({ sort: next });
+  };
   // Roles the current admin is permitted to assign. Only Super Admins (gC/GGS)
   // can grant the Super Admin role.
   const assignable = assignableRoles(currentUserRole);
   const roleOptions = assignable.map((r) => ({ value: r, label: ROLE_LABELS[r] }));
-  const roleFilters: { value: string; label: string }[] = [
-    { value: 'All Roles', label: 'All Roles' },
-    ...roleOptions,
-  ];
-  const [userList, setUserList] = useState<UserItem[]>(users);
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('All Roles');
-  const [statusFilter, setStatusFilter] = useState('All Status');
-  const [deptFilter, setDeptFilter] = useState('All Departments');
+  // Filters are read from the URL (server-authoritative). Search has a local
+  // mirror so typing is smooth, then debounced into the URL.
+  const roleFilter = searchParams.get('role') ?? '';
+  const statusFilter = searchParams.get('status') ?? '';
+  const deptFilter = searchParams.get('dept') ?? 'all';
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') ?? '');
+  const searchInitialized = useRef(false);
+  useEffect(() => {
+    // Skip the mount pass so we don't immediately re-push the current query.
+    if (!searchInitialized.current) {
+      searchInitialized.current = true;
+      return;
+    }
+    const handle = setTimeout(() => {
+      const current = searchParams.get('q') ?? '';
+      if (searchInput !== current) updateParams({ q: searchInput || null });
+    }, 350);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
   const [showModal, setShowModal] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ email: string; link: string; emailed: boolean } | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
@@ -153,12 +202,12 @@ export default function UsersClient({ users, organizations = [], currentUserRole
         lastActive: created.created_at ?? new Date().toISOString(),
         avatar: `${(created.first_name ?? formFirstName)[0]}${(created.last_name ?? formLastName)[0]}`.toUpperCase(),
       };
-      setUserList((prev) => [newUser, ...prev]);
       if (created.temporary_password) {
         setCredentials({ email: newUser.email, password: created.temporary_password });
       }
       resetForm();
       setShowModal(false);
+      router.refresh();
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong');
     } finally {
@@ -179,9 +228,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
         const body = await res.json();
         throw new Error(body.error || 'Failed to deactivate user');
       }
-      setUserList((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, status: 'inactive' as const } : u))
-      );
+      router.refresh();
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong');
     } finally {
@@ -190,7 +237,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleDeleteClick = (userId: string) => {
-    const user = userList.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return;
     setError(null);
     setDeleteConfirm(user);
@@ -208,9 +255,9 @@ export default function UsersClient({ users, organizations = [], currentUserRole
         const body = await res.json();
         throw new Error(body.error || 'Failed to delete user');
       }
-      setUserList((prev) => prev.filter((u) => u.id !== deleteConfirm.id));
       toast.success('User deleted');
       setDeleteConfirm(null);
+      router.refresh();
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong');
     } finally {
@@ -219,7 +266,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleEditUser = (userId: string) => {
-    const user = userList.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return;
     setEditUser(user);
     setEditFirstName(user.firstName);
@@ -255,26 +302,9 @@ export default function UsersClient({ users, organizations = [], currentUserRole
         const body = await res.json();
         throw new Error(body.error || 'Failed to update user');
       }
-      setUserList((prev) =>
-        prev.map((u) =>
-          u.id === editUser.id
-            ? {
-                ...u,
-                firstName: editFirstName,
-                lastName: editLastName,
-                email: editEmail,
-                jobTitle: editJobTitle,
-                department: organizations.find(o => o.id === editDepartment)?.name ?? u.department,
-                departmentId: editDepartment,
-                role: editRole,
-                status: editStatus,
-                avatar: `${editFirstName[0]}${editLastName[0]}`.toUpperCase(),
-              }
-            : u
-        )
-      );
       setShowEditModal(false);
       setEditUser(null);
+      router.refresh();
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong');
     } finally {
@@ -283,7 +313,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
   };
 
   const handleResendInvite = async (userId: string) => {
-    const user = userList.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return;
     setIsSubmitting(true);
     try {
@@ -311,7 +341,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
 
   const handleResetPassword = async (userId: string) => {
     if (!confirm('Are you sure you want to send a password reset email to this user?')) return;
-    const user = userList.find((u) => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) return;
     setIsSubmitting(true);
     try {
@@ -329,16 +359,11 @@ export default function UsersClient({ users, organizations = [], currentUserRole
     }
   };
 
-  const filtered = userList.filter((u) => {
-    const matchesSearch =
-      !search ||
-      `${u.firstName} ${u.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = roleFilter === 'All Roles' || u.role === roleFilter;
-    const matchesStatus = statusFilter === 'All Status' || u.status === statusFilter.toLowerCase();
-    const matchesDept = deptFilter === 'All Departments' || u.department === deptFilter;
-    return matchesSearch && matchesRole && matchesStatus && matchesDept;
-  });
+  // Whether any server-side filter/search/page is active — drives which
+  // empty state to show (a true "no users" state vs. "no matches").
+  const hasActiveQuery =
+    !!(searchParams.get('q') || roleFilter || statusFilter || (deptFilter && deptFilter !== 'all')) ||
+    page > 1;
 
   const userColumns: DataTableColumn<UserItem>[] = [
     {
@@ -431,7 +456,7 @@ export default function UsersClient({ users, organizations = [], currentUserRole
             <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
             <InfoTooltip content={getHelp("admin.users").details} label="About User Management" side="bottom" />
           </div>
-          <p className="mt-1 text-sm text-gray-500">{userList.length} total users</p>
+          <p className="mt-1 text-sm text-gray-500">{totalCount} total users</p>
         </div>
         <Button onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4" />
@@ -456,37 +481,55 @@ export default function UsersClient({ users, organizations = [], currentUserRole
           <input
             type="text"
             placeholder="Search users by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-          {roleFilters.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+        <select
+          value={roleFilter || 'all'}
+          onChange={(e) => updateParams({ role: e.target.value === 'all' ? null : e.target.value })}
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        >
+          <option value="all">All Roles</option>
+          {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-          {statuses.map((s) => <option key={s}>{s}</option>)}
+        <select
+          value={statusFilter || 'all'}
+          onChange={(e) => updateParams({ status: e.target.value === 'all' ? null : e.target.value })}
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
         </select>
-        <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-          {departments.map((d) => <option key={d}>{d}</option>)}
+        <select
+          value={deptFilter}
+          onChange={(e) => updateParams({ dept: e.target.value === 'all' ? null : e.target.value })}
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        >
+          <option value="all">All Departments</option>
+          {organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
         </select>
       </div>
 
       {/* Table */}
-      <ResultLimitNotice
-        shown={users.length}
-        total={totalCount ?? users.length}
-        noun="users"
-        className="mb-3"
-      />
       <DataTable
         columns={userColumns}
-        rows={filtered}
+        rows={users}
         rowKey={(user) => user.id}
-        pageSize={10}
         ariaLabel="Users"
+        serverMode={{
+          page,
+          pageSize,
+          total: totalCount,
+          onPageChange: (p) => updateParams({ page: String(p) }),
+          sort,
+          onSortChange: toggleSort,
+        }}
         emptyState={
-          userList.length === 0
+          !hasActiveQuery
             ? {
                 icon: <Users className="h-10 w-10" aria-hidden="true" />,
                 title: 'No users yet',
@@ -498,7 +541,11 @@ export default function UsersClient({ users, organizations = [], currentUserRole
                   </Button>
                 ),
               }
-            : undefined
+            : {
+                icon: <Search className="h-10 w-10" aria-hidden="true" />,
+                title: 'No matching users',
+                description: 'Try adjusting your search or filters.',
+              }
         }
       />
 
