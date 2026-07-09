@@ -376,7 +376,7 @@ export default function MentorshipDetailClient({
               <p className="text-sm text-gray-500">
                 {partner?.job_title ?? ""} {partner?.email ? `- ${partner.email}` : ""}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 You are the {isMentor ? "Mentor" : "Mentee"}
               </p>
             </div>
@@ -679,7 +679,7 @@ export default function MentorshipDetailClient({
         )}
 
         {goals.length === 0 && !goalAddOpen ? (
-          <div className="p-6 text-center text-sm text-gray-400">
+          <div className="p-6 text-center text-sm text-gray-500">
             No goals yet. {canEditGoals && "Add the first one to start tracking progress."}
           </div>
         ) : (
@@ -723,7 +723,7 @@ export default function MentorshipDetailClient({
                   {canEditGoals && (
                     <button
                       onClick={() => deleteGoal(goal)}
-                      className="text-xs text-gray-400 hover:text-red-600"
+                      className="text-xs text-gray-500 hover:text-red-600"
                       aria-label="Delete goal"
                     >
                       Remove
@@ -746,7 +746,7 @@ export default function MentorshipDetailClient({
         </div>
         <div className="max-h-[400px] overflow-y-auto px-5 py-4 space-y-3">
           {messages.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
+            <p className="text-sm text-gray-500 text-center py-6">
               No messages yet. Send the first one below.
             </p>
           ) : (
@@ -797,7 +797,7 @@ export default function MentorshipDetailClient({
                 {sendingMessage ? "Sending..." : "Send"}
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-400">⌘/Ctrl + Enter to send</p>
+            <p className="mt-1 text-xs text-gray-500">⌘/Ctrl + Enter to send</p>
           </div>
         )}
       </div>
@@ -810,7 +810,7 @@ export default function MentorshipDetailClient({
           </h2>
         </div>
         {sessions.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-500">
             No sessions scheduled yet
           </div>
         ) : (
@@ -1002,7 +1002,7 @@ export default function MentorshipDetailClient({
                     <span className="text-xs text-gray-500">
                       by {reviewer?.first_name} {reviewer?.last_name}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>

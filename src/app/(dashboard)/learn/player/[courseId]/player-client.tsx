@@ -499,7 +499,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                       Start Quiz
                     </a>
                   ) : (
-                    <p className="mt-4 text-sm text-gray-400">
+                    <p className="mt-4 text-sm text-gray-500">
                       No quiz is currently linked to this lesson.
                     </p>
                   )}

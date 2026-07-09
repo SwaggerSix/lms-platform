@@ -357,7 +357,7 @@ export default function ChatWidget({
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="flex items-center gap-2 text-gray-400">
+              <div className="flex items-center gap-2 text-gray-500">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 Loading...
               </div>
@@ -379,7 +379,7 @@ export default function ChatWidget({
               </p>
               <div className="mt-5 w-full max-w-sm space-y-2">
                 {courses.length === 0 ? (
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-500">
                     No courses available yet. Enroll in a course to use this.
                   </p>
                 ) : (

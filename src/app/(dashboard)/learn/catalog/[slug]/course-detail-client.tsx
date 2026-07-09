@@ -410,7 +410,7 @@ export default function CourseDetailClient({
                                     {lesson.title}
                                   </span>
                                 </div>
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-gray-500">
                                   {formatDuration(lesson.duration)}
                                 </span>
                               </li>
@@ -438,7 +438,7 @@ export default function CourseDetailClient({
                       <li key={r.id} className="flex items-center justify-between gap-3 py-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-gray-900">{r.title}</p>
-                          <p className="text-xs capitalize text-gray-400">
+                          <p className="text-xs capitalize text-gray-500">
                             {r.type.replace(/_/g, " ")}
                           </p>
                         </div>
@@ -494,7 +494,7 @@ export default function CourseDetailClient({
                         <h4 className="text-sm font-medium text-gray-900">{review.author}</h4>
                         <div className="flex items-center gap-2">
                           <StarRating rating={review.rating} />
-                          <span className="text-xs text-gray-400">{formatDate(review.date)}</span>
+                          <span className="text-xs text-gray-500">{formatDate(review.date)}</span>
                         </div>
                       </div>
                     </div>

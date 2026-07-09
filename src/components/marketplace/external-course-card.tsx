@@ -134,7 +134,7 @@ export default function ExternalCourseCard({ course, onEnroll }: ExternalCourseC
               </span>
             ))}
             {course.topics.length > 3 && (
-              <span className="text-xs text-gray-400">+{course.topics.length - 3}</span>
+              <span className="text-xs text-gray-500">+{course.topics.length - 3}</span>
             )}
           </div>
         )}

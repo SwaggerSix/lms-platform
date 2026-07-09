@@ -74,7 +74,7 @@ export default function ChatSidebar({
         {sessions.length === 0 ? (
           <div className="p-4 text-center">
             <p className="text-sm text-gray-500">No conversations yet</p>
-            <p className="text-xs text-gray-400 mt-1">Start a new conversation to begin</p>
+            <p className="text-xs text-gray-500 mt-1">Start a new conversation to begin</p>
           </div>
         ) : (
           <div className="py-1">
@@ -117,13 +117,13 @@ export default function ChatSidebar({
                   {session.title || "New Conversation"}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] text-gray-400">
+                  <span className="text-[10px] text-gray-500">
                     {session.message_count} msgs
                   </span>
                   {session.last_message_at && (
                     <>
                       <span className="text-gray-300">|</span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-500">
                         {formatRelativeTime(session.last_message_at)}
                       </span>
                     </>

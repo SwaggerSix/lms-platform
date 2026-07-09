@@ -240,7 +240,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                   Contract #: <span className="font-medium">{contract.number}</span>
                 </p>
               )}
-              {contract.file_name && <p className="text-xs text-gray-400">{contract.file_name}</p>}
+              {contract.file_name && <p className="text-xs text-gray-500">{contract.file_name}</p>}
             </div>
             {contract.url && (
               <a
@@ -371,7 +371,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
               <li key={e.id} className="flex items-center justify-between py-2.5">
                 <div>
                   <p className="text-sm text-gray-700">{e.title}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {e.question_count ? `${e.question_count} questions · ` : ""}Pass: {e.passing_score}%
                   </p>
                 </div>
@@ -399,7 +399,7 @@ export default function ClassCardClient({ classId }: { classId: string }) {
                 <li key={s.id} className="flex items-center justify-between py-2.5">
                   <div>
                     <p className="text-sm text-gray-700">{s.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {done
                         ? `Completed${s.completed_at ? ` ${new Date(s.completed_at).toLocaleDateString()}` : ""}`
                         : s.due_at
@@ -455,13 +455,13 @@ function Section({
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="py-2 text-sm text-gray-400">{children}</p>;
+  return <p className="py-2 text-sm text-gray-500">{children}</p>;
 }
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-gray-400">{label}</dt>
+      <dt className="text-xs text-gray-500">{label}</dt>
       <dd className="text-gray-700">{value}</dd>
     </div>
   );

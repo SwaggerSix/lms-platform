@@ -102,7 +102,7 @@ export default function MentorCard({
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-gray-400">No reviews yet</span>
+              <span className="text-xs text-gray-500">No reviews yet</span>
             )}
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function MentorCard({
             </span>
           ))}
           {mentor.expertise_areas.length > 5 && (
-            <span className="text-xs text-gray-400 self-center">
+            <span className="text-xs text-gray-500 self-center">
               +{mentor.expertise_areas.length - 5} more
             </span>
           )}

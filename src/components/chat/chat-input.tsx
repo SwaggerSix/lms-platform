@@ -81,7 +81,7 @@ export default function ChatInput({
           <Send className="w-4 h-4" />
         </button>
       </div>
-      <p className="text-[10px] text-gray-400 text-center">
+      <p className="text-[10px] text-gray-500 text-center">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

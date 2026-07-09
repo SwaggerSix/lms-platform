@@ -168,7 +168,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-gray-400">
+                            <span className="text-xs font-medium text-gray-500">
                               Course {course.sequence}
                             </span>
                             <DifficultyBadge difficulty={course.difficulty} />
@@ -178,7 +178,7 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                           </h3>
                           <p className="mt-1 text-sm text-gray-600">{course.description}</p>
                         </div>
-                        <span className="shrink-0 text-sm text-gray-400">
+                        <span className="shrink-0 text-sm text-gray-500">
                           {formatDuration(course.duration)}
                         </span>
                       </div>

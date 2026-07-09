@@ -482,7 +482,7 @@ export default function MentorshipClient({
                     </div>
                     <div className="flex items-center gap-2">
                       {req.match_score && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           {parseFloat(req.match_score).toFixed(0)}% match
                         </span>
                       )}
@@ -500,7 +500,7 @@ export default function MentorshipClient({
                       {req.goals}
                     </p>
                   )}
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-gray-500">
                     Created {new Date(req.created_at).toLocaleDateString()}
                   </p>
                 </a>

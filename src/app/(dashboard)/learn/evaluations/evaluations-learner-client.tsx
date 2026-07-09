@@ -204,7 +204,7 @@ export default function EvaluationsLearnerClient({ assignments: initialAssignmen
                       <p className="font-medium text-gray-700 truncate">{a.template?.name ?? "Evaluation"}</p>
                       <p className="text-sm text-gray-500 truncate">{a.course?.title}</p>
                       {a.completed_at && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-500 mt-0.5">
                           Completed {new Date(a.completed_at).toLocaleDateString()}
                         </p>
                       )}
@@ -325,7 +325,7 @@ function QuestionInput({ question, value, onChange }: {
           ))}
         </div>
         {(question.scale_min_label || question.scale_max_label) && (
-          <div className="flex justify-between text-xs text-gray-400 px-1">
+          <div className="flex justify-between text-xs text-gray-500 px-1">
             <span>{question.scale_min_label}</span>
             <span>{question.scale_max_label}</span>
           </div>
@@ -353,7 +353,7 @@ function QuestionInput({ question, value, onChange }: {
             </button>
           ))}
         </div>
-        <div className="flex justify-between text-xs text-gray-400 px-1">
+        <div className="flex justify-between text-xs text-gray-500 px-1">
           <span>Not at all likely</span>
           <span>Extremely likely</span>
         </div>

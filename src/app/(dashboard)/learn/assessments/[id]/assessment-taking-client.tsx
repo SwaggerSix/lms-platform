@@ -242,7 +242,7 @@ export default function AssessmentTakingClient({ data, classId = null }: { data:
               <span className={cn("font-mono text-sm font-semibold", minutes < 5 ? "text-red-600" : "text-gray-900")}>
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </span>
-              <span className="text-xs text-gray-400">remaining</span>
+              <span className="text-xs text-gray-500">remaining</span>
             </div>
             )}
             <div className="hidden text-sm text-gray-500 sm:block">

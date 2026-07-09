@@ -147,7 +147,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
             >
               <RotateCcw className="h-4 w-4" />
               Retake Assessment
-              <span className="text-xs text-gray-400">({attemptsRemaining} remaining)</span>
+              <span className="text-xs text-gray-500">({attemptsRemaining} remaining)</span>
             </button>
             <button
               onClick={() => router.push("/learn/my-courses")}
@@ -259,7 +259,7 @@ export default function AssessmentResultsClient({ data }: { data: AssessmentResu
                                 >
                                   {option}
                                 </span>
-                                {isUserAnswer && <span className="ml-auto text-xs text-gray-400">(Your answer)</span>}
+                                {isUserAnswer && <span className="ml-auto text-xs text-gray-500">(Your answer)</span>}
                                 {isCorrectAnswer && !isUserAnswer && <span className="ml-auto text-xs text-green-600">(Correct answer)</span>}
                               </div>
                             );

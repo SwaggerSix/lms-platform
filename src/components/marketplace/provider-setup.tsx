@@ -135,7 +135,7 @@ export default function ProviderSetup({ onSuccess, onCancel }: ProviderSetupProp
                   s.num
                 )}
               </div>
-              <span className={`text-sm font-medium ${step >= s.num ? "text-gray-900" : "text-gray-400"}`}>
+              <span className={`text-sm font-medium ${step >= s.num ? "text-gray-900" : "text-gray-500"}`}>
                 {s.label}
               </span>
             </div>
