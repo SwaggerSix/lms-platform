@@ -18,6 +18,7 @@ import { cn } from "@/utils/cn";
 import { Avatar as UIAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageBubble } from "@/components/ui/message-bubble";
+import { ConversationListItem } from "@/components/ui/conversation-list-item";
 import { useRealtimeSubscription, useRealtimeBroadcast } from "@/hooks/use-realtime";
 import { createClient } from "@/lib/supabase/client";
 
@@ -873,54 +874,51 @@ export default function MessagesClient({
             }
 
             return (
-              <button
+              <ConversationListItem
                 key={conv.id}
                 onClick={() => handleSelectConversation(conv.id)}
-                className={cn(
-                  "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50",
-                  isActive && "bg-primary-50 hover:bg-primary-50"
-                )}
+                active={isActive}
+                leading={
+                  <Avatar
+                    user={avatar}
+                    size="md"
+                    showOnline={conv.type === "direct"}
+                  />
+                }
               >
-                <Avatar
-                  user={avatar}
-                  size="md"
-                  showOnline={conv.type === "direct"}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={cn(
-                        "truncate text-sm",
-                        hasUnread
-                          ? "font-bold text-gray-900"
-                          : "font-medium text-gray-900"
-                      )}
-                    >
-                      {name}
-                    </span>
-                    <span className="ml-2 flex-shrink-0 text-xs text-gray-500">
-                      {lastMsg ? relativeTime(lastMsg.createdAt) : ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p
-                      className={cn(
-                        "truncate text-xs",
-                        hasUnread
-                          ? "font-semibold text-gray-800"
-                          : "text-gray-500"
-                      )}
-                    >
-                      {truncate(preview, 45)}
-                    </p>
-                    {hasUnread && (
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
-                        {conv.unreadCount}
-                      </span>
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      "truncate text-sm",
+                      hasUnread
+                        ? "font-bold text-gray-900"
+                        : "font-medium text-gray-900"
                     )}
-                  </div>
+                  >
+                    {name}
+                  </span>
+                  <span className="ml-2 flex-shrink-0 text-xs text-gray-500">
+                    {lastMsg ? relativeTime(lastMsg.createdAt) : ""}
+                  </span>
                 </div>
-              </button>
+                <div className="flex items-center gap-2">
+                  <p
+                    className={cn(
+                      "truncate text-xs",
+                      hasUnread
+                        ? "font-semibold text-gray-800"
+                        : "text-gray-500"
+                    )}
+                  >
+                    {truncate(preview, 45)}
+                  </p>
+                  {hasUnread && (
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
+                      {conv.unreadCount}
+                    </span>
+                  )}
+                </div>
+              </ConversationListItem>
             );
           })}
         </div>
