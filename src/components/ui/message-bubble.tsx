@@ -8,6 +8,9 @@ export interface MessageBubbleProps {
   /** Optional avatar element; when present the row gains a gap and the
    * avatar sits on the outer edge (opposite the alignment). */
   avatar?: React.ReactNode;
+  /** Optional content rendered above the bubble, outside the fill (e.g. a
+   * group-chat sender name). Inherits the bubble's left/right alignment. */
+  meta?: React.ReactNode;
   /** Optional content rendered inside the bubble above the body (e.g. a
    * sender name · timestamp line). Caller styles it. */
   header?: React.ReactNode;
@@ -35,6 +38,7 @@ export function MessageBubble({
   mine,
   children,
   avatar,
+  meta,
   header,
   footer,
   tone = "default",
@@ -51,6 +55,7 @@ export function MessageBubble({
     >
       {avatar}
       <div className={cn("flex flex-col", maxWidthClass, mine ? "items-end" : "items-start")}>
+        {meta}
         <div
           className={cn(
             "rounded-2xl px-4 py-2 text-sm",

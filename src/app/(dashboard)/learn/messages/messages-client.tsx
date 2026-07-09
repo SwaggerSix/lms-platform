@@ -17,6 +17,7 @@ import {
 import { cn } from "@/utils/cn";
 import { Avatar as UIAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { MessageBubble } from "@/components/ui/message-bubble";
 import { useRealtimeSubscription, useRealtimeBroadcast } from "@/hooks/use-realtime";
 import { createClient } from "@/lib/supabase/client";
 
@@ -1009,50 +1010,23 @@ export default function MessagesClient({
                   }
 
                   return (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        "mb-3 flex",
-                        isMine ? "justify-end" : "justify-start"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "flex max-w-[70%] gap-2",
-                          isMine ? "flex-row-reverse" : "flex-row"
-                        )}
-                      >
-                        {!isMine && sender && (
-                          <Avatar user={sender} size="sm" />
-                        )}
-                        <div>
-                          {/* Show sender name in group chats */}
-                          {!isMine &&
-                            activeConv.type === "group" &&
-                            sender && (
-                              <p className="mb-0.5 text-xs font-medium text-gray-600">
-                                {sender.name}
-                              </p>
-                            )}
-                          <div
-                            className={cn(
-                              "rounded-2xl px-4 py-2",
-                              isMine
-                                ? "rounded-br-md bg-primary-600 text-white"
-                                : "rounded-bl-md bg-gray-100 text-gray-900"
-                            )}
-                          >
-                            {msg.messageType === "text" && (
-                              <p className="text-sm">{msg.content}</p>
-                            )}
-                            {(msg.messageType === "file" ||
-                              msg.messageType === "image") && (
-                              <FileAttachment
-                                name={msg.attachmentName || msg.content}
-                                type={msg.messageType}
-                              />
-                            )}
-                          </div>
+                    <div key={msg.id} className="mb-3">
+                      <MessageBubble
+                        mine={isMine}
+                        maxWidthClass="max-w-[70%]"
+                        avatar={
+                          !isMine && sender ? (
+                            <Avatar user={sender} size="sm" />
+                          ) : undefined
+                        }
+                        meta={
+                          !isMine && activeConv.type === "group" && sender ? (
+                            <p className="mb-0.5 text-xs font-medium text-gray-600">
+                              {sender.name}
+                            </p>
+                          ) : undefined
+                        }
+                        footer={
                           <div
                             className={cn(
                               "mt-1 flex items-center gap-1 text-[11px] text-gray-500",
@@ -1070,8 +1044,19 @@ export default function MessagesClient({
                               </span>
                             )}
                           </div>
-                        </div>
-                      </div>
+                        }
+                      >
+                        {msg.messageType === "text" && (
+                          <p className="text-sm">{msg.content}</p>
+                        )}
+                        {(msg.messageType === "file" ||
+                          msg.messageType === "image") && (
+                          <FileAttachment
+                            name={msg.attachmentName || msg.content}
+                            type={msg.messageType}
+                          />
+                        )}
+                      </MessageBubble>
                     </div>
                   );
                 })}
