@@ -13,10 +13,10 @@ import {
   Edit,
   Eye,
   Users,
-  X,
   Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
 import DataTable, { type DataTableColumn } from '@/components/ui/data-table';
 
 export interface ComplianceUserStatus {
@@ -453,29 +453,34 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
 
       {/* View/Edit/Create Modal */}
       {modalOpen && (selectedReq || modalMode === 'create') && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-xl rounded-xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {modalMode === 'view' ? 'Requirement Details' : modalMode === 'create' ? 'Add Compliance Requirement' : 'Edit Requirement'}
-              </h2>
-              <div className="flex items-center gap-2">
-                {modalMode === 'view' && (
-                  <button
-                    onClick={() => setModalMode('edit')}
-                    className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Edit className="h-3 w-3" /> Edit
-                  </button>
-                )}
-                <button onClick={closeModal} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={modalMode === 'view' ? 'Requirement Details' : modalMode === 'create' ? 'Add Compliance Requirement' : 'Edit Requirement'}
+          size="lg"
+          footer={
+            modalMode === 'view' ? (
+              <Button variant="outline" onClick={() => setModalMode('edit')}>
+                <Edit className="h-4 w-4" /> Edit
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={modalMode === 'create' ? closeModal : () => setModalMode('view')}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" form="compliance-form" loading={loading}>
+                  {modalMode === 'create' ? 'Create Requirement' : 'Save Changes'}
+                </Button>
+              </>
+            )
+          }
+        >
             {modalMode === 'view' && selectedReq ? (
-              <div className="p-6 space-y-5">
+              <div className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Name</p>
@@ -546,7 +551,7 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                 </div>
               </div>
             ) : (
-              <form onSubmit={modalMode === 'create' ? handleCreate : handleSave} className="p-6 space-y-4">
+              <form id="compliance-form" onSubmit={modalMode === 'create' ? handleCreate : handleSave} className="space-y-4">
                 {error && (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
                 )}
@@ -624,22 +629,9 @@ export default function ComplianceClient({ requirements: initialRequirements, ov
                     <option value="Bi-Annual">Bi-Annual (every 24 months)</option>
                   </select>
                 </div>
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={modalMode === 'create' ? closeModal : () => setModalMode('view')}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" loading={loading}>
-                    {modalMode === 'create' ? 'Create Requirement' : 'Save Changes'}
-                  </Button>
-                </div>
               </form>
             )}
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
