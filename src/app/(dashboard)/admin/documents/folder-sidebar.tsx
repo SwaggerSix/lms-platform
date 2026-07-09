@@ -24,7 +24,7 @@ export default function FolderSidebar({
   onDeleteFolder,
 }: FolderSidebarProps) {
   return (
-    <aside className="w-72 border-r border-gray-200 bg-white min-h-[calc(100vh-200px)]">
+    <aside className="w-full border-b border-gray-200 bg-white md:min-h-[calc(100vh-200px)] md:w-72 md:border-b-0 md:border-r">
       <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
           Folders
