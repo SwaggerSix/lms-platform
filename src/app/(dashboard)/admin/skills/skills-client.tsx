@@ -6,7 +6,6 @@ import {
   Search,
   Edit2,
   Trash2,
-  X,
   Code,
   Users,
   Briefcase,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
 import { ResultLimitNotice } from "@/components/ui/result-limit-notice";
@@ -385,14 +385,20 @@ export default function SkillsClient({ skills: initialSkills, totalSkills }: Ski
       </div>
 
       {editingSkill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Edit Skill</h2>
-              <button onClick={() => setEditingSkill(null)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => setEditingSkill(null)}
+          title="Edit Skill"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setEditingSkill(null)}>Cancel</Button>
+              <Button disabled={saving} onClick={handleEditSkill}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </>
+          }
+        >
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
@@ -416,25 +422,24 @@ export default function SkillsClient({ skills: initialSkills, totalSkills }: Ski
                 <p className="mt-1 text-xs text-gray-500">Tags used to map and group this skill.</p>
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setEditingSkill(null)}>Cancel</Button>
-              <Button disabled={saving} onClick={handleEditSkill}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Add New Skill</h2>
-              <button onClick={() => setShowAddModal(false)} className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <Modal
+          isOpen
+          onClose={() => setShowAddModal(false)}
+          title="Add New Skill"
+          size="md"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button disabled={saving} onClick={handleAddSkill}>
+                {saving ? "Adding..." : "Add Skill"}
+              </Button>
+            </>
+          }
+        >
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
@@ -467,14 +472,7 @@ export default function SkillsClient({ skills: initialSkills, totalSkills }: Ski
                 <p className="mt-1 text-xs text-gray-500">Tags used to map and group this skill.</p>
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
-              <Button disabled={saving} onClick={handleAddSkill}>
-                {saving ? "Adding..." : "Add Skill"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
