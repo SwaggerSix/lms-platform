@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 import Sidebar from "./sidebar";
 import Header from "./header";
+import ViewAsBanner from "./view-as-banner";
 import { X } from "lucide-react";
 import { SkipLink } from "@/components/ui/skip-link";
 import { LiveRegion } from "@/components/ui/live-region";
@@ -106,6 +107,7 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* Main content area */}
         <div className="flex flex-1 flex-col overflow-hidden">
+          <ViewAsBanner />
           <Header onMenuToggle={() => setMobileOpen(!mobileOpen)} />
           <main
             id="main-content"
