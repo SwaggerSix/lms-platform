@@ -133,7 +133,7 @@ export default function SkillsClient({ teamSkills, skillNames }: SkillsClientPro
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <Sparkles className="h-8 w-8 text-primary-600" />
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900">
             Team Skills
           </h1>
         </div>

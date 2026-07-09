@@ -53,7 +53,7 @@ export default async function HelpLandingPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Help & User Manuals</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Help & User Manuals</h1>
         <p className="mt-2 text-base text-gray-600">
           Detailed, role-specific guides for every feature in the platform. Pick the manual that matches your role,
           or use the search button in the top bar to find an answer fast.

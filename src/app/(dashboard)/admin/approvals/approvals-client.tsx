@@ -245,7 +245,7 @@ export default function ApprovalsClient({ approvals: initialApprovals }: Approva
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <ClipboardCheck className="h-8 w-8 text-primary-600" />
-          <h1 className="text-3xl font-bold text-gray-900">All Enrollment Approvals</h1>
+          <h1 className="text-2xl font-bold text-gray-900">All Enrollment Approvals</h1>
         </div>
         <p className="text-gray-500 mt-1">
           Organization-wide view of all enrollment approval requests across departments

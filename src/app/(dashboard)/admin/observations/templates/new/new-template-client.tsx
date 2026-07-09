@@ -90,7 +90,7 @@ export default function NewTemplateClient() {
             <ChevronLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">New Observation Template</h1>
+            <h1 className="text-2xl font-bold text-gray-900">New Observation Template</h1>
             <p className="text-sm text-gray-500">Design a checklist for workplace observations</p>
           </div>
         </div>

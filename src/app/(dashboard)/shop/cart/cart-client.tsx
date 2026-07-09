@@ -101,7 +101,7 @@ export default function CartClient() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
           <p className="text-gray-500 mt-1">{items.length} item{items.length !== 1 ? "s" : ""} in your cart</p>
         </div>
         <Link href="/shop" className="text-primary-600 hover:text-primary-700 text-sm font-medium">

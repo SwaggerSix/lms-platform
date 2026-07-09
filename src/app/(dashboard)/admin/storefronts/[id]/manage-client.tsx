@@ -65,7 +65,7 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
         <ChevronLeft className="h-4 w-4" /> All stores
       </Link>
       <div className="flex items-center justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{store.name}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{store.name}</h1>
         <a
           href={`/store/${store.slug}`}
           target="_blank"
