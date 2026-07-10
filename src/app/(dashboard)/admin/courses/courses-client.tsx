@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatNumber, formatPercent, formatDuration, formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
@@ -86,8 +86,6 @@ const TYPE_TO_DB: Record<CourseItem['type'], string> = {
 };
 
 const tabs = ['All', 'Published', 'Draft', 'Archived'] as const;
-const types = ['All Types', 'Self-Paced', 'Instructor-Led', 'Blended'];
-const difficulties = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
 
 const statusBadge: Record<string, string> = {
   published: 'bg-green-50 text-green-700 ring-green-600/20',
@@ -107,18 +105,69 @@ const diffBadge: Record<string, string> = {
   advanced: 'text-red-600',
 };
 
-export default function CoursesClient({ courses: initialCourses, categoryOptions = [] }: { courses: CourseItem[]; categoryOptions?: CategoryOption[] }) {
+export default function CoursesClient({
+  courses,
+  categoryOptions = [],
+  totalCount = 0,
+  statusCounts = { all: 0, published: 0, draft: 0, archived: 0 },
+  page = 1,
+  pageSize = 12,
+  sort = '-created_at',
+}: {
+  courses: CourseItem[];
+  categoryOptions?: CategoryOption[];
+  totalCount?: number;
+  statusCounts?: { all: number; published: number; draft: number; archived: number };
+  page?: number;
+  pageSize?: number;
+  sort?: string;
+}) {
   const router = useRouter();
   const toast = useToast();
-  const [courses, setCourses] = useState<CourseItem[]>(initialCourses);
-  const [activeTab, setActiveTab] = useState<typeof tabs[number]>('All');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [typeFilter, setTypeFilter] = useState('All Types');
-  const [difficultyFilter, setDifficultyFilter] = useState('All Levels');
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+
+  // URL is the source of truth for search/filter/sort/page; every change
+  // pushes new params and the server refetches that page.
+  const updateParams = (patch: Record<string, string | null>, resetPage = true) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null || value === '') params.delete(key);
+      else params.set(key, value);
+    }
+    if (resetPage && !('page' in patch)) params.delete('page');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const sortKey = sort.replace(/^-/, '');
+  const sortDesc = sort.startsWith('-');
+  const toggleSort = (key: string) => {
+    const next = sortKey === key ? (sortDesc ? key : `-${key}`) : key;
+    updateParams({ sort: next });
+  };
+
+  // Filters live in the URL (server-authoritative). Search has a local mirror
+  // so typing is smooth, then debounces into the URL.
+  const statusFilter = searchParams.get('status') ?? '';
+  const categoryFilter = searchParams.get('cat') ?? '';
+  const typeFilter = searchParams.get('type') ?? '';
+  const difficultyFilter = searchParams.get('level') ?? '';
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') ?? '');
+  const searchInitialized = useRef(false);
+  useEffect(() => {
+    // Skip the mount pass so we don't immediately re-push the current query.
+    if (!searchInitialized.current) {
+      searchInitialized.current = true;
+      return;
+    }
+    const handle = setTimeout(() => {
+      const current = searchParams.get('q') ?? '';
+      if (searchInput !== current) updateParams({ q: searchInput || null });
+    }, 350);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   // Action loading states
   const [loadingAction, setLoadingAction] = useState<{ id: string; action: string } | null>(null);
@@ -200,14 +249,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to update course');
-      const categoryName = categoryOptions.find((c) => c.id === editForm.categoryId)?.name;
-      setCourses((prev) =>
-        prev.map((c) =>
-          c.id === editModal.id
-            ? { ...c, ...editForm, category: categoryName ?? c.category, coverUrl } as CourseItem
-            : c
-        )
-      );
+      router.refresh();
       setEditModal(null);
       setEditForm({});
     } catch (err) {
@@ -277,32 +319,14 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to duplicate course');
-      const newCourse = await res.json();
-      const mappedCourse: CourseItem = {
-        id: newCourse.id,
-        title: newCourse.title || `${course.title} (Copy)`,
-        slug: newCourse.slug || course.slug,
-        status: 'draft',
-        type: course.type,
-        category: course.category,
-        categoryId: course.categoryId,
-        difficulty: course.difficulty,
-        enrolled: 0,
-        completionRate: 0,
-        duration: course.duration,
-        thumbnail: course.thumbnail,
-        coverUrl: course.coverUrl,
-        availableFrom: null,
-        availableUntil: null,
-        updatedAt: new Date().toISOString(),
-      };
-      setCourses((prev) => [mappedCourse, ...prev]);
+      router.refresh();
     } catch (err) {
       console.error(err);
       toast.error('Failed to duplicate course. Please try again.');
     } finally {
       setLoadingAction(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleArchive = useCallback((course: CourseItem) => {
@@ -319,7 +343,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         body: JSON.stringify({ id: archiveConfirm.id, status: 'archived' }),
       });
       if (!res.ok) throw new Error('Failed to archive course');
-      setCourses((prev) => prev.map((c) => (c.id === archiveConfirm.id ? { ...c, status: 'archived' as const } : c)));
+      router.refresh();
       setArchiveConfirm(null);
     } catch (err) {
       console.error(err);
@@ -327,28 +351,21 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
     } finally {
       setLoadingAction(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [archiveConfirm]);
 
   const isLoading = (id: string, action: string) => loadingAction?.id === id && loadingAction?.action === action;
 
-  const filtered = courses.filter((c) => {
-    const matchesTab = activeTab === 'All' || c.status === activeTab.toLowerCase();
-    const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = categoryFilter === 'All Categories' || c.category === categoryFilter;
-    const matchesType = typeFilter === 'All Types' || c.type === typeFilter.toLowerCase().replace(' ', '-');
-    const matchesDiff = difficultyFilter === 'All Levels' || c.difficulty === difficultyFilter.toLowerCase();
-    return matchesTab && matchesSearch && matchesCategory && matchesType && matchesDiff;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paginatedCourses = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const showStart = (currentPage - 1) * pageSize;
-  const showEnd = Math.min(currentPage * pageSize, filtered.length);
+  // Rows arrive already filtered/sorted/paged by the server.
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const showStart = (page - 1) * pageSize;
+  const showEnd = Math.min(page * pageSize, totalCount);
+  const hasActiveQuery = !!(searchInput || statusFilter || categoryFilter || typeFilter || difficultyFilter);
 
   const getPageNumbers = () => {
     const pages: number[] = [];
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, start + 4);
+    let start = Math.max(1, page - 2);
+    const end = Math.min(totalPages, start + 4);
     if (end - start < 4) start = Math.max(1, end - 4);
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
@@ -396,13 +413,11 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
     {
       key: 'enrolled',
       header: 'Enrolled',
-      sortValue: (course) => course.enrolled,
       render: (course) => <span className="text-sm text-gray-500">{formatNumber(course.enrolled)}</span>,
     },
     {
       key: 'completion',
       header: 'Completion',
-      sortValue: (course) => course.completionRate,
       render: (course) => (
         <div className="flex items-center gap-2">
           <div className="h-1.5 w-20 rounded-full bg-gray-100">
@@ -463,7 +478,7 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
             <InfoTooltip content={getHelp("admin.courses").details} label="About Course Management" side="bottom" />
           </div>
-          <p className="mt-1 text-sm text-gray-500">{courses.length} courses total</p>
+          <p className="mt-1 text-sm text-gray-500">{statusCounts.all} courses total</p>
         </div>
         <div className="flex items-center gap-3">
           <a
@@ -493,10 +508,10 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       {/* Tabs */}
       <SegmentedControl
         aria-label="Filter courses by status"
-        value={activeTab}
-        onChange={(v) => { setActiveTab(v as typeof tabs[number]); setCurrentPage(1); }}
+        value={statusFilter === '' ? 'All' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+        onChange={(v) => updateParams({ status: v === 'All' ? null : v.toLowerCase() })}
         options={tabs.map((tab) => {
-          const count = tab === 'All' ? courses.length : courses.filter((c) => c.status === tab.toLowerCase()).length;
+          const count = tab === 'All' ? statusCounts.all : statusCounts[tab.toLowerCase() as 'published' | 'draft' | 'archived'];
           return {
             value: tab,
             label: (
@@ -515,20 +530,26 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
           <input
             type="text"
             placeholder="Search courses..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           />
         </div>
-        <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-          <option>All Categories</option>
-          {categoryOptions.map((c) => <option key={c.id}>{c.name}</option>)}
+        <select value={categoryFilter} onChange={(e) => updateParams({ cat: e.target.value || null })} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+          <option value="">All Categories</option>
+          {categoryOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-          {types.map((t) => <option key={t}>{t}</option>)}
+        <select value={typeFilter} onChange={(e) => updateParams({ type: e.target.value || null })} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+          <option value="">All Types</option>
+          <option value="self_paced">Self-Paced</option>
+          <option value="instructor_led">Instructor-Led</option>
+          <option value="blended">Blended</option>
         </select>
-        <select value={difficultyFilter} onChange={(e) => { setDifficultyFilter(e.target.value); setCurrentPage(1); }} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-          {difficulties.map((d) => <option key={d}>{d}</option>)}
+        <select value={difficultyFilter} onChange={(e) => updateParams({ level: e.target.value || null })} className="rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+          <option value="">All Levels</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
         </select>
         <div className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white p-1">
           <button onClick={() => setViewMode('grid')} aria-label="Grid view" className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600')}>
@@ -541,12 +562,12 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       </div>
 
       {/* Empty state */}
-      {filtered.length === 0 && (
+      {courses.length === 0 && (
         <EmptyState
           icon={<BookOpen className="h-10 w-10" aria-hidden="true" />}
           title="No courses found"
           description={
-            search || categoryFilter !== 'All Categories' || typeFilter !== 'All Types' || difficultyFilter !== 'All Levels'
+            hasActiveQuery
               ? 'Try adjusting your search or filters.'
               : 'Get started by creating your first course.'
           }
@@ -563,9 +584,9 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       )}
 
       {/* Grid View */}
-      {filtered.length === 0 ? null : viewMode === 'grid' ? (
+      {courses.length === 0 ? null : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {paginatedCourses.map((course) => (
+          {courses.map((course) => (
             <div key={course.id} className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
               <CourseCover
                 thumbnailUrl={course.coverUrl}
@@ -640,10 +661,17 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
         /* List View */
         <DataTable
           columns={courseColumns}
-          rows={filtered}
+          rows={courses}
           rowKey={(course) => course.id}
-          pageSize={12}
           ariaLabel="Courses"
+          serverMode={{
+            page,
+            pageSize,
+            total: totalCount,
+            onPageChange: (p) => updateParams({ page: String(p) }),
+            sort,
+            onSortChange: toggleSort,
+          }}
         />
       )}
 
@@ -947,26 +975,26 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
       </Modal>
 
       {/* Pagination (grid view; the list view paginates inside DataTable) */}
-      {viewMode === 'grid' && filtered.length > 0 && (
+      {viewMode === 'grid' && courses.length > 0 && (
         <div className="flex items-center justify-between mt-6">
           <p className="text-sm text-gray-500">
-            Showing {showStart + 1}-{showEnd} of {filtered.length} courses
+            Showing {showStart + 1}-{showEnd} of {totalCount} courses
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={page === 1}
+              onClick={() => updateParams({ page: String(page - 1) })}
             >
               <ChevronLeft className="h-4 w-4" /> Previous
             </Button>
             {getPageNumbers().map((p) => (
               <button
                 key={p}
-                onClick={() => setCurrentPage(p)}
+                onClick={() => updateParams({ page: String(p) })}
                 className={cn(
                   'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium',
-                  currentPage === p ? 'bg-primary-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                  page === p ? 'bg-primary-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                 )}
               >
                 {p}
@@ -974,8 +1002,8 @@ export default function CoursesClient({ courses: initialCourses, categoryOptions
             ))}
             <Button
               variant="outline"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={page === totalPages}
+              onClick={() => updateParams({ page: String(page + 1) })}
             >
               Next <ChevronRight className="h-4 w-4" />
             </Button>
