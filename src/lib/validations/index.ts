@@ -25,6 +25,7 @@ export const createCourseSchema = z.object({
   course_type: z.enum(["self_paced", "instructor_led", "blended", "webinar"]).optional(),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
   status: z.enum(["draft", "published", "archived"]).optional(),
+  listed_in_storefronts: z.boolean().optional(),
   category_id: z.string().uuid().optional(),
   estimated_duration: z.number().int().positive().optional(),
   enrollment_type: z.enum(["open", "approval", "closed"]).optional(),

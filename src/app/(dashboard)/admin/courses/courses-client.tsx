@@ -175,6 +175,8 @@ export default function CoursesClient({
   // Edit modal state
   const [editModal, setEditModal] = useState<CourseItem | null>(null);
   const [editForm, setEditForm] = useState<Partial<CourseItem>>({});
+  // null until the course detail loads, so an unanswered fetch never flips the flag off.
+  const [storefrontListed, setStorefrontListed] = useState<boolean | null>(null);
   const [nasbaForm, setNasbaForm] = useState(NASBA_EMPTY);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -188,12 +190,14 @@ export default function CoursesClient({
     setEditModal(course);
     setEditForm({ title: course.title, status: course.status, type: course.type, categoryId: course.categoryId, difficulty: course.difficulty, availableFrom: course.availableFrom ? course.availableFrom.slice(0, 10) : null, availableUntil: course.availableUntil ? course.availableUntil.slice(0, 10) : null });
     setNasbaForm(NASBA_EMPTY);
+    setStorefrontListed(null);
     setCoverUrl(null);
     // Load current NASBA values for this course.
     try {
       const res = await fetch(`/api/courses/${course.slug}`);
       if (res.ok) {
         const c = await res.json();
+        setStorefrontListed(!!c.listed_in_storefronts);
         setNasbaForm({
           nasba_certified: !!c.nasba_certified,
           nasba_cpe_credits: c.nasba_cpe_credits != null ? String(c.nasba_cpe_credits) : "",
@@ -234,6 +238,9 @@ export default function CoursesClient({
           : null;
       }
 
+      // Website catalog listing (only when the detail fetch resolved it).
+      if (storefrontListed !== null) payload.listed_in_storefronts = storefrontListed;
+
       // NASBA fields
       payload.nasba_certified = nasbaForm.nasba_certified;
       payload.nasba_cpe_credits = nasbaForm.nasba_cpe_credits ? Number(nasbaForm.nasba_cpe_credits) : null;
@@ -258,7 +265,7 @@ export default function CoursesClient({
     } finally {
       setLoadingAction(null);
     }
-  }, [editModal, editForm, nasbaForm, categoryOptions]);
+  }, [editModal, editForm, nasbaForm, storefrontListed, categoryOptions]);
 
   const handleCoverUpload = useCallback(
     async (file: File) => {
@@ -870,6 +877,26 @@ export default function CoursesClient({
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Public website catalogs (gC + GGS storefronts) */}
+              <div className="border-t border-gray-100 pt-4">
+                <h3 className="text-sm font-semibold text-gray-900">Website catalogs</h3>
+                <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={!!storefrontListed}
+                    disabled={storefrontListed === null}
+                    onChange={(e) => setStorefrontListed(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  List in the gothamCulture &amp; GGS online course catalogs
+                </label>
+                <p className="mt-1 text-xs text-gray-500">
+                  While the course is published, it is kept in both websites&apos;
+                  catalogs automatically (edits sync too). Unpublishing or
+                  unchecking hides it from both websites.
+                </p>
               </div>
             </div>
             {/* NASBA CPE certification */}

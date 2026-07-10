@@ -57,6 +57,8 @@ export interface Course {
   category_id: string | null;
   created_by: string | null;
   status: CourseStatus;
+  /** Course belongs in the public gC/GGS website catalogs (products auto-synced while published). */
+  listed_in_storefronts?: boolean;
   course_type: CourseType;
   difficulty_level: DifficultyLevel;
   estimated_duration: number | null;
