@@ -1,19 +1,49 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { money, type Notify, type Order } from "./store-shared";
+
+const PAGE_SIZE = 25;
+
+const STATUS_FILTERS = [
+  "all",
+  "pending",
+  "completed",
+  "cancelled",
+  "refunded",
+  "partially_refunded",
+  "failed",
+];
 
 interface OrdersTabProps {
   storeId: string;
   orders: Order[];
+  /** Total matching orders across all pages (server count). */
+  total: number;
+  page: number;
+  status: string;
+  onPageChange: (page: number) => void;
+  onStatusChange: (status: string) => void;
   notify: Notify;
   onReload: () => Promise<void>;
 }
 
-export default function OrdersTab({ storeId, orders, notify, onReload }: OrdersTabProps) {
+export default function OrdersTab({
+  storeId,
+  orders,
+  total,
+  page,
+  status,
+  onPageChange,
+  onStatusChange,
+  notify,
+  onReload,
+}: OrdersTabProps) {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [orderBusy, setOrderBusy] = useState<string | null>(null);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   async function updateOrder(
     orderId: string,
@@ -38,12 +68,35 @@ export default function OrdersTab({ storeId, orders, notify, onReload }: OrdersT
     }
   }
 
-  if (orders.length === 0) {
-    return <div className="text-gray-500 py-12 text-center">No orders yet.</div>;
-  }
-
   return (
     <div className="space-y-3">
+      {/* Status filter */}
+      <div className="flex items-center justify-between gap-3">
+        <select
+          value={status}
+          onChange={(e) => onStatusChange(e.target.value)}
+          aria-label="Filter orders by status"
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        >
+          {STATUS_FILTERS.map((s) => (
+            <option key={s} value={s}>
+              {s === "all" ? "All statuses" : s.replace("_", " ")}
+            </option>
+          ))}
+        </select>
+        {total > 0 && (
+          <p className="text-sm text-gray-500">
+            {total} order{total === 1 ? "" : "s"}
+          </p>
+        )}
+      </div>
+
+      {orders.length === 0 && (
+        <div className="text-gray-500 py-12 text-center">
+          {status === "all" ? "No orders yet." : "No orders with this status."}
+        </div>
+      )}
+
       {orders.map((o) => {
         const open = expandedOrder === o.id;
         const refundable = Number(o.total) - Number(o.refunded_amount || 0);
@@ -166,6 +219,33 @@ export default function OrdersTab({ storeId, orders, notify, onReload }: OrdersT
           </div>
         );
       })}
+
+      {/* Pager (the orders API serves 25/page) */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 pt-3">
+          <p className="text-sm text-gray-500">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" /> Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
