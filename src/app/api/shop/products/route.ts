@@ -86,8 +86,9 @@ export async function POST(request: NextRequest) {
   const { data: course } = await service.from("courses").select("id").eq("id", validation.data.course_id).single();
   if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
 
-  // Check no existing product for this course
-  const { data: existing } = await service.from("products").select("id").eq("course_id", validation.data.course_id).single();
+  // Check no existing marketplace product for this course (storefront catalogs
+  // may carry their own product per store for the same course)
+  const { data: existing } = await service.from("products").select("id").eq("course_id", validation.data.course_id).is("storefront_id", null).maybeSingle();
   if (existing) return NextResponse.json({ error: "A product already exists for this course" }, { status: 409 });
 
   const { data, error } = await service.from("products").insert(validation.data).select().single();

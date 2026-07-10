@@ -80,6 +80,16 @@ describe("createCourseSchema", () => {
     const result = createCourseSchema.safeParse({ title: "Test", max_enrollment: null });
     expect(result.success).toBe(true);
   });
+
+  it("accepts the listed_in_storefronts website-catalog flag", () => {
+    const result = createCourseSchema.safeParse({ title: "Test", listed_in_storefronts: true });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a non-boolean listed_in_storefronts", () => {
+    const result = createCourseSchema.safeParse({ title: "Test", listed_in_storefronts: "yes" });
+    expect(result.success).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
