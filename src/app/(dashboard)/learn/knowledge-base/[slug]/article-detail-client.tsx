@@ -232,7 +232,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
                 </div>
 
                 {/* Content */}
-                <div className="prose-sm">{renderMarkdown(article.content)}</div>
+                <div className="prose prose-sm max-w-none">{renderMarkdown(article.content)}</div>
 
                 {/* Feedback */}
                 <div className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-6">

@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/* Rich-text content styling (UX review follow-up): activates the `prose`
+ * classes used by the course player, knowledge-base articles, shop product
+ * descriptions, and the content-editor block renderer. */
+@plugin "@tailwindcss/typography";
+
+/* The typography plugin inlines literal colors at build time, which would
+ * bypass the runtime-re-pointed neutral ramp that powers dark mode (see the
+ * Dark theme block below). Route every prose color through the --color-*
+ * variables instead so rich text adapts to dark mode automatically — no
+ * prose-invert needed (and prose-invert would double-invert against the
+ * re-pointed ramp). Links pick up the semantic primary token. */
+.prose {
+  --tw-prose-body: var(--color-gray-700);
+  --tw-prose-headings: var(--color-gray-900);
+  --tw-prose-lead: var(--color-gray-600);
+  --tw-prose-links: var(--color-primary-600);
+  --tw-prose-bold: var(--color-gray-900);
+  --tw-prose-counters: var(--color-gray-500);
+  --tw-prose-bullets: var(--color-gray-300);
+  --tw-prose-hr: var(--color-gray-200);
+  --tw-prose-quotes: var(--color-gray-900);
+  --tw-prose-quote-borders: var(--color-gray-200);
+  --tw-prose-captions: var(--color-gray-500);
+  --tw-prose-kbd: var(--color-gray-900);
+  --tw-prose-code: var(--color-gray-900);
+  --tw-prose-pre-code: var(--color-gray-200);
+  --tw-prose-pre-bg: var(--color-gray-800);
+  --tw-prose-th-borders: var(--color-gray-300);
+  --tw-prose-td-borders: var(--color-gray-200);
+}
+
 /* Documentation mentions utility class names (e.g. the UX review's
  * bg-indigo-600 examples); keep Tailwind's automatic source detection
  * from generating utilities for them. */
