@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { CERTIFICATE_COMPANY_NAME } from "@/lib/branding";
 import {
   renderCertificateToSVG,
   renderCertificateToPDF,
@@ -62,16 +63,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Fetch the user's name
+  // Fetch the user's name and organization (for certificate branding).
   const { data: certUser } = await service
     .from("users")
-    .select("first_name, last_name")
+    .select("first_name, last_name, organization:organizations(name)")
     .eq("id", userCert.user_id)
     .single();
 
   const learnerName = certUser
     ? `${certUser.first_name || ""} ${certUser.last_name || ""}`.trim() || "Learner"
     : "Learner";
+
+  // Prefer the learner's organization name so the certificate reflects the
+  // customer; fall back to the configured brand rather than a hardcoded value.
+  const companyName =
+    (certUser?.organization as { name?: string } | null)?.name ||
+    CERTIFICATE_COMPANY_NAME;
 
   // Determine the template to use
   let designData: DesignData;
@@ -141,7 +148,7 @@ export async function POST(request: NextRequest) {
       : "",
     score: userCert.metadata?.score ? `${userCert.metadata.score}%` : "",
     certificate_id: verificationCode,
-    company_name: "LearnHub",
+    company_name: companyName,
     company_logo: "",
     verification_url: publicUrl,
     issue_date: userCert.issued_at

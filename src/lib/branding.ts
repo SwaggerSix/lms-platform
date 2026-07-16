@@ -244,3 +244,16 @@ export const brandPresets: Record<string, Partial<BrandingConfig>> = {
     sidebarActiveText: "#3F4346",
   },
 };
+
+/**
+ * Plain brand-name accessors for surfaces that render a name rather than the
+ * full theming config: the pre-auth auth pages and certificate documents,
+ * which historically hardcoded "LearnHub". They default to the configured
+ * portalName so they stay consistent with the rest of the branding system; the
+ * env vars allow a per-deployment override without editing code.
+ */
+export const APP_NAME =
+  process.env.NEXT_PUBLIC_APP_NAME || defaultBranding.portalName;
+
+export const CERTIFICATE_COMPANY_NAME =
+  process.env.CERTIFICATE_COMPANY_NAME || APP_NAME;
