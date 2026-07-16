@@ -26,6 +26,8 @@ import {
   X,
   Trash2,
   AlertTriangle,
+  Upload,
+  Download,
 } from 'lucide-react';
 
 export interface UserItem {
@@ -65,6 +67,7 @@ const statusBadge: Record<string, string> = {
 export default function UsersClient({
   users,
   organizations = [],
+  managers = [],
   currentUserRole = 'admin',
   totalCount = 0,
   page = 1,
@@ -73,6 +76,7 @@ export default function UsersClient({
 }: {
   users: UserItem[];
   organizations?: OrgItem[];
+  managers?: { id: string; name: string }[];
   currentUserRole?: UserRole;
   totalCount?: number;
   page?: number;
@@ -138,6 +142,16 @@ export default function UsersClient({
   const [formEmail, setFormEmail] = useState('');
   const [formRole, setFormRole] = useState<UserRole>('learner');
   const [formDepartment, setFormDepartment] = useState(organizations[0]?.id ?? '');
+  const [formManagerId, setFormManagerId] = useState('');
+
+  // Bulk CSV import modal state
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResults, setImportResults] = useState<
+    { total: number; created: number; failed: number; results: { row: number; email: string; status: string; error?: string; temporary_password?: string }[] } | null
+  >(null);
 
   // Edit User modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -167,7 +181,93 @@ export default function UsersClient({
     setFormEmail('');
     setFormRole('learner');
     setFormDepartment(organizations[0]?.id ?? '');
+    setFormManagerId('');
     setError(null);
+  };
+
+  const parseCsv = (text: string): Record<string, string>[] => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (lines.length < 2) return [];
+    const splitLine = (line: string): string[] => {
+      const out: string[] = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (line[i + 1] === '"') { cur += '"'; i++; } else inQuotes = false;
+          } else cur += c;
+        } else if (c === '"') inQuotes = true;
+        else if (c === ',') { out.push(cur); cur = ''; }
+        else cur += c;
+      }
+      out.push(cur);
+      return out.map((s) => s.trim());
+    };
+    const aliases: Record<string, string> = {
+      email: 'email', e_mail: 'email',
+      first_name: 'first_name', firstname: 'first_name', first: 'first_name', given_name: 'first_name',
+      last_name: 'last_name', lastname: 'last_name', last: 'last_name', surname: 'last_name', family_name: 'last_name',
+      role: 'role', job_title: 'job_title', jobtitle: 'job_title', title: 'job_title',
+    };
+    const headers = splitLine(lines[0]).map((h) => {
+      const key = h.toLowerCase().replace(/[\s-]+/g, '_');
+      return aliases[key] ?? key;
+    });
+    return lines.slice(1).map((line) => {
+      const cells = splitLine(line);
+      const row: Record<string, string> = {};
+      headers.forEach((h, i) => {
+        if (cells[i] !== undefined && cells[i] !== '') row[h] = cells[i];
+      });
+      return row;
+    });
+  };
+
+  const handleImport = async () => {
+    setImportError(null);
+    setImportResults(null);
+    const rows = parseCsv(importText);
+    if (rows.length === 0) {
+      setImportError('No data rows found. Include a header row with at least email, first_name, last_name.');
+      return;
+    }
+    setImporting(true);
+    try {
+      const res = await fetch('/api/users/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ users: rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.error || 'Import failed');
+        return;
+      }
+      setImportResults(data);
+      if (data.created > 0) {
+        toast.success(`Imported ${data.created} user${data.created === 1 ? '' : 's'}`);
+        router.refresh();
+      }
+    } catch {
+      setImportError('Import failed');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadCredentials = () => {
+    if (!importResults) return;
+    const created = importResults.results.filter((r) => r.status === 'created');
+    const csv = ['email,temporary_password', ...created.map((r) => `${r.email},${r.temporary_password ?? ''}`)].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'imported-credentials.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleAddUser = async () => {
@@ -182,6 +282,8 @@ export default function UsersClient({
           first_name: formFirstName,
           last_name: formLastName,
           role: formRole,
+          organization_id: formDepartment || undefined,
+          manager_id: formManagerId || undefined,
         }),
       });
       if (!res.ok) {
@@ -458,10 +560,16 @@ export default function UsersClient({
           </div>
           <p className="mt-1 text-sm text-gray-500">{totalCount} total users</p>
         </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus className="h-4 w-4" />
-          Add User
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => { setShowImport(true); setImportResults(null); setImportError(null); }}>
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </Button>
+          <Button onClick={() => setShowModal(true)}>
+            <Plus className="h-4 w-4" />
+            Add User
+          </Button>
+        </div>
       </div>
 
       {/* Error banner */}
@@ -798,15 +906,128 @@ export default function UsersClient({
               </div>
               <div>
                 <label htmlFor="add-user-manager" className="block text-sm font-medium text-gray-700 mb-1.5">Manager</label>
-                <select id="add-user-manager" className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                  <option>Chris Cancialosi</option>
-                  <option>Elizabeth Bauernshub</option>
+                <select
+                  id="add-user-manager"
+                  value={formManagerId}
+                  onChange={(e) => setFormManagerId(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="">No manager</option>
+                  {managers.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
             {error && showModal && (
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
+        </Modal>
+      )}
+
+      {/* Bulk CSV Import Modal */}
+      {showImport && (
+        <Modal
+          isOpen
+          onClose={() => setShowImport(false)}
+          title="Import Users from CSV"
+          size="lg"
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowImport(false)}>
+                {importResults ? 'Close' : 'Cancel'}
+              </Button>
+              {importResults && importResults.created > 0 && (
+                <Button variant="outline" onClick={downloadCredentials}>
+                  <Download className="h-4 w-4" />
+                  Download credentials
+                </Button>
+              )}
+              {!importResults && (
+                <Button onClick={handleImport} disabled={importing || !importText.trim()}>
+                  {importing ? 'Importing...' : 'Import'}
+                </Button>
+              )}
+            </>
+          }
+        >
+          {!importResults ? (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm text-gray-600">
+                Paste CSV with a header row. Required columns: <code className="text-gray-800">email</code>,{' '}
+                <code className="text-gray-800">first_name</code>, <code className="text-gray-800">last_name</code>.
+                Optional: <code className="text-gray-800">role</code> (learner, instructor, manager, admin),{' '}
+                <code className="text-gray-800">job_title</code>. Each user gets a temporary password to change on first sign-in.
+              </div>
+              <div>
+                <label htmlFor="import-file" className="block text-sm font-medium text-gray-700 mb-1.5">Upload a .csv file</label>
+                <input
+                  id="import-file"
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setImportText(String(reader.result ?? ''));
+                    reader.readAsText(file);
+                  }}
+                  className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100"
+                />
+              </div>
+              <div>
+                <label htmlFor="import-text" className="block text-sm font-medium text-gray-700 mb-1.5">…or paste CSV</label>
+                <textarea
+                  id="import-text"
+                  rows={8}
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder={'email,first_name,last_name,role\njane@example.com,Jane,Smith,learner'}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-xs focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+              {importError && <p className="text-sm text-red-600">{importError}</p>}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-4 text-sm">
+                <span className="font-medium text-green-700">{importResults.created} created</span>
+                {importResults.failed > 0 && <span className="font-medium text-red-700">{importResults.failed} failed</span>}
+                <span className="text-gray-500">of {importResults.total}</span>
+              </div>
+              {importResults.created > 0 && (
+                <p className="text-xs text-gray-500">
+                  Download the credentials CSV to distribute temporary passwords — they are only shown here once.
+                </p>
+              )}
+              <div className="max-h-72 overflow-auto rounded-lg border border-gray-200">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-left text-xs text-gray-500">
+                    <tr>
+                      <th className="px-3 py-2">Row</th>
+                      <th className="px-3 py-2">Email</th>
+                      <th className="px-3 py-2">Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importResults.results.map((r) => (
+                      <tr key={r.row} className="border-t border-gray-100">
+                        <td className="px-3 py-2 text-gray-500">{r.row}</td>
+                        <td className="px-3 py-2 text-gray-800">{r.email || '—'}</td>
+                        <td className="px-3 py-2">
+                          {r.status === 'created' ? (
+                            <span className="text-green-700">Created</span>
+                          ) : (
+                            <span className="text-red-700">{r.error || 'Failed'}</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
     </div>
