@@ -13,6 +13,7 @@ import {
   type EmailTemplate,
 } from "@/lib/email/templates";
 import { sendEmail } from "@/lib/email/sender";
+import { storedTemplateOverride } from "@/lib/notifications/email-overrides";
 
 type TemplateType =
   | "enrollment_confirmation"
@@ -75,7 +76,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const emailTemplate = getTemplate(templateType, params);
+    const defaultTemplate = getTemplate(templateType, params);
+
+    // Let an admin-authored notification_templates entry override the copy,
+    // falling back to the built-in default when none applies.
+    const override = await storedTemplateOverride(
+      templateType,
+      params,
+      auth.user.organization_id ?? null,
+      defaultTemplate.subject
+    );
+    const emailTemplate = override ?? defaultTemplate;
 
     const result = await sendEmail({
       to,

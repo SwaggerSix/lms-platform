@@ -60,6 +60,43 @@ function button(text: string, url: string): string {
   </table>`;
 }
 
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/**
+ * Build an email from an admin-authored template body (plain text with an
+ * optional CTA), wrapped in the same branded shell as the built-in templates.
+ * Used to let stored notification_templates override the default copy.
+ */
+export function customTemplate(params: {
+  subject: string;
+  bodyText: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  portalName?: string;
+}): EmailTemplate {
+  const paragraphs = params.bodyText
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`
+    )
+    .join("");
+  const content = `${paragraphs}${params.ctaText && params.ctaUrl ? button(params.ctaText, params.ctaUrl) : ""}`;
+  return {
+    subject: params.subject,
+    html: baseLayout(content, params.portalName),
+    text: params.bodyText,
+  };
+}
+
 // ============================================================================
 // Template definitions
 // ============================================================================
