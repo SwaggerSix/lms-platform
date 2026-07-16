@@ -5,7 +5,9 @@ import { validateBody, createXRContentSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const auth = await authorize();
+  // Authoring/listing surface — restrict to staff. Learners consume XR content
+  // through the lesson player, not this cross-lesson listing endpoint.
+  const auth = await authorize("admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
