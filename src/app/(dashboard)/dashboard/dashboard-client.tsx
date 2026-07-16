@@ -114,11 +114,15 @@ export default function LearnerDashboardClient({ data }: { data: LearnerDashboar
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-600 to-purple-600 px-8 py-8 text-white shadow-lg">
         <div className="relative z-10">
-          <h1 className="text-2xl font-bold">Welcome back, {data.userName}!</h1>
+          <h1 className="text-2xl font-bold">
+            {isNewUser ? `Welcome, ${data.userName}!` : `Welcome back, ${data.userName}!`}
+          </h1>
           <p className="mt-1 text-primary-100">
-            {data.coursesInProgress > 0
-              ? `You have ${data.coursesInProgress} course${data.coursesInProgress === 1 ? "" : "s"} in progress. Pick up where you left off!`
-              : "Explore the catalog to start your next course."}
+            {isNewUser
+              ? "This is your training site — take your assigned courses and track what you've finished. Start by browsing the catalog."
+              : data.coursesInProgress > 0
+                ? `You have ${data.coursesInProgress} course${data.coursesInProgress === 1 ? "" : "s"} in progress. Pick up where you left off!`
+                : "Explore the catalog to start your next course."}
           </p>
           <a
             href={data.inProgressCourses[0] ? `/learn/player/${data.inProgressCourses[0].courseId}` : "/learn/catalog"}

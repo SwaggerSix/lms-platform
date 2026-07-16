@@ -3,11 +3,17 @@ import { createServiceClient } from "@/lib/supabase/service";
 export const VALID_REPORT_TYPES = [
   "completion",
   "compliance",
+  "compliance_detail",
   "skills_gap",
   "engagement",
   "learner_progress",
   "course_effectiveness",
 ] as const;
+
+// Supabase returns at most 1000 rows per request. Reports must not silently
+// truncate (a compliance export that drops rows is dangerous), so list queries
+// page through with .range() until a short page is returned.
+const PAGE_SIZE = 1000;
 
 export type ReportType = (typeof VALID_REPORT_TYPES)[number];
 
@@ -42,28 +48,34 @@ async function generateCompletionReport(
   service: ReturnType<typeof createServiceClient>,
   filters: ReportFilters
 ) {
-  let query = service
-    .from("enrollments")
-    .select(
-      "id, status, score, completed_at, time_spent, enrolled_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
-    )
-    .order("completed_at", { ascending: false })
-    .limit(500);
+  const all: any[] = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    let query = service
+      .from("enrollments")
+      .select(
+        "id, status, score, completed_at, time_spent, enrolled_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
+      )
+      .order("completed_at", { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1);
 
-  if (filters.date_from) {
-    query = query.gte("enrolled_at", filters.date_from);
-  }
-  if (filters.date_to) {
-    query = query.lte("enrolled_at", filters.date_to);
-  }
-  if (filters.department) {
-    query = query.eq("user.organization_id", filters.department);
+    if (filters.date_from) {
+      query = query.gte("enrolled_at", filters.date_from);
+    }
+    if (filters.date_to) {
+      query = query.lte("enrolled_at", filters.date_to);
+    }
+    if (filters.department) {
+      query = query.eq("user.organization_id", filters.department);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    const batch = (data ?? []) as any[];
+    all.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-
-  return ((data ?? []) as any[]).map((row: any) => ({
+  return all.map((row: any) => ({
     user_name: `${row.user?.first_name ?? ""} ${row.user?.last_name ?? ""}`.trim() || "Unknown",
     email: row.user?.email ?? "",
     department: row.user?.organization?.name ?? "N/A",
@@ -127,6 +139,108 @@ async function generateComplianceReport(
       frequency_months: req.frequency_months ?? null,
     });
   }
+
+  return rows;
+}
+
+/**
+ * Per-learner compliance status with recert expiry.
+ *
+ * Unlike the aggregate compliance report, this answers the core L&D audit
+ * question — "who is non-compliant or expiring, by name and date" — by joining
+ * each learner's latest completion of a required course to the requirement's
+ * frequency_months (recert cycle) and computing a next-due date and status:
+ *   non_compliant → enrolled but never completed
+ *   overdue       → completed, but the recert cycle has lapsed
+ *   expiring      → completed, recert due within 90 days
+ *   compliant     → completed within the current cycle (or one-time requirement)
+ */
+async function generateComplianceDetailReport(
+  service: ReturnType<typeof createServiceClient>,
+  filters: ReportFilters
+) {
+  const { data: requirements, error } = await service
+    .from("compliance_requirements")
+    .select("id, name, frequency_months, course_id, course:courses(title)");
+  if (error) throw error;
+
+  const now = Date.now();
+  const rows: Record<string, unknown>[] = [];
+
+  for (const req of (requirements ?? []) as any[]) {
+    if (!req.course_id) continue;
+
+    // All enrollments for the required course, paginated so nothing is dropped.
+    const enrollments: any[] = [];
+    for (let offset = 0; ; offset += PAGE_SIZE) {
+      const { data, error: enrollError } = await service
+        .from("enrollments")
+        .select(
+          "status, completed_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization_id, organization:organizations(name))"
+        )
+        .eq("course_id", req.course_id)
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (enrollError) throw enrollError;
+      const batch = (data ?? []) as any[];
+      enrollments.push(...batch);
+      if (batch.length < PAGE_SIZE) break;
+    }
+
+    const freq: number | null = req.frequency_months ?? null;
+
+    for (const e of enrollments) {
+      const user = e.user;
+      if (!user) continue;
+      if (filters.department && user.organization_id !== filters.department) continue;
+
+      const completedAt = e.status === "completed" ? e.completed_at : null;
+      let status: string;
+      let nextDue: string | null = null;
+      let daysUntilDue: number | null = null;
+
+      if (!completedAt) {
+        status = "non_compliant";
+      } else if (!freq) {
+        status = "compliant"; // one-time requirement, no recertification
+      } else {
+        const due = new Date(completedAt);
+        due.setMonth(due.getMonth() + freq);
+        nextDue = due.toISOString();
+        daysUntilDue = Math.floor((due.getTime() - now) / 86_400_000);
+        if (daysUntilDue < 0) status = "overdue";
+        else if (daysUntilDue <= 90) status = "expiring";
+        else status = "compliant";
+      }
+
+      rows.push({
+        requirement_name: req.name,
+        course_title: req.course?.title ?? "N/A",
+        user_name: `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || "Unknown",
+        email: user.email ?? "",
+        department: user.organization?.name ?? "N/A",
+        last_completed: completedAt,
+        frequency_months: freq,
+        next_due: nextDue,
+        days_until_due: daysUntilDue,
+        status,
+      });
+    }
+  }
+
+  // Surface the most urgent first: overdue, then soonest-to-expire.
+  const statusOrder: Record<string, number> = {
+    overdue: 0,
+    non_compliant: 1,
+    expiring: 2,
+    compliant: 3,
+  };
+  rows.sort((a, b) => {
+    const diff = (statusOrder[a.status as string] ?? 9) - (statusOrder[b.status as string] ?? 9);
+    if (diff !== 0) return diff;
+    const ad = (a.days_until_due as number | null) ?? Number.POSITIVE_INFINITY;
+    const bd = (b.days_until_due as number | null) ?? Number.POSITIVE_INFINITY;
+    return ad - bd;
+  });
 
   return rows;
 }
@@ -373,6 +487,8 @@ export async function generateReport(
       return generateCompletionReport(service, filters);
     case "compliance":
       return generateComplianceReport(service);
+    case "compliance_detail":
+      return generateComplianceDetailReport(service, filters);
     case "skills_gap":
       return generateSkillsGapReport(service, filters);
     case "engagement":
