@@ -30,10 +30,20 @@ export async function PATCH(
   if (!isSuperAdmin(auth.user.role)) {
     const { data: target } = await service
       .from("users")
-      .select("role")
+      .select("role, organization_id")
       .eq("id", id)
       .single();
     if (target && isSuperAdmin(target.role)) {
+      return NextResponse.json({ error: "You are not allowed to modify this user" }, { status: 403 });
+    }
+    // Tenant isolation: an admin bound to an organization may only act on users
+    // in that same organization. A null org (single-tenant today) imposes no
+    // restriction, so this is forward-compatible without changing behaviour now.
+    if (
+      target &&
+      auth.user.organization_id &&
+      target.organization_id !== auth.user.organization_id
+    ) {
       return NextResponse.json({ error: "You are not allowed to modify this user" }, { status: 403 });
     }
     if (typeof body?.role === "string" && !canAssignRole(auth.user.role, body.role)) {
@@ -118,7 +128,7 @@ export async function DELETE(
 
   const { data: existing, error: fetchError } = await service
     .from("users")
-    .select("id, email, auth_id, role")
+    .select("id, email, auth_id, role, organization_id")
     .eq("id", id)
     .single();
 
@@ -136,6 +146,16 @@ export async function DELETE(
 
   // Only Super Admins (gC/GGS) may delete a Super Admin account.
   if (isSuperAdmin(existing.role) && !isSuperAdmin(auth.user.role)) {
+    return NextResponse.json({ error: "You are not allowed to delete this user" }, { status: 403 });
+  }
+
+  // Tenant isolation: a non-super admin may only delete users within their own
+  // organization. Null org (single-tenant today) imposes no restriction.
+  if (
+    !isSuperAdmin(auth.user.role) &&
+    auth.user.organization_id &&
+    existing.organization_id !== auth.user.organization_id
+  ) {
     return NextResponse.json({ error: "You are not allowed to delete this user" }, { status: 403 });
   }
 

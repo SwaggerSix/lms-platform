@@ -60,6 +60,7 @@ const reportTemplates = [
   { id: "4", name: "Engagement Report", description: "Measure learner engagement metrics", icon: <TrendingUp className="h-6 w-6" />, color: "text-orange-600", bgColor: "bg-orange-100" },
   { id: "5", name: "Course Effectiveness", description: "Analyze course performance and ratings", icon: <Target className="h-6 w-6" />, color: "text-red-600", bgColor: "bg-red-100" },
   { id: "6", name: "Learner Progress", description: "Individual and team progress tracking", icon: <Users className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
+  { id: "7", name: "Compliance & Expiry", description: "Per-learner recert status: overdue, expiring, and compliant by name and date", icon: <ShieldCheck className="h-6 w-6" />, color: "text-amber-600", bgColor: "bg-amber-100" },
 ];
 
 const reportFields = ["User Name", "Department", "Course", "Status", "Score", "Completion Date", "Time Spent", "Certificate"];
@@ -146,6 +147,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     "Engagement Report": "engagement",
     "Course Effectiveness": "course_effectiveness",
     "Learner Progress": "learner_progress",
+    "Compliance & Expiry": "compliance_detail",
   };
 
   const fetchReport = useCallback(async (templateName?: string) => {

@@ -275,8 +275,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect unauthenticated users to login
+  // Unauthenticated access to a protected route.
   if (!user && !isPublicPath) {
+    // API clients should get a machine-readable 401, not a 307 redirect to the
+    // login page HTML (which they can't act on).
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

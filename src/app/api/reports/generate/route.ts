@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       const titleMap: Record<string, string> = {
         completion: "Completion Report",
         compliance: "Compliance Report",
+        compliance_detail: "Per-Learner Compliance & Expiry Report",
         skills_gap: "Skills Gap Report",
         engagement: "Engagement Report",
         learner_progress: "Learner Progress Report",

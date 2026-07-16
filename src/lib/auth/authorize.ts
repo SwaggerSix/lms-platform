@@ -12,7 +12,7 @@ export async function authorize(...allowedRoles: Role[]) {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role")
+    .select("id, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 

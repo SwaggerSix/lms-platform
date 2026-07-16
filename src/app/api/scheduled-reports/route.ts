@@ -13,10 +13,16 @@ export async function GET() {
   const supabase = await createClient();
   const service = createServiceClient();
 
-  const { data, error } = await service
+  // Tenant isolation: an admin bound to an organization only sees that org's
+  // reports. Null org (single-tenant today) sees all — no behaviour change now.
+  let query = service
     .from("scheduled_reports")
     .select("*")
     .order("created_at", { ascending: false });
+  if (auth.user.organization_id) {
+    query = query.eq("organization_id", auth.user.organization_id);
+  }
+  const { data, error } = await query;
 
   if (error) {
     console.error("Scheduled reports API error:", error.message);
@@ -61,6 +67,7 @@ export async function POST(request: NextRequest) {
       is_active: true,
       next_run_at: new Date().toISOString(),
       created_by: auth.user.id,
+      organization_id: auth.user.organization_id ?? null,
     })
     .select()
     .single();
@@ -96,12 +103,14 @@ export async function PATCH(request: NextRequest) {
     if (body[field] !== undefined) updates[field] = body[field];
   }
 
-  const { data, error } = await service
+  let updateQuery = service
     .from("scheduled_reports")
     .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
+    .eq("id", id);
+  if (auth.user.organization_id) {
+    updateQuery = updateQuery.eq("organization_id", auth.user.organization_id);
+  }
+  const { data, error } = await updateQuery.select().single();
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -131,10 +140,14 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Schedule ID is required" }, { status: 400 });
   }
 
-  const { error } = await service
+  let deleteQuery = service
     .from("scheduled_reports")
     .delete()
     .eq("id", id);
+  if (auth.user.organization_id) {
+    deleteQuery = deleteQuery.eq("organization_id", auth.user.organization_id);
+  }
+  const { error } = await deleteQuery;
 
   if (error) {
     console.error("Scheduled reports API error:", error.message);

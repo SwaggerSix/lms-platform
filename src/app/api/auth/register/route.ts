@@ -33,6 +33,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email mismatch" }, { status: 403 });
     }
 
+    // Registration policy (S6): a corporate B2B training platform usually
+    // should not allow unrestricted self-provisioning. Configurable via env,
+    // defaulting to "open" so existing behaviour is unchanged:
+    //   REGISTRATION_MODE = open | domain | closed
+    //   REGISTRATION_ALLOWED_DOMAINS = comma-separated list (mode=domain)
+    const registrationMode = (process.env.REGISTRATION_MODE || "open").toLowerCase();
+    if (registrationMode === "closed") {
+      return NextResponse.json(
+        { error: "Self-registration is disabled. Please contact your administrator for an invitation." },
+        { status: 403 }
+      );
+    }
+    if (registrationMode === "domain") {
+      const allowedDomains = (process.env.REGISTRATION_ALLOWED_DOMAINS || "")
+        .split(",")
+        .map((d) => d.trim().toLowerCase())
+        .filter(Boolean);
+      const emailDomain = email.split("@")[1]?.toLowerCase() || "";
+      if (!allowedDomains.includes(emailDomain)) {
+        return NextResponse.json(
+          { error: "Registration is restricted to approved email domains." },
+          { status: 403 }
+        );
+      }
+    }
+
     const { data, error } = await service
       .from("users")
       .upsert(
