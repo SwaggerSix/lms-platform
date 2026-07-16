@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import CourseDetailClient from "./course-detail-client";
 import type { CourseData, Module, Lesson } from "./course-detail-client";
+import { getRecommendedInstruments } from "@/lib/assessments/recommended-instruments";
 
 // Gradient mapping by category or fallback
 const GRADIENTS: Record<string, string> = {
@@ -349,6 +350,15 @@ export default async function CourseDetailPage({
     relatedCourses,
   };
 
+  // Recommended self-assessments, matched from the course's title/category/
+  // tags against the psychometric course-mapping matrix (see
+  // docs/assessments-course-mapping-matrix.csv).
+  const recommendedAssessments = getRecommendedInstruments({
+    title: course.title,
+    categoryName: course.categories?.name ?? null,
+    tags: course.tags ?? [],
+  });
+
   return (
     <CourseDetailClient
       course={courseData}
@@ -357,6 +367,7 @@ export default async function CourseDetailPage({
       allPrerequisitesMet={allPrerequisitesMet}
       requiresApproval={course.enrollment_type === "approval"}
       hasPendingApproval={hasPendingApproval}
+      recommendedAssessments={recommendedAssessments}
     />
   );
 }
