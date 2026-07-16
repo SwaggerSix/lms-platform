@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Eye, EyeOff, Loader2, Building2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { APP_NAME } from "@/lib/branding";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -125,7 +126,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-200">
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">LearnHub</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-gray-500">Sign in with SSO</p>
         </div>
 
@@ -205,7 +206,7 @@ export default function LoginPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-200">
           <GraduationCap className="h-8 w-8 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">LearnHub</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
         <p className="mt-1 text-sm text-gray-500">
           Sign in to your account
         </p>
