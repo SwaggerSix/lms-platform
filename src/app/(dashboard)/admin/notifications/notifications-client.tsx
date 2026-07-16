@@ -225,17 +225,79 @@ export default function NotificationsClient({ announcements, templates }: Notifi
     setEditBody(announcement.body);
   };
 
+  const [creatingTemplate, setCreatingTemplate] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
   const openTemplateEdit = (template: NotificationTemplate) => {
+    setCreatingTemplate(false);
     setEditingTemplate(template);
     setTemplateName(template.name);
     setTemplateDescription(template.description);
     setTemplatePreview(template.preview);
   };
 
-  const handleSaveTemplate = () => {
-    // Templates are static in the server component; close modal.
-    // In a full implementation, this would call a templates API.
+  const openTemplateCreate = () => {
+    setCreatingTemplate(true);
+    setEditingTemplate({ id: "__new__", name: "", description: "", preview: "" });
+    setTemplateName("");
+    setTemplateDescription("");
+    setTemplatePreview("");
+  };
+
+  const closeTemplateModal = () => {
     setEditingTemplate(null);
+    setCreatingTemplate(false);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.error("Template name is required");
+      return;
+    }
+    setSavingTemplate(true);
+    try {
+      const isNew = creatingTemplate || editingTemplate?.id === "__new__";
+      const res = await fetch("/api/admin/notification-templates", {
+        method: isNew ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(isNew ? {} : { id: editingTemplate?.id }),
+          name: templateName.trim(),
+          description: templateDescription,
+          body: templatePreview,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Failed to save template");
+        return;
+      }
+      toast.success(isNew ? "Template created" : "Template saved");
+      closeTemplateModal();
+      router.refresh();
+    } catch {
+      toast.error("Failed to save template");
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    if (!confirm("Delete this template? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/admin/notification-templates?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Failed to delete template");
+        return;
+      }
+      toast.success("Template deleted");
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete template");
+    }
   };
 
   const toggleChannel = (idx: number) => {
@@ -492,20 +554,26 @@ export default function NotificationsClient({ announcements, templates }: Notifi
 
       {activeTab === "Templates" && (
         <div className="space-y-3">
-          {/* Template edit modal */}
+          <div className="flex justify-end">
+            <Button onClick={openTemplateCreate}>
+              <Plus className="h-4 w-4" />
+              New Template
+            </Button>
+          </div>
+          {/* Template create/edit modal */}
           {editingTemplate && (
             <Modal
               isOpen
-              onClose={() => setEditingTemplate(null)}
-              title="Edit Template"
+              onClose={closeTemplateModal}
+              title={creatingTemplate || editingTemplate.id === "__new__" ? "New Template" : "Edit Template"}
               size="md"
               footer={
                 <>
-                  <Button variant="outline" onClick={() => setEditingTemplate(null)}>
+                  <Button variant="outline" onClick={closeTemplateModal} disabled={savingTemplate}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveTemplate}>
-                    Save Template
+                  <Button onClick={handleSaveTemplate} disabled={savingTemplate}>
+                    {savingTemplate ? "Saving..." : "Save Template"}
                   </Button>
                 </>
               }
@@ -543,15 +611,24 @@ export default function NotificationsClient({ announcements, templates }: Notifi
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openTemplateEdit(template)}
-                  className="shrink-0 ml-4"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                  Edit
-                </Button>
+                <div className="flex shrink-0 items-center gap-2 ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openTemplateEdit(template)}
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteTemplate(template.id)}
+                    aria-label={`Delete ${template.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

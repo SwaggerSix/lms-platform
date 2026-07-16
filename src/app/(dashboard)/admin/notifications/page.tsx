@@ -39,7 +39,7 @@ export default async function NotificationsPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role")
+    .select("id, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -77,14 +77,46 @@ export default async function NotificationsPage() {
     };
   });
 
-  // Templates remain static as they are not stored in the notifications table
-  const templates: NotificationTemplate[] = [
-    { id: "1", name: "Enrollment Confirmation", description: "Sent when a user is enrolled in a new course", preview: "You have been enrolled in {course_name}. Start your learning journey today!" },
-    { id: "2", name: "Due Date Reminder", description: "Reminder sent 3 days before a course due date", preview: "Reminder: {course_name} is due on {due_date}. You are {progress}% complete." },
-    { id: "3", name: "Completion Congratulations", description: "Sent when a user completes a course", preview: "Congratulations! You have completed {course_name} with a score of {score}%." },
-    { id: "4", name: "Certificate Issued", description: "Sent when a certificate is generated", preview: "Your certificate for {course_name} is now available. Download it from your profile." },
-    { id: "5", name: "Overdue Warning", description: "Sent when a course passes its due date", preview: "Action required: {course_name} was due on {due_date}. Please complete it as soon as possible." },
+  // Notification templates are stored in notification_templates. Show the org's
+  // templates, falling back to the global defaults (organization_id NULL) when
+  // the org hasn't customized any. If the table isn't present yet (migration
+  // not applied), fall back to the historical hardcoded defaults so the page
+  // still renders.
+  const FALLBACK_TEMPLATES: NotificationTemplate[] = [
+    { id: "enrollment_confirmation", name: "Enrollment Confirmation", description: "Sent when a user is enrolled in a new course", preview: "You have been enrolled in {course_name}. Start your learning journey today!" },
+    { id: "due_date_reminder", name: "Due Date Reminder", description: "Reminder sent 3 days before a course due date", preview: "Reminder: {course_name} is due on {due_date}. You are {progress}% complete." },
+    { id: "completion_congratulations", name: "Completion Congratulations", description: "Sent when a user completes a course", preview: "Congratulations! You have completed {course_name} with a score of {score}%." },
+    { id: "certificate_issued", name: "Certificate Issued", description: "Sent when a certificate is generated", preview: "Your certificate for {course_name} is now available. Download it from your profile." },
+    { id: "overdue_warning", name: "Overdue Warning", description: "Sent when a course passes its due date", preview: "Action required: {course_name} was due on {due_date}. Please complete it as soon as possible." },
   ];
+
+  let templateRows: any[] | null = null;
+  if (dbUser.organization_id) {
+    const { data } = await service
+      .from("notification_templates")
+      .select("id, name, description, body")
+      .eq("organization_id", dbUser.organization_id)
+      .order("created_at", { ascending: true });
+    if (data && data.length > 0) templateRows = data;
+  }
+  if (!templateRows) {
+    const { data, error } = await service
+      .from("notification_templates")
+      .select("id, name, description, body")
+      .is("organization_id", null)
+      .order("created_at", { ascending: true });
+    if (!error) templateRows = data ?? [];
+  }
+
+  const templates: NotificationTemplate[] =
+    templateRows && templateRows.length > 0
+      ? templateRows.map((t) => ({
+          id: t.id,
+          name: t.name,
+          description: t.description ?? "",
+          preview: t.body ?? "",
+        }))
+      : FALLBACK_TEMPLATES;
 
   return <NotificationsClient announcements={announcements} templates={templates} />;
 }
