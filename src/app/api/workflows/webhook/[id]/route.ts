@@ -2,6 +2,18 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { WorkflowEngine } from "@/lib/workflows/engine";
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
+
+/**
+ * Constant-time string comparison. Returns false for a length mismatch without
+ * leaking timing information about how much of the secret matched.
+ */
+function secretsMatch(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a, "utf8");
+  const bBuf = Buffer.from(b, "utf8");
+  if (aBuf.length !== bBuf.length) return false;
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 // POST: External webhook trigger for a workflow
 export async function POST(
@@ -41,7 +53,7 @@ export async function POST(
     return NextResponse.json({ error: "Webhook not configured" }, { status: 403 });
   }
   const authHeader = request.headers.get("x-webhook-secret");
-  if (authHeader !== config.secret) {
+  if (!authHeader || !secretsMatch(authHeader, String(config.secret))) {
     return NextResponse.json({ error: "Invalid webhook secret" }, { status: 401 });
   }
 

@@ -215,6 +215,10 @@ export async function middleware(request: NextRequest) {
     "/register",
     "/forgot-password",
     "/reset-password",
+    // Pre-account legal pages linked from the login/register footers; a
+    // logged-out visitor must be able to read what they're agreeing to.
+    "/terms",
+    "/privacy",
     "/api/auth/register",
     "/api/auth/login",
     "/api/auth/forgot-password",

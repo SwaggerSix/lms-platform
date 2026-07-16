@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createPublicKey, verify as cryptoVerify } from "crypto";
 import { createServiceClient } from "@/lib/supabase/service";
 
 // ─── Bot Framework Configuration ────────────────────────────────
@@ -8,8 +9,23 @@ const AZURE_TENANT_ID =
 const BOT_FRAMEWORK_OPENID_METADATA =
   "https://login.botframework.com/v1/.well-known/openidconfiguration";
 
+// Hosts a Bot Framework serviceUrl is allowed to point at. The bearer token we
+// attach to outbound replies is a real credential minted from the Azure client
+// secret, so we never send it to a host outside this allowlist even if a forged
+// activity asks us to (SSRF / token-exfiltration guard).
+const ALLOWED_SERVICE_URL_SUFFIXES = [
+  ".botframework.com",
+  ".trafficmanager.net",
+];
+
+// A Bot Framework JWK (RSA public key from the signing JWKS).
+interface SigningJwk extends JsonWebKey {
+  kid?: string;
+  x5c?: string[];
+}
+
 // JWKS cache
-let jwksCache: { keys: JsonWebKey[]; fetchedAt: number } | null = null;
+let jwksCache: { keys: SigningJwk[]; fetchedAt: number } | null = null;
 const JWKS_CACHE_TTL = 3600_000; // 1 hour
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -38,10 +54,10 @@ interface BotResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify Bot Framework JWT token
+    // Verify Bot Framework JWT token (signature + issuer/audience/expiry).
     const authHeader = request.headers.get("authorization");
-    const tokenValid = await verifyBotFrameworkToken(authHeader);
-    if (!tokenValid) {
+    const claims = await verifyBotFrameworkToken(authHeader);
+    if (!claims) {
       return NextResponse.json(
         { error: "Unauthorized: invalid Bot Framework token" },
         { status: 401 }
@@ -50,13 +66,19 @@ export async function POST(request: NextRequest) {
 
     const activity: BotActivity = await request.json();
 
+    // Only reply to the serviceUrl the token was issued for. Bot Framework
+    // signs a `serviceurl` claim; trusting the activity's field instead would
+    // let a forged activity redirect our bearer token to an attacker host.
+    const trustedServiceUrl =
+      typeof claims.serviceurl === "string" ? claims.serviceurl : undefined;
+
     // Handle different activity types
     switch (activity.type) {
       case "message":
-        return await handleMessage(activity);
+        return await handleMessage(activity, trustedServiceUrl);
 
       case "conversationUpdate":
-        return await handleConversationUpdate(activity);
+        return await handleConversationUpdate(activity, trustedServiceUrl);
 
       case "invoke":
         return NextResponse.json({ status: 200 }, { status: 200 });
@@ -75,7 +97,10 @@ export async function POST(request: NextRequest) {
 
 // ─── Message Handler ────────────────────────────────────────────
 
-async function handleMessage(activity: BotActivity): Promise<NextResponse> {
+async function handleMessage(
+  activity: BotActivity,
+  trustedServiceUrl?: string
+): Promise<NextResponse> {
   const text = (activity.text || "").trim().toLowerCase();
 
   // Strip bot mention from message text (Teams prepends <at>BotName</at>)
@@ -101,10 +126,11 @@ async function handleMessage(activity: BotActivity): Promise<NextResponse> {
       break;
   }
 
-  // Send reply via Bot Framework service URL
-  if (activity.serviceUrl && activity.conversation?.id) {
+  // Send reply via the token-issued Bot Framework service URL.
+  const serviceUrl = resolveServiceUrl(trustedServiceUrl, activity.serviceUrl);
+  if (serviceUrl && activity.conversation?.id) {
     await sendBotReply(
-      activity.serviceUrl,
+      serviceUrl,
       activity.conversation.id,
       activity.id || "",
       response
@@ -117,10 +143,12 @@ async function handleMessage(activity: BotActivity): Promise<NextResponse> {
 // ─── Conversation Update Handler ────────────────────────────────
 
 async function handleConversationUpdate(
-  activity: BotActivity
+  activity: BotActivity,
+  trustedServiceUrl?: string
 ): Promise<NextResponse> {
+  const serviceUrl = resolveServiceUrl(trustedServiceUrl, activity.serviceUrl);
   // Send a welcome message when the bot is added to a conversation
-  if (activity.serviceUrl && activity.conversation?.id) {
+  if (serviceUrl && activity.conversation?.id) {
     const welcome: BotResponse = {
       type: "message",
       text:
@@ -134,7 +162,7 @@ async function handleConversationUpdate(
     };
 
     await sendBotReply(
-      activity.serviceUrl,
+      serviceUrl,
       activity.conversation.id,
       "",
       welcome
@@ -175,13 +203,8 @@ async function buildMyCoursesResponse(
   try {
     const service = createServiceClient();
 
-    // Look up user by Azure AD object ID (stored in auth metadata)
-    // Fall back to checking the users table for a matching external ID
-    const { data: user } = await service
-      .from("users")
-      .select("id")
-      .or(`external_id.eq.${aadObjectId},azure_ad_id.eq.${aadObjectId}`)
-      .single();
+    // Look up user by Azure AD object ID (external_id or azure_ad_id).
+    const user = await findUserByAadObjectId(service, aadObjectId, "id");
 
     if (!user) {
       return {
@@ -249,11 +272,7 @@ async function buildProgressResponse(
   try {
     const service = createServiceClient();
 
-    const { data: user } = await service
-      .from("users")
-      .select("id, first_name")
-      .or(`external_id.eq.${aadObjectId},azure_ad_id.eq.${aadObjectId}`)
-      .single();
+    const user = await findUserByAadObjectId(service, aadObjectId, "id, first_name");
 
     if (!user) {
       return {
@@ -317,6 +336,81 @@ function buildUnknownCommandResponse(text: string): BotResponse {
       "Type **help** to see available commands.",
     textFormat: "markdown",
   };
+}
+
+// ─── User Lookup ────────────────────────────────────────────────
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Resolve an LMS user from an Azure AD object ID.
+ *
+ * The object ID is validated as a GUID before use so it can never be
+ * interpreted as a PostgREST filter expression, and the lookups use
+ * parameterized `.eq()` calls (never string-interpolated `.or()`), which run
+ * with the RLS-bypassing service-role key.
+ */
+async function findUserByAadObjectId(
+  service: ReturnType<typeof createServiceClient>,
+  aadObjectId: string,
+  columns: string
+): Promise<Record<string, any> | null> {
+  if (!UUID_RE.test(aadObjectId)) return null;
+
+  const byExternal = await service
+    .from("users")
+    .select(columns)
+    .eq("external_id", aadObjectId)
+    .maybeSingle();
+  if (byExternal.data) return byExternal.data as Record<string, any>;
+
+  const byAzure = await service
+    .from("users")
+    .select(columns)
+    .eq("azure_ad_id", aadObjectId)
+    .maybeSingle();
+  return (byAzure.data as Record<string, any>) ?? null;
+}
+
+// ─── Service URL Validation ─────────────────────────────────────
+
+function normalizeUrl(u: string): string {
+  return u.replace(/\/+$/, "").toLowerCase();
+}
+
+function isAllowedServiceUrl(rawUrl: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:") return false;
+  const host = url.hostname.toLowerCase();
+  return ALLOWED_SERVICE_URL_SUFFIXES.some((suffix) => host.endsWith(suffix));
+}
+
+/**
+ * Decide which serviceUrl (if any) is safe to send the bearer-token-carrying
+ * reply to. Prefers the token's signed `serviceurl` claim; the activity's own
+ * field is only trusted when it matches that claim (or when the token omits
+ * it), and the final URL must resolve to an allowlisted Bot Framework host.
+ */
+function resolveServiceUrl(
+  trustedServiceUrl: string | undefined,
+  activityServiceUrl: string | undefined
+): string | null {
+  const candidate = trustedServiceUrl || activityServiceUrl;
+  if (!candidate) return null;
+  if (
+    trustedServiceUrl &&
+    activityServiceUrl &&
+    normalizeUrl(trustedServiceUrl) !== normalizeUrl(activityServiceUrl)
+  ) {
+    return null;
+  }
+  return isAllowedServiceUrl(candidate) ? candidate : null;
 }
 
 // ─── Send Reply via Bot Framework ───────────────────────────────
@@ -393,84 +487,137 @@ async function getBotFrameworkToken(): Promise<string> {
 
 // ─── JWT Token Verification ─────────────────────────────────────
 
+interface BotTokenClaims {
+  iss?: string;
+  aud?: string;
+  exp?: number;
+  nbf?: number;
+  serviceurl?: string;
+  [key: string]: unknown;
+}
+
 /**
- * Verify the Bot Framework JWT token from the Authorization header.
- *
- * In production, this should:
- * 1. Fetch the OpenID metadata from Bot Framework
- * 2. Validate the JWT signature against the JWKS
- * 3. Verify issuer, audience, and expiration claims
- *
- * This is a foundation implementation that performs basic validation.
- * Full cryptographic verification requires a JWT library (e.g., jose).
+ * Fetch (and cache) the Bot Framework signing keys, discovering the JWKS URI
+ * from the OpenID metadata document rather than hardcoding it.
+ */
+async function getSigningKeys(): Promise<SigningJwk[]> {
+  if (jwksCache && Date.now() - jwksCache.fetchedAt < JWKS_CACHE_TTL) {
+    return jwksCache.keys;
+  }
+
+  const metaRes = await fetch(BOT_FRAMEWORK_OPENID_METADATA, {
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!metaRes.ok) {
+    throw new Error(
+      `Failed to fetch Bot Framework OpenID metadata: ${metaRes.status}`
+    );
+  }
+  const meta = await metaRes.json();
+  const jwksUri: string | undefined = meta.jwks_uri;
+  if (!jwksUri) throw new Error("Bot Framework OpenID metadata missing jwks_uri");
+
+  const jwksRes = await fetch(jwksUri, { signal: AbortSignal.timeout(10000) });
+  if (!jwksRes.ok) {
+    throw new Error(`Failed to fetch Bot Framework JWKS: ${jwksRes.status}`);
+  }
+  const jwks = await jwksRes.json();
+  const keys: SigningJwk[] = Array.isArray(jwks.keys) ? jwks.keys : [];
+  jwksCache = { keys, fetchedAt: Date.now() };
+  return keys;
+}
+
+async function getSigningKey(kid: string): Promise<SigningJwk | null> {
+  const keys = await getSigningKeys();
+  const match = keys.find((k) => k.kid === kid);
+  if (match) return match;
+
+  // Key may have rotated since the cache was populated — refetch once.
+  jwksCache = null;
+  const refreshed = await getSigningKeys();
+  return refreshed.find((k) => k.kid === kid) ?? null;
+}
+
+/**
+ * Verify the Bot Framework JWT from the Authorization header: RS256 signature
+ * against the published JWKS, plus issuer/audience/expiry claims. Returns the
+ * validated claims on success, or null on any failure.
  */
 async function verifyBotFrameworkToken(
   authHeader: string | null
-): Promise<boolean> {
-  if (!authHeader) return false;
+): Promise<BotTokenClaims | null> {
+  if (!authHeader) return null;
 
   const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") return false;
+  if (parts.length !== 2 || parts[0] !== "Bearer") return null;
 
   const token = parts[1];
-  if (!token) return false;
+  if (!token) return null;
 
   try {
-    // Decode the JWT payload (without signature verification for now)
-    const payloadPart = token.split(".")[1];
-    if (!payloadPart) return false;
+    const segments = token.split(".");
+    if (segments.length !== 3) return null;
+    const [headerB64, payloadB64, signatureB64] = segments;
 
-    const payload = JSON.parse(
-      Buffer.from(payloadPart, "base64url").toString("utf8")
+    const header = JSON.parse(
+      Buffer.from(headerB64, "base64url").toString("utf8")
+    );
+    const payload: BotTokenClaims = JSON.parse(
+      Buffer.from(payloadB64, "base64url").toString("utf8")
     );
 
-    // Verify basic claims
+    // Bot Framework signs with RS256; reject anything else (incl. "none").
+    if (header.alg !== "RS256" || !header.kid) return null;
+
+    const jwk = await getSigningKey(header.kid);
+    if (!jwk) {
+      console.warn("Bot Framework token references unknown signing key");
+      return null;
+    }
+
+    const publicKey = createPublicKey({ key: jwk, format: "jwk" });
+    const signatureValid = cryptoVerify(
+      "RSA-SHA256",
+      Buffer.from(`${headerB64}.${payloadB64}`),
+      publicKey,
+      Buffer.from(signatureB64, "base64url")
+    );
+    if (!signatureValid) {
+      console.warn("Bot Framework token signature verification failed");
+      return null;
+    }
+
     const now = Math.floor(Date.now() / 1000);
 
-    // Check expiration
     if (payload.exp && payload.exp < now) {
       console.warn("Bot Framework token expired");
-      return false;
+      return null;
     }
-
-    // Check not-before
     if (payload.nbf && payload.nbf > now + 300) {
       console.warn("Bot Framework token not yet valid");
-      return false;
+      return null;
     }
 
-    // Verify issuer is Bot Framework or Azure AD
     const validIssuers = [
       "https://api.botframework.com",
       `https://sts.windows.net/${AZURE_TENANT_ID}/`,
       `https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0`,
     ];
-
     if (payload.iss && !validIssuers.includes(payload.iss)) {
       console.warn("Bot Framework token has unexpected issuer:", payload.iss);
-      return false;
+      return null;
     }
 
-    // Verify audience matches our app ID
     const AZURE_CLIENT_ID =
       process.env.AZURE_CLIENT_ID || "8f0b9c26-2b2a-4655-8e36-32ad350ef6e4";
-
     if (payload.aud && payload.aud !== AZURE_CLIENT_ID) {
       console.warn("Bot Framework token has unexpected audience:", payload.aud);
-      return false;
+      return null;
     }
 
-    // NOTE: Full production implementation should also verify the JWT
-    // signature using the JWKS from the OpenID metadata endpoint.
-    // Consider using the 'jose' library for complete JWT verification:
-    //
-    //   import * as jose from 'jose';
-    //   const JWKS = jose.createRemoteJWKSet(new URL(jwksUri));
-    //   await jose.jwtVerify(token, JWKS, { issuer, audience });
-
-    return true;
+    return payload;
   } catch (err) {
     console.error("Bot Framework token verification error:", err);
-    return false;
+    return null;
   }
 }
