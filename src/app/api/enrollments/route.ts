@@ -9,6 +9,7 @@ import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
 import { provisionCourseMaterials } from "@/lib/services/course-materials";
 import { awardForAction } from "@/lib/gamification/point-rules";
+import { getCurrentCourseVersionId } from "@/lib/courses/versioning";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -279,11 +280,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Pin the enrollment to the course's current published version so later
+  // edits to the course don't change what this learner is taking.
+  const courseVersionId = await getCurrentCourseVersionId(service, validation.data.course_id);
+
   const enrollmentData = {
     user_id: targetUserId,
     course_id: validation.data.course_id,
     due_date: validation.data.due_date || null,
     assigned_by: assignedBy,
+    ...(courseVersionId ? { course_version_id: courseVersionId } : {}),
   };
 
   const { data, error } = await service
