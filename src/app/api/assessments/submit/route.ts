@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
+import { awardForAction } from "@/lib/gamification/point-rules";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -121,24 +122,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "An internal error occurred" }, { status: 500 });
   }
 
-  // Award points
-  const points = passed ? 50 : 10;
-  await service.from("points_ledger").insert({
-    user_id: profile.id,
-    action_type: passed ? "quiz_pass" : "quiz_attempt",
-    points,
-    reference_type: "assessment",
-    reference_id: assessment_id,
+  // Award points per the configured point rules.
+  await awardForAction(service, profile.id, passed ? "quiz_pass" : "quiz_attempt", {
+    referenceType: "assessment",
+    referenceId: assessment_id,
   });
 
   // Bonus for perfect score
   if (score === 100 && !needsGrading) {
-    await service.from("points_ledger").insert({
-      user_id: profile.id,
-      action_type: "perfect_score",
-      points: 25,
-      reference_type: "assessment",
-      reference_id: assessment_id,
+    await awardForAction(service, profile.id, "perfect_score", {
+      referenceType: "assessment",
+      referenceId: assessment_id,
     });
   }
 

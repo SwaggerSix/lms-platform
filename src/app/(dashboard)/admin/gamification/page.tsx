@@ -4,22 +4,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import GamificationClient from "./gamification-client";
 import type { PointRule, BadgeItem, LeaderboardUser } from "./gamification-client";
+import { getResolvedPointRules, levelForPoints } from "@/lib/gamification/point-rules";
 
 export const metadata: Metadata = {
   title: "Gamification | LMS Platform",
   description: "Configure point rules, badges, and leaderboard settings",
 };
-
-const fallbackPointRules: PointRule[] = [
-  { id: "1", action: "Course Completion", points: 100, description: "Awarded when a learner completes all modules in a course", enabled: true },
-  { id: "2", action: "Quiz Pass", points: 50, description: "Awarded for passing a quiz with a score above the threshold", enabled: true },
-  { id: "3", action: "Perfect Score", points: 25, description: "Bonus points for achieving 100% on any assessment", enabled: true },
-  { id: "4", action: "Discussion Post", points: 10, description: "Awarded for contributing to course discussion forums", enabled: true },
-  { id: "5", action: "Daily Login", points: 5, description: "Awarded once per day when a user logs into the platform", enabled: true },
-  { id: "6", action: "Learning Streak (7-day)", points: 50, description: "Bonus for maintaining a 7-day consecutive learning streak", enabled: true },
-  { id: "7", action: "Enrollment", points: 10, description: "Awarded when a learner enrolls in a new course", enabled: false },
-  { id: "8", action: "Path Completion", points: 200, description: "Awarded when a learner completes an entire learning path", enabled: true },
-];
 
 export default async function GamificationPage() {
   const supabase = await createClient();
@@ -67,11 +57,20 @@ export default async function GamificationPage() {
   // --- Fetch leaderboard: aggregate points per user, join user info and badge counts ---
   let leaderboard: LeaderboardUser[] = [];
   try {
-    const { data: pointsRows } = await service
-      .from("points_ledger")
-      .select("user_id, points, user:users(first_name, last_name)")
-      .order("created_at", { ascending: false })
-      .limit(500);
+    // Aggregate every ledger row (paginated) so totals aren't truncated to the
+    // most recent 500 entries.
+    const PAGE = 1000;
+    const pointsRows: any[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const { data: batch } = await service
+        .from("points_ledger")
+        .select("user_id, points, user:users(first_name, last_name)")
+        .order("created_at", { ascending: false })
+        .range(offset, offset + PAGE - 1);
+      const rows = batch ?? [];
+      pointsRows.push(...rows);
+      if (rows.length < PAGE) break;
+    }
 
     // Aggregate total points per user
     const userPointsMap = new Map<string, { totalPoints: number; firstName: string; lastName: string }>();
@@ -109,7 +108,7 @@ export default async function GamificationPage() {
       .slice(0, 10);
 
     leaderboard = sorted.map(([userId, data], index) => {
-      const level = Math.floor(data.totalPoints / 500) + 1;
+      const level = levelForPoints(data.totalPoints);
       const initials = `${(data.firstName || "?")[0]}${(data.lastName || "?")[0]}`.toUpperCase();
       return {
         rank: index + 1,
@@ -124,8 +123,16 @@ export default async function GamificationPage() {
     leaderboard = [];
   }
 
-  // --- Point rules: use fallback since these are typically config-driven ---
-  const pointRules = fallbackPointRules;
+  // --- Point rules: built-in defaults with any saved admin overrides applied ---
+  const resolvedRules = await getResolvedPointRules(service);
+  const pointRules: PointRule[] = resolvedRules.map((r) => ({
+    id: r.key,
+    key: r.key,
+    action: r.action,
+    points: r.points,
+    description: r.description,
+    enabled: r.enabled,
+  }));
 
   return (
     <GamificationClient

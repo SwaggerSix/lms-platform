@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import AchievementsClient from "./achievements-client";
 import type { AchievementsData, BadgeData, LeaderboardEntry, ActivityEntry } from "./achievements-client";
+import { POINTS_PER_LEVEL } from "@/lib/gamification/point-rules";
 
 export const metadata: Metadata = {
   title: "Achievements | LMS Platform",
@@ -28,11 +29,11 @@ const LEVEL_NAMES: Record<number, string> = {
 };
 
 function calculateLevel(totalPoints: number): { level: number; currentXP: number; nextLevelXP: number } {
-  // Every 500 points = 1 level, max level 7
-  const level = Math.min(7, Math.max(1, Math.floor(totalPoints / 500) + 1));
-  const pointsForCurrentLevel = (level - 1) * 500;
+  // Every POINTS_PER_LEVEL points = 1 level, max level 7.
+  const level = Math.min(7, Math.max(1, Math.floor(totalPoints / POINTS_PER_LEVEL) + 1));
+  const pointsForCurrentLevel = (level - 1) * POINTS_PER_LEVEL;
   const currentXP = totalPoints - pointsForCurrentLevel;
-  const nextLevelXP = level >= 7 ? 500 : 500; // Always 500 per level
+  const nextLevelXP = POINTS_PER_LEVEL;
   return { level, currentXP, nextLevelXP };
 }
 
