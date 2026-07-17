@@ -175,6 +175,43 @@ export default function CoursesClient({
   // Edit modal state
   const [editModal, setEditModal] = useState<CourseItem | null>(null);
   const [editForm, setEditForm] = useState<Partial<CourseItem>>({});
+
+  // Course version history (L2) for the currently-edited course.
+  interface VersionSummary { id: string; version_number: number; is_current: boolean; published_at: string; published_by: string | null; module_count: number; lesson_count: number; }
+  const [versions, setVersions] = useState<VersionSummary[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [publishingVersion, setPublishingVersion] = useState(false);
+
+  const loadVersions = useCallback(async (slug: string) => {
+    setVersionsLoading(true);
+    try {
+      const res = await fetch(`/api/courses/${slug}/versions`);
+      const data = await res.json();
+      if (res.ok) setVersions(data.versions ?? []);
+    } catch { /* leave empty */ } finally {
+      setVersionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (editModal) { setVersions([]); loadVersions(editModal.slug); }
+  }, [editModal, loadVersions]);
+
+  const handlePublishVersion = useCallback(async () => {
+    if (!editModal) return;
+    setPublishingVersion(true);
+    try {
+      const res = await fetch(`/api/courses/${editModal.slug}/versions`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Failed to publish new version'); return; }
+      toast.success(`Published version ${data.version?.version_number ?? ''}`.trim());
+      loadVersions(editModal.slug);
+    } catch {
+      toast.error('Failed to publish new version');
+    } finally {
+      setPublishingVersion(false);
+    }
+  }, [editModal, toast, loadVersions]);
   // null until the course detail loads, so an unanswered fetch never flips the flag off.
   const [storefrontListed, setStorefrontListed] = useState<boolean | null>(null);
   const [nasbaForm, setNasbaForm] = useState(NASBA_EMPTY);
@@ -718,6 +755,42 @@ export default function CoursesClient({
                   onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 />
+              </div>
+
+              {/* Version history (L2) */}
+              <div className="rounded-lg border border-gray-200 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Versions</p>
+                    <p className="text-xs text-gray-500">
+                      {versions.length > 0
+                        ? `Current: v${versions.find((v) => v.is_current)?.version_number ?? versions[0].version_number}`
+                        : versionsLoading
+                          ? 'Loading…'
+                          : 'No versions yet — publish to capture v1.'}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handlePublishVersion} disabled={publishingVersion}>
+                    {publishingVersion ? 'Publishing…' : 'Publish new version'}
+                  </Button>
+                </div>
+                {versions.length > 0 && (
+                  <ul className="mt-3 max-h-40 space-y-1 overflow-auto">
+                    {versions.map((v) => (
+                      <li key={v.id} className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                        <span>
+                          v{v.version_number}
+                          {v.is_current && <span className="ml-1 rounded bg-green-100 px-1.5 py-0.5 text-green-700">current</span>}
+                          {` · ${v.module_count} modules, ${v.lesson_count} lessons`}
+                        </span>
+                        <span className="shrink-0 text-gray-400">
+                          {v.published_at ? new Date(v.published_at).toLocaleDateString() : ''}
+                          {v.published_by ? ` · ${v.published_by}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Cover image (licensed). Falls back to generated cover art when empty. */}
