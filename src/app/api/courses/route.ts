@@ -6,6 +6,7 @@ import { validateBody, createCourseSchema, updateCourseSchema } from "@/lib/vali
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { snapshotCourseVersion } from "@/lib/courses/versioning";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -142,6 +143,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // If created directly as published, capture the initial version snapshot
+  // (after inline modules/lessons exist). Best-effort.
+  if (data.status === "published") {
+    await snapshotCourseVersion(service, data.id, auth.user.id);
+  }
+
   // Fire webhook (non-blocking)
   dispatchWebhook("course.created", {
     course_id: data.id,
@@ -178,15 +185,16 @@ export async function PATCH(request: NextRequest) {
   }
   const { id, ...updates } = validation.data;
 
+  // Fetch prior state for ownership and publish-transition detection.
+  const { data: prior } = await service
+    .from("courses")
+    .select("created_by, status")
+    .eq("id", id)
+    .single();
+
   // If instructor (not admin), verify they own the course
   if (auth.user.role === "instructor") {
-    const { data: course } = await service
-      .from("courses")
-      .select("created_by")
-      .eq("id", id)
-      .single();
-
-    if (!course || course.created_by !== auth.user.id) {
+    if (!prior || prior.created_by !== auth.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
@@ -201,6 +209,12 @@ export async function PATCH(request: NextRequest) {
   if (error) {
     console.error("Courses API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  // Course versioning: capture an immutable snapshot when the course becomes
+  // published. Best-effort — never blocks the publish itself.
+  if (updates.status === "published" && prior?.status !== "published") {
+    await snapshotCourseVersion(service, id, auth.user.id);
   }
 
   // Fire webhook (non-blocking)
