@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Plus, Trash2 } from "lucide-react";
 import EmbedCodeGenerator from "@/components/microlearning/embed-code-generator";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -46,6 +46,68 @@ const typeLabels: Record<string, string> = {
   checklist: "Checklist",
 };
 
+// Structured content draft covering every nugget type's fields. buildNuggetContent
+// serializes only the fields the chosen type uses, matching exactly what the
+// learner nugget renderer reads (see components/microlearning/nugget-card.tsx).
+type ContentDraft = {
+  text: string;
+  source: string;
+  front: string;
+  back: string;
+  question: string;
+  options: string[];
+  correct_answer: number;
+  explanation: string;
+  url: string;
+  image_url: string;
+  caption: string;
+  items: string[];
+};
+
+function emptyContentDraft(): ContentDraft {
+  return {
+    text: "", source: "",
+    front: "", back: "",
+    question: "", options: ["", ""], correct_answer: 0, explanation: "",
+    url: "", image_url: "", caption: "",
+    items: [""],
+  };
+}
+
+function buildNuggetContent(
+  type: string,
+  d: ContentDraft
+): { content: Record<string, unknown>; error?: string } {
+  switch (type) {
+    case "tip":
+      if (!d.text.trim()) return { content: {}, error: "Add the tip text." };
+      return { content: { text: d.text.trim(), ...(d.source.trim() ? { source: d.source.trim() } : {}) } };
+    case "flashcard":
+      if (!d.front.trim() || !d.back.trim()) return { content: {}, error: "A flashcard needs both a front and a back." };
+      return { content: { front: d.front.trim(), back: d.back.trim() } };
+    case "quiz": {
+      const options = d.options.map((o) => o.trim()).filter(Boolean);
+      if (!d.question.trim()) return { content: {}, error: "Add the quiz question." };
+      if (options.length < 2) return { content: {}, error: "A quiz needs at least two options." };
+      const correct_answer = Math.min(Math.max(0, d.correct_answer), options.length - 1);
+      return { content: { question: d.question.trim(), options, correct_answer, ...(d.explanation.trim() ? { explanation: d.explanation.trim() } : {}) } };
+    }
+    case "video_clip":
+      if (!d.url.trim()) return { content: {}, error: "Add the video URL." };
+      return { content: { url: d.url.trim(), ...(d.caption.trim() ? { caption: d.caption.trim() } : {}) } };
+    case "infographic":
+      if (!d.image_url.trim()) return { content: {}, error: "Add the image URL." };
+      return { content: { image_url: d.image_url.trim(), ...(d.caption.trim() ? { caption: d.caption.trim() } : {}) } };
+    case "checklist": {
+      const items = d.items.map((i) => i.trim()).filter(Boolean);
+      if (items.length < 1) return { content: {}, error: "Add at least one checklist item." };
+      return { content: { items } };
+    }
+    default:
+      return { content: {} };
+  }
+}
+
 export default function AdminMicrolearningClient({ initialNuggets, initialWidgets, stats }: Props) {
   const [activeTab, setActiveTab] = useState<"nuggets" | "widgets">("nuggets");
   const [nuggets, setNuggets] = useState<Nugget[]>(initialNuggets);
@@ -59,11 +121,18 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
     title: "",
     content_type: "tip",
     difficulty: "beginner",
-    content: "{}",
     tags: "",
     estimated_seconds: 60,
   });
+  const [contentDraft, setContentDraft] = useState<ContentDraft>(emptyContentDraft());
+  const [nuggetError, setNuggetError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+
+  const setDraft = (patch: Partial<ContentDraft>) => setContentDraft((p) => ({ ...p, ...patch }));
+  const setQuizOption = (idx: number, value: string) =>
+    setContentDraft((p) => ({ ...p, options: p.options.map((o, i) => (i === idx ? value : o)) }));
+  const setChecklistItem = (idx: number, value: string) =>
+    setContentDraft((p) => ({ ...p, items: p.items.map((o, i) => (i === idx ? value : o)) }));
 
   // Widget form state
   const [widgetForm, setWidgetForm] = useState({
@@ -73,17 +142,16 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
   });
 
   const handleCreateNugget = async () => {
+    setNuggetError(null);
+    const built = buildNuggetContent(nuggetForm.content_type, contentDraft);
+    if (built.error) {
+      setNuggetError(built.error);
+      return;
+    }
+    const content = built.content;
+
     setCreating(true);
     try {
-      let content: Record<string, unknown>;
-      try {
-        content = JSON.parse(nuggetForm.content);
-      } catch {
-        alert("Invalid JSON in content field");
-        setCreating(false);
-        return;
-      }
-
       const res = await fetch("/api/microlearning/nuggets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +174,8 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       const data = await res.json();
       setNuggets((prev) => [data, ...prev]);
       setShowCreateNugget(false);
-      setNuggetForm({ title: "", content_type: "tip", difficulty: "beginner", content: "{}", tags: "", estimated_seconds: 60 });
+      setNuggetForm({ title: "", content_type: "tip", difficulty: "beginner", tags: "", estimated_seconds: 60 });
+      setContentDraft(emptyContentDraft());
     } finally {
       setCreating(false);
     }
@@ -247,7 +316,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Learning Nuggets</h2>
-            <Button onClick={() => setShowCreateNugget(true)}>
+            <Button onClick={() => { setNuggetError(null); setContentDraft(emptyContentDraft()); setShowCreateNugget(true); }}>
               Create Nugget
             </Button>
           </div>
@@ -293,15 +362,62 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                   </div>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Content (JSON)</label>
-                <textarea
-                  value={nuggetForm.content}
-                  onChange={(e) => setNuggetForm((p) => ({ ...p, content: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  rows={4}
-                  placeholder='{"text": "Your tip content here..."}'
-                />
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700 block">Content</label>
+                {nuggetForm.content_type === "tip" && (
+                  <>
+                    <textarea value={contentDraft.text} onChange={(e) => setDraft({ text: e.target.value })} rows={3} placeholder="Tip text" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <input type="text" value={contentDraft.source} onChange={(e) => setDraft({ source: e.target.value })} placeholder="Source (optional)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </>
+                )}
+                {nuggetForm.content_type === "flashcard" && (
+                  <>
+                    <input type="text" value={contentDraft.front} onChange={(e) => setDraft({ front: e.target.value })} placeholder="Front (prompt)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <textarea value={contentDraft.back} onChange={(e) => setDraft({ back: e.target.value })} rows={2} placeholder="Back (answer)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </>
+                )}
+                {nuggetForm.content_type === "quiz" && (
+                  <>
+                    <input type="text" value={contentDraft.question} onChange={(e) => setDraft({ question: e.target.value })} placeholder="Question" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <p className="text-xs text-gray-500">Select the radio next to the correct answer.</p>
+                    {contentDraft.options.map((opt, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="radio" name="quiz-correct" checked={contentDraft.correct_answer === i} onChange={() => setDraft({ correct_answer: i })} className="text-primary-600" aria-label={`Mark option ${i + 1} correct`} />
+                        <input type="text" value={opt} onChange={(e) => setQuizOption(i, e.target.value)} placeholder={`Option ${i + 1}`} className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        {contentDraft.options.length > 2 && (
+                          <button type="button" onClick={() => setContentDraft((p) => ({ ...p, options: p.options.filter((_, idx) => idx !== i), correct_answer: Math.max(0, p.correct_answer >= i ? p.correct_answer - 1 : p.correct_answer) }))} className="text-gray-400 hover:text-red-600" aria-label="Remove option"><Trash2 className="h-4 w-4" /></button>
+                        )}
+                      </div>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={() => setContentDraft((p) => ({ ...p, options: [...p.options, ""] }))}><Plus className="h-3 w-3" /> Add option</Button>
+                    <textarea value={contentDraft.explanation} onChange={(e) => setDraft({ explanation: e.target.value })} rows={2} placeholder="Explanation (optional)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </>
+                )}
+                {nuggetForm.content_type === "video_clip" && (
+                  <>
+                    <input type="url" value={contentDraft.url} onChange={(e) => setDraft({ url: e.target.value })} placeholder="Video URL" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <input type="text" value={contentDraft.caption} onChange={(e) => setDraft({ caption: e.target.value })} placeholder="Caption (optional)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </>
+                )}
+                {nuggetForm.content_type === "infographic" && (
+                  <>
+                    <input type="url" value={contentDraft.image_url} onChange={(e) => setDraft({ image_url: e.target.value })} placeholder="Image URL" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    <input type="text" value={contentDraft.caption} onChange={(e) => setDraft({ caption: e.target.value })} placeholder="Caption (optional)" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                  </>
+                )}
+                {nuggetForm.content_type === "checklist" && (
+                  <>
+                    {contentDraft.items.map((item, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="text" value={item} onChange={(e) => setChecklistItem(i, e.target.value)} placeholder={`Item ${i + 1}`} className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        {contentDraft.items.length > 1 && (
+                          <button type="button" onClick={() => setContentDraft((p) => ({ ...p, items: p.items.filter((_, idx) => idx !== i) }))} className="text-gray-400 hover:text-red-600" aria-label="Remove item"><Trash2 className="h-4 w-4" /></button>
+                        )}
+                      </div>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={() => setContentDraft((p) => ({ ...p, items: [...p.items, ""] }))}><Plus className="h-3 w-3" /> Add item</Button>
+                  </>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -324,6 +440,7 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
                   />
                 </div>
               </div>
+              {nuggetError && <p className="text-sm text-red-600">{nuggetError}</p>}
               <div className="flex justify-end gap-3">
                 <Button variant="ghost" onClick={() => setShowCreateNugget(false)}>
                   Cancel
