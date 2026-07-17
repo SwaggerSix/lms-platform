@@ -92,6 +92,19 @@ export default async function UsersPage({
 
   const organizations = (orgRows ?? []).map((o: any) => ({ id: o.id, name: o.name }));
 
+  // Managers/admins available as a "reports to" selection in the Add User form.
+  const { data: managerRows } = await service
+    .from('users')
+    .select('id, first_name, last_name, email')
+    .in('role', ['admin', 'manager', 'super_admin'])
+    .eq('status', 'active')
+    .order('first_name');
+
+  const managers = (managerRows ?? []).map((m: any) => ({
+    id: m.id,
+    name: `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim() || m.email || m.id,
+  }));
+
   const users: UserItem[] = (rows ?? []).map((row: any) => ({
     id: row.id,
     firstName: row.first_name ?? '',
@@ -110,6 +123,7 @@ export default async function UsersPage({
     <UsersClient
       users={users}
       organizations={organizations}
+      managers={managers}
       currentUserRole={dbUser.role}
       totalCount={count ?? users.length}
       page={page}
