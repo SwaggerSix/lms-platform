@@ -108,6 +108,9 @@ export async function middleware(request: NextRequest) {
       "/api/cron/",
       "/api/push/subscribe",
       "/api/evaluations/webhook",
+      // SCIM is a machine-to-machine API authenticated by its own bearer token
+      // (no browser Origin); the IdP's PATCH/PUT/DELETE must not be CSRF-blocked.
+      "/api/scim/",
     ];
     const isExempt = csrfExemptPaths.some((p) => pathname.startsWith(p));
 
@@ -236,6 +239,9 @@ export async function middleware(request: NextRequest) {
     // 307-redirected to /login and receives the login page HTML instead of JSON.
     "/api/integrations/partner-portal/webhook",
     "/api/integrations/partner-portal/courses",
+    // SCIM 2.0 provisioning endpoints authenticate with the provider's SCIM
+    // bearer token, not a user session — must skip the login redirect.
+    "/api/scim/",
   ];
   const isPublicPath = publicPaths.some((path) =>
     pathname.startsWith(path)
