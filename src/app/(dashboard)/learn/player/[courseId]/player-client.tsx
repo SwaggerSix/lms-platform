@@ -71,6 +71,8 @@ export interface PlayerCourse {
   id: string;
   title: string;
   modules: PlayerModule[];
+  /** Pinned course version number, if this enrollment is version-locked. */
+  version?: number | null;
 }
 
 export interface PlayerProps {
@@ -296,6 +298,14 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
           </a>
           <div className="h-5 w-px bg-gray-600" />
           <h1 className="text-sm font-medium text-white">{course.title}</h1>
+          {course.version != null && (
+            <span
+              className="rounded bg-gray-700 px-1.5 py-0.5 text-xs font-medium text-gray-300"
+              title="You are taking a pinned version of this course; later edits won't change your content."
+            >
+              v{course.version}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">

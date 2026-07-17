@@ -156,6 +156,31 @@ export async function snapshotCourseVersion(
   }
 }
 
+/**
+ * Load the module/lesson structure captured in a specific version's snapshot.
+ * Used by the learner-facing reads (player, completion math) so an in-progress
+ * learner sees the exact version they are pinned to rather than the live course,
+ * which may have been edited since. Returns null if the version is missing or
+ * its snapshot is malformed (callers fall back to the live course tables).
+ */
+export async function getVersionSnapshotStructure(
+  service: SupabaseClient,
+  versionId: string
+): Promise<{ versionNumber: number; modules: CourseSnapshot["modules"] } | null> {
+  const { data } = await service
+    .from("course_versions")
+    .select("version_number, snapshot")
+    .eq("id", versionId)
+    .maybeSingle();
+
+  if (!data) return null;
+  const snapshot = data.snapshot as CourseSnapshot | null;
+  const modules = Array.isArray(snapshot?.modules) ? snapshot!.modules : null;
+  if (!modules) return null;
+
+  return { versionNumber: data.version_number as number, modules };
+}
+
 /** The current (published) version id for a course, or null if unversioned. */
 export async function getCurrentCourseVersionId(
   service: SupabaseClient,

@@ -53,7 +53,7 @@ async function generateCompletionReport(
     let query = service
       .from("enrollments")
       .select(
-        "id, status, score, completed_at, time_spent, enrolled_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
+        "id, status, score, completed_at, time_spent, enrolled_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization:organizations(name)), course:courses(title), version:course_versions!enrollments_course_version_id_fkey(version_number)"
       )
       .order("completed_at", { ascending: false })
       .range(offset, offset + PAGE_SIZE - 1);
@@ -80,6 +80,7 @@ async function generateCompletionReport(
     email: row.user?.email ?? "",
     department: row.user?.organization?.name ?? "N/A",
     course_title: row.course?.title ?? "Unknown",
+    course_version: row.version?.version_number ?? null,
     status: row.status,
     score: row.score,
     enrolled_at: row.enrolled_at,

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getVersionSnapshotStructure } from "@/lib/courses/versioning";
 import PlayerClient, {
   type PlayerCourse,
   type PlayerModule,
@@ -150,13 +151,46 @@ export default async function CoursePlayerPage({
   // Fetch the user's enrollment for this course
   const { data: enrollment } = await service
     .from("enrollments")
-    .select("id, status, time_spent, enrolled_at")
+    .select("id, status, time_spent, enrolled_at, course_version_id")
     .eq("user_id", dbUser.id)
     .eq("course_id", courseId)
     .single();
 
-  // Gather all lesson IDs for progress lookup
   const courseData = course as any;
+
+  // Version pinning: if this enrollment is pinned to a course version, render
+  // the module/lesson structure and content from that version's immutable
+  // snapshot rather than the live course, so edits published since the learner
+  // started never change what an in-progress learner sees. Drip/pacing config
+  // is a delivery concern (not versioned content), so it is overlaid from the
+  // live module of the same id when still present. Falls back to the live
+  // course when unpinned or the snapshot can't be read.
+  let versionNumber: number | null = null;
+  if (enrollment?.course_version_id) {
+    const versioned = await getVersionSnapshotStructure(
+      service,
+      enrollment.course_version_id
+    );
+    if (versioned) {
+      versionNumber = versioned.versionNumber;
+      const liveDripByModuleId = new Map<string, any>(
+        (courseData.modules ?? []).map((m: any) => [
+          m.id,
+          { drip_type: m.drip_type, drip_days: m.drip_days, drip_date: m.drip_date },
+        ])
+      );
+      courseData.modules = versioned.modules.map((m) => ({
+        ...m,
+        ...(liveDripByModuleId.get(m.id) ?? {
+          drip_type: "immediate",
+          drip_days: null,
+          drip_date: null,
+        }),
+      }));
+    }
+  }
+
+  // Gather all lesson IDs for progress lookup
   const allLessonIds: string[] = (courseData.modules ?? []).flatMap(
     (m: any) => (m.lessons ?? []).map((l: any) => l.id)
   );
@@ -322,6 +356,7 @@ export default async function CoursePlayerPage({
     id: courseData.id,
     title: courseData.title,
     modules: playerModules,
+    version: versionNumber,
   };
 
   return (
