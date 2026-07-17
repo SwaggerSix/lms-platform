@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/toast';
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getHelp } from "@/lib/help-content";
@@ -1001,30 +1002,30 @@ export default function UsersClient({
                 </p>
               )}
               <div className="max-h-72 overflow-auto rounded-lg border border-gray-200">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-left text-xs text-gray-500">
-                    <tr>
-                      <th className="px-3 py-2">Row</th>
-                      <th className="px-3 py-2">Email</th>
-                      <th className="px-3 py-2">Result</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Row</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Result</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {importResults.results.map((r) => (
-                      <tr key={r.row} className="border-t border-gray-100">
-                        <td className="px-3 py-2 text-gray-500">{r.row}</td>
-                        <td className="px-3 py-2 text-gray-800">{r.email || '—'}</td>
-                        <td className="px-3 py-2">
+                      <TableRow key={r.row}>
+                        <TableCell className="text-gray-500">{r.row}</TableCell>
+                        <TableCell className="text-gray-800">{r.email || '—'}</TableCell>
+                        <TableCell>
                           {r.status === 'created' ? (
                             <span className="text-green-700">Created</span>
                           ) : (
                             <span className="text-red-700">{r.error || 'Failed'}</span>
                           )}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}
