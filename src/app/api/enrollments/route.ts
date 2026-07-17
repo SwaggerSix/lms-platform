@@ -8,6 +8,7 @@ import { trackLearningEvent } from "@/lib/ai/track-event";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { rateLimit } from "@/lib/rate-limit";
 import { provisionCourseMaterials } from "@/lib/services/course-materials";
+import { awardForAction } from "@/lib/gamification/point-rules";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -303,13 +304,10 @@ export async function POST(request: NextRequest) {
   // for future access). Best-effort.
   await provisionCourseMaterials(service, targetUserId, validation.data.course_id);
 
-  // Award points for enrollment
-  await service.from("points_ledger").insert({
-    user_id: enrollmentData.user_id,
-    action_type: "enrollment",
-    points: 10,
-    reference_type: "course",
-    reference_id: validation.data.course_id,
+  // Award points for enrollment per the configured point rule.
+  await awardForAction(service, enrollmentData.user_id, "enrollment", {
+    referenceType: "course",
+    referenceId: validation.data.course_id,
   });
 
   // Track enrollment event (fire-and-forget)

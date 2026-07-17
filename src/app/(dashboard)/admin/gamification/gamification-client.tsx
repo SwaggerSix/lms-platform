@@ -27,6 +27,8 @@ import { useToast } from "@/components/ui/toast";
 
 export interface PointRule {
   id: string;
+  /** Canonical action key that ties the rule to an award site (defaults only). */
+  key?: string;
   action: string;
   points: number;
   description: string;
@@ -119,7 +121,7 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           key: "point_rules",
-          value: pointRules.map((r) => ({ id: r.id, action: r.action, points: r.points, enabled: r.enabled })),
+          value: pointRules.map((r) => ({ id: r.id, key: r.key ?? r.id, action: r.action, points: r.points, description: r.description, enabled: r.enabled })),
         }),
       });
       if (!res.ok) {

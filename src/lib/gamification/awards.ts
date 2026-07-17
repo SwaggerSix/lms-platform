@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
+import { awardForAction } from "@/lib/gamification/point-rules";
 
 /**
  * Badge criteria shape stored in the badges.criteria JSONB column.
@@ -118,14 +119,10 @@ export async function checkAndAwardBadges(
         continue;
       }
 
-      // Award bonus points for earning the badge
-      const bonusPoints = 50;
-      await supabase.from("points_ledger").insert({
-        user_id: userId,
-        action_type: "badge_earned",
-        points: bonusPoints,
-        reference_type: "badge",
-        reference_id: badge.id,
+      // Award bonus points for earning the badge, per the configured rule.
+      await awardForAction(supabase, userId, "badge_earned", {
+        referenceType: "badge",
+        referenceId: badge.id,
       });
 
       // Fire webhook (non-blocking)

@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
-import { checkAndAwardBadges, awardPoints } from "@/lib/gamification/awards";
+import { checkAndAwardBadges } from "@/lib/gamification/awards";
+import { awardForAction } from "@/lib/gamification/point-rules";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { createEvaluationAssignments } from "@/lib/evaluations/create-assignments";
@@ -134,15 +135,11 @@ export async function PATCH(request: NextRequest) {
 
   if (lesson_id && status === "completed") {
     try {
-      // Award points for completing a lesson
-      await awardPoints(
-        supabase,
-        profile.id,
-        10,
-        "lesson_completion",
-        "lesson",
-        lesson_id
-      );
+      // Award points for completing a lesson, per the configured point rule.
+      await awardForAction(supabase, profile.id, "lesson_completion", {
+        referenceType: "lesson",
+        referenceId: lesson_id,
+      });
 
       // Check if the user has earned any new badges
       newBadges = await checkAndAwardBadges(supabase, profile.id);
@@ -208,16 +205,12 @@ export async function PATCH(request: NextRequest) {
             }
           }
 
-          // Award bonus points for course completion
+          // Award bonus points for course completion, per the configured rule.
           try {
-            await awardPoints(
-              supabase,
-              profile.id,
-              50,
-              "course_completion",
-              "enrollment",
-              enrollment_id
-            );
+            await awardForAction(supabase, profile.id, "course_completion", {
+              referenceType: "enrollment",
+              referenceId: enrollment_id,
+            });
             newBadges = await checkAndAwardBadges(supabase, profile.id);
           } catch {
             // Gamification errors should not block completion

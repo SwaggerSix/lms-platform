@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { levelForPoints } from "@/lib/gamification/point-rules";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       total_points: totalPoints,
-      level: Math.floor(totalPoints / 200) + 1,
+      level: levelForPoints(totalPoints),
       badges: badges.data || [],
       recent_activity: recentActivity.data || [],
     });
