@@ -133,32 +133,32 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   }, []);
 
   const handleGenerateKey = useCallback(async () => {
-    const newKey = crypto.randomUUID();
-    setGeneratedKey(newKey);
-    const newApiKey: ApiKey = {
-      id: crypto.randomUUID(),
-      name: `API Key ${apiKeys.length + 1}`,
-      keyPreview: `${newKey.slice(0, 8)}...${newKey.slice(-4)}`,
-      created: new Date().toISOString().split("T")[0],
-      lastUsed: "Never",
-      status: "Active",
-    };
+    // The secret is generated and hashed server-side; the plaintext is returned
+    // only in this response and shown to the admin once.
     try {
-      const res = await fetch("/api/settings", {
+      const res = await fetch("/api/admin/api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "apiKeys.create", value: { id: newApiKey.id, name: newApiKey.name } }),
+        body: JSON.stringify({ name: `API Key ${apiKeys.length + 1}` }),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.error || "Failed to save API key");
+        toast.error(data.error || "Failed to generate API key");
         return;
       }
+      setGeneratedKey(data.secret);
+      const newApiKey: ApiKey = {
+        id: data.id,
+        name: data.name,
+        keyPreview: `${data.key_prefix}…${data.last_four}`,
+        created: (data.created_at ?? "").split("T")[0] || new Date().toISOString().split("T")[0],
+        lastUsed: "Never",
+        status: "Active",
+      };
+      setApiKeys((prev) => [...prev, newApiKey]);
     } catch {
-      toast.error("Failed to save API key");
-      return;
+      toast.error("Failed to generate API key");
     }
-    setApiKeys((prev) => [...prev, newApiKey]);
   }, [apiKeys.length]);
 
   const handleRevokeKey = useCallback(async (keyId: string, keyName: string) => {
@@ -166,10 +166,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
       return;
     }
     try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "apiKeys.revoke", value: { id: keyId } }),
+      const res = await fetch(`/api/admin/api-keys?id=${encodeURIComponent(keyId)}`, {
+        method: "DELETE",
       });
       if (!res.ok) {
         const err = await res.json();

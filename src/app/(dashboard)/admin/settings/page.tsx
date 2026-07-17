@@ -45,8 +45,6 @@ const defaultNotifications = {
   selectedWebhookEvents: [],
 };
 
-const defaultApiKeys: ApiKey[] = [];
-
 export default async function SettingsPage() {
   const supabase = await createClient();
 
@@ -60,7 +58,7 @@ export default async function SettingsPage() {
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id, role")
+    .select("id, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -83,6 +81,24 @@ export default async function SettingsPage() {
     settingsMap[row.key] = row.value;
   }
 
+  // API keys live in their own table (hashed secrets), scoped to the org.
+  let apiKeyQuery = service
+    .from("api_keys")
+    .select("id, name, key_prefix, last_four, status, created_at, last_used_at")
+    .order("created_at", { ascending: false });
+  if (dbUser.organization_id) {
+    apiKeyQuery = apiKeyQuery.eq("organization_id", dbUser.organization_id);
+  }
+  const { data: apiKeyRows } = await apiKeyQuery;
+  const apiKeys: ApiKey[] = (apiKeyRows ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    keyPreview: `${row.key_prefix}…${row.last_four}`,
+    created: (row.created_at ?? "").split("T")[0] ?? "",
+    lastUsed: row.last_used_at ? (row.last_used_at as string).split("T")[0] : "Never",
+    status: row.status === "revoked" ? "Revoked" : "Active",
+  }));
+
   // Merge database values with defaults
   const settingsData: SettingsData = {
     general: {
@@ -98,7 +114,7 @@ export default async function SettingsPage() {
       ...defaultNotifications,
       ...(settingsMap["notifications"] ?? {}),
     },
-    apiKeys: (settingsMap["api_keys"] as ApiKey[] | undefined) ?? defaultApiKeys,
+    apiKeys,
   };
 
   return <SettingsClient data={settingsData} />;
