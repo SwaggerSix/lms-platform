@@ -42,6 +42,46 @@ const SURVEY_SOURCES = [
   { value: "surveycraft", label: "Use a SurveyCraft survey" },
 ];
 
+const QUESTION_TYPES = [
+  { value: "rating", label: "Rating scale" },
+  { value: "nps", label: "NPS (0–10)" },
+  { value: "multiple_choice", label: "Multiple choice" },
+  { value: "yes_no", label: "Yes / No" },
+  { value: "text", label: "Free text" },
+];
+
+type BuilderQuestion = {
+  id: string;
+  text: string;
+  type: "rating" | "text" | "multiple_choice" | "yes_no" | "nps";
+  required: boolean;
+  options: string[];
+  scale_min?: number;
+  scale_max?: number;
+  scale_min_label?: string;
+  scale_max_label?: string;
+};
+
+function newQuestion(): BuilderQuestion {
+  return { id: crypto.randomUUID(), text: "", type: "rating", required: true, options: ["", ""], scale_min: 1, scale_max: 5 };
+}
+
+/** Map a builder question to the stored/validated shape, dropping fields that
+ * don't apply to its type. */
+function serializeQuestion(q: BuilderQuestion) {
+  const base: Record<string, unknown> = { id: q.id, text: q.text.trim(), type: q.type, required: q.required };
+  if (q.type === "multiple_choice") {
+    base.options = q.options.map(o => o.trim()).filter(Boolean);
+  }
+  if (q.type === "rating" || q.type === "nps") {
+    base.scale_min = q.type === "nps" ? 0 : q.scale_min ?? 1;
+    base.scale_max = q.type === "nps" ? 10 : q.scale_max ?? 5;
+    if (q.scale_min_label?.trim()) base.scale_min_label = q.scale_min_label.trim();
+    if (q.scale_max_label?.trim()) base.scale_max_label = q.scale_max_label.trim();
+  }
+  return base;
+}
+
 type Trigger = {
   id: string;
   delay_days: number;
@@ -67,8 +107,19 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
   // Template dialog state
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [templateForm, setTemplateForm] = useState({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
+  const [questions, setQuestions] = useState<BuilderQuestion[]>([newQuestion()]);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateError, setTemplateError] = useState<string | null>(null);
+
+  const updateQuestion = (id: string, patch: Partial<BuilderQuestion>) =>
+    setQuestions(prev => prev.map(q => (q.id === id ? { ...q, ...patch } : q)));
+  const removeQuestion = (id: string) => setQuestions(prev => prev.filter(q => q.id !== id));
+  const setOption = (qid: string, idx: number, value: string) =>
+    setQuestions(prev => prev.map(q => (q.id === qid ? { ...q, options: q.options.map((o, i) => (i === idx ? value : o)) } : q)));
+  const addOption = (qid: string) =>
+    setQuestions(prev => prev.map(q => (q.id === qid ? { ...q, options: [...q.options, ""] } : q)));
+  const removeOption = (qid: string, idx: number) =>
+    setQuestions(prev => prev.map(q => (q.id === qid ? { ...q, options: q.options.filter((_, i) => i !== idx) } : q)));
 
   // Trigger dialog state
   const [showTriggerDialog, setShowTriggerDialog] = useState(false);
@@ -76,8 +127,26 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
   const [savingTrigger, setSavingTrigger] = useState(false);
 
   async function createTemplate() {
-    setSavingTemplate(true);
     setTemplateError(null);
+
+    let builtQuestions: Record<string, unknown>[] = [];
+    if (templateForm.source === "native") {
+      const withText = questions.filter(q => q.text.trim());
+      if (withText.length === 0) {
+        setTemplateError("Add at least one question, or switch the source to SurveyCraft.");
+        return;
+      }
+      const badChoice = withText.find(
+        q => q.type === "multiple_choice" && q.options.map(o => o.trim()).filter(Boolean).length < 2
+      );
+      if (badChoice) {
+        setTemplateError("Multiple-choice questions need at least two options.");
+        return;
+      }
+      builtQuestions = withText.map(serializeQuestion);
+    }
+
+    setSavingTemplate(true);
     try {
       const res = await fetch("/api/evaluations/templates", {
         method: "POST",
@@ -86,7 +155,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
           name: templateForm.name,
           description: templateForm.description || undefined,
           level: parseInt(templateForm.level),
-          questions: [],
+          questions: builtQuestions,
           is_active: true,
           external_provider: templateForm.source === "surveycraft" ? "surveycraft" : null,
           surveycraft_slug: templateForm.source === "surveycraft" ? templateForm.surveycraft_slug.trim() : null,
@@ -97,6 +166,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         setTemplates(prev => [created, ...prev]);
         setShowTemplateDialog(false);
         setTemplateForm({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
+        setQuestions([newQuestion()]);
       } else {
         const data = await res.json().catch(() => null);
         setTemplateError(data?.error ?? "Failed to create template. Please try again.");
@@ -181,7 +251,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         <TabsContent value="templates">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => { setTemplateError(null); setShowTemplateDialog(true); }}>
+              <Button onClick={() => { setTemplateError(null); setQuestions([newQuestion()]); setShowTemplateDialog(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Template
               </Button>
@@ -354,6 +424,117 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
               <p className="text-xs text-gray-500">
                 Paste the survey&apos;s link ending (the part after <span className="font-mono">/s/</span>) from SurveyCraft.
               </p>
+            </div>
+          )}
+          {templateForm.source === "native" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">Questions</label>
+                <Button variant="outline" size="sm" onClick={() => setQuestions(prev => [...prev, newQuestion()])}>
+                  <Plus className="h-3.5 w-3.5" /> Add question
+                </Button>
+              </div>
+              {questions.map((q, idx) => (
+                <div key={q.id} className="rounded-lg border border-gray-200 p-3 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-2 text-sm font-medium text-gray-400">{idx + 1}.</span>
+                    <div className="flex-1">
+                      <Input
+                        value={q.text}
+                        onChange={e => updateQuestion(q.id, { text: e.target.value })}
+                        placeholder="Question text"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeQuestion(q.id)}
+                      className="mt-2 text-gray-400 hover:text-red-600"
+                      aria-label="Remove question"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 pl-6">
+                    <div className="w-48">
+                      <Select
+                        value={q.type}
+                        options={QUESTION_TYPES}
+                        onChange={v => updateQuestion(q.id, { type: v as BuilderQuestion["type"] })}
+                      />
+                    </div>
+                    <label className="flex items-center gap-1.5 text-sm text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={q.required}
+                        onChange={e => updateQuestion(q.id, { required: e.target.checked })}
+                        className="rounded border-gray-300"
+                      />
+                      Required
+                    </label>
+                  </div>
+                  {q.type === "multiple_choice" && (
+                    <div className="space-y-2 pl-6">
+                      {q.options.map((opt, oIdx) => (
+                        <div key={oIdx} className="flex items-center gap-2">
+                          <Input
+                            value={opt}
+                            onChange={e => setOption(q.id, oIdx, e.target.value)}
+                            placeholder={`Option ${oIdx + 1}`}
+                          />
+                          {q.options.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => removeOption(q.id, oIdx)}
+                              className="text-gray-400 hover:text-red-600"
+                              aria-label="Remove option"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <Button variant="ghost" size="sm" onClick={() => addOption(q.id)}>
+                        <Plus className="h-3 w-3" /> Add option
+                      </Button>
+                    </div>
+                  )}
+                  {q.type === "rating" && (
+                    <div className="flex flex-wrap items-center gap-3 pl-6 text-sm">
+                      <label className="flex items-center gap-1.5 text-gray-600">
+                        Min
+                        <input
+                          type="number"
+                          value={q.scale_min ?? 1}
+                          onChange={e => updateQuestion(q.id, { scale_min: parseInt(e.target.value) || 0 })}
+                          className="w-16 rounded-lg border border-gray-300 px-2 py-1"
+                        />
+                      </label>
+                      <label className="flex items-center gap-1.5 text-gray-600">
+                        Max
+                        <input
+                          type="number"
+                          value={q.scale_max ?? 5}
+                          onChange={e => updateQuestion(q.id, { scale_max: parseInt(e.target.value) || 0 })}
+                          className="w-16 rounded-lg border border-gray-300 px-2 py-1"
+                        />
+                      </label>
+                      <Input
+                        value={q.scale_min_label ?? ""}
+                        onChange={e => updateQuestion(q.id, { scale_min_label: e.target.value })}
+                        placeholder="Low label (optional)"
+                      />
+                      <Input
+                        value={q.scale_max_label ?? ""}
+                        onChange={e => updateQuestion(q.id, { scale_max_label: e.target.value })}
+                        placeholder="High label (optional)"
+                      />
+                    </div>
+                  )}
+                  {q.type === "nps" && (
+                    <p className="pl-6 text-xs text-gray-500">A 0–10 Net Promoter Score scale.</p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
           {templateError && (
