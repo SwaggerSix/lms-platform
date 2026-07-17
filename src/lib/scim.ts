@@ -14,6 +14,7 @@ export const SCIM_EXTERNAL_SOURCE = "scim";
 export const SCIM_CONTENT_TYPE = "application/scim+json";
 
 const USER_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0:User";
+const GROUP_SCHEMA = "urn:ietf:params:scim:schemas:core:2.0:Group";
 const LIST_SCHEMA = "urn:ietf:params:scim:api:messages:2.0:ListResponse";
 const ERROR_SCHEMA = "urn:ietf:params:scim:api:messages:2.0:Error";
 
@@ -126,4 +127,70 @@ export const SCIM_USER_COLUMNS =
 
 export function baseUrlFrom(request: NextRequest): string {
   return process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+}
+
+// ─── Groups ↔ organizations ─────────────────────────────────────
+//
+// A SCIM Group maps to an `organizations` row; membership maps to
+// `users.organization_id`. SCIM-managed orgs are tagged in metadata so SCIM
+// never touches a manually-created organization. Note: the LMS gives each user
+// a single organization, so a user can belong to only one SCIM group at a time.
+
+export const SCIM_GROUP_COLUMNS = "id, name, metadata, created_at, updated_at";
+
+export interface DbOrgRow {
+  id: string;
+  name: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScimMember {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+export function isScimManagedOrg(org: { metadata?: Record<string, unknown> | null }): boolean {
+  return org.metadata?.scim_managed === true;
+}
+
+export function orgExternalId(org: { metadata?: Record<string, unknown> | null }): string | null {
+  const v = org.metadata?.scim_external_id;
+  return typeof v === "string" ? v : null;
+}
+
+export function scimGroupMetadata(externalId: string | null): Record<string, unknown> {
+  return { scim_managed: true, ...(externalId ? { scim_external_id: externalId } : {}) };
+}
+
+export function toScimGroup(org: DbOrgRow, members: ScimMember[], baseUrl: string) {
+  const externalId = orgExternalId(org);
+  return {
+    schemas: [GROUP_SCHEMA],
+    id: org.id,
+    ...(externalId ? { externalId } : {}),
+    displayName: org.name,
+    members: members.map((m) => ({
+      value: m.id,
+      display: `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || m.email,
+      $ref: `${baseUrl}/api/scim/v2/Users/${m.id}`,
+    })),
+    meta: {
+      resourceType: "Group",
+      created: org.created_at,
+      lastModified: org.updated_at,
+      location: `${baseUrl}/api/scim/v2/Groups/${org.id}`,
+    },
+  };
+}
+
+/** Member ids from a SCIM group create/replace/patch value. */
+export function extractMemberIds(value: any): string[] {
+  const members = Array.isArray(value?.members) ? value.members : Array.isArray(value) ? value : [];
+  return members
+    .map((m: any) => (typeof m === "string" ? m : m?.value))
+    .filter((v: unknown): v is string => typeof v === "string" && v.length > 0);
 }
