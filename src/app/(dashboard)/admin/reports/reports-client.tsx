@@ -15,9 +15,20 @@ import {
   Filter,
   Table,
   Loader2,
+  AlertTriangle,
+  BellRing,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { ReportViewerModal, type ReportColumn } from "@/components/ui/report-viewer-modal";
+import {
+  Table as UITable,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { useToast } from "@/components/ui/toast";
 
 export interface ReportRow {
   userName: string;
@@ -61,7 +72,25 @@ const reportTemplates = [
   { id: "5", name: "Course Effectiveness", description: "Analyze course performance and ratings", icon: <Target className="h-6 w-6" />, color: "text-red-600", bgColor: "bg-red-100" },
   { id: "6", name: "Learner Progress", description: "Individual and team progress tracking", icon: <Users className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
   { id: "7", name: "Compliance & Expiry", description: "Per-learner recert status: overdue, expiring, and compliant by name and date", icon: <ShieldCheck className="h-6 w-6" />, color: "text-amber-600", bgColor: "bg-amber-100" },
+  { id: "8", name: "At-Risk Learners", description: "Overdue, inactive, and low-progress learners — with one-click reminders", icon: <AlertTriangle className="h-6 w-6" />, color: "text-rose-600", bgColor: "bg-rose-100" },
 ];
+
+export interface AtRiskRow {
+  user_id: string;
+  course_id: string;
+  user_name: string;
+  email: string;
+  department: string;
+  course_title: string;
+  progress: number;
+  due_date: string | null;
+  days_overdue: number | null;
+  days_since_last_access: number | null;
+  never_accessed: string | null;
+  risk_score: number;
+  risk_level: string;
+  recommended_action: string;
+}
 
 const reportFields = ["User Name", "Department", "Course", "Status", "Score", "Completion Date", "Time Spent", "Certificate"];
 
@@ -117,7 +146,12 @@ const exportExcel = (data: Record<string, unknown>[], filename: string) => {
 };
 
 export default function ReportsClient({ reportData: initialReportData, recentReports, summary }: ReportsClientProps) {
+  const toast = useToast();
   const [selectedFields, setSelectedFields] = useState<Set<string>>(new Set(reportFields));
+  const [atRiskRows, setAtRiskRows] = useState<AtRiskRow[]>([]);
+  const [showAtRisk, setShowAtRisk] = useState(false);
+  const [selectedAtRisk, setSelectedAtRisk] = useState<Set<string>>(new Set());
+  const [nudging, setNudging] = useState(false);
   const [dateFrom, setDateFrom] = useState("2026-03-01");
   const [dateTo, setDateTo] = useState("2026-03-16");
   const [department, setDepartment] = useState("All");
@@ -148,6 +182,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     "Course Effectiveness": "course_effectiveness",
     "Learner Progress": "learner_progress",
     "Compliance & Expiry": "compliance_detail",
+    "At-Risk Learners": "at_risk",
   };
 
   const fetchReport = useCallback(async (templateName?: string) => {
@@ -168,7 +203,13 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       });
       const data = await response.json();
 
-      if (response.ok && data?.rows) {
+      if (response.ok && data?.rows && reportType === "at_risk") {
+        setAtRiskRows(data.rows as AtRiskRow[]);
+        setSelectedAtRisk(new Set());
+        setActiveReportName(templateName || "At-Risk Learners");
+        setShowAtRisk(true);
+        setShowPreview(false);
+      } else if (response.ok && data?.rows) {
         // Map API rows to ReportRow format
         const mapped: ReportRow[] = data.rows.map((row: Record<string, any>) => ({
           userName: row.user_name || row.name || row.course_title || "-",
@@ -183,6 +224,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
         setReportData(mapped);
         setActiveReportName(templateName || "Custom Report");
         setShowPreview(true);
+        setShowAtRisk(false);
       } else {
         // Fallback: show initial data
         setActiveReportName(templateName || "Custom Report");
@@ -198,6 +240,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
 
   const inferReportType = (name: string): string => {
     const lc = name.toLowerCase();
+    if (lc.includes("risk")) return "at_risk";
     if (lc.includes("compliance")) return "compliance";
     if (lc.includes("skill")) return "skills_gap";
     if (lc.includes("engagement")) return "engagement";
@@ -271,6 +314,65 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     }));
     exportCSV(data, `${report.name.replace(/\s+/g, "_")}_${report.generatedDate}.csv`);
   };
+
+  const atRiskKey = (row: AtRiskRow) => `${row.user_id}:${row.course_id}`;
+
+  const toggleAtRiskRow = (row: AtRiskRow) => {
+    setSelectedAtRisk((prev) => {
+      const next = new Set(prev);
+      const key = atRiskKey(row);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const sendReminders = async (rows: AtRiskRow[]) => {
+    if (rows.length === 0) return;
+    setNudging(true);
+    try {
+      const res = await fetch("/api/reports/at-risk/nudge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targets: rows.map((r) => ({ user_id: r.user_id, course_id: r.course_id })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to send reminders");
+      const skippedNote = data.skipped > 0 ? ` (${data.skipped} skipped — already reminded in the last 24h or no longer at risk)` : "";
+      toast.success(`Sent ${data.sent} reminder${data.sent === 1 ? "" : "s"}${skippedNote}.`);
+      setSelectedAtRisk(new Set());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send reminders");
+    } finally {
+      setNudging(false);
+    }
+  };
+
+  const riskBadge = (level: string) => {
+    switch (level) {
+      case "critical": return "bg-red-100 text-red-700";
+      case "high": return "bg-orange-100 text-orange-700";
+      case "medium": return "bg-amber-100 text-amber-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const atRiskCsvRows = () =>
+    atRiskRows.map((r) => ({
+      "User Name": r.user_name,
+      Email: r.email,
+      Department: r.department,
+      Course: r.course_title,
+      "Progress %": r.progress,
+      "Due Date": r.due_date ?? "-",
+      "Days Overdue": r.days_overdue ?? "-",
+      "Days Since Last Access": r.never_accessed ? "Never accessed" : r.days_since_last_access ?? "-",
+      "Risk Score": r.risk_score,
+      "Risk Level": r.risk_level,
+      "Recommended Action": r.recommended_action,
+    }));
 
   const toggleField = (field: string) => {
     setSelectedFields((prev) => {
@@ -370,6 +472,120 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
           </div>
         </div>
       </div>
+
+      {showAtRisk && (
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-rose-600" />
+              <h2 className="text-lg font-semibold text-gray-900">At-Risk Learners</h2>
+              <span className="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{atRiskRows.length} rows</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => sendReminders(atRiskRows.filter((r) => selectedAtRisk.has(atRiskKey(r))))}
+                disabled={nudging || selectedAtRisk.size === 0}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+              >
+                {nudging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BellRing className="h-3.5 w-3.5" />}
+                Remind selected ({selectedAtRisk.size})
+              </button>
+              <button onClick={() => exportCSV(atRiskCsvRows(), "At-Risk_Learners_report.csv")} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <Download className="h-3.5 w-3.5" />
+                CSV
+              </button>
+              <button onClick={() => exportPDF(atRiskCsvRows(), "At-Risk Learners Report")} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <Download className="h-3.5 w-3.5" />
+                PDF
+              </button>
+            </div>
+          </div>
+          {atRiskRows.length === 0 ? (
+            <p className="px-6 py-10 text-center text-sm text-gray-500">
+              No at-risk learners found — nobody in the selected scope is overdue, inactive, or behind on progress.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <UITable>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <input
+                        type="checkbox"
+                        aria-label="Select all at-risk learners"
+                        checked={selectedAtRisk.size === atRiskRows.length && atRiskRows.length > 0}
+                        onChange={() =>
+                          setSelectedAtRisk(
+                            selectedAtRisk.size === atRiskRows.length
+                              ? new Set()
+                              : new Set(atRiskRows.map(atRiskKey))
+                          )
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </TableHead>
+                    <TableHead>Learner</TableHead>
+                    <TableHead>Course</TableHead>
+                    <TableHead>Risk</TableHead>
+                    <TableHead className="text-right">Progress</TableHead>
+                    <TableHead>Due</TableHead>
+                    <TableHead>Last Access</TableHead>
+                    <TableHead>Recommended Action</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {atRiskRows.map((row) => (
+                    <TableRow key={atRiskKey(row)}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${row.user_name}`}
+                          checked={selectedAtRisk.has(atRiskKey(row))}
+                          onChange={() => toggleAtRiskRow(row)}
+                          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm font-medium text-gray-900">{row.user_name}</p>
+                        <p className="text-xs text-gray-500">{row.department}</p>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">{row.course_title}</TableCell>
+                      <TableCell>
+                        <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", riskBadge(row.risk_level))}>
+                          {row.risk_level} · {row.risk_score}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right text-sm text-gray-600">{row.progress}%</TableCell>
+                      <TableCell className="text-sm">
+                        {row.days_overdue ? (
+                          <span className="font-medium text-red-600">{row.days_overdue}d overdue</span>
+                        ) : (
+                          <span className="text-gray-600">{row.due_date ?? "—"}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {row.never_accessed ? "Never" : row.days_since_last_access != null ? `${row.days_since_last_access}d ago` : "—"}
+                      </TableCell>
+                      <TableCell className="max-w-xs text-sm text-gray-600">{row.recommended_action}</TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          onClick={() => sendReminders([row])}
+                          disabled={nudging}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        >
+                          <BellRing className="h-3.5 w-3.5" />
+                          Remind
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </UITable>
+            </div>
+          )}
+        </div>
+      )}
 
       {showPreview && (
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">

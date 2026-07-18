@@ -22,6 +22,104 @@ export interface AtRiskLearner {
   computedAt: string;
 }
 
+export interface EnrollmentRiskInput {
+  progress: number | null;
+  enrolled_at: string | null;
+  due_date: string | null;
+  last_accessed_at: string | null;
+}
+
+/**
+ * Score the enrollment-level risk factors — progress rate (0-25), due-date
+ * proximity (0-20), and access recency (0-20) — for a single enrollment.
+ * Pure so it can run set-based over paged enrollment rows. Shared by
+ * calculateRiskScore (which layers on assessment-score and engagement-trend
+ * factors) and the at-risk report, so the scoring rules cannot diverge.
+ */
+export function scoreEnrollmentRisk(enrollment: EnrollmentRiskInput): {
+  riskPoints: number;
+  factors: Record<string, number | string>;
+} {
+  const factors: Record<string, number | string> = {};
+  let riskPoints = 0;
+
+  // Factor 1: Progress rate (0-25 risk points)
+  const progress = enrollment.progress ?? 0;
+  const enrolledAt = enrollment.enrolled_at
+    ? new Date(enrollment.enrolled_at)
+    : new Date();
+  const daysSinceEnroll = Math.max(
+    1,
+    (Date.now() - enrolledAt.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysSinceEnroll > 7 && progress < 10) {
+    factors.low_progress = progress;
+    factors.days_since_enroll = Math.round(daysSinceEnroll);
+    riskPoints += 25;
+  } else if (daysSinceEnroll > 14 && progress < 30) {
+    factors.low_progress = progress;
+    riskPoints += 18;
+  } else if (daysSinceEnroll > 30 && progress < 50) {
+    factors.low_progress = progress;
+    riskPoints += 12;
+  }
+
+  // Factor 2: Due date proximity (0-20 risk points)
+  if (enrollment.due_date) {
+    const dueDate = new Date(enrollment.due_date);
+    const daysUntilDue =
+      (dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    const remainingWork = 100 - progress;
+
+    if (daysUntilDue < 0) {
+      factors.overdue_days = Math.abs(Math.round(daysUntilDue));
+      riskPoints += 20;
+    } else if (daysUntilDue < 7 && remainingWork > 50) {
+      factors.days_until_due = Math.round(daysUntilDue);
+      factors.remaining_progress = remainingWork;
+      riskPoints += 15;
+    } else if (daysUntilDue < 14 && remainingWork > 70) {
+      factors.days_until_due = Math.round(daysUntilDue);
+      riskPoints += 10;
+    }
+  }
+
+  // Factor 3: Login / engagement recency (0-20 risk points)
+  const lastAccessed = enrollment.last_accessed_at
+    ? new Date(enrollment.last_accessed_at)
+    : null;
+  if (lastAccessed) {
+    const daysSinceAccess =
+      (Date.now() - lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSinceAccess > 14) {
+      factors.days_since_last_access = Math.round(daysSinceAccess);
+      riskPoints += 20;
+    } else if (daysSinceAccess > 7) {
+      factors.days_since_last_access = Math.round(daysSinceAccess);
+      riskPoints += 12;
+    } else if (daysSinceAccess > 3) {
+      factors.days_since_last_access = Math.round(daysSinceAccess);
+      riskPoints += 5;
+    }
+  } else {
+    factors.never_accessed = "true";
+    riskPoints += 15;
+  }
+
+  return { riskPoints, factors };
+}
+
+/** Map a 0-100 risk score to the level buckets used across the platform. */
+export function riskLevelForScore(
+  riskScore: number
+): RiskPrediction["riskLevel"] {
+  if (riskScore >= 75) return "critical";
+  if (riskScore >= 50) return "high";
+  if (riskScore >= 25) return "medium";
+  return "low";
+}
+
 /**
  * Calculate a risk score for a specific user in a specific course.
  * Factors: login frequency, progress rate, assessment scores,
@@ -65,72 +163,16 @@ export async function calculateRiskScore(
   const snapshots = snapshotResult.data ?? [];
   const assessments = assessmentResult.data ?? [];
 
-  const factors: Record<string, number | string> = {};
-  let totalRisk = 0;
-
-  // Factor 1: Progress rate (0-25 risk points)
-  const progress = enrollment?.progress ?? 0;
-  const enrolledAt = enrollment?.enrolled_at
-    ? new Date(enrollment.enrolled_at)
-    : new Date();
-  const daysSinceEnroll = Math.max(
-    1,
-    (Date.now() - enrolledAt.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  if (daysSinceEnroll > 7 && progress < 10) {
-    factors.low_progress = progress;
-    factors.days_since_enroll = Math.round(daysSinceEnroll);
-    totalRisk += 25;
-  } else if (daysSinceEnroll > 14 && progress < 30) {
-    factors.low_progress = progress;
-    totalRisk += 18;
-  } else if (daysSinceEnroll > 30 && progress < 50) {
-    factors.low_progress = progress;
-    totalRisk += 12;
-  }
-
-  // Factor 2: Due date proximity (0-20 risk points)
-  if (enrollment?.due_date) {
-    const dueDate = new Date(enrollment.due_date);
-    const daysUntilDue =
-      (dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-    const remainingWork = 100 - progress;
-
-    if (daysUntilDue < 0) {
-      factors.overdue_days = Math.abs(Math.round(daysUntilDue));
-      totalRisk += 20;
-    } else if (daysUntilDue < 7 && remainingWork > 50) {
-      factors.days_until_due = Math.round(daysUntilDue);
-      factors.remaining_progress = remainingWork;
-      totalRisk += 15;
-    } else if (daysUntilDue < 14 && remainingWork > 70) {
-      factors.days_until_due = Math.round(daysUntilDue);
-      totalRisk += 10;
-    }
-  }
-
-  // Factor 3: Login / engagement recency (0-20 risk points)
-  const lastAccessed = enrollment?.last_accessed_at
-    ? new Date(enrollment.last_accessed_at)
-    : null;
-  if (lastAccessed) {
-    const daysSinceAccess =
-      (Date.now() - lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceAccess > 14) {
-      factors.days_since_last_access = Math.round(daysSinceAccess);
-      totalRisk += 20;
-    } else if (daysSinceAccess > 7) {
-      factors.days_since_last_access = Math.round(daysSinceAccess);
-      totalRisk += 12;
-    } else if (daysSinceAccess > 3) {
-      factors.days_since_last_access = Math.round(daysSinceAccess);
-      totalRisk += 5;
-    }
-  } else {
-    factors.never_accessed = "true";
-    totalRisk += 15;
-  }
+  // Factors 1-3 (progress rate, due date, access recency) share the pure
+  // enrollment-level scorer with the at-risk report.
+  const enrollmentRisk = scoreEnrollmentRisk({
+    progress: enrollment?.progress ?? null,
+    enrolled_at: enrollment?.enrolled_at ?? null,
+    due_date: enrollment?.due_date ?? null,
+    last_accessed_at: enrollment?.last_accessed_at ?? null,
+  });
+  const factors: Record<string, number | string> = enrollmentRisk.factors;
+  let totalRisk = enrollmentRisk.riskPoints;
 
   // Factor 4: Assessment scores (0-20 risk points)
   if (assessments.length > 0) {
@@ -178,17 +220,7 @@ export async function calculateRiskScore(
   // Normalize to 0-100
   const riskScore = Math.min(totalRisk, 100);
 
-  // Determine risk level
-  let riskLevel: RiskPrediction["riskLevel"];
-  if (riskScore >= 75) {
-    riskLevel = "critical";
-  } else if (riskScore >= 50) {
-    riskLevel = "high";
-  } else if (riskScore >= 25) {
-    riskLevel = "medium";
-  } else {
-    riskLevel = "low";
-  }
+  const riskLevel = riskLevelForScore(riskScore);
 
   const recommendedActions = generateRecommendedActions(factors);
 
