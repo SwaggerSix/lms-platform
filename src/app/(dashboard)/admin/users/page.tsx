@@ -117,6 +117,7 @@ export default async function UsersPage({
     status: statusMap[row.status] ?? 'inactive',
     lastActive: row.updated_at ?? '',
     avatar: `${(row.first_name ?? '?')[0]}${(row.last_name ?? '?')[0]}`.toUpperCase(),
+    customRoleId: row.custom_role_id ?? '',
   }));
 
   return (
