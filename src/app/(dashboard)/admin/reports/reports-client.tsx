@@ -73,6 +73,7 @@ const reportTemplates = [
   { id: "6", name: "Learner Progress", description: "Individual and team progress tracking", icon: <Users className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
   { id: "7", name: "Compliance & Expiry", description: "Per-learner recert status: overdue, expiring, and compliant by name and date", icon: <ShieldCheck className="h-6 w-6" />, color: "text-amber-600", bgColor: "bg-amber-100" },
   { id: "8", name: "At-Risk Learners", description: "Overdue, inactive, and low-progress learners — with one-click reminders", icon: <AlertTriangle className="h-6 w-6" />, color: "text-rose-600", bgColor: "bg-rose-100" },
+  { id: "9", name: "Training Matrix", description: "Every learner × required training with RAG status — grid view under the Training Matrix tab", icon: <Table className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
 ];
 
 export interface AtRiskRow {
@@ -183,6 +184,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     "Learner Progress": "learner_progress",
     "Compliance & Expiry": "compliance_detail",
     "At-Risk Learners": "at_risk",
+    "Training Matrix": "training_matrix",
   };
 
   const fetchReport = useCallback(async (templateName?: string) => {
@@ -241,6 +243,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
   const inferReportType = (name: string): string => {
     const lc = name.toLowerCase();
     if (lc.includes("risk")) return "at_risk";
+    if (lc.includes("matrix")) return "training_matrix";
     if (lc.includes("compliance")) return "compliance";
     if (lc.includes("skill")) return "skills_gap";
     if (lc.includes("engagement")) return "engagement";

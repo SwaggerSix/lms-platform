@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
         learner_progress: "Learner Progress Report",
         course_effectiveness: "Course Effectiveness Report",
         at_risk: "At-Risk Learners Report",
+        training_matrix: "Training Matrix Report",
       };
 
       const pdfBuffer = await generateReportPDF({
