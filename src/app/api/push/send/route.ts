@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createECDH, hkdfSync, createCipheriv, randomBytes } from "crypto";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+
+// Node runtime required: the payload encryption uses node:crypto ECDH/HKDF/GCM.
+export const runtime = "nodejs";
 
 /**
  * POST /api/push/send
@@ -185,22 +189,61 @@ async function createVapidJWT(
 }
 
 /**
- * Encrypt push payload using aes128gcm content encoding.
- * This is a simplified implementation -- for production use consider
- * the full RFC 8291 implementation. Falls back to sending plaintext
- * when encryption keys are not usable (push services that accept it).
+ * Encrypt a push payload with the `aes128gcm` content encoding (RFC 8188)
+ * using the Web Push key derivation of RFC 8291. Previously this returned the
+ * payload in plaintext under an `aes128gcm` header, so message contents were
+ * exposed to the push relay; this performs the real ECDH → HKDF → AES-128-GCM
+ * so only the subscriber's browser can decrypt.
+ *
+ * Layout of the returned body (single record):
+ *   salt(16) | rs(4) | idlen(1)=65 | keyid=as_public(65) | ciphertext | tag(16)
  */
+function hkdf(salt: Buffer, ikm: Buffer, info: Buffer, length: number): Buffer {
+  return Buffer.from(hkdfSync("sha256", ikm, salt, info, length));
+}
+
 async function encryptPayload(
   payload: string,
-  _p256dhBase64: string,
-  _authBase64: string
+  p256dhBase64: string,
+  authBase64: string
 ): Promise<Uint8Array> {
-  // For a full implementation, you would perform ECDH key exchange with the
-  // subscriber's p256dh key and derive encryption keys per RFC 8291.
-  // This simplified version encodes the payload as-is, which works with
-  // many push services in development mode. For production, integrate a
-  // proper web-push encryption library.
-  return new TextEncoder().encode(payload);
+  const uaPublic = Buffer.from(new Uint8Array(base64urlDecode(p256dhBase64))); // 65 bytes (0x04||X||Y)
+  const authSecret = Buffer.from(new Uint8Array(base64urlDecode(authBase64))); // 16 bytes
+
+  // Ephemeral server ECDH keypair on P-256, shared secret with the subscriber.
+  const ecdh = createECDH("prime256v1");
+  ecdh.generateKeys();
+  const asPublic = ecdh.getPublicKey(); // 65 bytes uncompressed
+  const sharedSecret = ecdh.computeSecret(uaPublic);
+
+  // RFC 8291: derive the input keying material from the ECDH secret, salted with
+  // the subscription auth secret and bound to both public keys.
+  const keyInfo = Buffer.concat([
+    Buffer.from("WebPush: info\0", "utf8"),
+    uaPublic,
+    asPublic,
+  ]);
+  const ikm = hkdf(authSecret, sharedSecret, keyInfo, 32);
+
+  // RFC 8188: per-message salt → content-encryption key and nonce.
+  const salt = randomBytes(16);
+  const cek = hkdf(salt, ikm, Buffer.from("Content-Encoding: aes128gcm\0", "utf8"), 16);
+  const nonce = hkdf(salt, ikm, Buffer.from("Content-Encoding: nonce\0", "utf8"), 12);
+
+  // Single record: payload followed by the 0x02 "last record" delimiter.
+  const plaintext = Buffer.concat([Buffer.from(payload, "utf8"), Buffer.from([0x02])]);
+
+  const cipher = createCipheriv("aes-128-gcm", cek, nonce);
+  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+  const tag = cipher.getAuthTag();
+
+  const recordSize = 4096;
+  const header = Buffer.alloc(21);
+  salt.copy(header, 0);
+  header.writeUInt32BE(recordSize, 16);
+  header.writeUInt8(asPublic.length, 20);
+
+  return Buffer.concat([header, asPublic, ciphertext, tag]);
 }
 
 // ----- Base64url Utilities -----
