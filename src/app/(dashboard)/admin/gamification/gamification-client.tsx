@@ -58,16 +58,19 @@ interface GamificationClientProps {
   pointRulesData: PointRule[];
   badges: BadgeItem[];
   leaderboard: LeaderboardUser[];
+  pointsPerLevel: number;
 }
 
 const tabs = ["Point Rules", "Badges", "Leaderboard"] as const;
 
-export default function GamificationClient({ pointRulesData, badges, leaderboard }: GamificationClientProps) {
+export default function GamificationClient({ pointRulesData, badges, leaderboard, pointsPerLevel }: GamificationClientProps) {
   const toast = useToast();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("Point Rules");
   const [pointRules, setPointRules] = useState(pointRulesData);
   const [savingRules, setSavingRules] = useState(false);
+  const [perLevel, setPerLevel] = useState(String(pointsPerLevel));
+  const [savingPerLevel, setSavingPerLevel] = useState(false);
 
   // Badge modal state
   const [showBadgeModal, setShowBadgeModal] = useState(false);
@@ -111,6 +114,36 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
 
   const deleteRule = (id: string) => {
     setPointRules((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const handleSavePerLevel = async () => {
+    const value = Number(perLevel);
+    if (!Number.isFinite(value) || value < 10) {
+      toast.error("Points per level must be a number of at least 10");
+      return;
+    }
+    setSavingPerLevel(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: "gamification",
+          value: { points_per_level: Math.floor(value) },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to save level settings");
+        return;
+      }
+      toast.success("Level settings saved.");
+      router.refresh();
+    } catch {
+      toast.error("Failed to save level settings");
+    } finally {
+      setSavingPerLevel(false);
+    }
   };
 
   const handleSaveRules = async () => {
@@ -395,7 +428,29 @@ export default function GamificationClient({ pointRulesData, badges, leaderboard
             description: "Add a point rule to start awarding points for learner activity.",
           }}
         />
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <label htmlFor="points-per-level" className="block text-sm font-medium text-gray-700 mb-1">
+              Points per Level
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="points-per-level"
+                type="number"
+                min={10}
+                step={10}
+                value={perLevel}
+                onChange={(e) => setPerLevel(e.target.value)}
+                className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              />
+              <Button variant="outline" onClick={handleSavePerLevel} disabled={savingPerLevel}>
+                {savingPerLevel ? "Saving..." : "Save Level Settings"}
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Learners gain a level for every this many lifetime points (default 500).
+            </p>
+          </div>
           <Button onClick={handleSaveRules} disabled={savingRules}>
             {savingRules ? "Saving..." : "Save Changes"}
           </Button>

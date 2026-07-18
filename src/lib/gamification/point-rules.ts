@@ -12,13 +12,42 @@ import { SupabaseClient } from "@supabase/supabase-js";
  */
 
 export const POINT_RULES_SETTINGS_KEY = "point_rules";
+export const GAMIFICATION_SETTINGS_KEY = "gamification";
 
-// One level per this many lifetime points. Centralized so the leaderboard,
-// the API summary, and the learner view all agree (previously /500 vs /200).
+// Default points per level. Admins can override via platform_settings key
+// "gamification" → { points_per_level }; callers with a service client should
+// resolve the configured value with getPointsPerLevel() and pass it in.
 export const POINTS_PER_LEVEL = 500;
 
-export function levelForPoints(points: number): number {
-  return Math.floor(Math.max(0, points) / POINTS_PER_LEVEL) + 1;
+// Overrides below this would make levels meaninglessly cheap (or, at 0,
+// divide by zero) — treat them as misconfiguration and fall back.
+const MIN_POINTS_PER_LEVEL = 10;
+
+export function levelForPoints(
+  points: number,
+  pointsPerLevel: number = POINTS_PER_LEVEL
+): number {
+  const per =
+    Number.isFinite(pointsPerLevel) && pointsPerLevel >= MIN_POINTS_PER_LEVEL
+      ? Math.floor(pointsPerLevel)
+      : POINTS_PER_LEVEL;
+  return Math.floor(Math.max(0, points) / per) + 1;
+}
+
+/** Resolve the configured points-per-level, falling back to the default. */
+export async function getPointsPerLevel(service: SupabaseClient): Promise<number> {
+  try {
+    const { data } = await service
+      .from("platform_settings")
+      .select("value")
+      .eq("key", GAMIFICATION_SETTINGS_KEY)
+      .maybeSingle();
+    const raw = Number((data?.value as { points_per_level?: unknown } | null)?.points_per_level);
+    if (Number.isFinite(raw) && raw >= MIN_POINTS_PER_LEVEL) return Math.floor(raw);
+  } catch {
+    // fall through to default
+  }
+  return POINTS_PER_LEVEL;
 }
 
 export interface PointRuleConfig {

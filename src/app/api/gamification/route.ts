@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
-import { levelForPoints } from "@/lib/gamification/point-rules";
+import { levelForPoints, getPointsPerLevel } from "@/lib/gamification/point-rules";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -27,29 +27,31 @@ export async function GET(request: NextRequest) {
   }
 
   if (type === "leaderboard") {
-    const { data, error } = await service.rpc("get_user_points").limit(20);
-
-    // Fallback: query points_ledger directly
+    // Tenant-scoped, aggregated in SQL over the full ledger (the old path
+    // called get_user_points without its argument, so it always fell back to
+    // a single-page, cross-tenant client-side aggregation).
+    const [{ data, error }, pointsPerLevel] = await Promise.all([
+      service.rpc("get_leaderboard", {
+        p_tenant_id: tenantScope?.tenantId ?? null,
+        p_limit: 20,
+      }),
+      getPointsPerLevel(service),
+    ]);
     if (error) {
-      const { data: points } = await service
-        .from("points_ledger")
-        .select("user_id, points")
-        .order("created_at", { ascending: false });
-
-      // Aggregate points by user
-      const userPoints = new Map<string, number>();
-      points?.forEach((p) => {
-        userPoints.set(p.user_id, (userPoints.get(p.user_id) || 0) + p.points);
-      });
-
-      const sorted = Array.from(userPoints.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20);
-
-      return NextResponse.json(sorted.map(([user_id, total], i) => ({ rank: i + 1, user_id, total })));
+      console.error("Leaderboard error:", error.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-
-    return NextResponse.json(data);
+    return NextResponse.json(
+      ((data ?? []) as any[]).map((row) => ({
+        rank: Number(row.rank),
+        user_id: row.user_id,
+        name: row.display_name,
+        total: Number(row.total_points),
+        level: levelForPoints(Number(row.total_points), pointsPerLevel),
+        badges: Number(row.badge_count),
+        is_current_user: row.user_id === profile.id,
+      }))
+    );
   }
 
   if (userId && type === "summary") {
@@ -65,10 +67,11 @@ export async function GET(request: NextRequest) {
     ]);
 
     const totalPoints = points.data?.reduce((sum, p) => sum + p.points, 0) || 0;
+    const pointsPerLevel = await getPointsPerLevel(service);
 
     return NextResponse.json({
       total_points: totalPoints,
-      level: levelForPoints(totalPoints),
+      level: levelForPoints(totalPoints, pointsPerLevel),
       badges: badges.data || [],
       recent_activity: recentActivity.data || [],
     });
