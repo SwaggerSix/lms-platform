@@ -16,6 +16,7 @@ const REPORT_TYPE_MAP: Record<string, ReportType> = {
   learner_progress: "learner_progress",
   course_effectiveness: "course_effectiveness",
   at_risk: "at_risk",
+  training_matrix: "training_matrix",
   // Legacy / display names
   "Enrollment Summary": "completion",
   "Course Completion": "completion",

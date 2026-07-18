@@ -17,6 +17,7 @@ export const VALID_REPORT_TYPES = [
   "learner_progress",
   "course_effectiveness",
   "at_risk",
+  "training_matrix",
 ] as const;
 
 // Supabase returns at most 1000 rows per request. Reports must not silently
@@ -590,6 +591,144 @@ async function generateAtRiskReport(
 }
 
 /**
+ * Training matrix: every active user × every course-linked compliance
+ * requirement, with a RAG-able status per cell. Unlike compliance_detail
+ * (which walks enrollments of the required course, so people who were never
+ * enrolled are invisible), this cross-joins users with requirements so the
+ * "not even enrolled in mandatory training" gap shows up. Statuses:
+ * not_enrolled, non_compliant (enrolled, never completed), overdue (recert
+ * lapsed), expiring (due within 90 days), compliant. Flat rows — the matrix
+ * page pivots them into the people × requirements grid.
+ */
+/**
+ * Status of one matrix cell. Pure: exported for unit tests. `enrollment` is
+ * the user's best enrollment in the required course (completed preferred),
+ * or undefined when they were never enrolled.
+ */
+export function matrixCellStatus(
+  enrollment: { status: string; completed_at: string | null } | undefined,
+  frequencyMonths: number | null,
+  now: number
+): { status: string; nextDue: string | null; daysUntilDue: number | null } {
+  const completedAt =
+    enrollment?.status === "completed" ? enrollment.completed_at : null;
+  if (!enrollment) {
+    return { status: "not_enrolled", nextDue: null, daysUntilDue: null };
+  }
+  if (!completedAt) {
+    return { status: "non_compliant", nextDue: null, daysUntilDue: null };
+  }
+  if (!frequencyMonths) {
+    // one-time requirement, no recertification
+    return { status: "compliant", nextDue: null, daysUntilDue: null };
+  }
+  const due = new Date(completedAt);
+  due.setMonth(due.getMonth() + frequencyMonths);
+  const daysUntilDue = Math.floor((due.getTime() - now) / 86_400_000);
+  const status =
+    daysUntilDue < 0 ? "overdue" : daysUntilDue <= 90 ? "expiring" : "compliant";
+  return { status, nextDue: due.toISOString(), daysUntilDue };
+}
+
+async function generateTrainingMatrixReport(
+  service: ReturnType<typeof createServiceClient>,
+  filters: ReportFilters
+) {
+  const { data: requirements, error: reqError } = await service
+    .from("compliance_requirements")
+    .select("id, name, frequency_months, course_id, course:courses(title)");
+  if (reqError) throw reqError;
+  // Path-linked requirements have no course to check enrollments against;
+  // compliance_detail skips them for the same reason.
+  const reqs = ((requirements ?? []) as any[]).filter((r) => r.course_id);
+  if (reqs.length === 0) return [];
+
+  const users: any[] = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    let query = service
+      .from("users")
+      .select(
+        "id, first_name, last_name, email, organization:organizations(name)"
+      )
+      .eq("status", "active")
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (filters.department) {
+      query = query.eq("organization_id", filters.department);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    const batch = (data ?? []) as any[];
+    users.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+  }
+
+  // Best enrollment per user × required course: a completed one (latest
+  // completion wins, for recert cycles), otherwise any open one.
+  const courseIds = [...new Set(reqs.map((r) => r.course_id as string))];
+  const best = new Map<string, { status: string; completed_at: string | null }>();
+  for (let i = 0; i < courseIds.length; i += 100) {
+    const chunk = courseIds.slice(i, i + 100);
+    for (let offset = 0; ; offset += PAGE_SIZE) {
+      const { data, error } = await service
+        .from("enrollments")
+        .select("user_id, course_id, status, completed_at")
+        .in("course_id", chunk)
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (error) throw error;
+      const batch = (data ?? []) as any[];
+      for (const e of batch) {
+        const key = `${e.user_id}:${e.course_id}`;
+        const current = best.get(key);
+        const isCompleted = e.status === "completed" && e.completed_at;
+        const currentCompleted =
+          current?.status === "completed" && current?.completed_at;
+        if (
+          !current ||
+          (isCompleted && !currentCompleted) ||
+          (isCompleted &&
+            currentCompleted &&
+            e.completed_at > (current.completed_at as string))
+        ) {
+          best.set(key, { status: e.status, completed_at: e.completed_at });
+        }
+      }
+      if (batch.length < PAGE_SIZE) break;
+    }
+  }
+
+  const now = Date.now();
+  const rows: Record<string, unknown>[] = [];
+  for (const user of users) {
+    for (const req of reqs) {
+      const e = best.get(`${user.id}:${req.course_id}`);
+      const freq: number | null = req.frequency_months ?? null;
+      const { status, nextDue, daysUntilDue } = matrixCellStatus(e, freq, now);
+      const completedAt =
+        e?.status === "completed" ? (e.completed_at as string | null) : null;
+
+      rows.push({
+        user_id: user.id,
+        user_name:
+          `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() ||
+          "Unknown",
+        email: user.email ?? "",
+        department: user.organization?.name ?? "N/A",
+        requirement_id: req.id,
+        requirement_name: req.name,
+        course_title: req.course?.title ?? "N/A",
+        frequency_months: freq,
+        last_completed: completedAt,
+        next_due: nextDue,
+        days_until_due: daysUntilDue,
+        status,
+      });
+    }
+  }
+
+  return rows;
+}
+
+/**
  * Generate a report by type. Shared between the API route and the cron job.
  */
 export async function generateReport(
@@ -615,6 +754,8 @@ export async function generateReport(
       return generateCourseEffectivenessReport(service);
     case "at_risk":
       return generateAtRiskReport(service, filters);
+    case "training_matrix":
+      return generateTrainingMatrixReport(service, filters);
     default:
       throw new Error(`Unsupported report type: ${reportType}`);
   }
