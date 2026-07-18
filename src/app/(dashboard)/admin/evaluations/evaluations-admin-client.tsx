@@ -26,11 +26,24 @@ const LEVEL_COLORS: Record<number, string> = {
   4: "bg-purple-100 text-purple-800",
 };
 
+type StoredQuestion = {
+  id?: string;
+  text?: string;
+  type?: string;
+  required?: boolean;
+  options?: string[];
+  scale_min?: number;
+  scale_max?: number;
+  scale_min_label?: string;
+  scale_max_label?: string;
+};
+
 type Template = {
   id: string;
   name: string;
   description?: string;
   level: number;
+  questions?: StoredQuestion[] | null;
   is_active: boolean;
   external_provider?: string | null;
   surveycraft_slug?: string | null;
@@ -82,6 +95,24 @@ function serializeQuestion(q: BuilderQuestion) {
   return base;
 }
 
+/** Map a stored question back into an editable builder question, filling in the
+ * defaults the editor UI needs (e.g. two option slots for multiple choice). */
+function deserializeQuestion(q: StoredQuestion): BuilderQuestion {
+  const type = (QUESTION_TYPES.some(t => t.value === q.type) ? q.type : "rating") as BuilderQuestion["type"];
+  const options = Array.isArray(q.options) && q.options.length ? [...q.options] : ["", ""];
+  return {
+    id: q.id || crypto.randomUUID(),
+    text: q.text ?? "",
+    type,
+    required: q.required ?? true,
+    options: options.length >= 2 ? options : [...options, ...Array(2 - options.length).fill("")],
+    scale_min: q.scale_min ?? 1,
+    scale_max: q.scale_max ?? 5,
+    scale_min_label: q.scale_min_label,
+    scale_max_label: q.scale_max_label,
+  };
+}
+
 type Trigger = {
   id: string;
   delay_days: number;
@@ -106,10 +137,34 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
 
   // Template dialog state
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [templateForm, setTemplateForm] = useState({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
   const [questions, setQuestions] = useState<BuilderQuestion[]>([newQuestion()]);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateError, setTemplateError] = useState<string | null>(null);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setTemplateError(null);
+    setTemplateForm({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
+    setQuestions([newQuestion()]);
+    setShowTemplateDialog(true);
+  };
+
+  const openEdit = (template: Template) => {
+    setEditingId(template.id);
+    setTemplateError(null);
+    setTemplateForm({
+      name: template.name,
+      description: template.description ?? "",
+      level: String(template.level),
+      source: template.external_provider === "surveycraft" ? "surveycraft" : "native",
+      surveycraft_slug: template.surveycraft_slug ?? "",
+    });
+    const stored = Array.isArray(template.questions) ? template.questions : [];
+    setQuestions(stored.length ? stored.map(deserializeQuestion) : [newQuestion()]);
+    setShowTemplateDialog(true);
+  };
 
   const updateQuestion = (id: string, patch: Partial<BuilderQuestion>) =>
     setQuestions(prev => prev.map(q => (q.id === id ? { ...q, ...patch } : q)));
@@ -126,7 +181,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
   const [triggerForm, setTriggerForm] = useState({ course_id: "", template_id: "", delay_days: "0" });
   const [savingTrigger, setSavingTrigger] = useState(false);
 
-  async function createTemplate() {
+  async function saveTemplate() {
     setTemplateError(null);
 
     let builtQuestions: Record<string, unknown>[] = [];
@@ -146,30 +201,40 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
       builtQuestions = withText.map(serializeQuestion);
     }
 
+    const payload = {
+      name: templateForm.name,
+      description: templateForm.description || undefined,
+      level: parseInt(templateForm.level),
+      questions: builtQuestions,
+      external_provider: templateForm.source === "surveycraft" ? "surveycraft" : null,
+      surveycraft_slug: templateForm.source === "surveycraft" ? templateForm.surveycraft_slug.trim() : null,
+    };
+
     setSavingTemplate(true);
     try {
-      const res = await fetch("/api/evaluations/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: templateForm.name,
-          description: templateForm.description || undefined,
-          level: parseInt(templateForm.level),
-          questions: builtQuestions,
-          is_active: true,
-          external_provider: templateForm.source === "surveycraft" ? "surveycraft" : null,
-          surveycraft_slug: templateForm.source === "surveycraft" ? templateForm.surveycraft_slug.trim() : null,
-        }),
-      });
+      const res = editingId
+        ? await fetch(`/api/evaluations/templates/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch("/api/evaluations/templates", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, is_active: true }),
+          });
       if (res.ok) {
-        const created = await res.json();
-        setTemplates(prev => [created, ...prev]);
+        const saved = await res.json();
+        setTemplates(prev =>
+          editingId ? prev.map(t => (t.id === editingId ? { ...t, ...saved } : t)) : [saved, ...prev]
+        );
         setShowTemplateDialog(false);
+        setEditingId(null);
         setTemplateForm({ name: "", description: "", level: "1", source: "native", surveycraft_slug: "" });
         setQuestions([newQuestion()]);
       } else {
         const data = await res.json().catch(() => null);
-        setTemplateError(data?.error ?? "Failed to create template. Please try again.");
+        setTemplateError(data?.error ?? "Failed to save template. Please try again.");
       }
     } catch {
       setTemplateError("Network error. Please try again.");
@@ -251,7 +316,7 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         <TabsContent value="templates">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button onClick={() => { setTemplateError(null); setQuestions([newQuestion()]); setShowTemplateDialog(true); }}>
+              <Button onClick={openCreate}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Template
               </Button>
@@ -292,6 +357,9 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
                         >
                           <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${template.is_active ? "translate-x-4.5" : "translate-x-0.5"}`} />
                         </button>
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(template)} className="text-gray-500 hover:text-primary-700">
+                          Edit
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -376,11 +444,11 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
         </TabsContent>
       </Tabs>
 
-      {/* Create Template Modal */}
+      {/* Create / Edit Template Modal */}
       <Modal
         isOpen={showTemplateDialog}
-        onClose={() => setShowTemplateDialog(false)}
-        title="New Evaluation Template"
+        onClose={() => { setShowTemplateDialog(false); setEditingId(null); }}
+        title={editingId ? "Edit Evaluation Template" : "New Evaluation Template"}
         size="md"
       >
         <div className="space-y-4">
@@ -541,13 +609,13 @@ export default function EvaluationsAdminClient({ templates: initialTemplates, tr
             <p className="text-sm text-red-600">{templateError}</p>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowTemplateDialog(false); setEditingId(null); }}>Cancel</Button>
             <Button
-              onClick={createTemplate}
+              onClick={saveTemplate}
               disabled={!templateForm.name || (templateForm.source === "surveycraft" && !templateForm.surveycraft_slug.trim()) || savingTemplate}
               loading={savingTemplate}
             >
-              Create Template
+              {editingId ? "Save Changes" : "Create Template"}
             </Button>
           </div>
         </div>
