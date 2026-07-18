@@ -3,6 +3,9 @@ import {
   scoreEnrollmentRisk,
   riskLevelForScore,
   generateRecommendedActions,
+  getEnrollmentActivity,
+  getCourseLessonCounts,
+  progressPercent,
 } from "@/lib/analytics/predictive";
 
 export const VALID_REPORT_TYPES = [
@@ -500,7 +503,7 @@ async function generateAtRiskReport(
       .select(
         // users is !inner so the department filter below actually drops rows
         // (a filter on a plain embed only nulls the embedded object).
-        "user_id, course_id, status, progress, enrolled_at, due_date, last_accessed_at, user:users!enrollments_user_id_fkey!inner(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
+        "id, user_id, course_id, status, enrolled_at, due_date, user:users!enrollments_user_id_fkey!inner(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
       )
       .in("status", ["enrolled", "in_progress"])
       .range(offset, offset + PAGE_SIZE - 1);
@@ -522,14 +525,28 @@ async function generateAtRiskReport(
     if (batch.length < PAGE_SIZE) break;
   }
 
+  // Progress and last-access are derived from lesson_progress in bulk — the
+  // enrollments table stores neither.
+  const [activity, lessonCounts] = await Promise.all([
+    getEnrollmentActivity(service, all.map((e) => e.id)),
+    getCourseLessonCounts(service, all.map((e) => e.course_id)),
+  ]);
+
   const now = Date.now();
   const rows = [];
   for (const row of all) {
+    const entry = activity.get(row.id);
+    const progress = progressPercent(
+      entry?.completedLessons ?? 0,
+      lessonCounts.get(row.course_id)
+    );
+    const lastAccessedAt = entry?.lastAccessedAt ?? null;
+
     const { riskPoints, factors } = scoreEnrollmentRisk({
-      progress: row.progress ?? null,
+      progress,
       enrolled_at: row.enrolled_at ?? null,
       due_date: row.due_date ?? null,
-      last_accessed_at: row.last_accessed_at ?? null,
+      last_accessed_at: lastAccessedAt,
     });
     if (riskPoints < 25) continue;
 
@@ -541,10 +558,9 @@ async function generateAtRiskReport(
           )
         )
       : null;
-    const daysSinceAccess = row.last_accessed_at
+    const daysSinceAccess = lastAccessedAt
       ? Math.round(
-          (now - new Date(row.last_accessed_at).getTime()) /
-            (1000 * 60 * 60 * 24)
+          (now - new Date(lastAccessedAt).getTime()) / (1000 * 60 * 60 * 24)
         )
       : null;
 
@@ -558,11 +574,11 @@ async function generateAtRiskReport(
       department: row.user?.organization?.name ?? "N/A",
       course_title: row.course?.title ?? "Unknown",
       status: row.status,
-      progress: row.progress ?? 0,
+      progress,
       due_date: row.due_date ?? null,
       days_overdue: daysOverdue && daysOverdue > 0 ? daysOverdue : null,
       days_since_last_access: daysSinceAccess,
-      never_accessed: row.last_accessed_at ? null : "yes",
+      never_accessed: lastAccessedAt ? null : "yes",
       risk_score: riskPoints,
       risk_level: riskLevelForScore(riskPoints),
       recommended_action: generateRecommendedActions(factors)[0] ?? "",

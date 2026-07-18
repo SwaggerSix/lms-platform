@@ -4,6 +4,11 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email/sender";
 import { dueDateReminder, customTemplate } from "@/lib/email/templates";
 import { storedTemplateOverride } from "@/lib/notifications/email-overrides";
+import {
+  getEnrollmentActivity,
+  getCourseLessonCounts,
+  progressPercent,
+} from "@/lib/analytics/predictive";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "";
 const MAX_TARGETS = 100;
@@ -63,7 +68,7 @@ export async function POST(request: NextRequest) {
       const { data: enrollment } = await service
         .from("enrollments")
         .select(
-          "id, status, progress, due_date, user:users!enrollments_user_id_fkey(id, first_name, last_name, email, organization_id), course:courses(id, title)"
+          "id, status, due_date, user:users!enrollments_user_id_fkey(id, first_name, last_name, email, organization_id), course:courses(id, title)"
         )
         .eq("user_id", target.user_id)
         .eq("course_id", target.course_id)
@@ -95,7 +100,15 @@ export async function POST(request: NextRequest) {
       }
 
       const learnerName = `${user.first_name ?? ""}`.trim() || "there";
-      const progress = enrollment.progress ?? 0;
+      // Derived: enrollments has no progress column.
+      const [activity, lessonCounts] = await Promise.all([
+        getEnrollmentActivity(service, [enrollment.id]),
+        getCourseLessonCounts(service, [target.course_id]),
+      ]);
+      const progress = progressPercent(
+        activity.get(enrollment.id)?.completedLessons ?? 0,
+        lessonCounts.get(target.course_id)
+      );
       const dueDate = enrollment.due_date
         ? new Date(enrollment.due_date)
         : null;

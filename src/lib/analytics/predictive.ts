@@ -120,6 +120,93 @@ export function riskLevelForScore(
   return "low";
 }
 
+// The enrollments table stores no progress or last-access columns — both are
+// derived from lesson_progress (progress = completed lessons / course lesson
+// count; last access = latest started_at/completed_at). The helpers below do
+// that derivation set-based so report-scale callers avoid N+1 queries.
+
+const BATCH_PAGE = 1000;
+const IN_CHUNK = 200;
+
+export interface EnrollmentActivity {
+  completedLessons: number;
+  lastAccessedAt: string | null;
+}
+
+type ServiceClient = ReturnType<typeof createServiceClient>;
+
+/** Lesson count per course (via modules), for the given course ids. */
+export async function getCourseLessonCounts(
+  service: ServiceClient,
+  courseIds: string[]
+): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  const unique = [...new Set(courseIds)];
+  for (let i = 0; i < unique.length; i += IN_CHUNK) {
+    const chunk = unique.slice(i, i + IN_CHUNK);
+    for (let offset = 0; ; offset += BATCH_PAGE) {
+      const { data, error } = await service
+        .from("lessons")
+        .select("id, module:modules!inner(course_id)")
+        .in("module.course_id", chunk)
+        .range(offset, offset + BATCH_PAGE - 1);
+      if (error) throw error;
+      const batch = (data ?? []) as any[];
+      for (const lesson of batch) {
+        const courseId = lesson.module?.course_id;
+        if (courseId) counts.set(courseId, (counts.get(courseId) ?? 0) + 1);
+      }
+      if (batch.length < BATCH_PAGE) break;
+    }
+  }
+  return counts;
+}
+
+/** Completed-lesson count and latest activity timestamp per enrollment id. */
+export async function getEnrollmentActivity(
+  service: ServiceClient,
+  enrollmentIds: string[]
+): Promise<Map<string, EnrollmentActivity>> {
+  const activity = new Map<string, EnrollmentActivity>();
+  const unique = [...new Set(enrollmentIds)];
+  for (let i = 0; i < unique.length; i += IN_CHUNK) {
+    const chunk = unique.slice(i, i + IN_CHUNK);
+    for (let offset = 0; ; offset += BATCH_PAGE) {
+      const { data, error } = await service
+        .from("lesson_progress")
+        .select("enrollment_id, status, started_at, completed_at")
+        .in("enrollment_id", chunk)
+        .range(offset, offset + BATCH_PAGE - 1);
+      if (error) throw error;
+      const batch = (data ?? []) as any[];
+      for (const row of batch) {
+        const entry = activity.get(row.enrollment_id) ?? {
+          completedLessons: 0,
+          lastAccessedAt: null,
+        };
+        if (row.status === "completed") entry.completedLessons += 1;
+        for (const ts of [row.started_at, row.completed_at]) {
+          if (ts && (!entry.lastAccessedAt || ts > entry.lastAccessedAt)) {
+            entry.lastAccessedAt = ts;
+          }
+        }
+        activity.set(row.enrollment_id, entry);
+      }
+      if (batch.length < BATCH_PAGE) break;
+    }
+  }
+  return activity;
+}
+
+/** Progress % from completed vs total lessons (0 when the course is empty). */
+export function progressPercent(
+  completedLessons: number,
+  totalLessons: number | undefined
+): number {
+  if (!totalLessons || totalLessons <= 0) return 0;
+  return Math.min(100, Math.round((completedLessons / totalLessons) * 100));
+}
+
 /**
  * Calculate a risk score for a specific user in a specific course.
  * Factors: login frequency, progress rate, assessment scores,
@@ -131,20 +218,14 @@ export async function calculateRiskScore(
 ): Promise<RiskPrediction> {
   const service = createServiceClient();
 
-  // Get enrollment and progress data
-  const [enrollmentResult, lessonsResult, assessmentResult, snapshotResult] =
+  const [enrollmentResult, assessmentResult, snapshotResult] =
     await Promise.all([
       service
         .from("enrollments")
-        .select("id, status, progress, enrolled_at, due_date, last_accessed_at")
+        .select("id, status, enrolled_at, due_date")
         .eq("user_id", userId)
         .eq("course_id", courseId)
-        .single(),
-      service
-        .from("lesson_progress")
-        .select("id, status, completed_at, time_spent_seconds")
-        .eq("user_id", userId)
-        .eq("lesson_id", courseId), // This will be joined via course
+        .maybeSingle(),
       service
         .from("assessment_attempts")
         .select("id, score, completed_at")
@@ -163,13 +244,30 @@ export async function calculateRiskScore(
   const snapshots = snapshotResult.data ?? [];
   const assessments = assessmentResult.data ?? [];
 
+  // Progress and last-access are derived from lesson_progress — the
+  // enrollments table has no columns for them.
+  let progress: number | null = null;
+  let lastAccessedAt: string | null = null;
+  if (enrollment) {
+    const [activity, lessonCounts] = await Promise.all([
+      getEnrollmentActivity(service, [enrollment.id]),
+      getCourseLessonCounts(service, [courseId]),
+    ]);
+    const entry = activity.get(enrollment.id);
+    progress = progressPercent(
+      entry?.completedLessons ?? 0,
+      lessonCounts.get(courseId)
+    );
+    lastAccessedAt = entry?.lastAccessedAt ?? null;
+  }
+
   // Factors 1-3 (progress rate, due date, access recency) share the pure
   // enrollment-level scorer with the at-risk report.
   const enrollmentRisk = scoreEnrollmentRisk({
-    progress: enrollment?.progress ?? null,
+    progress,
     enrolled_at: enrollment?.enrolled_at ?? null,
     due_date: enrollment?.due_date ?? null,
-    last_accessed_at: enrollment?.last_accessed_at ?? null,
+    last_accessed_at: lastAccessedAt,
   });
   const factors: Record<string, number | string> = enrollmentRisk.factors;
   let totalRisk = enrollmentRisk.riskPoints;
@@ -314,16 +412,17 @@ export async function computeEngagementScore(
 ): Promise<number> {
   const service = createServiceClient();
 
-  // Gather signals
+  // Gather signals ("active" = an open enrollment; the status enum is
+  // enrolled/in_progress/completed/failed/expired)
   const [enrollResult, progressResult, assessmentResult] = await Promise.all([
     service
       .from("enrollments")
-      .select("id, status, progress, last_accessed_at")
+      .select("id, course_id, status")
       .eq("user_id", userId)
-      .eq("status", "active"),
+      .in("status", ["enrolled", "in_progress"]),
     service
       .from("lesson_progress")
-      .select("id, completed_at, time_spent_seconds")
+      .select("id, completed_at")
       .eq("user_id", userId)
       .order("completed_at", { ascending: false })
       .limit(30),
@@ -335,9 +434,15 @@ export async function computeEngagementScore(
       .limit(10),
   ]);
 
-  const enrollments = enrollResult.data ?? [];
+  const enrollments = (enrollResult.data ?? []) as any[];
   const recentLessons = progressResult.data ?? [];
   const recentAssessments = assessmentResult.data ?? [];
+
+  // Progress and last-access are derived from lesson_progress.
+  const [activity, lessonCounts] = await Promise.all([
+    getEnrollmentActivity(service, enrollments.map((e) => e.id)),
+    getCourseLessonCounts(service, enrollments.map((e) => e.course_id)),
+  ]);
 
   let score = 0;
 
@@ -357,7 +462,12 @@ export async function computeEngagementScore(
   const avgProgress =
     enrollments.length > 0
       ? enrollments.reduce(
-          (sum: number, e: any) => sum + (e.progress ?? 0),
+          (sum: number, e: any) =>
+            sum +
+            progressPercent(
+              activity.get(e.id)?.completedLessons ?? 0,
+              lessonCounts.get(e.course_id)
+            ),
           0
         ) / enrollments.length
       : 0;
@@ -373,9 +483,10 @@ export async function computeEngagementScore(
 
   // Recency factor (0-10)
   const mostRecentAccess = enrollments
-    .map((e: any) =>
-      e.last_accessed_at ? new Date(e.last_accessed_at).getTime() : 0
-    )
+    .map((e: any) => {
+      const ts = activity.get(e.id)?.lastAccessedAt;
+      return ts ? new Date(ts).getTime() : 0;
+    })
     .sort((a: number, b: number) => b - a)[0];
   if (mostRecentAccess) {
     const daysSinceAccess =
