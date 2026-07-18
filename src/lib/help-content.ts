@@ -429,3 +429,14 @@ export type HelpKey = keyof typeof helpContent;
 export function getHelp(key: HelpKey): HelpEntry {
   return helpContent[key];
 }
+
+/**
+ * Plain-language description for a nav route, if one exists. Help keys mirror
+ * routes (e.g. "/learn/observations" → "learn.observations"), so the sidebar can
+ * surface these as tooltips on the labels a newcomer reads first — where the
+ * jargon actually lives — instead of only behind an info icon on the page.
+ */
+export function helpDescriptionForHref(href: string): string | undefined {
+  const key = href.replace(/^\//, "").replace(/\//g, ".");
+  return (helpContent as Record<string, HelpEntry | undefined>)[key]?.description;
+}

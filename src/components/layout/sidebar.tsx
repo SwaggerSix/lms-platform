@@ -65,6 +65,7 @@ import {
 import { useLocale } from "next-intl";
 import LanguageSelector from "@/components/ui/language-selector";
 import { roleLabel } from "@/lib/auth/roles";
+import { helpDescriptionForHref } from "@/lib/help-content";
 import { useBrandingStore } from "@/stores/branding-store";
 
 type Role = "learner" | "manager" | "instructor" | "admin" | "super_admin";
@@ -80,6 +81,9 @@ interface NavItem {
    * base-role defaults, so this only ever hides an item from a narrowed custom
    * role — it never changes what a built-in role sees. */
   permission?: string;
+  /** Secondary item: hidden under a "More" toggle by default so a newcomer sees
+   * only the essentials first (P2 audit: navigation overload). */
+  advanced?: boolean;
 }
 
 interface NavSection {
@@ -118,15 +122,17 @@ const navSections: NavSection[] = [
       { label: "My Classes", href: "/learn/classes", icon: CalendarDays, featureKey: "classes" },
       { label: "Learning Paths", href: "/learn/paths", icon: Route, featureKey: "learning_paths" },
       { label: "Certifications", href: "/learn/certifications", icon: Award, featureKey: "certifications" },
-      { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions" },
-      { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification" },
-      { label: "Documents", href: "/learn/documents", icon: FolderOpen, featureKey: "documents" },
-      { label: "Knowledge Base", href: "/learn/knowledge-base", icon: BookMarked, featureKey: "knowledge_base" },
-      { label: "Microlearning", href: "/learn/microlearning", icon: Puzzle, featureKey: "microlearning" },
-      { label: "360 Feedback", href: "/learn/feedback", icon: MessagesSquare, featureKey: "feedback_360" },
-      { label: "Observations", href: "/learn/observations", icon: Eye, featureKey: "observations" },
-      { label: "Evaluations", href: "/learn/evaluations", icon: ClipboardCheck, featureKey: "evaluations" },
-      { label: "Nudges", href: "/learn/nudges", icon: Zap, featureKey: "nudges" },
+      // Secondary learner items — kept behind "More" so the essentials (find a
+      // course, see my courses, paths, certifications) aren't buried (P2 audit).
+      { label: "Webinars", href: "/learn/ilt-sessions", icon: CalendarDays, featureKey: "ilt_sessions", advanced: true },
+      { label: "Achievements", href: "/learn/achievements", icon: Trophy, featureKey: "gamification", advanced: true },
+      { label: "Documents", href: "/learn/documents", icon: FolderOpen, featureKey: "documents", advanced: true },
+      { label: "Knowledge Base", href: "/learn/knowledge-base", icon: BookMarked, featureKey: "knowledge_base", advanced: true },
+      { label: "Microlearning", href: "/learn/microlearning", icon: Puzzle, featureKey: "microlearning", advanced: true },
+      { label: "360 Feedback", href: "/learn/feedback", icon: MessagesSquare, featureKey: "feedback_360", advanced: true },
+      { label: "Observations", href: "/learn/observations", icon: Eye, featureKey: "observations", advanced: true },
+      { label: "Evaluations", href: "/learn/evaluations", icon: ClipboardCheck, featureKey: "evaluations", advanced: true },
+      { label: "Nudges", href: "/learn/nudges", icon: Zap, featureKey: "nudges", advanced: true },
     ],
     roles: ["learner", "manager", "admin", "super_admin"],
   },
@@ -275,6 +281,7 @@ const navSections: NavSection[] = [
 ];
 
 const COLLAPSED_SECTIONS_KEY = "lms:sidebar:collapsed-sections";
+const MORE_EXPANDED_KEY = "lms:sidebar:more-expanded";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -286,6 +293,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [moreExpanded, setMoreExpanded] = useState<Record<string, boolean>>({});
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, boolean> | null>(null);
 
   const { user, permissions, hasPermission } = useAuth();
@@ -293,11 +301,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const branding = useBrandingStore((s) => s.config);
   const currentRole: Role = (user?.role as Role) ?? "learner";
 
-  // Restore per-section collapse preferences
+  // Restore per-section collapse + "More" preferences
   useEffect(() => {
     try {
       const stored = localStorage.getItem(COLLAPSED_SECTIONS_KEY);
       if (stored) setCollapsedSections(JSON.parse(stored));
+      const more = localStorage.getItem(MORE_EXPANDED_KEY);
+      if (more) setMoreExpanded(JSON.parse(more));
     } catch {
       // Ignore corrupt/unavailable storage
     }
@@ -308,6 +318,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       const next = { ...prev, [header]: !prev[header] };
       try {
         localStorage.setItem(COLLAPSED_SECTIONS_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore unavailable storage
+      }
+      return next;
+    });
+
+  const toggleMore = (header: string) =>
+    setMoreExpanded((prev) => {
+      const next = { ...prev, [header]: !prev[header] };
+      try {
+        localStorage.setItem(MORE_EXPANDED_KEY, JSON.stringify(next));
       } catch {
         // Ignore unavailable storage
       }
@@ -448,17 +469,30 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {section.header && collapsed && (
               <div className="my-3 border-t border-[var(--brand-sidebar-border,#DEE2E6)]" aria-hidden="true" />
             )}
-            {!isSectionCollapsed && (
-            <ul role="list" className="space-y-0.5">
-              {section.items.map((item) => {
+            {!isSectionCollapsed && (() => {
+              // Split primary vs. "More" (advanced) items. When the sidebar is
+              // icon-collapsed there's no room for a toggle, so show everything.
+              const advancedItems = section.items.filter((i) => i.advanced);
+              const primaryItems = collapsed ? section.items : section.items.filter((i) => !i.advanced);
+              const sectionKey = section.header ?? `s${sectionIdx}`;
+              const hasMore = !collapsed && advancedItems.length > 0;
+              // Auto-open when the current page is an advanced item, so a direct
+              // link still highlights correctly.
+              const moreOpen =
+                !!moreExpanded[sectionKey] || advancedItems.some((i) => i.href === activeHref);
+
+              const renderItem = (item: NavItem) => {
                 const Icon = item.icon;
                 const isActive = item.href === activeHref;
-
+                // Surface the plain-language help description as a tooltip on the
+                // label a newcomer reads first (P2 audit); fall back to the label
+                // when icon-collapsed.
+                const tooltip = collapsed ? item.label : helpDescriptionForHref(item.href);
                 return (
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      title={collapsed ? item.label : undefined}
+                      title={tooltip || undefined}
                       aria-label={collapsed ? item.label : undefined}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
@@ -480,9 +514,32 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     </Link>
                   </li>
                 );
-              })}
-            </ul>
-            )}
+              };
+
+              return (
+                <ul role="list" className="space-y-0.5">
+                  {primaryItems.map(renderItem)}
+                  {hasMore && moreOpen && advancedItems.map(renderItem)}
+                  {hasMore && (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => toggleMore(sectionKey)}
+                        aria-expanded={moreOpen}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--brand-sidebar-muted,#6C757D)] transition-colors hover:bg-[var(--brand-sidebar-active-bg,#F1F7E4)] hover:text-[var(--brand-sidebar-active-text,#49641D)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#91C53C)] focus:ring-offset-2 focus:ring-offset-[var(--brand-sidebar-bg,#FBFCFA)]"
+                      >
+                        {moreOpen ? (
+                          <ChevronDown className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        ) : (
+                          <ChevronRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        )}
+                        <span>{moreOpen ? "Show less" : `More (${advancedItems.length})`}</span>
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              );
+            })()}
           </div>
           );
         })}
