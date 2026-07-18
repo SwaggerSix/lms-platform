@@ -35,10 +35,13 @@ function relativeTime(dateStr: string): string {
   return diffDays === 1 ? "Yesterday" : `${diffDays}d ago`;
 }
 
-// Path segments whose auto-generated label would be wrong or unreadable.
+// Path segments whose auto-generated label would be wrong or unreadable. Labels
+// match the sidebar so breadcrumbs don't reintroduce the jargon the sidebar hid
+// (P2 audit) — e.g. "Webinars", not "ILT Sessions". The remaining acronyms below
+// only appear under admin-only routes, so non-admins never see them.
 const SEGMENT_LABELS: Record<string, string> = {
-  "ilt-sessions": "ILT Sessions",
-  "training-events": "ILT Session Log",
+  "ilt-sessions": "Webinars",
+  "training-events": "Session Log",
   "ai-create": "AI Course Creator",
   sso: "SSO",
   xapi: "xAPI / LRS",
