@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/sender";
 import { createServiceClient } from "@/lib/supabase/service";
 import { generateReport, type ReportType } from "@/lib/reports/generate";
+import { runReportDefinition, type DefinitionSpec } from "@/lib/reports/custom";
 
 // Vercel Cron: runs every hour
 export const dynamic = "force-dynamic";
@@ -52,19 +53,36 @@ export async function GET(request: NextRequest) {
   let processed = 0;
   for (const report of dueReports) {
     try {
-      // Resolve report type
-      const reportType = REPORT_TYPE_MAP[report.report_type] ?? null;
-      if (!reportType) {
-        console.error(`Unknown report_type "${report.report_type}" for scheduled report ${report.id}`);
-        continue;
+      // Resolve report type. "custom:<uuid>" runs a saved report definition.
+      let reportType: string;
+      let rows: Record<string, unknown>[];
+      if (typeof report.report_type === "string" && report.report_type.startsWith("custom:")) {
+        const definitionId = report.report_type.slice("custom:".length);
+        const { data: definition } = await service
+          .from("report_definitions")
+          .select("*")
+          .eq("id", definitionId)
+          .maybeSingle();
+        if (!definition) {
+          console.error(`Missing report definition "${definitionId}" for scheduled report ${report.id}`);
+          continue;
+        }
+        reportType = "custom";
+        rows = await runReportDefinition(definition as unknown as DefinitionSpec);
+      } else {
+        const mapped = REPORT_TYPE_MAP[report.report_type] ?? null;
+        if (!mapped) {
+          console.error(`Unknown report_type "${report.report_type}" for scheduled report ${report.id}`);
+          continue;
+        }
+        reportType = mapped;
+        // Generate report using the shared logic
+        rows = await generateReport(mapped, {
+          date_from: report.filters?.date_from,
+          date_to: report.filters?.date_to,
+          department: report.filters?.department,
+        });
       }
-
-      // Generate report using the shared logic
-      const rows = await generateReport(reportType, {
-        date_from: report.filters?.date_from,
-        date_to: report.filters?.date_to,
-        department: report.filters?.department,
-      });
 
       // Send to recipients
       const recipients = report.recipients || [];
