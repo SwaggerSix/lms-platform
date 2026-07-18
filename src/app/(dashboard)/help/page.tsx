@@ -76,39 +76,44 @@ export default async function HelpLandingPage() {
         </Link>
       </div>
 
-      {/* All manuals */}
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">All manuals</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {helpManuals.map((m) => {
-          const Icon = ROLE_ICON[m.role];
-          return (
-            <Link
-              key={m.role}
-              href={`/help/${m.role}`}
-              className="group flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 hover:border-primary-300 hover:shadow-md transition-all"
-            >
-              <div className="rounded-lg bg-primary-100 p-2.5 text-primary-700">
-                <Icon className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900">{m.title}</h3>
-                  {m.role === myRole && (
-                    <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-medium uppercase text-primary-700">
-                      Yours
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-gray-600">{ROLE_BLURB[m.role]}</p>
-                <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary-600 group-hover:underline">
-                  <BookOpen className="h-3.5 w-3.5" />
-                  {m.groups.reduce((n, g) => n + g.chapters.length, 0)} chapters
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+      {/* Other roles' manuals are collapsed by default so a learner isn't shown
+          the Admin/Super-Admin guides they don't need (P2 audit). */}
+      {(() => {
+        const otherManuals = helpManuals.filter((m) => m.role !== myRole);
+        if (otherManuals.length === 0) return null;
+        return (
+          <details className="group rounded-xl border border-gray-200 bg-white">
+            <summary className="flex cursor-pointer items-center justify-between gap-2 p-5 text-lg font-semibold text-gray-900 marker:content-['']">
+              <span>Manuals for other roles</span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-90" aria-hidden="true" />
+            </summary>
+            <div className="grid grid-cols-1 gap-4 border-t border-gray-100 p-5 sm:grid-cols-2">
+              {otherManuals.map((m) => {
+                const Icon = ROLE_ICON[m.role];
+                return (
+                  <Link
+                    key={m.role}
+                    href={`/help/${m.role}`}
+                    className="group/card flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 hover:border-primary-300 hover:shadow-md transition-all"
+                  >
+                    <div className="rounded-lg bg-primary-100 p-2.5 text-primary-700">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-gray-900">{m.title}</h3>
+                      <p className="mt-1 text-sm text-gray-600">{ROLE_BLURB[m.role]}</p>
+                      <div className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary-600 group-hover/card:underline">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {m.groups.reduce((n, g) => n + g.chapters.length, 0)} chapters
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </details>
+        );
+      })()}
     </div>
   );
 }
