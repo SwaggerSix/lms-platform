@@ -3,6 +3,10 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { VIEW_AS_COOKIE, resolveViewAsRole } from "@/lib/auth/view-as";
+import {
+  defaultPermissionsForRole,
+  resolveEffectivePermissions,
+} from "@/lib/auth/permissions";
 
 export async function GET() {
   // Verify the user is authenticated via their session cookie
@@ -38,9 +42,41 @@ export async function GET() {
     cookieStore.get(VIEW_AS_COOKIE)?.value ?? null
   );
 
+  // Effective permissions (custom-role overlay). Loaded defensively: a missing
+  // custom_roles table/column (e.g. code deployed ahead of the migration)
+  // degrades to the base role's defaults rather than failing the whole profile
+  // fetch. While previewing a role, permissions reflect that built-in base role
+  // with no custom overlay.
+  let permissions: string[];
+  let customRole: { id: string; name: string } | null = null;
   if (viewingAs) {
-    return NextResponse.json({ ...data, role: viewingAs, real_role: data.role });
+    permissions = defaultPermissionsForRole(viewingAs);
+  } else {
+    try {
+      const { data: cr } = await service
+        .from("users")
+        .select("custom_role:custom_roles(id, name, permissions, base_role, is_active)")
+        .eq("id", data.id)
+        .maybeSingle();
+      const embedded = (cr as { custom_role?: { id: string; name: string; permissions: string[]; base_role: string; is_active: boolean } | null } | null)?.custom_role ?? null;
+      if (embedded && embedded.is_active !== false) {
+        customRole = { id: embedded.id, name: embedded.name };
+        permissions = resolveEffectivePermissions({
+          role: data.role,
+          customRolePermissions: embedded.permissions ?? [],
+          customRoleBaseRole: embedded.base_role,
+        });
+      } else {
+        permissions = defaultPermissionsForRole(data.role);
+      }
+    } catch {
+      permissions = defaultPermissionsForRole(data.role);
+    }
   }
 
-  return NextResponse.json(data);
+  if (viewingAs) {
+    return NextResponse.json({ ...data, role: viewingAs, real_role: data.role, permissions, custom_role: customRole });
+  }
+
+  return NextResponse.json({ ...data, permissions, custom_role: customRole });
 }

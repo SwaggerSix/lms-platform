@@ -25,6 +25,40 @@ export async function PATCH(
   }
   const { id } = await params;
 
+  // Custom role assignment: when a custom role is assigned, keep the user's
+  // built-in base `role` in sync with the custom role's base_role so all the
+  // existing role-based authorization (authorize(), RLS, middleware) continues
+  // to gate correctly. Resolving here (before the guards below) means the
+  // synced base role still passes the super-admin and canAssignRole checks.
+  if ("custom_role_id" in body) {
+    const rawCustomRoleId = body.custom_role_id;
+    if (rawCustomRoleId) {
+      const { data: customRole } = await service
+        .from("custom_roles")
+        .select("id, base_role, organization_id, is_active")
+        .eq("id", rawCustomRoleId)
+        .maybeSingle();
+      if (!customRole) {
+        return NextResponse.json({ error: "Custom role not found" }, { status: 400 });
+      }
+      // Tenant isolation: an org-bound admin may only assign their own org's
+      // roles or global (null-org) roles.
+      if (
+        !isSuperAdmin(auth.user.role) &&
+        auth.user.organization_id &&
+        customRole.organization_id &&
+        customRole.organization_id !== auth.user.organization_id
+      ) {
+        return NextResponse.json({ error: "You are not allowed to assign that role" }, { status: 403 });
+      }
+      // Sync the base role to the custom role's base_role.
+      body.role = customRole.base_role;
+    } else {
+      // Explicit unassign; base role is left as-is unless also supplied.
+      body.custom_role_id = null;
+    }
+  }
+
   // Guard the Super Admin (gC/GGS) role: only Super Admins may modify a Super
   // Admin account or promote someone into the role.
   if (!isSuperAdmin(auth.user.role)) {
@@ -52,7 +86,7 @@ export async function PATCH(
   }
 
   // Mass assignment fix: whitelist allowed fields
-  const allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url"];
+  const allowedFields = ["first_name", "last_name", "email", "job_title", "role", "status", "organization_id", "manager_id", "preferences", "avatar_url", "custom_role_id"];
 
   // For subcontractors synced from the partner portal, the portal is the system
   // of record for identity/content fields. Admins can still edit them here
