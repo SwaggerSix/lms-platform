@@ -49,6 +49,10 @@ export interface SettingsData {
     webhookUrl: string;
     selectedWebhookEvents: string[];
   };
+  registration: {
+    mode: "open" | "domain" | "closed";
+    allowedDomains: string[];
+  };
   apiKeys: ApiKey[];
 }
 
@@ -63,6 +67,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
   const [timezone, setTimezone] = useState(data.general.timezone);
   const [language, setLanguage] = useState(data.general.language);
   const [dateFormat, setDateFormat] = useState(data.general.dateFormat);
+  const [registrationMode, setRegistrationMode] = useState<"open" | "domain" | "closed">(data.registration.mode);
+  const [registrationDomains, setRegistrationDomains] = useState((data.registration.allowedDomains ?? []).join(", "));
   const [primaryColor, setPrimaryColor] = useState(data.branding.primaryColor);
   const [accentColor, setAccentColor] = useState(data.branding.accentColor);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -335,6 +341,55 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
             >
               {saving === "general" && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
+            </button>
+          </div>
+
+          {/* Self-registration policy (S6) */}
+          <div className="pt-6 border-t border-gray-200 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Self-registration</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Control who can create their own account from the sign-up page.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+              <select
+                value={registrationMode}
+                onChange={(e) => setRegistrationMode(e.target.value as "open" | "domain" | "closed")}
+                className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              >
+                <option value="closed">Invite-only — self-registration disabled</option>
+                <option value="domain">Domain-restricted — only approved email domains</option>
+                <option value="open">Open — anyone can register</option>
+              </select>
+            </div>
+            {registrationMode === "domain" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Approved domains</label>
+                <input
+                  type="text"
+                  value={registrationDomains}
+                  onChange={(e) => setRegistrationDomains(e.target.value)}
+                  placeholder="acme.com, example.org"
+                  className="w-full max-w-md rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Comma-separated. Only emails at these domains may self-register.</p>
+              </div>
+            )}
+            <button
+              disabled={saving === "registration"}
+              onClick={() =>
+                saveSetting("registration", {
+                  mode: registrationMode,
+                  allowed_domains: registrationDomains
+                    .split(",")
+                    .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
+                    .filter(Boolean),
+                })
+              }
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+            >
+              {saving === "registration" && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save Registration Policy
             </button>
           </div>
         </div>
