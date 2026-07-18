@@ -12,6 +12,9 @@ interface Nugget {
   title: string;
   content_type: string;
   difficulty?: string;
+  content?: Record<string, unknown> | null;
+  tags?: string[] | null;
+  estimated_seconds?: number | null;
   is_active: boolean;
   view_count: number;
   created_at: string;
@@ -108,11 +111,40 @@ function buildNuggetContent(
   }
 }
 
+/** Map a stored nugget's content back into an editable draft so an existing
+ * nugget can be re-opened in the structured editor. Unused fields keep their
+ * empty defaults. */
+function draftFromContent(type: string, content: Record<string, unknown> | null | undefined): ContentDraft {
+  const d = emptyContentDraft();
+  const c = (content ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  switch (type) {
+    case "tip":
+      d.text = str(c.text); d.source = str(c.source); break;
+    case "flashcard":
+      d.front = str(c.front); d.back = str(c.back); break;
+    case "quiz":
+      d.question = str(c.question);
+      d.options = Array.isArray(c.options) && c.options.length >= 2 ? c.options.map(str) : ["", ""];
+      d.correct_answer = typeof c.correct_answer === "number" ? c.correct_answer : 0;
+      d.explanation = str(c.explanation);
+      break;
+    case "video_clip":
+      d.url = str(c.url); d.caption = str(c.caption); break;
+    case "infographic":
+      d.image_url = str(c.image_url); d.caption = str(c.caption); break;
+    case "checklist":
+      d.items = Array.isArray(c.items) && c.items.length ? c.items.map(str) : [""]; break;
+  }
+  return d;
+}
+
 export default function AdminMicrolearningClient({ initialNuggets, initialWidgets, stats }: Props) {
   const [activeTab, setActiveTab] = useState<"nuggets" | "widgets">("nuggets");
   const [nuggets, setNuggets] = useState<Nugget[]>(initialNuggets);
   const [widgets, setWidgets] = useState<Widget[]>(initialWidgets);
   const [showCreateNugget, setShowCreateNugget] = useState(false);
+  const [editingNuggetId, setEditingNuggetId] = useState<string | null>(null);
   const [showCreateWidget, setShowCreateWidget] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<Widget | null>(null);
 
@@ -141,7 +173,34 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
     allowed_domains: "",
   });
 
-  const handleCreateNugget = async () => {
+  const openCreateNugget = () => {
+    setEditingNuggetId(null);
+    setNuggetError(null);
+    setNuggetForm({ title: "", content_type: "tip", difficulty: "beginner", tags: "", estimated_seconds: 60 });
+    setContentDraft(emptyContentDraft());
+    setShowCreateNugget(true);
+  };
+
+  const openEditNugget = (nugget: Nugget) => {
+    setEditingNuggetId(nugget.id);
+    setNuggetError(null);
+    setNuggetForm({
+      title: nugget.title,
+      content_type: nugget.content_type,
+      difficulty: nugget.difficulty || "beginner",
+      tags: (nugget.tags ?? []).join(", "),
+      estimated_seconds: nugget.estimated_seconds ?? 60,
+    });
+    setContentDraft(draftFromContent(nugget.content_type, nugget.content));
+    setShowCreateNugget(true);
+  };
+
+  const closeNuggetForm = () => {
+    setShowCreateNugget(false);
+    setEditingNuggetId(null);
+  };
+
+  const handleSaveNugget = async () => {
     setNuggetError(null);
     const built = buildNuggetContent(nuggetForm.content_type, contentDraft);
     if (built.error) {
@@ -149,31 +208,40 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       return;
     }
     const content = built.content;
+    const payload = {
+      title: nuggetForm.title,
+      content_type: nuggetForm.content_type,
+      difficulty: nuggetForm.difficulty,
+      content,
+      tags: nuggetForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      estimated_seconds: nuggetForm.estimated_seconds,
+    };
 
     setCreating(true);
     try {
-      const res = await fetch("/api/microlearning/nuggets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: nuggetForm.title,
-          content_type: nuggetForm.content_type,
-          difficulty: nuggetForm.difficulty,
-          content,
-          tags: nuggetForm.tags.split(",").map((t) => t.trim()).filter(Boolean),
-          estimated_seconds: nuggetForm.estimated_seconds,
-        }),
-      });
+      const res = editingNuggetId
+        ? await fetch(`/api/microlearning/nuggets/${editingNuggetId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch("/api/microlearning/nuggets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || "Failed to create nugget");
+        const data = await res.json().catch(() => null);
+        setNuggetError(data?.error || "Failed to save nugget");
         return;
       }
 
       const data = await res.json();
-      setNuggets((prev) => [data, ...prev]);
-      setShowCreateNugget(false);
+      setNuggets((prev) =>
+        editingNuggetId ? prev.map((n) => (n.id === editingNuggetId ? { ...n, ...data } : n)) : [data, ...prev]
+      );
+      closeNuggetForm();
       setNuggetForm({ title: "", content_type: "tip", difficulty: "beginner", tags: "", estimated_seconds: 60 });
       setContentDraft(emptyContentDraft());
     } finally {
@@ -265,13 +333,22 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
       header: <span className="sr-only">Actions</span>,
       className: "text-right",
       render: (nugget) => (
-        <button
-          onClick={() => handleDeleteNugget(nugget.id)}
-          className="text-xs text-red-500 hover:text-red-700"
-        >
-          Delete
-          <span className="sr-only">, {nugget.title}</span>
-        </button>
+        <div className="flex items-center justify-end gap-3">
+          <button
+            onClick={() => openEditNugget(nugget)}
+            className="text-xs text-gray-500 hover:text-primary-700"
+          >
+            Edit
+            <span className="sr-only">, {nugget.title}</span>
+          </button>
+          <button
+            onClick={() => handleDeleteNugget(nugget.id)}
+            className="text-xs text-red-500 hover:text-red-700"
+          >
+            Delete
+            <span className="sr-only">, {nugget.title}</span>
+          </button>
+        </div>
       ),
     },
   ];
@@ -316,14 +393,15 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Learning Nuggets</h2>
-            <Button onClick={() => { setNuggetError(null); setContentDraft(emptyContentDraft()); setShowCreateNugget(true); }}>
+            <Button onClick={openCreateNugget}>
               Create Nugget
             </Button>
           </div>
 
-          {/* Create Nugget Form */}
+          {/* Create / Edit Nugget Form */}
           {showCreateNugget && (
             <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">{editingNuggetId ? "Edit nugget" : "New nugget"}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">Title</label>
@@ -442,14 +520,14 @@ export default function AdminMicrolearningClient({ initialNuggets, initialWidget
               </div>
               {nuggetError && <p className="text-sm text-red-600">{nuggetError}</p>}
               <div className="flex justify-end gap-3">
-                <Button variant="ghost" onClick={() => setShowCreateNugget(false)}>
+                <Button variant="ghost" onClick={closeNuggetForm}>
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleCreateNugget}
+                  onClick={handleSaveNugget}
                   disabled={creating || !nuggetForm.title}
                 >
-                  {creating ? "Creating..." : "Create"}
+                  {creating ? "Saving..." : editingNuggetId ? "Save Changes" : "Create"}
                 </Button>
               </div>
             </div>
