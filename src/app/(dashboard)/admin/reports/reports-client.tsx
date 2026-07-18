@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import AdminAnalyticsTabs from "@/components/layout/admin-analytics-tabs";
 import {
   CheckCircle,
@@ -75,6 +75,24 @@ const reportTemplates = [
   { id: "8", name: "At-Risk Learners", description: "Overdue, inactive, and low-progress learners — with one-click reminders", icon: <AlertTriangle className="h-6 w-6" />, color: "text-rose-600", bgColor: "bg-rose-100" },
   { id: "9", name: "Training Matrix", description: "Every learner × required training with RAG status — grid view under the Training Matrix tab", icon: <Table className="h-6 w-6" />, color: "text-primary-600", bgColor: "bg-primary-100" },
 ];
+
+export interface DatasetMeta {
+  label: string;
+  columns: Record<string, { label: string }>;
+  filters: string[];
+}
+
+export interface ReportDefinition {
+  id: string;
+  name: string;
+  description: string;
+  dataset: string;
+  columns: string[];
+  filters: Record<string, string>;
+  sort_by: string | null;
+  sort_dir: string;
+  updated_at: string;
+}
 
 export interface AtRiskRow {
   user_id: string;
@@ -153,10 +171,24 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
   const [showAtRisk, setShowAtRisk] = useState(false);
   const [selectedAtRisk, setSelectedAtRisk] = useState<Set<string>>(new Set());
   const [nudging, setNudging] = useState(false);
-  const [dateFrom, setDateFrom] = useState("2026-03-01");
-  const [dateTo, setDateTo] = useState("2026-03-16");
+
+  // Custom report builder
+  const [datasets, setDatasets] = useState<Record<string, DatasetMeta>>({});
+  const [definitions, setDefinitions] = useState<ReportDefinition[]>([]);
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [builderDataset, setBuilderDataset] = useState("enrollments");
+  const [builderCols, setBuilderCols] = useState<string[]>([]);
+  const [builderFilters, setBuilderFilters] = useState<Record<string, string>>({});
+  const [builderSortBy, setBuilderSortBy] = useState("");
+  const [builderSortDir, setBuilderSortDir] = useState<"asc" | "desc">("asc");
+  const [builderName, setBuilderName] = useState("");
+  const [editingDefId, setEditingDefId] = useState<string | null>(null);
+  const [customRows, setCustomRows] = useState<Record<string, unknown>[] | null>(null);
+  const [customTitle, setCustomTitle] = useState("Custom Report");
+  const [customBusy, setCustomBusy] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [department, setDepartment] = useState("All");
-  const [role, setRole] = useState("All");
   const [showPreview, setShowPreview] = useState(false);
   const [reportData, setReportData] = useState<ReportRow[]>(initialReportData);
   const [loadingReport, setLoadingReport] = useState<string | null>(null);
@@ -211,6 +243,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
         setActiveReportName(templateName || "At-Risk Learners");
         setShowAtRisk(true);
         setShowPreview(false);
+        setCustomRows(null);
       } else if (response.ok && data?.rows) {
         // Map API rows to ReportRow format
         const mapped: ReportRow[] = data.rows.map((row: Record<string, any>) => ({
@@ -227,6 +260,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
         setActiveReportName(templateName || "Custom Report");
         setShowPreview(true);
         setShowAtRisk(false);
+        setCustomRows(null);
       } else {
         // Fallback: show initial data
         setActiveReportName(templateName || "Custom Report");
@@ -238,7 +272,7 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
     } finally {
       setLoadingReport(null);
     }
-  }, [dateFrom, dateTo, department, role]);
+  }, [dateFrom, dateTo, department]);
 
   const inferReportType = (name: string): string => {
     const lc = name.toLowerCase();
@@ -377,6 +411,198 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       "Recommended Action": r.recommended_action,
     }));
 
+  useEffect(() => {
+    fetch("/api/reports/definitions")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) return;
+        setDefinitions(d.definitions ?? []);
+        setDatasets(d.datasets ?? {});
+        const first = d.datasets?.enrollments ? "enrollments" : Object.keys(d.datasets ?? {})[0];
+        if (first) {
+          setBuilderDataset(first);
+          setBuilderCols(Object.keys(d.datasets[first]?.columns ?? {}));
+        }
+      })
+      .catch(() => {});
+    fetch("/api/organizations")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (Array.isArray(d)) setOrgs(d.map((o: any) => ({ id: o.id, name: o.name })));
+      })
+      .catch(() => {});
+  }, []);
+
+  const selectBuilderDataset = (ds: string) => {
+    setBuilderDataset(ds);
+    setBuilderCols(Object.keys(datasets[ds]?.columns ?? {}));
+    setBuilderSortBy("");
+    setBuilderFilters({});
+  };
+
+  const toggleBuilderCol = (col: string) =>
+    setBuilderCols((prev) =>
+      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+    );
+
+  // Columns always projected in registry order regardless of click order.
+  const builderSpec = () => {
+    const meta = datasets[builderDataset];
+    const columns = Object.keys(meta?.columns ?? {}).filter((c) => builderCols.includes(c));
+    const filters: Record<string, string> = {};
+    for (const key of meta?.filters ?? []) {
+      if (builderFilters[key]) filters[key] = builderFilters[key];
+    }
+    return {
+      dataset: builderDataset,
+      columns,
+      filters,
+      sort_by: builderSortBy && columns.includes(builderSortBy) ? builderSortBy : null,
+      sort_dir: builderSortDir,
+    };
+  };
+
+  const previewCustom = async () => {
+    setCustomBusy("preview");
+    try {
+      const res = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom: builderSpec(), format: "json" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to run report");
+      setCustomRows(data.rows ?? []);
+      setCustomTitle(builderName.trim() || "Custom Report (preview)");
+      setShowAtRisk(false);
+      setShowPreview(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to run report");
+    } finally {
+      setCustomBusy(null);
+    }
+  };
+
+  const refreshDefinitions = async () => {
+    try {
+      const res = await fetch("/api/reports/definitions");
+      if (!res.ok) return;
+      const d = await res.json();
+      setDefinitions(d.definitions ?? []);
+    } catch {
+      // keep current list
+    }
+  };
+
+  const saveDefinition = async () => {
+    const name = builderName.trim();
+    if (!name) {
+      toast.error("Give the report a name before saving");
+      return;
+    }
+    setCustomBusy("save");
+    try {
+      const url = editingDefId
+        ? `/api/reports/definitions/${editingDefId}`
+        : "/api/reports/definitions";
+      const res = await fetch(url, {
+        method: editingDefId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, ...builderSpec() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to save report");
+      toast.success(editingDefId ? `Updated "${name}".` : `Saved "${name}".`);
+      setEditingDefId(null);
+      setBuilderName("");
+      await refreshDefinitions();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save report");
+    } finally {
+      setCustomBusy(null);
+    }
+  };
+
+  const runDefinition = async (def: ReportDefinition) => {
+    setCustomBusy(`run:${def.id}`);
+    try {
+      const res = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ definition_id: def.id, format: "json" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to run report");
+      setCustomRows(data.rows ?? []);
+      setCustomTitle(def.name);
+      setShowAtRisk(false);
+      setShowPreview(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to run report");
+    } finally {
+      setCustomBusy(null);
+    }
+  };
+
+  const downloadDefinition = async (def: ReportDefinition) => {
+    setCustomBusy(`csv:${def.id}`);
+    try {
+      const res = await fetch("/api/reports/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ definition_id: def.id, format: "csv" }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to export report");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${def.name.replace(/\s+/g, "_")}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to export report");
+    } finally {
+      setCustomBusy(null);
+    }
+  };
+
+  const editDefinition = (def: ReportDefinition) => {
+    setEditingDefId(def.id);
+    setBuilderName(def.name);
+    setBuilderDataset(def.dataset);
+    setBuilderCols(def.columns);
+    setBuilderFilters(def.filters ?? {});
+    setBuilderSortBy(def.sort_by ?? "");
+    setBuilderSortDir(def.sort_dir === "desc" ? "desc" : "asc");
+  };
+
+  const deleteDefinition = async (def: ReportDefinition) => {
+    setCustomBusy(`delete:${def.id}`);
+    try {
+      const res = await fetch(`/api/reports/definitions/${def.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete report");
+      }
+      toast.success(`Deleted "${def.name}".`);
+      if (editingDefId === def.id) {
+        setEditingDefId(null);
+        setBuilderName("");
+      }
+      setDefinitions((prev) => prev.filter((d) => d.id !== def.id));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete report");
+    } finally {
+      setCustomBusy(null);
+    }
+  };
+
+  const builderMeta = datasets[builderDataset];
+
   const toggleField = (field: string) => {
     setSelectedFields((prev) => {
       const next = new Set(prev);
@@ -404,7 +630,20 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Templates</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">Report Templates</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+            <span className="text-sm text-gray-500">to</span>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+            <select value={department} onChange={(e) => setDepartment(e.target.value)} aria-label="Department" className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+              <option value="All">All Departments</option>
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {reportTemplates.map((template) => (
             <div key={template.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -425,56 +664,229 @@ export default function ReportsClient({ reportData: initialReportData, recentRep
         <div className="flex items-center gap-2 mb-5">
           <Filter className="h-5 w-5 text-primary-600" />
           <h2 className="text-lg font-semibold text-gray-900">Custom Report Builder</h2>
+          {editingDefId && (
+            <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+              Editing saved report
+            </span>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Select Fields</label>
-            <div className="grid grid-cols-2 gap-2">
-              {reportFields.map((field) => (
-                <label key={field} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input type="checkbox" checked={selectedFields.has(field)} onChange={() => toggleField(field)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span className="text-sm text-gray-700">{field}</span>
-                </label>
-              ))}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Dataset</label>
+              <select
+                value={builderDataset}
+                onChange={(e) => selectBuilderDataset(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              >
+                {Object.entries(datasets).map(([key, meta]) => (
+                  <option key={key} value={key}>{meta.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Columns</label>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(builderMeta?.columns ?? {}).map(([key, col]) => (
+                  <label key={key} className="flex items-center gap-2 rounded-lg border border-gray-200 p-2.5 cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={builderCols.includes(key)}
+                      onChange={() => toggleBuilderCol(key)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-gray-700">{col.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
           <div className="space-y-4">
+            {builderMeta?.filters.includes("date_from") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Enrolled Between</label>
+                <div className="flex items-center gap-3">
+                  <input type="date" value={builderFilters.date_from ?? ""} onChange={(e) => setBuilderFilters((f) => ({ ...f, date_from: e.target.value }))} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                  <span className="text-sm text-gray-500">to</span>
+                  <input type="date" value={builderFilters.date_to ?? ""} onChange={(e) => setBuilderFilters((f) => ({ ...f, date_to: e.target.value }))} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                </div>
+              </div>
+            )}
+            {builderMeta?.filters.includes("department") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                <select
+                  value={builderFilters.department ?? ""}
+                  onChange={(e) => setBuilderFilters((f) => ({ ...f, department: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="">All Departments</option>
+                  {orgs.map((o) => (
+                    <option key={o.id} value={o.id}>{o.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {builderMeta?.filters.includes("status") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Enrollment Status</label>
+                <select
+                  value={builderFilters.status ?? ""}
+                  onChange={(e) => setBuilderFilters((f) => ({ ...f, status: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="">Any Status</option>
+                  <option value="enrolled">Enrolled</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-              <div className="flex items-center gap-3">
-                <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-                <span className="text-sm text-gray-500">to</span>
-                <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={builderSortBy}
+                  onChange={(e) => setBuilderSortBy(e.target.value)}
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="">Default order</option>
+                  {builderCols.map((key) => (
+                    <option key={key} value={key}>{builderMeta?.columns[key]?.label ?? key}</option>
+                  ))}
+                </select>
+                <select
+                  value={builderSortDir}
+                  onChange={(e) => setBuilderSortDir(e.target.value === "desc" ? "desc" : "asc")}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  aria-label="Sort direction"
+                >
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-              <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="All">All Departments</option>
-                <option value="Executive">Executive</option>
-                <option value="HR">HR</option>
-                <option value="Operations">Operations</option>
-                <option value="Finance">Finance</option>
-                <option value="Training Delivery">Training Delivery</option>
-                <option value="Training Development">Training Development</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Report Name</label>
+              <input
+                type="text"
+                value={builderName}
+                onChange={(e) => setBuilderName(e.target.value)}
+                placeholder="e.g. Q3 Compliance Enrollments"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="All">All Roles</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Learner">Learner</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
-              </select>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={previewCustom}
+                disabled={customBusy !== null || builderCols.length === 0}
+                className="flex-1 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+              >
+                {customBusy === "preview" ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Run Report"}
+              </button>
+              <button
+                onClick={saveDefinition}
+                disabled={customBusy !== null || builderCols.length === 0}
+                className="flex-1 rounded-lg border border-primary-200 bg-primary-50 px-4 py-2.5 text-sm font-medium text-primary-700 hover:bg-primary-100 transition-colors disabled:opacity-50"
+              >
+                {customBusy === "save" ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : editingDefId ? "Update Saved Report" : "Save Report"}
+              </button>
+              {editingDefId && (
+                <button
+                  onClick={() => { setEditingDefId(null); setBuilderName(""); }}
+                  className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
-            <button onClick={() => fetchReport()} disabled={loadingReport !== null} className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50">
-              {loadingReport === "__custom__" ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Generate Custom Report"}
-            </button>
           </div>
         </div>
+
+        {definitions.length > 0 && (
+          <div className="mt-6 border-t border-gray-100 pt-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Saved Reports</h3>
+            <div className="divide-y divide-gray-100">
+              {definitions.map((def) => (
+                <div key={def.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{def.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {datasets[def.dataset]?.label ?? def.dataset} · {def.columns.length} column{def.columns.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => runDefinition(def)} disabled={customBusy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                      {customBusy === `run:${def.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                      Run
+                    </button>
+                    <button onClick={() => downloadDefinition(def)} disabled={customBusy !== null} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                      {customBusy === `csv:${def.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      CSV
+                    </button>
+                    <button onClick={() => editDefinition(def)} disabled={customBusy !== null} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                      Edit
+                    </button>
+                    <button onClick={() => deleteDefinition(def)} disabled={customBusy !== null} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
+                      {customBusy === `delete:${def.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Delete"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {customRows !== null && (
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center gap-2">
+              <Table className="h-5 w-5 text-primary-600" />
+              <h2 className="text-lg font-semibold text-gray-900">{customTitle}</h2>
+              <span className="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">{customRows.length} rows</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => exportCSV(customRows, `${customTitle.replace(/\s+/g, "_")}.csv`)} disabled={customRows.length === 0} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                <Download className="h-3.5 w-3.5" />
+                CSV
+              </button>
+              <button onClick={() => exportPDF(customRows, customTitle)} disabled={customRows.length === 0} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                <Download className="h-3.5 w-3.5" />
+                PDF
+              </button>
+            </div>
+          </div>
+          {customRows.length === 0 ? (
+            <p className="px-6 py-10 text-center text-sm text-gray-500">No rows match this report&apos;s filters.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <UITable>
+                <TableHeader>
+                  <TableRow>
+                    {Object.keys(customRows[0]).map((key) => (
+                      <TableHead key={key}>{key}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {customRows.map((row, idx) => (
+                    <TableRow key={idx}>
+                      {Object.keys(customRows[0]).map((key) => (
+                        <TableCell key={key} className="text-sm text-gray-700">
+                          {row[key] === null || row[key] === undefined || row[key] === "" ? "—" : String(row[key])}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </UITable>
+            </div>
+          )}
+        </div>
+      )}
 
       {showAtRisk && (
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
