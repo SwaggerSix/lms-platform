@@ -1,4 +1,9 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import {
+  scoreEnrollmentRisk,
+  riskLevelForScore,
+  generateRecommendedActions,
+} from "@/lib/analytics/predictive";
 
 export const VALID_REPORT_TYPES = [
   "completion",
@@ -8,6 +13,7 @@ export const VALID_REPORT_TYPES = [
   "engagement",
   "learner_progress",
   "course_effectiveness",
+  "at_risk",
 ] as const;
 
 // Supabase returns at most 1000 rows per request. Reports must not silently
@@ -475,6 +481,99 @@ async function generateCourseEffectivenessReport(
 }
 
 /**
+ * At-risk learner roster: one row per open enrollment whose risk score is
+ * medium or above (>= 25). Scores the three enrollment-level factors —
+ * overdue/due-soon, inactivity, low progress — via the same
+ * scoreEnrollmentRisk rules the predictive engine uses (the full engine adds
+ * assessment-score and engagement-trend factors on top, so its scores can be
+ * higher for the same learner). Includes user_id/course_id so the admin UI
+ * can send reminders directly from report rows.
+ */
+async function generateAtRiskReport(
+  service: ReturnType<typeof createServiceClient>,
+  filters: ReportFilters
+) {
+  const all: any[] = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    let query = service
+      .from("enrollments")
+      .select(
+        // users is !inner so the department filter below actually drops rows
+        // (a filter on a plain embed only nulls the embedded object).
+        "user_id, course_id, status, progress, enrolled_at, due_date, last_accessed_at, user:users!enrollments_user_id_fkey!inner(first_name, last_name, email, organization:organizations(name)), course:courses(title)"
+      )
+      .in("status", ["enrolled", "in_progress"])
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    if (filters.date_from) {
+      query = query.gte("enrolled_at", filters.date_from);
+    }
+    if (filters.date_to) {
+      query = query.lte("enrolled_at", filters.date_to);
+    }
+    if (filters.department) {
+      query = query.eq("user.organization_id", filters.department);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    const batch = (data ?? []) as any[];
+    all.push(...batch);
+    if (batch.length < PAGE_SIZE) break;
+  }
+
+  const now = Date.now();
+  const rows = [];
+  for (const row of all) {
+    const { riskPoints, factors } = scoreEnrollmentRisk({
+      progress: row.progress ?? null,
+      enrolled_at: row.enrolled_at ?? null,
+      due_date: row.due_date ?? null,
+      last_accessed_at: row.last_accessed_at ?? null,
+    });
+    if (riskPoints < 25) continue;
+
+    const daysOverdue = row.due_date
+      ? Math.max(
+          0,
+          Math.round(
+            (now - new Date(row.due_date).getTime()) / (1000 * 60 * 60 * 24)
+          )
+        )
+      : null;
+    const daysSinceAccess = row.last_accessed_at
+      ? Math.round(
+          (now - new Date(row.last_accessed_at).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : null;
+
+    rows.push({
+      user_id: row.user_id,
+      course_id: row.course_id,
+      user_name:
+        `${row.user?.first_name ?? ""} ${row.user?.last_name ?? ""}`.trim() ||
+        "Unknown",
+      email: row.user?.email ?? "",
+      department: row.user?.organization?.name ?? "N/A",
+      course_title: row.course?.title ?? "Unknown",
+      status: row.status,
+      progress: row.progress ?? 0,
+      due_date: row.due_date ?? null,
+      days_overdue: daysOverdue && daysOverdue > 0 ? daysOverdue : null,
+      days_since_last_access: daysSinceAccess,
+      never_accessed: row.last_accessed_at ? null : "yes",
+      risk_score: riskPoints,
+      risk_level: riskLevelForScore(riskPoints),
+      recommended_action: generateRecommendedActions(factors)[0] ?? "",
+    });
+  }
+
+  rows.sort((a, b) => b.risk_score - a.risk_score);
+  return rows;
+}
+
+/**
  * Generate a report by type. Shared between the API route and the cron job.
  */
 export async function generateReport(
@@ -498,6 +597,8 @@ export async function generateReport(
       return generateLearnerProgressReport(service, filters);
     case "course_effectiveness":
       return generateCourseEffectivenessReport(service);
+    case "at_risk":
+      return generateAtRiskReport(service, filters);
     default:
       throw new Error(`Unsupported report type: ${reportType}`);
   }
