@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import AchievementsClient from "./achievements-client";
 import type { AchievementsData, BadgeData, LeaderboardEntry, ActivityEntry } from "./achievements-client";
-import { POINTS_PER_LEVEL } from "@/lib/gamification/point-rules";
+import { POINTS_PER_LEVEL, getPointsPerLevel } from "@/lib/gamification/point-rules";
+import { resolveTenantForUser } from "@/lib/tenants/tenant-queries";
 
 export const metadata: Metadata = {
   title: "Achievements | LMS Platform",
@@ -28,12 +29,16 @@ const LEVEL_NAMES: Record<number, string> = {
   7: "Master",
 };
 
-function calculateLevel(totalPoints: number): { level: number; currentXP: number; nextLevelXP: number } {
-  // Every POINTS_PER_LEVEL points = 1 level, max level 7.
-  const level = Math.min(7, Math.max(1, Math.floor(totalPoints / POINTS_PER_LEVEL) + 1));
-  const pointsForCurrentLevel = (level - 1) * POINTS_PER_LEVEL;
+function calculateLevel(
+  totalPoints: number,
+  pointsPerLevel: number = POINTS_PER_LEVEL
+): { level: number; currentXP: number; nextLevelXP: number } {
+  // Every pointsPerLevel points = 1 level, max level 7. The divisor is the
+  // admin-configurable platform_settings value (default 500).
+  const level = Math.min(7, Math.max(1, Math.floor(totalPoints / pointsPerLevel) + 1));
+  const pointsForCurrentLevel = (level - 1) * pointsPerLevel;
   const currentXP = totalPoints - pointsForCurrentLevel;
-  const nextLevelXP = POINTS_PER_LEVEL;
+  const nextLevelXP = pointsPerLevel;
   return { level, currentXP, nextLevelXP };
 }
 
@@ -139,15 +144,30 @@ export default async function AchievementsPage() {
   try {
     const supabase = await createClient();
     const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    const authId = userData?.user?.id;
 
-    if (!userId) {
+    if (!authId) {
       // Not authenticated, use fallback
       achievementsData = FALLBACK_DATA;
       return <AchievementsClient data={achievementsData} />;
     }
 
     const service = createServiceClient();
+
+    // points_ledger / user_badges / enrollments key on users.id (the profile
+    // id), not the auth uid — resolve the profile first. Querying with the
+    // auth uid matched nothing, which is why this page always fell back.
+    const { data: profile } = await service
+      .from("users")
+      .select("id, role")
+      .eq("auth_id", authId)
+      .single();
+    if (!profile) {
+      achievementsData = FALLBACK_DATA;
+      return <AchievementsClient data={achievementsData} />;
+    }
+    const userId = profile.id as string;
+    const pointsPerLevel = await getPointsPerLevel(service);
 
     // ---- Query points_ledger for total points and recent activity ----
     let totalPoints = 0;
@@ -182,7 +202,7 @@ export default async function AchievementsPage() {
     }
 
     // ---- Calculate level from total points ----
-    const { level: currentLevel, currentXP, nextLevelXP } = calculateLevel(totalPoints);
+    const { level: currentLevel, currentXP, nextLevelXP } = calculateLevel(totalPoints, pointsPerLevel);
     const currentLevelName = LEVEL_NAMES[currentLevel] ?? "Newcomer";
 
     // ---- Calculate streak (count consecutive days with points activity) ----
@@ -301,16 +321,18 @@ export default async function AchievementsPage() {
     let hasLeaderboardData = false;
 
     try {
-      // Try to get leaderboard from points_ledger grouped by user
-      const { data: lbRows, error: lbError } = await service
-        .rpc("get_leaderboard", {})
-        .limit(10);
+      // Tenant-scoped SQL aggregation over the full ledger.
+      const tenantId = await resolveTenantForUser(userId, profile.role as string);
+      const { data: lbRows, error: lbError } = await service.rpc("get_leaderboard", {
+        p_tenant_id: tenantId,
+        p_limit: 10,
+      });
 
       if (!lbError && lbRows && lbRows.length > 0) {
         hasLeaderboardData = true;
         leaderboard = lbRows.map((row: { user_id: string; total_points: number; display_name?: string; badge_count?: number }, idx: number) => {
           const pts = row.total_points ?? 0;
-          const { level } = calculateLevel(pts);
+          const { level } = calculateLevel(pts, pointsPerLevel);
           const name = row.display_name ?? `User ${idx + 1}`;
           const initials = name
             .split(" ")
@@ -357,7 +379,7 @@ export default async function AchievementsPage() {
           if (sorted.length > 0) {
             hasLeaderboardData = true;
             leaderboard = sorted.map(([uid, pts], idx) => {
-              const { level } = calculateLevel(pts);
+              const { level } = calculateLevel(pts, pointsPerLevel);
               return {
                 rank: idx + 1,
                 name: uid === userId ? "You" : `User ${idx + 1}`,

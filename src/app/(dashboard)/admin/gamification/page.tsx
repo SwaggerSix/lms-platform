@@ -4,7 +4,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { redirect } from "next/navigation";
 import GamificationClient from "./gamification-client";
 import type { PointRule, BadgeItem, LeaderboardUser } from "./gamification-client";
-import { getResolvedPointRules, levelForPoints } from "@/lib/gamification/point-rules";
+import {
+  getResolvedPointRules,
+  levelForPoints,
+  getPointsPerLevel,
+} from "@/lib/gamification/point-rules";
+import { resolveTenantForUser } from "@/lib/tenants/tenant-queries";
 
 export const metadata: Metadata = {
   title: "Gamification | LMS Platform",
@@ -54,69 +59,32 @@ export default async function GamificationPage() {
     badges = [];
   }
 
-  // --- Fetch leaderboard: aggregate points per user, join user info and badge counts ---
+  // --- Fetch leaderboard: SQL aggregation over the full ledger, scoped to
+  // the admin's tenant (super_admin sees platform-wide) ---
+  const pointsPerLevel = await getPointsPerLevel(service);
   let leaderboard: LeaderboardUser[] = [];
   try {
-    // Aggregate every ledger row (paginated) so totals aren't truncated to the
-    // most recent 500 entries.
-    const PAGE = 1000;
-    const pointsRows: any[] = [];
-    for (let offset = 0; ; offset += PAGE) {
-      const { data: batch } = await service
-        .from("points_ledger")
-        .select("user_id, points, user:users(first_name, last_name)")
-        .order("created_at", { ascending: false })
-        .range(offset, offset + PAGE - 1);
-      const rows = batch ?? [];
-      pointsRows.push(...rows);
-      if (rows.length < PAGE) break;
-    }
+    const tenantId = await resolveTenantForUser(dbUser.id, dbUser.role);
+    const { data: lbRows } = await service.rpc("get_leaderboard", {
+      p_tenant_id: tenantId,
+      p_limit: 10,
+    });
 
-    // Aggregate total points per user
-    const userPointsMap = new Map<string, { totalPoints: number; firstName: string; lastName: string }>();
-    for (const row of (pointsRows ?? []) as any[]) {
-      const userId = row.user_id as string;
-      const existing = userPointsMap.get(userId);
-      const firstName = row.user?.first_name ?? "";
-      const lastName = row.user?.last_name ?? "";
-      if (existing) {
-        existing.totalPoints += row.points;
-      } else {
-        userPointsMap.set(userId, {
-          totalPoints: row.points,
-          firstName,
-          lastName,
-        });
-      }
-    }
-
-    // Fetch badge counts per user
-    const { data: badgeCounts } = await service
-      .from("user_badges")
-      .select("user_id, badge_id")
-      .limit(500);
-
-    const userBadgeCountMap = new Map<string, number>();
-    for (const row of (badgeCounts ?? []) as any[]) {
-      const userId = row.user_id as string;
-      userBadgeCountMap.set(userId, (userBadgeCountMap.get(userId) ?? 0) + 1);
-    }
-
-    // Build sorted leaderboard
-    const sorted = Array.from(userPointsMap.entries())
-      .sort((a, b) => b[1].totalPoints - a[1].totalPoints)
-      .slice(0, 10);
-
-    leaderboard = sorted.map(([userId, data], index) => {
-      const level = levelForPoints(data.totalPoints);
-      const initials = `${(data.firstName || "?")[0]}${(data.lastName || "?")[0]}`.toUpperCase();
+    leaderboard = ((lbRows ?? []) as any[]).map((row) => {
+      const name = (row.display_name as string) || "Unknown User";
+      const initials = name
+        .split(" ")
+        .map((w: string) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
       return {
-        rank: index + 1,
-        name: `${data.firstName} ${data.lastName}`.trim() || "Unknown User",
+        rank: Number(row.rank),
+        name,
         avatar: initials,
-        level,
-        totalPoints: data.totalPoints,
-        badgesEarned: userBadgeCountMap.get(userId) ?? 0,
+        level: levelForPoints(Number(row.total_points), pointsPerLevel),
+        totalPoints: Number(row.total_points),
+        badgesEarned: Number(row.badge_count),
       };
     });
   } catch {
@@ -139,6 +107,7 @@ export default async function GamificationPage() {
       pointRulesData={pointRules}
       badges={badges}
       leaderboard={leaderboard}
+      pointsPerLevel={pointsPerLevel}
     />
   );
 }

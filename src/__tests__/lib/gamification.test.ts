@@ -214,3 +214,26 @@ describe("checkAndAwardBadges", () => {
     expect(typeof dispatchWebhook).toBe("function");
   });
 });
+
+describe("levelForPoints", () => {
+  it("uses the default 500 points per level", async () => {
+    const { levelForPoints } = await import("@/lib/gamification/point-rules");
+    expect(levelForPoints(0)).toBe(1);
+    expect(levelForPoints(499)).toBe(1);
+    expect(levelForPoints(500)).toBe(2);
+    expect(levelForPoints(1250)).toBe(3);
+  });
+
+  it("honors a configured points-per-level", async () => {
+    const { levelForPoints } = await import("@/lib/gamification/point-rules");
+    expect(levelForPoints(500, 250)).toBe(3);
+    expect(levelForPoints(999, 1000)).toBe(1);
+  });
+
+  it("falls back to the default for nonsense divisors", async () => {
+    const { levelForPoints } = await import("@/lib/gamification/point-rules");
+    expect(levelForPoints(1000, 0)).toBe(3);
+    expect(levelForPoints(1000, -5)).toBe(3);
+    expect(levelForPoints(1000, NaN)).toBe(3);
+  });
+});
