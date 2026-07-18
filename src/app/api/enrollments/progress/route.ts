@@ -6,6 +6,7 @@ import { awardForAction } from "@/lib/gamification/point-rules";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { createEvaluationAssignments } from "@/lib/evaluations/create-assignments";
+import { getVersionSnapshotStructure } from "@/lib/courses/versioning";
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -41,7 +42,7 @@ export async function PATCH(request: NextRequest) {
   // Verify the enrollment belongs to this user
   const { data: enrollment } = await service
     .from("enrollments")
-    .select("id, user_id, course_id, status, time_spent")
+    .select("id, user_id, course_id, status, time_spent, course_version_id")
     .eq("id", enrollment_id)
     .single();
 
@@ -149,20 +150,37 @@ export async function PATCH(request: NextRequest) {
 
     // ---- Check if all lessons are now completed (course completion flow) ----
     if (enrollment && enrollment.status !== "completed") {
-      // Count total lessons vs completed lessons for this course
-      const { data: modules } = await service
-        .from("modules")
-        .select("id")
-        .eq("course_id", enrollment.course_id);
+      // Total lessons for this course. When the enrollment is pinned to a
+      // course version, count lessons from that version's snapshot so the
+      // completion threshold matches exactly what the learner is being shown;
+      // otherwise count the live lessons.
+      let totalLessons: number | null = null;
+      const versionSnapshot = enrollment.course_version_id
+        ? await getVersionSnapshotStructure(service, enrollment.course_version_id)
+        : null;
 
-      const moduleIds = (modules || []).map((m: { id: string }) => m.id);
+      if (versionSnapshot) {
+        totalLessons = versionSnapshot.modules.reduce(
+          (sum, m) => sum + (Array.isArray(m.lessons) ? m.lessons.length : 0),
+          0
+        );
+      } else {
+        const { data: modules } = await service
+          .from("modules")
+          .select("id")
+          .eq("course_id", enrollment.course_id);
 
-      if (moduleIds.length > 0) {
-        const { count: totalLessons } = await service
-          .from("lessons")
-          .select("id", { count: "exact", head: true })
-          .in("module_id", moduleIds);
+        const moduleIds = (modules || []).map((m: { id: string }) => m.id);
+        if (moduleIds.length > 0) {
+          const { count } = await service
+            .from("lessons")
+            .select("id", { count: "exact", head: true })
+            .in("module_id", moduleIds);
+          totalLessons = count ?? null;
+        }
+      }
 
+      if (totalLessons && totalLessons > 0) {
         const { count: completedLessons } = await service
           .from("lesson_progress")
           .select("id", { count: "exact", head: true })
@@ -170,7 +188,7 @@ export async function PATCH(request: NextRequest) {
           .eq("status", "completed");
 
         // If all lessons are completed, mark enrollment as completed
-        if (totalLessons && completedLessons && completedLessons >= totalLessons) {
+        if (completedLessons && completedLessons >= totalLessons) {
           courseCompleted = true;
 
           await service
@@ -192,6 +210,16 @@ export async function PATCH(request: NextRequest) {
 
           if (certification) {
             try {
+              // Record which course version was completed for provenance. The
+              // enrollment is the system of record; this stamps the same
+              // reference onto the certification so an issued cert can be
+              // traced to the exact version the learner finished.
+              const certMetadata = enrollment.course_version_id
+                ? {
+                    course_version_id: enrollment.course_version_id,
+                    course_version_number: versionSnapshot?.versionNumber ?? null,
+                  }
+                : {};
               await service
                 .from("user_certifications")
                 .insert({
@@ -199,6 +227,7 @@ export async function PATCH(request: NextRequest) {
                   certification_id: certification.id,
                   issued_at: new Date().toISOString(),
                   expires_at: null,
+                  metadata: certMetadata,
                 });
             } catch {
               // Ignore duplicate certification
