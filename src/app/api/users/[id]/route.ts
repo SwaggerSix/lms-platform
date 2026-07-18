@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { authorize } from "@/lib/auth/authorize";
+import { authorizePermission } from "@/lib/auth/authorize-permission";
 import { canAssignRole, isSuperAdmin } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -12,7 +12,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authorize("admin");
+  const auth = await authorizePermission("users.manage", "admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -150,7 +150,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await authorize("admin");
+  const auth = await authorizePermission("users.manage", "admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();

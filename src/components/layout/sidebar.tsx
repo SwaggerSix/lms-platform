@@ -76,6 +76,10 @@ interface NavItem {
   featureKey?: string; // maps to platform_settings.features or tenant.features
   /** Extra route prefixes that should also highlight this item (hub tabs). */
   matchPrefixes?: string[];
+  /** Granular permission required to see this item. Built-in roles hold their
+   * base-role defaults, so this only ever hides an item from a narrowed custom
+   * role — it never changes what a built-in role sees. */
+  permission?: string;
 }
 
 interface NavSection {
@@ -173,8 +177,8 @@ const navSections: NavSection[] = [
   {
     header: "Admin · People & Courses",
     items: [
-      { label: "Users", href: "/admin/users", icon: UserCog },
-      { label: "Roles & Permissions", href: "/admin/settings/roles", icon: ShieldCheck },
+      { label: "Users", href: "/admin/users", icon: UserCog, permission: "users.view" },
+      { label: "Roles & Permissions", href: "/admin/settings/roles", icon: ShieldCheck, permission: "users.manage" },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap, featureKey: "courses" },
       {
@@ -284,7 +288,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [enabledFeatures, setEnabledFeatures] = useState<Record<string, boolean> | null>(null);
 
-  const { user } = useAuth();
+  const { user, permissions, hasPermission } = useAuth();
   const locale = useLocale();
   const branding = useBrandingStore((s) => s.config);
   const currentRole: Role = (user?.role as Role) ?? "learner";
@@ -348,6 +352,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         .map((section) => ({
           ...section,
           items: section.items.filter((item) => {
+            // Permission gate: hide items the user's effective permission set
+            // doesn't include. Built-in roles carry their base-role defaults, so
+            // this only narrows the nav for custom (restricted) roles. Skip while
+            // permissions are still loading (empty) to avoid a flash of missing
+            // items for legitimate users.
+            if (item.permission && permissions.length > 0 && !hasPermission(item.permission)) return false;
             // If no featureKey, always show
             if (!item.featureKey) return true;
             // If features haven't loaded yet, show everything (avoid flash of missing items)
@@ -357,7 +367,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           }),
         }))
         .filter((section) => section.items.length > 0),
-    [currentRole, enabledFeatures]
+    [currentRole, enabledFeatures, permissions, hasPermission]
   );
 
   // Highlight only the most specific match so parent routes (e.g. /admin/settings)
