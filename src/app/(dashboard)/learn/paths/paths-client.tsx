@@ -62,7 +62,16 @@ export default function PathsClient({ paths }: Props) {
             <EmptyState
               icon={<Route className="h-10 w-10" aria-hidden="true" />}
               title="No learning paths yet"
-              description="Structured learning programs will appear here once your organization publishes them."
+              description="A learning path is a guided sequence of courses that builds toward a goal. Your organization hasn't published any yet — in the meantime, you can browse the catalog and start a course."
+              action={
+                <Link
+                  href="/learn/catalog"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+                >
+                  <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  Browse Catalog
+                </Link>
+              }
             />
           </div>
         )}
