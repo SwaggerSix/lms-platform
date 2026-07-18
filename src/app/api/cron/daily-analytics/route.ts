@@ -56,12 +56,14 @@ async function handler(request: NextRequest) {
               await createDailySnapshot(user.id);
               counters.snapshots++;
 
-              // Get active enrollments and compute risk for each
+              // Get open enrollments and compute risk for each (the status
+              // enum is enrolled/in_progress/completed/failed/expired —
+              // there is no "active").
               const { data: enrollments } = await service
                 .from("enrollments")
                 .select("course_id")
                 .eq("user_id", user.id)
-                .eq("status", "active");
+                .in("status", ["enrolled", "in_progress"]);
 
               for (const enrollment of enrollments ?? []) {
                 try {

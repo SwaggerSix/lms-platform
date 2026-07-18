@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   scoreEnrollmentRisk,
   riskLevelForScore,
+  progressPercent,
 } from "@/lib/analytics/predictive";
 
 const daysAgo = (n: number) =>
@@ -79,6 +80,20 @@ describe("scoreEnrollmentRisk", () => {
       last_accessed_at: daysAgo(1),
     });
     expect(a.riskPoints).toBe(b.riskPoints);
+  });
+});
+
+describe("progressPercent", () => {
+  it("derives percent from completed vs total lessons", () => {
+    expect(progressPercent(0, 10)).toBe(0);
+    expect(progressPercent(3, 10)).toBe(30);
+    expect(progressPercent(10, 10)).toBe(100);
+  });
+
+  it("returns 0 for empty or unknown courses and never exceeds 100", () => {
+    expect(progressPercent(5, 0)).toBe(0);
+    expect(progressPercent(5, undefined)).toBe(0);
+    expect(progressPercent(12, 10)).toBe(100);
   });
 });
 

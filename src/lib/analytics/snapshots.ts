@@ -1,5 +1,10 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import { computeEngagementScore } from "./predictive";
+import {
+  computeEngagementScore,
+  getEnrollmentActivity,
+  getCourseLessonCounts,
+  progressPercent,
+} from "./predictive";
 
 export interface SnapshotData {
   snapshotDate: string;
@@ -19,21 +24,34 @@ export async function createDailySnapshot(userId: string): Promise<void> {
   const service = createServiceClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  // Get enrollment stats
+  // Get enrollment stats. Progress is derived from lesson_progress — the
+  // enrollments table has no progress column.
   const { data: enrollments } = await service
     .from("enrollments")
-    .select("id, status, progress")
+    .select("id, course_id, status, time_spent")
     .eq("user_id", userId);
 
-  const allEnrollments = enrollments ?? [];
+  const allEnrollments = (enrollments ?? []) as any[];
   const coursesEnrolled = allEnrollments.length;
   const coursesCompleted = allEnrollments.filter(
     (e: any) => e.status === "completed"
   ).length;
+
+  const [activity, lessonCounts] = await Promise.all([
+    getEnrollmentActivity(service, allEnrollments.map((e) => e.id)),
+    getCourseLessonCounts(service, allEnrollments.map((e) => e.course_id)),
+  ]);
   const avgProgress =
     coursesEnrolled > 0
       ? allEnrollments.reduce(
-          (sum: number, e: any) => sum + (e.progress ?? 0),
+          (sum: number, e: any) =>
+            sum +
+            (e.status === "completed"
+              ? 100
+              : progressPercent(
+                  activity.get(e.id)?.completedLessons ?? 0,
+                  lessonCounts.get(e.course_id)
+                )),
           0
         ) / coursesEnrolled
       : 0;
@@ -74,17 +92,11 @@ export async function createDailySnapshot(userId: string): Promise<void> {
     }
   }
 
-  // Get total time from lesson progress (rough estimate)
-  const { data: lessonProgress } = await service
-    .from("lesson_progress")
-    .select("time_spent_seconds")
-    .eq("user_id", userId);
-
-  const totalTimeMinutes = Math.round(
-    (lessonProgress ?? []).reduce(
-      (sum: number, l: any) => sum + (l.time_spent_seconds ?? 0),
-      0
-    ) / 60
+  // Total time comes from enrollments.time_spent (minutes) — that's the
+  // column the learner progress flow actually maintains.
+  const totalTimeMinutes = allEnrollments.reduce(
+    (sum: number, e: any) => sum + (e.time_spent ?? 0),
+    0
   );
 
   // Compute engagement score
