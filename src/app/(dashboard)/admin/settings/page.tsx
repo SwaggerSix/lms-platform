@@ -114,6 +114,15 @@ export default async function SettingsPage() {
       ...defaultNotifications,
       ...(settingsMap["notifications"] ?? {}),
     },
+    registration: {
+      // Secure default: invite-only until an admin opts into open/domain.
+      mode: (["open", "domain", "closed"].includes(settingsMap["registration"]?.mode)
+        ? settingsMap["registration"].mode
+        : "closed") as "open" | "domain" | "closed",
+      allowedDomains: Array.isArray(settingsMap["registration"]?.allowed_domains)
+        ? settingsMap["registration"].allowed_domains
+        : [],
+    },
     apiKeys,
   };
 
