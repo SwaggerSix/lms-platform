@@ -43,6 +43,7 @@ export interface UserItem {
   status: 'active' | 'inactive' | 'pending';
   lastActive: string;
   avatar: string;
+  customRoleId?: string | null;
 }
 
 export interface OrgItem {
@@ -164,6 +165,19 @@ export default function UsersClient({
   const [editDepartment, setEditDepartment] = useState('');
   const [editRole, setEditRole] = useState<UserRole>('learner');
   const [editStatus, setEditStatus] = useState<'active' | 'inactive' | 'pending'>('active');
+
+  // Custom roles (permission overlays) available for assignment.
+  const [customRoles, setCustomRoles] = useState<{ id: string; name: string; base_role: string; is_active: boolean }[]>([]);
+  const [editCustomRoleId, setEditCustomRoleId] = useState<string>('');
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/admin/custom-roles')
+      .then((r) => (r.ok ? r.json() : { customRoles: [] }))
+      .then((d) => { if (active) setCustomRoles(d.customRoles ?? []); })
+      .catch(() => { /* non-fatal: assignment select just stays empty */ });
+    return () => { active = false; };
+  }, []);
 
   // Loading & error state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -379,8 +393,17 @@ export default function UsersClient({
     setEditDepartment(user.departmentId || '');
     setEditRole(user.role);
     setEditStatus(user.status);
+    setEditCustomRoleId(user.customRoleId ?? '');
     setError(null);
     setShowEditModal(true);
+  };
+
+  // Selecting a custom role syncs the base role to the custom role's base_role
+  // (the server enforces the same sync); clearing it leaves the base role as-is.
+  const handleSelectCustomRole = (customRoleId: string) => {
+    setEditCustomRoleId(customRoleId);
+    const cr = customRoles.find((c) => c.id === customRoleId);
+    if (cr) setEditRole(cr.base_role as UserRole);
   };
 
   const handleSaveEditUser = async () => {
@@ -399,6 +422,7 @@ export default function UsersClient({
           organization_id: editDepartment || null,
           role: editRole,
           status: editStatus,
+          custom_role_id: editCustomRoleId || null,
         }),
       });
       if (!res.ok) {
@@ -790,9 +814,12 @@ export default function UsersClient({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                  <select id="edit-user-role" value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} disabled={!!editCustomRoleId} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:bg-gray-100 disabled:text-gray-500">
                     {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
+                  {editCustomRoleId && (
+                    <p className="mt-1 text-xs text-gray-500">Set by the assigned custom role.</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="edit-user-status" className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
@@ -802,6 +829,16 @@ export default function UsersClient({
                     <option value="pending">Pending</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label htmlFor="edit-user-custom-role" className="block text-sm font-medium text-gray-700 mb-1.5">Custom role</label>
+                <select id="edit-user-custom-role" value={editCustomRoleId} onChange={(e) => handleSelectCustomRole(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                  <option value="">None — base role only</option>
+                  {customRoles.filter((c) => c.is_active).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({ROLE_LABELS[c.base_role as UserRole] ?? c.base_role})</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Overlays a narrower permission set on the base role.</p>
               </div>
             </div>
             {error && showEditModal && (

@@ -174,6 +174,7 @@ const navSections: NavSection[] = [
     header: "Admin · People & Courses",
     items: [
       { label: "Users", href: "/admin/users", icon: UserCog },
+      { label: "Roles & Permissions", href: "/admin/settings/roles", icon: ShieldCheck },
       { label: "Organizations", href: "/admin/organizations", icon: Building2 },
       { label: "Courses", href: "/admin/courses", icon: GraduationCap, featureKey: "courses" },
       {
