@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { snapshotCourseVersion } from "@/lib/courses/versioning";
+import { authorizePermission, getEffectivePermissionsForUser } from "@/lib/auth/authorize-permission";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin", "instructor");
+  const auth = await authorizePermission("courses.create", "admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -167,7 +168,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await authorize("admin", "instructor");
+  const auth = await authorizePermission("courses.edit", "admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -196,6 +197,17 @@ export async function PATCH(request: NextRequest) {
   if (auth.user.role === "instructor") {
     if (!prior || prior.created_by !== auth.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  // Publishing is a distinct permission from editing: a custom role may edit
+  // content without the authority to publish it. Gate the draft→published
+  // transition on courses.publish (built-in roles have it; a narrowed custom
+  // role may not).
+  if (updates.status === "published" && prior?.status !== "published") {
+    const perms = await getEffectivePermissionsForUser(auth.user);
+    if (!perms.includes("courses.publish")) {
+      return NextResponse.json({ error: "You do not have permission to publish courses" }, { status: 403 });
     }
   }
 

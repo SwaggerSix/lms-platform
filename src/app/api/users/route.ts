@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { authorize } from "@/lib/auth/authorize";
+import { authorizePermission } from "@/lib/auth/authorize-permission";
 import { canAssignRole } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createUserSchema } from "@/lib/validations";
@@ -8,7 +8,7 @@ import { getTenantScope } from "@/lib/tenants/tenant-queries";
 import { createUserAccount } from "@/lib/users/create-user";
 
 export async function GET(request: NextRequest) {
-  const auth = await authorize("admin", "manager");
+  const auth = await authorizePermission("users.view", "admin", "manager");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const supabase = await createClient();
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await authorize("admin");
+  const auth = await authorizePermission("users.manage", "admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();

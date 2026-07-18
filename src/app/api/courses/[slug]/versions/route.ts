@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
+import { authorizePermission } from "@/lib/auth/authorize-permission";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logAudit } from "@/lib/audit";
 import { snapshotCourseVersion } from "@/lib/courses/versioning";
@@ -69,7 +70,7 @@ export async function GET(_request: NextRequest, { params }: Ctx) {
  * already-published course so edits become a new, immutable version.
  */
 export async function POST(_request: NextRequest, { params }: Ctx) {
-  const auth = await authorize("admin", "instructor");
+  const auth = await authorizePermission("courses.publish", "admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const service = createServiceClient();
