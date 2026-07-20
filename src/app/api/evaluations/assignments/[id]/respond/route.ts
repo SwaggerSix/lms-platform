@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, submitEvaluationResponseSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import {
+  validateEvaluationAnswers,
+  type TemplateQuestion,
+} from "@/lib/evaluations/validate-answers";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize();
@@ -44,6 +48,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (assignment.status === "expired") {
     return NextResponse.json({ error: "Assignment has expired" }, { status: 410 });
+  }
+
+  // Validate answers against the template's native questions (SurveyCraft /
+  // legacy templates without native questions skip this — nothing to check).
+  if (assignment.template_id) {
+    const { data: template } = await service
+      .from("evaluation_templates")
+      .select("questions")
+      .eq("id", assignment.template_id)
+      .maybeSingle();
+    const answersError = validateEvaluationAnswers(
+      (template?.questions ?? []) as TemplateQuestion[],
+      validation.data.answers as Record<string, unknown>
+    );
+    if (answersError) {
+      return NextResponse.json({ error: answersError }, { status: 400 });
+    }
   }
 
   // Insert response and mark assignment complete atomically
