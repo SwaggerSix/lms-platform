@@ -1,0 +1,33 @@
+name: Apply Supabase migrations
+
+# Applies new supabase/migrations files to prod when they land on main.
+# Before this workflow existed nothing applied migrations at all (Vercel only
+# builds the app), which is how prod once drifted 13 migrations behind.
+#
+# Setup: add the SUPABASE_DB_URL repository secret — the project's direct
+# Postgres connection string (Dashboard → Settings → Database → Connection
+# string, URI format, with the database password filled in).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch: {}
+
+# Never run two applies at once; queue instead of cancelling so every merged
+# migration batch is applied in order.
+concurrency:
+  group: apply-migrations
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply pending migrations
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: bash scripts/apply-migrations.sh
