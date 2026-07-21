@@ -100,6 +100,13 @@ export interface Prerequisite {
   met: boolean;
 }
 
+export interface RecommendedAssessment {
+  code: string;
+  name: string;
+  measures: string;
+  theme: string;
+}
+
 export interface CourseDetailClientProps {
   course: CourseData;
   initialEnrolled: boolean;
@@ -107,6 +114,7 @@ export interface CourseDetailClientProps {
   allPrerequisitesMet: boolean;
   requiresApproval?: boolean;
   hasPendingApproval?: boolean;
+  recommendedAssessments?: RecommendedAssessment[];
 }
 
 const lessonIcons = {
@@ -155,6 +163,7 @@ export default function CourseDetailClient({
   allPrerequisitesMet,
   requiresApproval = false,
   hasPendingApproval = false,
+  recommendedAssessments = [],
 }: CourseDetailClientProps) {
   const [expandedModules, setExpandedModules] = useState<string[]>([course.modules[0]?.id || ""]);
   const [enrolled, setEnrolled] = useState(initialEnrolled);
@@ -354,6 +363,35 @@ export default function CourseDetailClient({
                 ))}
               </ul>
             </section>
+
+            {/* Recommended Self-Assessments */}
+            {recommendedAssessments.length > 0 && (
+              <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900">Recommended Self-Assessments</h2>
+                  <InfoTooltip content="Free, research-validated questionnaires that pair with this course. Taking one before you start gives you a personal baseline to reflect against." />
+                </div>
+                <ul className="mt-4 grid gap-3 md:grid-cols-2">
+                  {recommendedAssessments.map((assessment) => (
+                    <li
+                      key={assessment.code}
+                      className="rounded-lg border border-gray-100 px-4 py-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary-500" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{assessment.name}</p>
+                          <p className="mt-0.5 text-xs text-gray-500">{assessment.measures}</p>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-gray-400">
+                  Ask your program administrator for an assessment link — results are for your own development.
+                </p>
+              </section>
+            )}
 
             {/* Course Content */}
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
