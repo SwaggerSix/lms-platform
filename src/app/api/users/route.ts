@@ -4,7 +4,7 @@ import { canAssignRole } from "@/lib/auth/roles";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createUserSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { getTenantScope, resolveTenantForUser, isFeatureEnabled } from "@/lib/tenants/tenant-queries";
 import { createUserAccount } from "@/lib/users/create-user";
 
 export async function GET(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   let query = service
     .from("users")
-    .select("id, first_name, last_name, email, role, status, job_title, avatar_url, organization_id, manager_id, hire_date, created_at, updated_at, preferences, organization:organizations(*)", { count: "exact" })
+    .select("id, first_name, last_name, email, login_id, role, status, job_title, avatar_url, organization_id, manager_id, hire_date, created_at, updated_at, preferences, organization:organizations(*)", { count: "exact" })
     .eq("status", status)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   if (managerId) query = query.eq("manager_id", managerId);
   if (search) {
     const sanitizedSearch = search.replace(/[%_\\'"()]/g, "");
-    query = query.or(`first_name.ilike.%${sanitizedSearch}%,last_name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%`);
+    query = query.or(`first_name.ilike.%${sanitizedSearch}%,last_name.ilike.%${sanitizedSearch}%,email.ilike.%${sanitizedSearch}%,login_id.ilike.%${sanitizedSearch}%`);
   }
 
   const { data, count, error } = await query;
@@ -76,6 +76,17 @@ export async function POST(request: NextRequest) {
   // Only Super Admins (gC/GGS) may grant the Super Admin role.
   if (validation.data.role && !canAssignRole(auth.user.role, validation.data.role)) {
     return NextResponse.json({ error: "You are not allowed to assign that role" }, { status: 403 });
+  }
+
+  // Pseudonymous (login ID) accounts are a per-tenant opt-in.
+  if (validation.data.login_id) {
+    const tenantId = await resolveTenantForUser(auth.user.id, auth.user.role, request);
+    if (!(await isFeatureEnabled(tenantId, "user_id_logins"))) {
+      return NextResponse.json(
+        { error: "User ID logins are not enabled for this tenant" },
+        { status: 403 }
+      );
+    }
   }
 
   const result = await createUserAccount(service, validation.data, auth.user.id);

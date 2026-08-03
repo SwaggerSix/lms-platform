@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from "@/lib/supabase/service";
+import { resolveTenantForUser, isFeatureEnabled } from "@/lib/tenants/tenant-queries";
 import UsersClient from './users-client';
 import type { UserItem } from './users-client';
 
@@ -72,7 +73,7 @@ export default async function UsersPage({
 
   if (q) {
     query = query.or(
-      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`
+      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%,login_id.ilike.%${q}%`
     );
   }
   if (roleParam) query = query.eq('role', roleParam);
@@ -110,6 +111,7 @@ export default async function UsersPage({
     firstName: row.first_name ?? '',
     lastName: row.last_name ?? '',
     email: row.email ?? '',
+    loginId: row.login_id ?? '',
     role: roleMap[row.role] ?? 'learner',
     department: row.organization?.name ?? 'Unassigned',
     departmentId: row.organization_id ?? '',
@@ -119,6 +121,10 @@ export default async function UsersPage({
     avatar: `${(row.first_name ?? '?')[0]}${(row.last_name ?? '?')[0]}`.toUpperCase(),
     customRoleId: row.custom_role_id ?? '',
   }));
+
+  // Whether this tenant allows pseudonymous (user ID + starter password) accounts.
+  const tenantId = await resolveTenantForUser(dbUser.id, dbUser.role);
+  const userIdLoginsEnabled = await isFeatureEnabled(tenantId, "user_id_logins");
 
   return (
     <UsersClient
@@ -130,6 +136,7 @@ export default async function UsersPage({
       page={page}
       pageSize={PAGE_SIZE}
       sort={sort}
+      userIdLoginsEnabled={userIdLoginsEnabled}
     />
   );
 }

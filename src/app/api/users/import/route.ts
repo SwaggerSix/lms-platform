@@ -4,6 +4,7 @@ import { canAssignRole } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createUserSchema } from "@/lib/validations";
 import { createUserAccount } from "@/lib/users/create-user";
+import { resolveTenantForUser, isFeatureEnabled } from "@/lib/tenants/tenant-queries";
 
 const MAX_ROWS = 500;
 
@@ -49,8 +50,17 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient();
   const results: RowResult[] = [];
 
-  // Reject duplicate emails within the batch up front so both copies don't race
-  // to create the same auth account.
+  // Pseudonymous (login ID) rows are a per-tenant opt-in; resolve the flag
+  // once for the whole batch.
+  const hasLoginIdRows = rows.some((r) => r && typeof r.login_id === "string" && r.login_id.trim());
+  let userIdLoginsEnabled = false;
+  if (hasLoginIdRows) {
+    const tenantId = await resolveTenantForUser(auth.user.id, auth.user.role, request);
+    userIdLoginsEnabled = await isFeatureEnabled(tenantId, "user_id_logins");
+  }
+
+  // Reject duplicate emails/login IDs within the batch up front so both copies
+  // don't race to create the same auth account.
   const seenEmails = new Set<string>();
 
   for (let i = 0; i < rows.length; i++) {
@@ -60,21 +70,32 @@ export async function POST(request: NextRequest) {
 
     const validation = validateBody(createUserSchema, {
       ...raw,
-      email,
-      first_name: typeof raw.first_name === "string" ? raw.first_name.trim() : raw.first_name,
-      last_name: typeof raw.last_name === "string" ? raw.last_name.trim() : raw.last_name,
+      email: email || undefined,
+      login_id: typeof raw.login_id === "string" && raw.login_id.trim() ? raw.login_id.trim() : undefined,
+      first_name: typeof raw.first_name === "string" ? raw.first_name.trim() || undefined : raw.first_name,
+      last_name: typeof raw.last_name === "string" ? raw.last_name.trim() || undefined : raw.last_name,
     });
     if (!validation.success) {
       results.push({ row: rowNum, email, status: "failed", error: validation.error });
       continue;
     }
 
-    const normalizedEmail = validation.data.email.toLowerCase();
-    if (seenEmails.has(normalizedEmail)) {
-      results.push({ row: rowNum, email, status: "failed", error: "Duplicate email in file" });
+    if (validation.data.login_id && !userIdLoginsEnabled) {
+      results.push({
+        row: rowNum,
+        email: validation.data.login_id,
+        status: "failed",
+        error: "User ID logins are not enabled for this tenant",
+      });
       continue;
     }
-    seenEmails.add(normalizedEmail);
+
+    const identifier = (validation.data.email ?? validation.data.login_id ?? "").toLowerCase();
+    if (seenEmails.has(identifier)) {
+      results.push({ row: rowNum, email: email || identifier, status: "failed", error: "Duplicate email or login ID in file" });
+      continue;
+    }
+    seenEmails.add(identifier);
 
     if (validation.data.role && !canAssignRole(auth.user.role, validation.data.role)) {
       results.push({
@@ -94,7 +115,9 @@ export async function POST(request: NextRequest) {
 
     results.push({
       row: rowNum,
-      email: created.user.email,
+      // For pseudonymous accounts the login ID is the credential the admin
+      // hands out, not the synthetic email behind it.
+      email: created.user.login_id || created.user.email,
       status: "created",
       temporary_password: created.temporaryPassword,
     });

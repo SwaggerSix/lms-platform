@@ -3,11 +3,15 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email/sender";
 import { accountInvitation } from "@/lib/email/templates";
+import { generateTemporaryPassword } from "@/lib/users/create-user";
 
 /**
  * POST /api/users/[id]/resend-invite
  * Re-sends an account invitation: generates a fresh set-password (recovery)
  * link and emails it. Returns the link as a fallback if email isn't delivered.
+ *
+ * For pseudonymous (login ID) accounts there is no inbox, so instead a fresh
+ * starter password is generated and returned once for the admin to hand out.
  */
 export async function POST(
   _request: NextRequest,
@@ -20,10 +24,32 @@ export async function POST(
   const service = createServiceClient();
   const { data: user } = await service
     .from("users")
-    .select("id, email, first_name, preferences")
+    .select("id, auth_id, email, login_id, first_name, preferences")
     .eq("id", id)
     .single();
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  if (user.login_id) {
+    const temporaryPassword = generateTemporaryPassword();
+    const { error: pwErr } = await service.auth.admin.updateUserById(user.auth_id, {
+      password: temporaryPassword,
+    });
+    if (pwErr) {
+      console.error("Starter password reset error:", pwErr.message);
+      return NextResponse.json({ error: "Could not reset the starter password" }, { status: 500 });
+    }
+    await service
+      .from("users")
+      .update({ preferences: { ...(user.preferences as Record<string, unknown> ?? {}), must_change_password: true } })
+      .eq("id", id);
+    return NextResponse.json({
+      success: true,
+      emailed: false,
+      login_id: user.login_id,
+      // Shown once so the admin can distribute the new credentials.
+      temporary_password: temporaryPassword,
+    });
+  }
 
   const base = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
   const { data: link, error: linkErr } = await service.auth.admin.generateLink({

@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { logAudit } from "@/lib/audit";
 import { processRulesForUser } from "@/lib/automation/rules-engine";
+import { loginIdToEmail, normalizeLoginId } from "@/lib/users/login-id";
 import crypto from "crypto";
 
 // 16 bytes base64url ≈ 22 chars; Supabase requires ≥6.
@@ -13,6 +14,7 @@ const ALLOWED_FIELDS = [
   "first_name",
   "last_name",
   "email",
+  "login_id",
   "role",
   "job_title",
   "organization_id",
@@ -47,10 +49,30 @@ export async function createUserAccount(
   data: Record<string, unknown>,
   actingUserId: string
 ): Promise<CreateUserResult> {
-  const email = String(data.email ?? "");
   const sanitized = Object.fromEntries(
     Object.entries(data).filter(([key]) => ALLOWED_FIELDS.includes(key))
   );
+
+  // Pseudonymous mode: the account is identified by an admin-assigned login
+  // ID; the auth email is a synthetic, never-routable address derived from it
+  // and the display name defaults to the ID so no PII is required.
+  let email = String(data.email ?? "");
+  if (data.login_id) {
+    const loginId = normalizeLoginId(String(data.login_id));
+    const { data: existing } = await service
+      .from("users")
+      .select("id")
+      .eq("login_id", loginId)
+      .maybeSingle();
+    if (existing) {
+      return { ok: false, error: "A user with this login ID already exists", status: 409 };
+    }
+    email = loginIdToEmail(loginId);
+    sanitized.login_id = loginId;
+    sanitized.email = email;
+    if (!sanitized.first_name) sanitized.first_name = loginId;
+    if (!sanitized.last_name) sanitized.last_name = "";
+  }
 
   const temporaryPassword = generateTemporaryPassword();
   const { data: authCreated, error: authErr } = await service.auth.admin.createUser({
