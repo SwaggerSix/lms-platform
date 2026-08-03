@@ -36,6 +36,8 @@ export interface UserItem {
   firstName: string;
   lastName: string;
   email: string;
+  /** Assigned sign-in ID for pseudonymous (no-PII) accounts. */
+  loginId?: string;
   role: UserRole;
   department: string;
   departmentId: string;
@@ -75,6 +77,7 @@ export default function UsersClient({
   page = 1,
   pageSize = 25,
   sort = '-created_at',
+  userIdLoginsEnabled = false,
 }: {
   users: UserItem[];
   organizations?: OrgItem[];
@@ -84,6 +87,7 @@ export default function UsersClient({
   page?: number;
   pageSize?: number;
   sort?: string;
+  userIdLoginsEnabled?: boolean;
 }) {
   const toast = useToast();
   const router = useRouter();
@@ -145,6 +149,10 @@ export default function UsersClient({
   const [formRole, setFormRole] = useState<UserRole>('learner');
   const [formDepartment, setFormDepartment] = useState(organizations[0]?.id ?? '');
   const [formManagerId, setFormManagerId] = useState('');
+  // Sign-in method: email invitation, or an assigned user ID + starter
+  // password (pseudonymous, no PII — only offered when the tenant enables it).
+  const [formMode, setFormMode] = useState<'email' | 'login_id'>('email');
+  const [formLoginId, setFormLoginId] = useState('');
 
   // Bulk CSV import modal state
   const [showImport, setShowImport] = useState(false);
@@ -183,8 +191,9 @@ export default function UsersClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Credentials modal shown after a new user is created
-  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
+  // Credentials modal shown after a new user is created (or a starter
+  // password is regenerated). isLoginId switches the identifier label.
+  const [credentials, setCredentials] = useState<{ email: string; password: string; isLoginId?: boolean } | null>(null);
 
   // Delete confirmation modal
   const [deleteConfirm, setDeleteConfirm] = useState<UserItem | null>(null);
@@ -197,6 +206,8 @@ export default function UsersClient({
     setFormRole('learner');
     setFormDepartment(organizations[0]?.id ?? '');
     setFormManagerId('');
+    setFormMode('email');
+    setFormLoginId('');
     setError(null);
   };
 
@@ -225,6 +236,7 @@ export default function UsersClient({
       first_name: 'first_name', firstname: 'first_name', first: 'first_name', given_name: 'first_name',
       last_name: 'last_name', lastname: 'last_name', last: 'last_name', surname: 'last_name', family_name: 'last_name',
       role: 'role', job_title: 'job_title', jobtitle: 'job_title', title: 'job_title',
+      login_id: 'login_id', loginid: 'login_id', user_id: 'login_id', userid: 'login_id',
     };
     const headers = splitLine(lines[0]).map((h) => {
       const key = h.toLowerCase().replace(/[\s-]+/g, '_');
@@ -288,14 +300,17 @@ export default function UsersClient({
   const handleAddUser = async () => {
     setIsSubmitting(true);
     setError(null);
+    const isLoginId = formMode === 'login_id';
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formEmail,
-          first_name: formFirstName,
-          last_name: formLastName,
+          email: isLoginId ? undefined : formEmail,
+          login_id: isLoginId ? formLoginId.trim() : undefined,
+          // Names are optional in user-ID mode so no PII has to be entered.
+          first_name: formFirstName || undefined,
+          last_name: isLoginId ? (formLastName || undefined) : formLastName,
           role: formRole,
           organization_id: formDepartment || undefined,
           manager_id: formManagerId || undefined,
@@ -306,21 +321,12 @@ export default function UsersClient({
         throw new Error(body.error || 'Failed to create user');
       }
       const created = await res.json();
-      const newUser: UserItem = {
-        id: created.id,
-        firstName: created.first_name ?? formFirstName,
-        lastName: created.last_name ?? formLastName,
-        email: created.email ?? formEmail,
-        role: created.role ?? formRole,
-        department: organizations.find(o => o.id === formDepartment)?.name ?? 'Unassigned',
-        departmentId: formDepartment,
-        jobTitle: created.job_title ?? '',
-        status: created.status ?? 'active',
-        lastActive: created.created_at ?? new Date().toISOString(),
-        avatar: `${(created.first_name ?? formFirstName)[0]}${(created.last_name ?? formLastName)[0]}`.toUpperCase(),
-      };
       if (created.temporary_password) {
-        setCredentials({ email: newUser.email, password: created.temporary_password });
+        setCredentials({
+          email: created.login_id || created.email || formEmail,
+          password: created.temporary_password,
+          isLoginId: !!created.login_id,
+        });
       }
       resetForm();
       setShowModal(false);
@@ -447,6 +453,12 @@ export default function UsersClient({
       const res = await fetch(`/api/users/${userId}/resend-invite`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to resend invitation');
+      if (data.temporary_password) {
+        // Pseudonymous account: a fresh starter password was generated instead
+        // of an email invite — show it once so the admin can hand it out.
+        setCredentials({ email: data.login_id ?? user.loginId ?? '', password: data.temporary_password, isLoginId: true });
+        return;
+      }
       setInviteResult({ email: data.email ?? user.email, link: data.action_link, emailed: !!data.emailed });
     } catch (err: any) {
       toast.error(err.message ?? 'Failed to resend invitation');
@@ -467,6 +479,13 @@ export default function UsersClient({
   };
 
   const handleResetPassword = async (userId: string) => {
+    const pseudonymous = users.find((u) => u.id === userId)?.loginId;
+    if (pseudonymous) {
+      // No inbox to email — regenerate a starter password instead.
+      if (!confirm('This account signs in with a user ID. Generate a new starter password for it?')) return;
+      await handleResendInvite(userId);
+      return;
+    }
     if (!confirm('Are you sure you want to send a password reset email to this user?')) return;
     const user = users.find((u) => u.id === userId);
     if (!user) return;
@@ -509,8 +528,16 @@ export default function UsersClient({
     {
       key: 'email',
       header: 'Email',
-      sortValue: (user) => user.email,
-      render: (user) => <span className="text-sm text-gray-500">{user.email}</span>,
+      sortValue: (user) => user.loginId || user.email,
+      render: (user) =>
+        user.loginId ? (
+          <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
+            <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-700">{user.loginId}</span>
+            <span className="text-xs text-gray-400">user ID</span>
+          </span>
+        ) : (
+          <span className="text-sm text-gray-500">{user.email}</span>
+        ),
     },
     {
       key: 'role',
@@ -862,7 +889,7 @@ export default function UsersClient({
             </p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">{credentials.isLoginId ? 'User ID' : 'Email'}</label>
                 <div className="flex items-center gap-2">
                   <input readOnly value={credentials.email} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
                   <Button
@@ -875,7 +902,7 @@ export default function UsersClient({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Temporary password</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">{credentials.isLoginId ? 'Starter password' : 'Temporary password'}</label>
                 <div className="flex items-center gap-2">
                   <input readOnly value={credentials.password} className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-900" />
                   <Button
@@ -905,7 +932,12 @@ export default function UsersClient({
               </Button>
               <Button
                 onClick={handleAddUser}
-                disabled={isSubmitting || !formEmail || !formFirstName || !formLastName}
+                disabled={
+                  isSubmitting ||
+                  (formMode === 'login_id'
+                    ? formLoginId.trim().length < 3
+                    : !formEmail || !formFirstName || !formLastName)
+                }
               >
                 {isSubmitting ? 'Adding...' : 'Add User'}
               </Button>
@@ -913,20 +945,69 @@ export default function UsersClient({
           }
         >
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {userIdLoginsEnabled && (
                 <div>
-                  <label htmlFor="add-user-first-name" className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
-                  <input id="add-user-first-name" type="text" placeholder="John" value={formFirstName} onChange={(e) => setFormFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                  <span className="block text-sm font-medium text-gray-700 mb-1.5">Sign-in method</span>
+                  <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Sign-in method">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={formMode === 'email'}
+                      onClick={() => setFormMode('email')}
+                      className={cn(
+                        'rounded-lg border px-3 py-2 text-sm text-left',
+                        formMode === 'email' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700'
+                      )}
+                    >
+                      <span className="font-medium">Email invitation</span>
+                      <span className="block text-xs text-gray-500">Signs in with their email address</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={formMode === 'login_id'}
+                      onClick={() => setFormMode('login_id')}
+                      className={cn(
+                        'rounded-lg border px-3 py-2 text-sm text-left',
+                        formMode === 'login_id' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700'
+                      )}
+                    >
+                      <span className="font-medium">Assigned user ID</span>
+                      <span className="block text-xs text-gray-500">No email — no PII stored</span>
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="add-user-last-name" className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
-                  <input id="add-user-last-name" type="text" placeholder="Doe" value={formLastName} onChange={(e) => setFormLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="add-user-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                <input id="add-user-email" type="email" placeholder="john.doe@acme.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
-              </div>
+              )}
+              {formMode === 'login_id' ? (
+                <>
+                  <div>
+                    <label htmlFor="add-user-login-id" className="block text-sm font-medium text-gray-700 mb-1.5">User ID</label>
+                    <input id="add-user-login-id" type="text" placeholder="e.g. participant-0142" value={formLoginId} onChange={(e) => setFormLoginId(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-mono focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                    <p className="mt-1 text-xs text-gray-500">3–64 characters: letters, numbers, dots, dashes or underscores. The user signs in with this ID and a starter password generated when you click Add.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="add-user-first-name" className="block text-sm font-medium text-gray-700 mb-1.5">Display name <span className="font-normal text-gray-400">(optional — avoid real names for anonymity)</span></label>
+                    <input id="add-user-first-name" type="text" placeholder="e.g. Participant 142" value={formFirstName} onChange={(e) => setFormFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="add-user-first-name" className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
+                      <input id="add-user-first-name" type="text" placeholder="John" value={formFirstName} onChange={(e) => setFormFirstName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                    </div>
+                    <div>
+                      <label htmlFor="add-user-last-name" className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
+                      <input id="add-user-last-name" type="text" placeholder="Doe" value={formLastName} onChange={(e) => setFormLastName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="add-user-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                    <input id="add-user-email" type="email" placeholder="john.doe@acme.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+                  </div>
+                </>
+              )}
               <div>
                 <label htmlFor="add-user-role" className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
                 <select id="add-user-role" value={formRole} onChange={(e) => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">

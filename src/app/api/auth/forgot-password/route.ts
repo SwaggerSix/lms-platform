@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit } from "@/lib/rate-limit";
+import { isSyntheticLoginEmail } from "@/lib/users/login-id";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://learn.gothamgovernment.com";
+
+  // Pseudonymous (user ID) accounts have no inbox — their password is reset by
+  // an admin. Return the generic success message without calling Supabase.
+  if (!email.includes("@") || isSyntheticLoginEmail(email)) {
+    return NextResponse.json({
+      message: "If an account with that email exists, we've sent a password reset link.",
+    });
+  }
 
   // Call Supabase to send reset email — ignore errors to not reveal if email exists
   await supabase.auth.resetPasswordForEmail(email, {

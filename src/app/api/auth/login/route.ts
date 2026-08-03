@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { rateLimit } from "@/lib/rate-limit";
+import { loginIdentifierToEmail } from "@/lib/users/login-id";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -37,8 +38,10 @@ export async function POST(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+  // An identifier without "@" is an assigned user ID; it signs in through its
+  // synthetic auth email.
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: loginIdentifierToEmail(email),
     password,
   });
 

@@ -67,6 +67,7 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   { key: "documents", name: "Documents", description: "Document repository and personal documents", category: "Platform", defaultEnabled: true },
   { key: "knowledge_base", name: "Knowledge Base", description: "Knowledge base articles", category: "Platform", defaultEnabled: true },
   { key: "self_registration", name: "Self-Registration", description: "Allow users to create their own accounts", category: "Platform", defaultEnabled: false },
+  { key: "user_id_logins", name: "User ID Logins", description: "Invite users with an assigned user ID and starter password instead of an email address, so no PII is stored", category: "Platform", defaultEnabled: false },
 ];
 
 export const FEATURE_KEYS: string[] = FEATURE_CATALOG.map((f) => f.key);

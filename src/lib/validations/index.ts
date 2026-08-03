@@ -55,7 +55,7 @@ export const updateCourseSchema = createCourseSchema.partial().extend({
 });
 
 // Users
-export const createUserSchema = z.object({
+const userFieldsSchema = z.object({
   first_name: z.string().min(1).max(100),
   last_name: z.string().min(1).max(100),
   email: z.string().email(),
@@ -69,7 +69,46 @@ export const createUserSchema = z.object({
   hire_date: z.string().optional().nullable(),
 });
 
-export const updateUserSchema = createUserSchema.partial();
+// Two creation modes: the classic email invite (email + names required), or a
+// pseudonymous account identified by an admin-assigned login ID with no email
+// and optional display name (feature-gated per tenant: `user_id_logins`).
+export const createUserSchema = userFieldsSchema
+  .extend({
+    first_name: z.string().min(1).max(100).optional(),
+    last_name: z.string().max(100).optional(),
+    email: z.string().email().optional(),
+    login_id: z
+      .string()
+      .regex(
+        /^[A-Za-z0-9][A-Za-z0-9._-]{1,62}[A-Za-z0-9]$/,
+        "Login ID must be 3-64 characters: letters, numbers, dots, dashes or underscores"
+      )
+      .refine((v) => !v.includes(".."), "Login ID cannot contain consecutive dots")
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.login_id) {
+      if (data.email) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: "Provide either an email or a login ID, not both",
+        });
+      }
+      return;
+    }
+    if (!data.email) {
+      ctx.addIssue({ code: "custom", path: ["email"], message: "Email is required" });
+    }
+    if (!data.first_name) {
+      ctx.addIssue({ code: "custom", path: ["first_name"], message: "First name is required" });
+    }
+    if (!data.last_name) {
+      ctx.addIssue({ code: "custom", path: ["last_name"], message: "Last name is required" });
+    }
+  });
+
+export const updateUserSchema = userFieldsSchema.partial();
 
 // Enrollments
 export const createEnrollmentSchema = z.object({

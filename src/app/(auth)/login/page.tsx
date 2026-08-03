@@ -226,11 +226,12 @@ export default function LoginPage() {
             htmlFor="email"
             className="mb-1.5 block text-sm font-medium text-gray-700"
           >
-            Email address
+            Email address or user ID
           </label>
           <input
             id="email"
-            type="email"
+            type="text"
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
