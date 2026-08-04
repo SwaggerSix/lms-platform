@@ -18,11 +18,18 @@ import {
   ConsoleTransport,
   ResendTransport,
   SendGridTransport,
+  invalidateEmailConfigCache,
 } from "@/lib/email/sender";
 
 describe("sendEmail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    // sendEmail now resolves its key via resolveEmailConfig() (env fallback),
+    // and caches it. Provide a key and clear the cache so each test starts from
+    // a known configuration; the dev-mock case below overrides it to "no key".
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    invalidateEmailConfigCache();
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "log").mockImplementation(() => {});
   });
@@ -78,6 +85,9 @@ describe("sendEmail", () => {
 
   it("returns dev-mock id when send fails in development", async () => {
     vi.stubEnv("NODE_ENV", "development");
+    // No key configured → development falls back to the logged dev-mock.
+    vi.stubEnv("RESEND_API_KEY", "");
+    invalidateEmailConfigCache();
 
     sendMock.mockRejectedValue(new Error("API key invalid"));
     const result = await sendEmail({

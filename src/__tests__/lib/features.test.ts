@@ -64,6 +64,10 @@ describe("getFeatureForPath", () => {
     expect(getFeatureForPath("/shop/checkout")).toBe("ecommerce");
     expect(getFeatureForPath("/learn/chat")).toBe("ai_chat");
     expect(getFeatureForPath("/learn/paths/123")).toBe("learning_paths");
+    // Core course pages are gated by the "courses" feature (a tenant can turn
+    // off the whole learner course experience).
+    expect(getFeatureForPath("/learn/my-courses")).toBe("courses");
+    expect(getFeatureForPath("/learn/catalog")).toBe("courses");
   });
 
   it("maps gated API routes", () => {
@@ -73,7 +77,7 @@ describe("getFeatureForPath", () => {
 
   it("returns null for ungated paths", () => {
     expect(getFeatureForPath("/dashboard")).toBeNull();
-    expect(getFeatureForPath("/learn/my-courses")).toBeNull();
+    expect(getFeatureForPath("/learn/transcript-notes")).toBeNull();
     expect(getFeatureForPath("/api/courses")).toBeNull();
   });
 

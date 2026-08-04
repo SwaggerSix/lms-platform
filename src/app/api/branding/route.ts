@@ -19,11 +19,13 @@ export async function GET() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const service = createServiceClient();
 
-  // Platform-wide branding overrides
+  // Platform-wide branding overrides. This layer needs no session, so it is
+  // returned for logged-out visitors too — that's what lets the login/register
+  // pages reflect the platform's white-label (name, logo, colors) instead of
+  // the generic default. Only the tenant overlay below requires a user.
   let branding: BrandingConfig = { ...defaultBranding };
   const { data: settings } = await service
     .from("platform_settings")
@@ -32,6 +34,11 @@ export async function GET() {
     .single();
   if (settings?.value && typeof settings.value === "object") {
     branding = { ...branding, ...(settings.value as Partial<BrandingConfig>) };
+  }
+
+  // Unauthenticated visitors get the platform branding without a tenant overlay.
+  if (!user) {
+    return NextResponse.json({ branding });
   }
 
   // Tenant overlay — platform admins are not tenant-scoped.

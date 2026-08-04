@@ -67,7 +67,13 @@ export async function POST(request: NextRequest) {
   const history = Array.isArray((order as { status_history?: unknown }).status_history)
     ? ((order as { status_history: unknown[] }).status_history as unknown[])
     : [];
-  await service
+  // Atomically claim the order: only the delivery that flips it away from
+  // "completed" proceeds to fulfillment. Stripe delivers events more than once
+  // and out of order, so a plain read-check + unconditional update lets two
+  // concurrent deliveries both fulfill — double-incrementing sales_count and
+  // coupon uses, sending the confirmation email twice, and posting the sale to
+  // QuickBooks twice. The conditional update is the idempotency guard.
+  const { data: claimed } = await service
     .from("orders")
     .update({
       status: "completed",
@@ -75,7 +81,14 @@ export async function POST(request: NextRequest) {
       status_history: [...history, { status: "completed", at: completedAt, by: "stripe" }],
       updated_at: completedAt,
     })
-    .eq("id", order.id);
+    .eq("id", order.id)
+    .neq("status", "completed")
+    .select("id");
+
+  if (!claimed || claimed.length === 0) {
+    // A concurrent delivery already claimed and is fulfilling this order.
+    return NextResponse.json({ received: true });
+  }
 
   const { data: items } = await service
     .from("order_items")
