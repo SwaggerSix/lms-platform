@@ -1,0 +1,19 @@
+-- Add the missing `correct_answer` column to `questions`.
+--
+-- The application has always assumed this column exists:
+--   * src/app/api/assessments/route.ts inserts `correct_answer` on every
+--     question (POST and PATCH). Because the column was absent, PostgREST
+--     rejected the insert ("could not find the 'correct_answer' column") and
+--     every attempt to create/update an assessment *with questions* failed
+--     with a 500 — which is why no assessments could be authored.
+--   * src/app/api/assessments/submit/route.ts grades `fill_blank` questions by
+--     comparing the learner's answer to `question.correct_answer`; with the
+--     column missing it read `undefined`, so fill-in-the-blank answers could
+--     never be marked correct.
+--   * src/app/api/assessments/export/route.ts already documents that
+--     `correct_answer` "exists in the live DB but not in the checked-in
+--     migration" — this migration reconciles the schema with that assumption.
+--
+-- Nullable text: only fill_blank (and other free-text-keyed) questions use it;
+-- option-based questions continue to store their key in `options[].is_correct`.
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS correct_answer TEXT;

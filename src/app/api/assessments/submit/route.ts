@@ -17,6 +17,13 @@ export async function POST(request: NextRequest) {
 
   const { assessment_id, answers, time_spent, class_id } = body;
 
+  if (!assessment_id || !Array.isArray(answers)) {
+    return NextResponse.json(
+      { error: "assessment_id and an answers array are required" },
+      { status: 400 }
+    );
+  }
+
   const { data: authUser } = await supabase.auth.getUser();
   if (!authUser.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,6 +55,26 @@ export async function POST(request: NextRequest) {
 
   if (!assessment) {
     return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+  }
+
+  // Enforce the attempt cap server-side. The taking UI also guards this, but a
+  // client can POST directly; without this check a learner could retake an
+  // assessment past its limit and farm gamification points on every submit.
+  // max_attempts <= 0 (or null) is treated as unlimited.
+  const maxAttempts = assessment.max_attempts ?? 0;
+  if (maxAttempts > 0) {
+    const { count: priorAttempts } = await service
+      .from("assessment_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .eq("assessment_id", assessment_id);
+
+    if ((priorAttempts ?? 0) >= maxAttempts) {
+      return NextResponse.json(
+        { error: "You have reached the maximum number of attempts for this assessment." },
+        { status: 403 }
+      );
+    }
   }
 
   // Grade the assessment. Auto-graded: option-based (multiple_choice,

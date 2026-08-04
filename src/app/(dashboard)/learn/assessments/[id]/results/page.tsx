@@ -80,23 +80,54 @@ export default async function AssessmentResultsPage({
   const secs = timeSpentSec % 60;
   const timeTaken = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 
-  // Build review questions from DB questions + user answers
-  const userAnswers: Record<string, string> = attempt?.answers ?? {};
+  // The submit route persists `answers` as an array of graded entries
+  // ({ question_id, selected_options?, text_answer?, is_correct, ... }), so it
+  // must be indexed by question_id — not treated as a { [questionId]: string }
+  // map (which always yielded undefined, blanking every review row and forcing
+  // correctCount to 0). Fall back gracefully if a legacy object shape appears.
+  const rawAnswers = attempt?.answers;
+  const answersByQuestion = new Map<string, any>();
+  if (Array.isArray(rawAnswers)) {
+    for (const a of rawAnswers) {
+      if (a && typeof a === "object" && a.question_id) answersByQuestion.set(a.question_id, a);
+    }
+  } else if (rawAnswers && typeof rawAnswers === "object") {
+    for (const [qid, val] of Object.entries(rawAnswers)) {
+      answersByQuestion.set(qid, { question_id: qid, text_answer: val });
+    }
+  }
+
+  const optionText = (o: any): string =>
+    typeof o === "string" ? o : o?.text ?? o?.label ?? o?.value ?? "";
 
   // Determine correct answer from options (look for correct flag in JSONB)
   const reviewQuestions: ReviewQuestion[] = questions.map((q: any) => {
     const opts = Array.isArray(q.options) ? q.options : [];
-    const optionValues = opts.map((o: any) =>
-      typeof o === "string" ? o : o.value ?? o.label ?? ""
-    );
+    const optionValues = opts.map(optionText);
     const correctOption = opts.find(
-      (o: any) => o.correct === true || o.is_correct === true
+      (o: any) => o?.correct === true || o?.is_correct === true
     );
-    const correctAnswer = correctOption
-      ? correctOption.value ?? correctOption.label ?? ""
-      : optionValues[0] ?? "";
-    const userAnswer = userAnswers[q.id] ?? "";
-    const isCorrect = userAnswer === correctAnswer;
+    const correctAnswer = correctOption ? optionText(correctOption) : optionValues[0] ?? "";
+
+    const graded = answersByQuestion.get(q.id);
+    // Reconstruct the learner's answer text from whichever shape was stored:
+    // option selections (indexes into the options array) or a free-text answer.
+    let userAnswer = "";
+    if (graded) {
+      if (Array.isArray(graded.selected_options) && graded.selected_options.length) {
+        userAnswer = graded.selected_options
+          .map((idx: number) => optionValues[idx])
+          .filter(Boolean)
+          .join(", ");
+      } else if (typeof graded.text_answer === "string") {
+        userAnswer = graded.text_answer;
+      }
+    }
+    // Trust the grade recorded at submission time; only recompute if absent.
+    const isCorrect =
+      typeof graded?.is_correct === "boolean"
+        ? graded.is_correct
+        : userAnswer !== "" && userAnswer === correctAnswer;
 
     return {
       id: q.id,

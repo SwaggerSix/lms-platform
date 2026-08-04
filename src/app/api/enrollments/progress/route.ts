@@ -137,13 +137,17 @@ export async function PATCH(request: NextRequest) {
   if (lesson_id && status === "completed") {
     try {
       // Award points for completing a lesson, per the configured point rule.
-      await awardForAction(supabase, profile.id, "lesson_completion", {
+      // Must use the service client: points_ledger / user_badges have RLS
+      // enabled with SELECT-only policies (no INSERT policy), so awarding via
+      // the request-scoped client is silently denied and the learner never
+      // receives lesson/course completion points or badges.
+      await awardForAction(service, profile.id, "lesson_completion", {
         referenceType: "lesson",
         referenceId: lesson_id,
       });
 
       // Check if the user has earned any new badges
-      newBadges = await checkAndAwardBadges(supabase, profile.id);
+      newBadges = await checkAndAwardBadges(service, profile.id);
     } catch {
       // Gamification errors should not block the progress update
     }
@@ -235,12 +239,13 @@ export async function PATCH(request: NextRequest) {
           }
 
           // Award bonus points for course completion, per the configured rule.
+          // Service client required — see the RLS note on the lesson award above.
           try {
-            await awardForAction(supabase, profile.id, "course_completion", {
+            await awardForAction(service, profile.id, "course_completion", {
               referenceType: "enrollment",
               referenceId: enrollment_id,
             });
-            newBadges = await checkAndAwardBadges(supabase, profile.id);
+            newBadges = await checkAndAwardBadges(service, profile.id);
           } catch {
             // Gamification errors should not block completion
           }

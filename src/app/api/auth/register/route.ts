@@ -42,20 +42,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: decision.reason }, { status: 403 });
     }
 
+    // If a profile already exists for this auth user, return it unchanged.
+    // This endpoint is public and trusts the body's auth_id, so an upsert here
+    // would let a re-POST overwrite an existing row — silently downgrading an
+    // elevated user back to role "learner"/status "active" (undoing a role
+    // grant or a deactivation). Registration only ever *creates* the initial
+    // profile; it must never mutate an existing one.
+    const { data: existing } = await service
+      .from("users")
+      .select("*")
+      .eq("auth_id", auth_id)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json(existing);
+    }
+
     const { data, error } = await service
       .from("users")
-      .upsert(
-        {
-          auth_id,
-          email,
-          first_name: first_name.trim(),
-          last_name: last_name.trim(),
-          role: "learner",
-          status: "active",
-          timezone: safeTimezone,
-        },
-        { onConflict: "auth_id" }
-      )
+      .insert({
+        auth_id,
+        email,
+        first_name: first_name.trim(),
+        last_name: last_name.trim(),
+        role: "learner",
+        status: "active",
+        timezone: safeTimezone,
+      })
       .select()
       .single();
 

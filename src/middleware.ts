@@ -207,10 +207,12 @@ export async function middleware(request: NextRequest) {
     return finalize(supabaseResponse);
   }
 
-  // Public storefronts: customers browse and buy without an LMS account,
-  // and logged-in staff can view the shops too (no dashboard redirect).
-  if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {
-    return supabaseResponse;
+  // Branding is read by both logged-out (login/register pages) and logged-in
+  // users. It can't go in publicPaths — that would 307 an authenticated fetch
+  // to /dashboard — so let the GET through here and let the route decide what
+  // to return based on the session (platform branding vs. tenant overlay).
+  if (pathname === "/api/branding" && request.method === "GET") {
+    return finalize(supabaseResponse);
   }
 
   const publicPaths = [
@@ -440,6 +442,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Exclude Next internals, favicon, image assets, and the root-level PWA
+    // files (service worker + web manifest). Those static files must be served
+    // directly: routing them through auth middleware 307-redirects unauthenticated
+    // requests to /login, which makes the browser refuse to register the service
+    // worker ("script resource is behind a redirect") and fails manifest loading
+    // on the auth pages. They can't go in publicPaths either — that would bounce
+    // an authenticated fetch of /sw.js to /dashboard.
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js$|manifest\\.json$|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

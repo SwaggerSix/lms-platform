@@ -2,11 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 function corsHeaders(origin: string | null, allowedDomains: string[]) {
-  // If no domains configured, allow all
-  const allowOrigin =
-    allowedDomains.length === 0 || (origin && allowedDomains.some((d) => origin.includes(d)))
-      ? origin || "*"
-      : "";
+  // If no domains are configured the widget is public — reflect the caller's
+  // origin (or "*" when there's no Origin header).
+  //
+  // When domains ARE configured, match on the URL host exactly (or as a
+  // subdomain suffix). A substring test (origin.includes(d)) is bypassable:
+  // an allowlisted "acme.com" would also match "https://acme.com.evil.com"
+  // and "https://evil-acme.com".
+  let allowOrigin = "";
+  if (allowedDomains.length === 0) {
+    allowOrigin = origin || "*";
+  } else if (origin) {
+    let host: string | null = null;
+    try {
+      host = new URL(origin).host.toLowerCase();
+    } catch {
+      host = null;
+    }
+    if (host) {
+      const ok = allowedDomains.some((d) => {
+        const domain = d
+          .toLowerCase()
+          .replace(/^https?:\/\//, "")
+          .replace(/\/.*$/, "")
+          .replace(/:\d+$/, "");
+        return host === domain || host.endsWith("." + domain);
+      });
+      if (ok) allowOrigin = origin;
+    }
+  }
 
   return {
     "Access-Control-Allow-Origin": allowOrigin,
