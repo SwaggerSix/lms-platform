@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
 import { sendOrderEmails, inviteAndEnroll } from "@/lib/storefront/fulfillment";
 import { enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
+import { reportPartnerRedemption } from "@/lib/storefront/partner-code";
 
 // Stripe webhook: marks orders paid when Stripe confirms payment, then
 // fulfills them (sales counts, coupon usage, auto-enrollment for buyers who
@@ -107,6 +108,13 @@ export async function POST(request: NextRequest) {
         .update({ sales_count: product.sales_count + item.quantity })
         .eq("id", item.product_id);
     }
+  }
+
+  // Paid with a gC partner code the partner portal priced: report it, so the
+  // use keeps counting toward that partner's buyer limit. Never throws.
+  const partnerRef = (order.metadata as { partner_portal_ref?: string } | null)?.partner_portal_ref;
+  if (partnerRef) {
+    await reportPartnerRedemption({ orderRef: partnerRef, status: "paid" });
   }
 
   const couponId = (order.metadata as { coupon_id?: string } | null)?.coupon_id;
