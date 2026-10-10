@@ -227,7 +227,7 @@ export function CartClient({ slug }: { slug: string }) {
             <input
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
-              placeholder="Discount code (optional)"
+              placeholder="Discount or partner code (optional)"
               className={inputClass}
             />
           </div>

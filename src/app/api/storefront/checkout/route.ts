@@ -10,12 +10,26 @@ import {
 } from "@/lib/storefront/pricing";
 import { createCheckoutSession, isStripeConfigured } from "@/lib/storefront/stripe";
 import { sendOrderEmails } from "@/lib/storefront/fulfillment";
+import {
+  evaluatePartnerCode,
+  isPartnerPortalConfigured,
+  looksLikePartnerCode,
+  reportPartnerRedemption,
+  PartnerPortalUnavailableError,
+  PARTNER_CODE_UNAVAILABLE_MESSAGE,
+} from "@/lib/storefront/partner-code";
 
 // Public guest checkout for storefronts. Clients (organizations) order seats
 // in courses for their employees. Validates the cart server-side (prices and
 // seat limits always come from the database, never the client), creates a
 // pending order, and hands off to Stripe Checkout for card payment. Without
 // Stripe keys the order completes immediately in test mode.
+//
+// The discount-code box also takes a gC partner code (GCP-…): when it isn't a
+// local coupon, the partner portal prices it for course seats and it is
+// applied like a percentage coupon (lib/storefront/partner-code.ts). The
+// order's id is minted up front so it can be the ref the portal records the
+// use under; the webhook reports it paid.
 
 const checkoutSchema = z.object({
   storefront_slug: z.string().min(1),
@@ -135,33 +149,73 @@ export async function POST(request: NextRequest) {
     volumeTiers = tiers || [];
   }
 
-  // Coupon (optional)
-  let coupon = null;
+  // Coupon (optional): a local coupon, or failing that a gC partner code.
+  const orderId = crypto.randomUUID();
+  let coupon: { discount_type: "percentage" | "fixed"; discount_value: number; id?: string; code?: string; current_uses?: number } | null = null;
+  let partner: { code: string; percentOff: number } | null = null;
   if (body.coupon_code) {
+    const code = body.coupon_code.toUpperCase().trim();
     const { data: c } = await service
       .from("coupons")
       .select("*")
-      .eq("code", body.coupon_code.toUpperCase().trim())
+      .eq("code", code)
       .eq("is_active", true)
       .single();
-    const now = new Date();
-    const valid =
-      c &&
-      (!c.max_uses || c.current_uses < c.max_uses) &&
-      (!c.valid_from || new Date(c.valid_from) <= now) &&
-      (!c.valid_until || new Date(c.valid_until) >= now);
-    if (!valid) {
-      return NextResponse.json({ error: "That discount code is not valid" }, { status: 400 });
-    }
-    const provisionalSubtotal = lineItems.reduce((s, li) => s + li.unitPrice * li.quantity, 0);
-    if (c.min_purchase && provisionalSubtotal < Number(c.min_purchase)) {
-      return NextResponse.json(
-        { error: `That code requires a minimum purchase of $${c.min_purchase}` },
-        { status: 400 }
+    if (!c && isPartnerPortalConfigured() && looksLikePartnerCode(code)) {
+      // Priced on what's left after volume discounts — the amount the
+      // percentage will actually be taken from.
+      const beforeCode = calculateStorefrontPricing(
+        lineItems.map((li) => ({ unitPrice: li.unitPrice, quantity: li.quantity })),
+        {
+          volumeDiscountsEnabled: store.volume_discounts_enabled,
+          volumeTiers,
+          taxEnabled: false,
+          taxRate: 0,
+        }
       );
+      try {
+        const result = await evaluatePartnerCode({
+          code,
+          buyerEmail: body.customer_email.toLowerCase().trim(),
+          buyerOrg: body.company_name?.trim() || null,
+          listPriceCents: Math.round((beforeCode.subtotal - beforeCode.volumeDiscount) * 100),
+          orderRef: orderId,
+        });
+        if (!result.valid) {
+          return NextResponse.json({ error: result.message }, { status: 400 });
+        }
+        partner = { code: result.code, percentOff: result.percentOff };
+        coupon = { discount_type: "percentage", discount_value: result.percentOff };
+      } catch (err) {
+        if (!(err instanceof PartnerPortalUnavailableError)) throw err;
+        console.error("Storefront checkout:", err.message);
+        return NextResponse.json({ error: PARTNER_CODE_UNAVAILABLE_MESSAGE }, { status: 503 });
+      }
+    } else {
+      const now = new Date();
+      const valid =
+        c &&
+        (!c.max_uses || c.current_uses < c.max_uses) &&
+        (!c.valid_from || new Date(c.valid_from) <= now) &&
+        (!c.valid_until || new Date(c.valid_until) >= now);
+      if (!valid) {
+        return NextResponse.json({ error: "That discount code is not valid" }, { status: 400 });
+      }
+      const provisionalSubtotal = lineItems.reduce((s, li) => s + li.unitPrice * li.quantity, 0);
+      if (c.min_purchase && provisionalSubtotal < Number(c.min_purchase)) {
+        return NextResponse.json(
+          { error: `That code requires a minimum purchase of $${c.min_purchase}` },
+          { status: 400 }
+        );
+      }
+      coupon = c;
     }
-    coupon = c;
   }
+  // A pending partner use counts toward the partner's buyer limit until it is
+  // reported, so give it back if this checkout never gets started.
+  const voidPartner = async () => {
+    if (partner) await reportPartnerRedemption({ orderRef: orderId, status: "void" });
+  };
 
   const pricing = calculateStorefrontPricing(
     lineItems.map((li) => ({ unitPrice: li.unitPrice, quantity: li.quantity })),
@@ -182,6 +236,7 @@ export async function POST(request: NextRequest) {
   const { data: order, error: orderError } = await service
     .from("orders")
     .insert({
+      id: orderId,
       order_number: orderNumber,
       status: initialStatus,
       storefront_id: store.id,
@@ -203,7 +258,12 @@ export async function POST(request: NextRequest) {
         storefront_slug: store.slug,
         volume_discount: pricing.volumeDiscount,
         coupon_discount: pricing.couponDiscount,
-        ...(coupon && { coupon_id: coupon.id, coupon_code: coupon.code }),
+        ...(coupon && !partner && { coupon_id: coupon.id, coupon_code: coupon.code }),
+        ...(partner && {
+          partner_code: partner.code,
+          partner_discount_percent: partner.percentOff,
+          partner_portal_ref: orderId,
+        }),
         ...(testMode && { test_mode: true }),
       },
     })
@@ -212,6 +272,7 @@ export async function POST(request: NextRequest) {
 
   if (orderError || !order) {
     console.error("Storefront checkout: order insert failed:", orderError?.message);
+    await voidPartner();
     return NextResponse.json({ error: "Could not start checkout. Please try again." }, { status: 500 });
   }
 
@@ -246,12 +307,14 @@ export async function POST(request: NextRequest) {
   const successUrl = `${appUrl}/store/${store.slug}/success?order=${order.order_number}`;
 
   if (testMode) {
-    if (coupon) {
+    if (coupon && !partner && coupon.id) {
       await service
         .from("coupons")
-        .update({ current_uses: coupon.current_uses + 1 })
+        .update({ current_uses: (coupon.current_uses ?? 0) + 1 })
         .eq("id", coupon.id);
     }
+    // Test mode completes the order on the spot, so it is paid now.
+    if (partner) await reportPartnerRedemption({ orderRef: orderId, status: "paid" });
     await sendOrderEmails(service, order.id, appUrl);
     return NextResponse.json({ checkout_url: successUrl, test_mode: true });
   }
@@ -283,6 +346,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ checkout_url: session.url });
   } catch (err) {
     console.error("Storefront checkout: Stripe session failed:", err);
+    await voidPartner();
     await service.from("orders").update({ status: "failed" }).eq("id", order.id);
     return NextResponse.json(
       { error: "Payment service is unavailable right now. Please try again shortly." },
