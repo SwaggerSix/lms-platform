@@ -19,23 +19,34 @@ import type {
 // "The Roster / Attendee Gap" in the integration brief.
 // ─────────────────────────────────────────────────────────────────
 
-/** Map GEMS courseStatus → the LMS ilt_sessions.status enum. */
-export function mapStatus(courseStatus: string | undefined): GemsEvent["status"] {
+/**
+ * Map GEMS courseStatus → the LMS ilt_sessions.status enum.
+ *
+ * GEMS has no "completed": a class it still calls Scheduled after its end
+ * date has been delivered, so it maps to "completed" once `today` (YYYY-MM-DD)
+ * is past the end date. Postponed/Tentative/Development stay "scheduled";
+ * the LMS has no closer status for them.
+ */
+export function mapStatus(
+  courseStatus: string | undefined,
+  endDate?: string | null,
+  today?: string
+): GemsEvent["status"] {
   switch ((courseStatus ?? "").toLowerCase()) {
     case "canceled":
     case "cancelled":
       return "cancelled";
     case "scheduled":
-    case "tentative":
-    case "development":
-    case "postponed":
-      return "scheduled";
+      return endDate && today && endDate < today ? "completed" : "scheduled";
     default:
       return "scheduled";
   }
 }
 
-export function normalizeEvent(raw: GemsTrainingEvent): GemsEvent | null {
+export function normalizeEvent(
+  raw: GemsTrainingEvent,
+  today: string = new Date().toISOString().slice(0, 10)
+): GemsEvent | null {
   const sessionDate = gemsDatePart(raw.startDate);
   // Without a real start date the row can't become an ilt_session.
   if (!sessionDate) return null;
@@ -61,7 +72,7 @@ export function normalizeEvent(raw: GemsTrainingEvent): GemsEvent | null {
     location_type: location?.isVirtual ? "virtual" : location ? "in_person" : undefined,
     location_details: locationParts || undefined,
     max_capacity: course?.max || undefined,
-    status: mapStatus(raw.courseStatus),
+    status: mapStatus(raw.courseStatus, gemsDatePart(raw.endDate) ?? sessionDate, today),
     instructor_email: raw.instructor?.email || undefined,
     instructor_name:
       raw.instructor?.fullName ||
@@ -87,26 +98,37 @@ export class GemsHttpAdapter {
   }
 
   /**
-   * Fetch events. Pass a filter (e.g. modifiedDate for incremental syncs);
-   * defaults to a wide date range (2000-01-01 .. 5 years from now), because
-   * GEMS' POST /api/TrainingEvent treats an empty filter as "match nothing"
-   * — sending no earliestDate/lastDate yields zero events.
+   * Fetch events, one calendar year per search, from `fromYear` through
+   * five years ahead. GEMS' POST /api/TrainingEvent treats an empty filter as
+   * "match nothing" and has returned nothing for date-only strings, so each
+   * window goes as full .NET datetimes. Searching a year at a time keeps one
+   * capped response from hiding whole years; a window where GEMS reports more
+   * matches than it returned comes back as a warning.
    */
   async fetchEvents(
     config: GemsConfig,
-    filter: GemsEventFilter = {}
-  ): Promise<GemsEvent[]> {
-    // GEMS is .NET; pass full ISO 8601 datetimes (date-only strings have
-    // produced empty results).
-    const effective: GemsEventFilter = {
-      earliestDate: "2000-01-01T00:00:00",
-      lastDate: `${new Date().getUTCFullYear() + 5}-12-31T23:59:59`,
-      ...filter,
-    };
-    const events = await this.client(config).searchTrainingEvents(effective);
-    return events
-      .map((e) => normalizeEvent(e))
-      .filter((e): e is GemsEvent => e !== null);
+    opts: { fromYear?: number; today?: string } = {}
+  ): Promise<{ events: GemsEvent[]; warnings: string[] }> {
+    const today = opts.today ?? new Date().toISOString().slice(0, 10);
+    const lastYear = Number(today.slice(0, 4)) + 5;
+    const client = this.client(config);
+    const byId = new Map<string, GemsEvent>();
+    const warnings: string[] = [];
+    for (let year = opts.fromYear ?? 2000; year <= lastYear; year++) {
+      const filter: GemsEventFilter = {
+        earliestDate: `${year}-01-01T00:00:00`,
+        lastDate: `${year}-12-31T23:59:59`,
+      };
+      const { events, totalCount } = await client.searchTrainingEventsPage(filter);
+      if (totalCount !== null && totalCount > events.length) {
+        warnings.push(`GEMS returned ${events.length} of ${totalCount} events for ${year}; the rest were not synced`);
+      }
+      for (const raw of events) {
+        const e = normalizeEvent(raw, today);
+        if (e) byId.set(e.external_id, e);
+      }
+    }
+    return { events: [...byId.values()], warnings };
   }
 
   /**
