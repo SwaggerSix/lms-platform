@@ -149,6 +149,8 @@ export interface GemsEvent {
   max_capacity?: number;
   status?: "scheduled" | "in_progress" | "completed" | "cancelled";
   instructor_email?: string;
+  /** GEMS instructor id (instructor.instructorId): the key the portal's GEMS instructor mapping uses. */
+  instructor_external_id?: number;
   /** Instructor's display name from GEMS, used when no matching LMS user exists. */
   instructor_name?: string;
   /** Course title — matched against LMS courses. */

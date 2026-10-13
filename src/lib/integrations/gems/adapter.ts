@@ -74,6 +74,8 @@ export function normalizeEvent(
     max_capacity: course?.max || undefined,
     status: mapStatus(raw.courseStatus, gemsDatePart(raw.endDate) ?? sessionDate, today),
     instructor_email: raw.instructor?.email || undefined,
+    instructor_external_id:
+      typeof raw.instructor?.instructorId === "number" ? raw.instructor.instructorId : undefined,
     instructor_name:
       raw.instructor?.fullName ||
       [raw.instructor?.firstName, raw.instructor?.lastName].filter(Boolean).join(" ") ||

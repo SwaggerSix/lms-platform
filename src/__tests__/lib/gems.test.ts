@@ -5,7 +5,7 @@ vi.mock("@/lib/integrations/gems/auth", () => ({ getAccessToken: async () => "to
 
 import { gemsDatePart, gemsTimePart } from "@/lib/integrations/gems/client";
 import { gemsAdapter, mapStatus, normalizeEvent } from "@/lib/integrations/gems/adapter";
-import { escapeLike } from "@/lib/integrations/gems/sync";
+import { buildInstructorMap, escapeLike } from "@/lib/integrations/gems/sync";
 import type { GemsConfig, GemsTrainingEvent } from "@/lib/integrations/gems/types";
 
 describe("gemsDatePart", () => {
@@ -77,6 +77,7 @@ describe("normalizeEvent", () => {
       status: "completed",
       max_capacity: 24,
       instructor_name: "Jane Doe",
+      instructor_external_id: 7,
       location_type: "in_person",
     });
   });
@@ -132,5 +133,20 @@ describe("gemsAdapter.fetchEvents", () => {
     stubGems({ "2026": { rows: [raw] }, "2027": { rows: [raw] } });
     const { events } = await gemsAdapter.fetchEvents(config, { fromYear: 2026, today: "2026-10-13" });
     expect(events).toHaveLength(1);
+  });
+});
+
+describe("buildInstructorMap", () => {
+  it("maps a GEMS instructor to the LMS user mirrored from their portal profile", () => {
+    const map = buildInstructorMap(
+      [
+        { gems_instructor_id: 7, profile_id: "p-jane" },
+        { gems_instructor_id: 8, profile_id: "p-sam" },
+      ],
+      [{ id: "u-jane", external_id: "p-jane" }]
+    );
+    expect(map.get(7)).toBe("u-jane");
+    // Sam's profile hasn't reached the LMS yet: no entry, so the sync falls back to email.
+    expect(map.has(8)).toBe(false);
   });
 });

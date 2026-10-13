@@ -10,6 +10,8 @@ import { gemsAdapter } from "@/lib/integrations/gems/adapter";
 import type { GemsConfig } from "@/lib/integrations/gems/types";
 import { SharePointClient } from "@/lib/integrations/sharepoint-rosters/client";
 import type { SharePointRostersConfig } from "@/lib/integrations/sharepoint-rosters/types";
+import { partnerPortalClient } from "@/lib/integrations/partner-portal/client";
+import type { PartnerPortalConfig } from "@/lib/integrations/partner-portal/types";
 
 const HRIS_PROVIDERS = ["bamboohr", "workday", "adp"];
 const CRM_PROVIDERS = ["salesforce", "hubspot"];
@@ -82,6 +84,12 @@ export async function POST(request: NextRequest) {
       }
       const sp = new SharePointClient(config as unknown as SharePointRostersConfig);
       result = await sp.testConnection();
+    } else if (provider === "partner_portal") {
+      const cfg = config as Record<string, unknown>;
+      if (typeof cfg.api_base !== "string" || isPrivateUrl(cfg.api_base)) {
+        return NextResponse.json({ success: false, message: "A public Partner Portal URL is required" });
+      }
+      result = await partnerPortalClient.testConnection(config as unknown as PartnerPortalConfig);
     } else if (HRIS_PROVIDERS.includes(provider)) {
       const sync = new HRISSync();
       const adapter = sync.getAdapter(provider);

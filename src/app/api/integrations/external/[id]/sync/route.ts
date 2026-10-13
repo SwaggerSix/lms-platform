@@ -6,6 +6,7 @@ import { hrisSync } from "@/lib/integrations/hris-sync";
 import { crmSync } from "@/lib/integrations/crm-sync";
 import { syncGemsEvents } from "@/lib/integrations/gems/sync";
 import { syncSharePointRosters } from "@/lib/integrations/sharepoint-rosters/sync";
+import { syncPartnerPortalInstructors } from "@/lib/integrations/partner-portal/sync";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("super_admin");
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       result = await syncGemsEvents(id);
     } else if (integration.provider === "sharepoint_rosters") {
       result = await syncSharePointRosters(id);
+    } else if (integration.provider === "partner_portal") {
+      result = await syncPartnerPortalInstructors(id);
     } else if (integration.type === "crm") {
       result = await crmSync.syncContacts(id);
     } else {
