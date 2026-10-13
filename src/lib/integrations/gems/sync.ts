@@ -1,4 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { partnerPortalClient } from "@/lib/integrations/partner-portal/client";
+import type { GemsInstructorLink, PartnerPortalConfig } from "@/lib/integrations/partner-portal/types";
 import { gemsAdapter } from "./adapter";
 import type { GemsConfig, GemsEvent } from "./types";
 
@@ -66,9 +68,12 @@ export async function syncGemsEvents(integrationId: string): Promise<GemsSyncRes
     // A truncated GEMS search means events are missing: the run is partial.
     result.errors.push(...warnings);
 
+    // GEMS instructors are mapped to people once, in the partner portal.
+    const instructors = await loadPortalInstructorMap(service, result);
+
     for (const event of events) {
       try {
-        const { sessionId, created } = await upsertSession(service, event, integrationId);
+        const { sessionId, created } = await upsertSession(service, event, integrationId, instructors);
         if (created) result.events_created++;
         else result.events_updated++;
 
@@ -144,6 +149,84 @@ export async function syncGemsEvents(integrationId: string): Promise<GemsSyncRes
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
+
+/**
+ * GEMS instructor id → LMS user id, through the partner portal's mapping:
+ * GEMS instructor → portal profile (mapped by portal admins) → the LMS user
+ * mirrored from that profile (users.external_source = 'partner_portal',
+ * external_id = profile id).
+ *
+ * Without an active partner_portal integration the map is empty and every
+ * session falls back to email matching. A failed portal read is reported on
+ * the run (it doesn't fail it): instructors are then matched by email only.
+ */
+async function loadPortalInstructorMap(
+  service: Service,
+  result: GemsSyncResult
+): Promise<Map<number, string>> {
+  const { data: portal } = await service
+    .from("external_integrations")
+    .select("config")
+    .eq("provider", "partner_portal")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!portal?.config) return new Map();
+
+  let links: GemsInstructorLink[];
+  try {
+    links = await partnerPortalClient.fetchGemsInstructorLinks(portal.config as PartnerPortalConfig);
+  } catch (err) {
+    result.errors.push(
+      `Partner portal GEMS instructor mapping unavailable, matching instructors by email only: ${err instanceof Error ? err.message : String(err)}`
+    );
+    return new Map();
+  }
+
+  const profileIds = [...new Set(links.map((l) => l.profile_id))];
+  const users: { id: string; external_id: string }[] = [];
+  for (let i = 0; i < profileIds.length; i += 200) {
+    const { data, error } = await service
+      .from("users")
+      .select("id, external_id")
+      .eq("external_source", "partner_portal")
+      .in("external_id", profileIds.slice(i, i + 200));
+    if (error) {
+      result.errors.push(`Reading portal-synced instructors: ${error.message}`);
+      return new Map();
+    }
+    users.push(...((data ?? []) as { id: string; external_id: string }[]));
+  }
+  return buildInstructorMap(links, users);
+}
+
+/** GEMS instructor id → LMS user id, for links whose profile has an LMS user. */
+export function buildInstructorMap(
+  links: readonly GemsInstructorLink[],
+  users: readonly { id: string; external_id: string }[]
+): Map<number, string> {
+  const userByProfile = new Map(users.map((u) => [u.external_id, u.id]));
+  const out = new Map<number, string>();
+  for (const l of links) {
+    const userId = userByProfile.get(l.profile_id);
+    if (userId) out.set(l.gems_instructor_id, userId);
+  }
+  return out;
+}
+
+/** The portal's GEMS mapping first; the GEMS instructor email as a fallback. */
+async function resolveInstructorId(
+  service: Service,
+  event: GemsEvent,
+  instructors: Map<number, string>
+): Promise<string | null> {
+  if (event.instructor_external_id !== undefined) {
+    const mapped = instructors.get(event.instructor_external_id);
+    if (mapped) return mapped;
+  }
+  return event.instructor_email ? resolveUserId(service, event.instructor_email) : null;
+}
 
 /** Match a GEMS person to an existing LMS user by email. Returns null if none. */
 async function resolveUserId(service: Service, email: string): Promise<string | null> {
@@ -239,13 +322,12 @@ async function autoCreateCourse(service: Service, event: GemsEvent): Promise<str
 async function upsertSession(
   service: Service,
   event: GemsEvent,
-  integrationId: string
+  integrationId: string,
+  instructors: Map<number, string>
 ): Promise<{ sessionId: string; created: boolean }> {
   const courseId =
     (await resolveCourseId(service, event)) ?? (await autoCreateCourse(service, event));
-  const instructorId = event.instructor_email
-    ? await resolveUserId(service, event.instructor_email)
-    : null;
+  const instructorId = await resolveInstructorId(service, event, instructors);
 
   const sessionData: Record<string, unknown> = {
     course_id: courseId,

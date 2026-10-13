@@ -52,6 +52,7 @@ const PROVIDERS = [
   { id: "hubspot", name: "HubSpot", type: "crm", description: "Sync contacts and training data with HubSpot", color: "border-orange-200 bg-orange-50 hover:bg-orange-100" },
   { id: "gems", name: "GEMS", type: "scheduling", description: "Import training events from GEMS as ILT sessions", color: "border-primary-200 bg-primary-50 hover:bg-primary-100" },
   { id: "sharepoint_rosters", name: "SharePoint Rosters", type: "documents", description: "Import attendee rosters from SharePoint .xlsx files", color: "border-cyan-200 bg-cyan-50 hover:bg-cyan-100" },
+  { id: "partner_portal", name: "gC Partner Portal", type: "directory", description: "Instructors from the partner portal, and its GEMS instructor mapping", color: "border-emerald-200 bg-emerald-50 hover:bg-emerald-100" },
   { id: "custom_webhook", name: "Custom Webhook", type: "hr_system", description: "Connect via custom webhook", color: "border-gray-200 bg-gray-50 hover:bg-gray-100" },
 ];
 
@@ -120,6 +121,16 @@ const CREDENTIAL_FIELDS: Record<
     { key: "site_path", label: "SharePoint Site Path", type: "text", placeholder: "alishq.sharepoint.com:/sites/AMCIFileShare" },
     { key: "root_folder", label: "Root Folder", type: "text", placeholder: "_Courses" },
     { key: "archive_folder", label: "Archive Subfolder (optional)", type: "text", placeholder: "_Archive" },
+  ],
+  partner_portal: [
+    { key: "api_base", label: "Partner Portal URL", type: "url", placeholder: "https://partners.gothamculture.com" },
+    {
+      key: "api_secret",
+      label: "Sync Secret",
+      type: "password",
+      placeholder: "Same value as the portal's LMS_SYNC_API_SECRET",
+      help: "Shared with the partner portal: set the same random value as LMS_SYNC_API_SECRET in the portal's environment.",
+    },
   ],
   custom_webhook: [
     { key: "base_url", label: "Webhook URL", type: "url", placeholder: "https://your-api.example.com/webhooks/lms" },

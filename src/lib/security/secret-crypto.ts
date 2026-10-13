@@ -34,6 +34,8 @@ export const SECRET_CONFIG_FIELDS = [
   "password",
   "service_user_password_encrypted",
   "webhook_secret",
+  // partner_portal: the bearer secret matching the portal's LMS_SYNC_API_SECRET.
+  "api_secret",
 ] as const;
 
 function getKey(): Buffer | null {

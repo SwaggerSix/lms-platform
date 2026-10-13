@@ -42,3 +42,14 @@ export interface CanonicalInstructor {
   /** ISO timestamp of the profile's last change (drives incremental sync). */
   updated_at: string;
 }
+
+/**
+ * One GEMS instructor → portal profile link, from the portal's
+ * /api/integrations/lms/gems-instructors. GEMS instructors are mapped to
+ * people once, in the portal (Admin → Integrations → GEMS).
+ */
+export interface GemsInstructorLink {
+  gems_instructor_id: number;
+  /** Portal profile id: the LMS user mirrored from it has external_id = this. */
+  profile_id: string;
+}
