@@ -62,7 +62,9 @@ export async function syncGemsEvents(integrationId: string): Promise<GemsSyncRes
     .single();
 
   try {
-    const events = await gemsAdapter.fetchEvents(config);
+    const { events, warnings } = await gemsAdapter.fetchEvents(config);
+    // A truncated GEMS search means events are missing: the run is partial.
+    result.errors.push(...warnings);
 
     for (const event of events) {
       try {
@@ -160,29 +162,43 @@ async function resolveUserId(service: Service, email: string): Promise<string | 
  * Returns null if neither hits.
  */
 async function resolveCourseId(service: Service, event: GemsEvent): Promise<string | null> {
+  // Oldest match first, never .maybeSingle(): that errors when two courses
+  // match (e.g. two LMS courses mapped to one GEMS code), which read as "no
+  // course" and auto-created yet another one on every sync.
   if (event.course_code) {
     const { data } = await service
       .from("courses")
       .select("id")
       .eq("metadata->>gems_course_code", event.course_code)
-      .maybeSingle();
-    if (data?.id) return data.id;
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (data?.[0]?.id) return data[0].id;
   }
   if (event.course_name) {
     const { data } = await service
       .from("courses")
       .select("id")
-      .ilike("title", event.course_name)
-      .maybeSingle();
-    if (data?.id) return data.id;
+      .ilike("title", escapeLike(event.course_name))
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (data?.[0]?.id) return data[0].id;
   }
   return null;
+}
+
+/** Escape LIKE wildcards so a course title matches only itself. */
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
 /**
  * Auto-create an instructor-led LMS course for a GEMS event whose course
  * doesn't yet exist. Stores the GEMS course code in metadata so subsequent
  * syncs match by code. Title/slug derived from the GEMS course info.
+ *
+ * Created as a draft: it has no content yet, so an admin maps it (GEMS →
+ * Course mapping) or publishes it deliberately rather than learners finding
+ * an empty course in the catalog.
  */
 async function autoCreateCourse(service: Service, event: GemsEvent): Promise<string> {
   const title = event.course_name || event.course_code || event.title;
@@ -209,7 +225,7 @@ async function autoCreateCourse(service: Service, event: GemsEvent): Promise<str
       title,
       slug,
       course_type: "instructor_led",
-      status: "published",
+      status: "draft",
       metadata: { gems_course_code: event.course_code ?? null, auto_created_from: "gems" },
     })
     .select("id")
@@ -262,7 +278,8 @@ async function upsertSession(
     .maybeSingle();
 
   if (existing) {
-    await service.from("ilt_sessions").update(sessionData).eq("id", existing.id);
+    const { error } = await service.from("ilt_sessions").update(sessionData).eq("id", existing.id);
+    if (error) throw new Error(`Failed to update ilt_session: ${error.message}`);
     return { sessionId: existing.id, created: false };
   }
 

@@ -201,6 +201,18 @@ export async function middleware(request: NextRequest) {
     return finalize(supabaseResponse);
   }
 
+  // Vercel Cron: scheduled runs carry `Authorization: Bearer CRON_SECRET` and
+  // no user session, and every /api/cron route checks that secret itself.
+  // Without this, the session check below answered each scheduled run with a
+  // 401 before the route ran, so no cron (GEMS, SharePoint rosters, partner
+  // portal, reports, nudges, QB reconcile, …) ever executed. Only sessionless
+  // calls skip ahead; a signed-in caller (an admin opening /api/cron/health)
+  // still goes through the usual checks, two-factor included. Not a
+  // publicPaths entry: those send signed-in users to /dashboard.
+  if (!user && pathname.startsWith("/api/cron/")) {
+    return finalize(supabaseResponse);
+  }
+
   // Public storefronts: customers browse and buy without an LMS account,
   // and logged-in staff can view the shops too (no dashboard redirect).
   if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {

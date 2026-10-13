@@ -26,16 +26,34 @@ export function parseGemsDate(value: unknown): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-/** Date portion (YYYY-MM-DD) of a GEMS date, or null if unset. */
+/**
+ * Date portion (YYYY-MM-DD) of a GEMS date, or null if unset.
+ *
+ * Read from the string itself: GEMS sends wall-clock .NET DateTimes with no
+ * offset ("2026-05-04T00:00:00"), and parsing one with Date reads it in the
+ * server's time zone, which can move it a day.
+ */
 export function gemsDatePart(value: unknown): string | null {
-  const d = parseGemsDate(value);
-  return d ? d.toISOString().slice(0, 10) : null;
+  if (typeof value !== "string") return null;
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(value);
+  if (!m || m[1] === DOTNET_DATE_MIN) return null;
+  return m[1];
 }
 
-/** Time portion (HH:MM:SS) of a GEMS time, or null if unset. */
+/**
+ * Time portion (HH:MM:SS) of a GEMS time, or null if unset.
+ *
+ * .NET often carries a time of day on DateTime.MinValue's date
+ * ("0001-01-01T09:30:00"), so the date is ignored here: only a missing time
+ * or a bare MinValue ("0001-01-01T00:00:00") reads as unset.
+ */
 export function gemsTimePart(value: unknown): string | null {
-  const d = parseGemsDate(value);
-  return d ? d.toISOString().slice(11, 19) : null;
+  if (typeof value !== "string") return null;
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::(\d{2}))?/.exec(value);
+  if (!m) return null;
+  const time = `${m[2]}:${m[3] ?? "00"}`;
+  if (m[1] === DOTNET_DATE_MIN && time === "00:00:00") return null;
+  return time;
 }
 
 /**
@@ -176,12 +194,26 @@ export class GemsClient {
   async searchTrainingEvents(
     filter: GemsEventFilter
   ): Promise<GemsTrainingEvent[]> {
+    return (await this.searchTrainingEventsPage(filter)).events;
+  }
+
+  /**
+   * Like searchTrainingEvents, plus GEMS's own `totalCount` when it reports
+   * one. A totalCount above events.length means GEMS cut the list short.
+   */
+  async searchTrainingEventsPage(
+    filter: GemsEventFilter
+  ): Promise<{ events: GemsTrainingEvent[]; totalCount: number | null }> {
     const raw = await this.request<unknown>("/api/TrainingEvent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(filter),
     });
-    return asArray<GemsTrainingEvent>(raw);
+    const totalCount =
+      raw && typeof raw === "object" && typeof (raw as Record<string, unknown>).totalCount === "number"
+        ? ((raw as Record<string, unknown>).totalCount as number)
+        : null;
+    return { events: asArray<GemsTrainingEvent>(raw), totalCount };
   }
 
   /** GET /api/TrainingEvent/{eventId} — full event detail (eventId is an integer). */
