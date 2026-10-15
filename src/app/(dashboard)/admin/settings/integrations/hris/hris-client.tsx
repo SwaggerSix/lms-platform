@@ -163,6 +163,10 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
   // Field mappings for configure view
   const [mappings, setMappings] = useState<FieldMappingItem[]>([]);
   const [configTab, setConfigTab] = useState<"settings" | "mappings" | "sync">("settings");
+  // Credential edits on an existing integration: only fields the admin touches are sent.
+  const [credEdits, setCredEdits] = useState<Record<string, string>>({});
+  const [savingCreds, setSavingCreds] = useState(false);
+  const [credResult, setCredResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const selectedIntegration = integrations.find((i) => i.id === selectedId);
 
@@ -203,6 +207,8 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
   const handleConfigure = useCallback(async (id: string) => {
     setSelectedId(id);
     setConfigTab("settings");
+    setCredEdits({});
+    setCredResult(null);
     setView("configure");
 
     // Fetch mappings
@@ -212,6 +218,37 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
       setMappings(data.mappings || []);
     }
   }, []);
+
+  // Save changed credentials on an existing integration (e.g. a rotated
+  // service-account password). Secret fields left blank keep their stored
+  // value; the API merges the rest into the existing config and encrypts
+  // secrets.
+  const handleSaveCredentials = async () => {
+    if (!selectedIntegration) return;
+    const changed = Object.fromEntries(Object.entries(credEdits).filter(([, v]) => v.trim() !== ""));
+    if (Object.keys(changed).length === 0) return;
+    setSavingCreds(true);
+    setCredResult(null);
+    try {
+      const res = await fetch(`/api/integrations/external/${selectedIntegration.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: changed }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setCredResult({ success: false, message: data.error || "Couldn't save the credentials" });
+        return;
+      }
+      setCredEdits({});
+      setCredResult({ success: true, message: "Saved. Use Sync Now on the integrations list to check it works." });
+      await refreshIntegrations();
+    } catch {
+      setCredResult({ success: false, message: "Couldn't save the credentials" });
+    } finally {
+      setSavingCreds(false);
+    }
+  };
 
   const handleTestConnection = async () => {
     setTesting(true);
@@ -733,6 +770,61 @@ export default function HRISIntegrationsClient({ initialIntegrations }: HRISInte
                 </p>
               </div>
             </div>
+
+            {(CREDENTIAL_FIELDS[selectedIntegration.provider]?.length ?? 0) > 0 && (
+              <div className="border-t border-gray-100 pt-4 space-y-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Credentials</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Change only what&apos;s changed, e.g. a new service-account password. Saved secrets aren&apos;t shown; leave them blank to keep them.
+                  </p>
+                </div>
+                {CREDENTIAL_FIELDS[selectedIntegration.provider].map((field) => {
+                  const current = selectedIntegration.config?.[field.key];
+                  const isSecret = field.type === "password";
+                  const value = credEdits[field.key] ?? (isSecret ? "" : typeof current === "string" ? current : "");
+                  const id = `cred-${field.key}`;
+                  return (
+                    <div key={field.key}>
+                      <label htmlFor={id} className="block text-xs font-medium text-gray-600 mb-1">{field.label}</label>
+                      {field.type === "select" ? (
+                        <select
+                          id={id}
+                          value={value}
+                          onChange={(e) => setCredEdits((c) => ({ ...c, [field.key]: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        >
+                          <option value="">Select…</option>
+                          {field.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          id={id}
+                          type={isSecret ? "password" : field.type === "url" ? "url" : "text"}
+                          autoComplete={isSecret ? "new-password" : "off"}
+                          value={value}
+                          placeholder={isSecret ? (current ? "Saved — leave blank to keep" : field.placeholder) : field.placeholder}
+                          onChange={(e) => setCredEdits((c) => ({ ...c, [field.key]: e.target.value }))}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                {credResult && (
+                  <p role="status" className={cn("text-sm", credResult.success ? "text-green-700" : "text-red-600")}>{credResult.message}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveCredentials}
+                  disabled={savingCreds || Object.values(credEdits).every((v) => v.trim() === "")}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {savingCreds && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save credentials
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import HRISIntegrationsClient from "./hris-client";
+import { maskConfigSecrets } from "@/lib/security/secret-crypto";
 
 export const metadata: Metadata = {
   title: "HRIS/CRM Integrations | LMS Platform",
@@ -34,5 +35,8 @@ export default async function HRISIntegrationsPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  return <HRISIntegrationsClient initialIntegrations={integrations || []} />;
+  // Secrets never go to the browser, encrypted or not: the same masking as the API.
+  const masked = (integrations || []).map((i) => ({ ...i, config: maskConfigSecrets(i.config) }));
+
+  return <HRISIntegrationsClient initialIntegrations={masked} />;
 }
