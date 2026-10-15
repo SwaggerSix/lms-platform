@@ -141,6 +141,26 @@ describe("gemsAdapter.fetchEvents", () => {
   });
 });
 
+describe("gemsAdapter.fetchEvent", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const config = { api_base: "https://gems.test" } as GemsConfig;
+
+  it("reads one event by id and maps a delivered class to completed", async () => {
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => (urls.push(url), Response.json(raw))));
+    const event = await gemsAdapter.fetchEvent(config, "2548", "2027-01-01");
+    expect(urls).toEqual(["https://gems.test/api/TrainingEvent/2548"]);
+    expect(event).toMatchObject({ external_id: "2548", status: "completed" });
+  });
+
+  it("is null when GEMS no longer has the event, and throws on other failures", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("gone", { status: 404, statusText: "Not Found" })));
+    expect(await gemsAdapter.fetchEvent(config, "9")).toBeNull();
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("no", { status: 500, statusText: "Server Error" })));
+    await expect(gemsAdapter.fetchEvent(config, "9")).rejects.toThrow(/500/);
+  });
+});
+
 describe("buildInstructorMap", () => {
   it("maps a GEMS instructor to the LMS user mirrored from their portal profile", () => {
     const map = buildInstructorMap(
