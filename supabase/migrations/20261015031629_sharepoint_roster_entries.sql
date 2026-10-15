@@ -1,5 +1,9 @@
 -- SharePoint roster attendance without LMS accounts.
 --
+-- Applied to production 2026-10-15 through the Supabase connector (ledger
+-- version 20261015031629, sharepoint_roster_entries), before the PR merged;
+-- the no-op DROP POLICY IF EXISTS was left out (no policy existed yet).
+--
 -- Class rosters (.xlsx in SharePoint _Courses) list federal attendees who
 -- don't have LMS accounts. Rather than creating accounts, keep each roster
 -- line against its GEMS-sourced session: who attended, their organization,
