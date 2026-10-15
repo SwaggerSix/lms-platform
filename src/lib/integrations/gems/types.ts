@@ -73,6 +73,16 @@ export interface GemsCustomer {
   customerCode: string;
 }
 
+/** A customer PO (the event's `customersPo`). */
+export interface GemsCustomerPo {
+  cpoId: number;
+  /** GEMS's own PO code, e.g. "26-019". */
+  cpocode?: string;
+  /** The government order number, e.g. "N3943025F0106". */
+  cporderNo?: string;
+  customer?: GemsCustomer | null;
+}
+
 export interface GemsInstructor {
   instructorId: number;
   fullName?: string;
@@ -102,6 +112,7 @@ export interface GemsTrainingEvent {
   state: string;
   courseProduct: GemsCourseProduct | null;
   customer: GemsCustomer | null;
+  customersPo?: GemsCustomerPo | null;
   instructor: GemsInstructor | null;
   courseLocation: GemsCourseLocation | null;
   noOfStudents: number;

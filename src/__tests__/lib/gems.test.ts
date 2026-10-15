@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/integrations/gems/auth", () => ({ getAccessToken: async () => "token" }));
 
-import { gemsDatePart, gemsTimePart } from "@/lib/integrations/gems/client";
+import { gemsDatePart, gemsTimePart, resolveRefs } from "@/lib/integrations/gems/client";
 import { gemsAdapter, mapStatus, normalizeEvent } from "@/lib/integrations/gems/adapter";
 import { buildInstructorMap, escapeLike } from "@/lib/integrations/gems/sync";
 import type { GemsConfig, GemsTrainingEvent } from "@/lib/integrations/gems/types";
@@ -138,6 +138,46 @@ describe("gemsAdapter.fetchEvents", () => {
     stubGems({ "2026": { rows: [raw] }, "2027": { rows: [raw] } });
     const { events } = await gemsAdapter.fetchEvents(config, { fromYear: 2026, today: "2026-10-13" });
     expect(events).toHaveLength(1);
+  });
+});
+
+describe("resolveRefs", () => {
+  // The shape of a real GEMS search: the customer and instructor are written
+  // under the first event, and the second event only references them.
+  const response = {
+    queryResults: {
+      $id: "1",
+      $values: [
+        {
+          $id: "2",
+          eventId: 2605,
+          instructor: { $id: "3", instructorId: 7, email: "jane@example.com" },
+          customer: { $id: "4", customerCode: "NAVFAC", customersPos: { $id: "5", $values: [{ $ref: "6" }] } },
+          customersPo: { $id: "6", cpoId: 214, customer: { $ref: "4" } },
+        },
+        { $id: "7", eventId: 2606, instructor: { $ref: "3" }, customer: { $ref: "4" } },
+      ],
+    },
+  };
+
+  it("replaces references with their targets across events and cuts cycles", () => {
+    const out = resolveRefs(response) as { queryResults: { $values: Record<string, unknown>[] } };
+    const [first, second] = out.queryResults.$values;
+    expect(second).toMatchObject({ instructor: { email: "jane@example.com" }, customer: { customerCode: "NAVFAC" } });
+    expect(first.$id).toBeUndefined();
+    expect((first.customer as { customersPos: { $values: { customer: unknown }[] } }).customersPos.$values[0].customer).toBeNull();
+    expect(() => JSON.stringify(out)).not.toThrow();
+  });
+
+  it("leaves an unresolvable reference and plain data as they are", () => {
+    expect(resolveRefs({ a: { $ref: "99" }, b: [1, null] })).toEqual({ a: { $ref: "99" }, b: [1, null] });
+  });
+});
+
+describe("normalizeEvent customer from the PO", () => {
+  it("takes the customer from the event's PO when the event names none", () => {
+    const e = normalizeEvent({ ...raw, customer: null, customersPo: { cpoId: 1, customer: { customerId: 37, customerCode: "DOE", customerName: "Dept of Energy" } } } as never);
+    expect(e).toMatchObject({ customer_code: "DOE", customer_name: "Dept of Energy" });
   });
 });
 

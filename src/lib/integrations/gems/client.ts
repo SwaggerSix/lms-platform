@@ -56,6 +56,51 @@ export function gemsTimePart(value: unknown): string | null {
   return time;
 }
 
+/** Deepest nesting kept when expanding references; GEMS's graph links back on itself. */
+const MAX_REF_DEPTH = 8;
+
+/**
+ * Resolve .NET reference preservation (ReferenceHandler.Preserve). GEMS
+ * writes each object once, tagged `"$id"`, and every later occurrence in the
+ * same response as `{ "$ref": "<id>" }`: in one search most events' customer,
+ * instructor and course product were bare references to an object written
+ * under an earlier event. Resolve against the whole response before rows are
+ * split up.
+ *
+ * Returns a plain tree: each reference becomes a copy of its target, `$id`
+ * tags are dropped, and a link back to an object already on the path (the
+ * graph is cyclic: customer -> its POs -> customer) or past MAX_REF_DEPTH
+ * becomes null. A reference to an id the response never defines is left as is.
+ */
+export function resolveRefs(data: unknown): unknown {
+  const byId = new Map<string, object>();
+  const collect = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(collect);
+    if (!node || typeof node !== "object") return;
+    const o = node as Record<string, unknown>;
+    if (typeof o.$id === "string") byId.set(o.$id, o);
+    for (const v of Object.values(o)) collect(v);
+  };
+  collect(data);
+
+  const expand = (node: unknown, path: Set<object>, depth: number): unknown => {
+    if (Array.isArray(node)) return node.map((v) => expand(v, path, depth));
+    if (!node || typeof node !== "object") return node;
+    let o = node as Record<string, unknown>;
+    if (typeof o.$ref === "string") {
+      const target = byId.get(o.$ref);
+      if (!target) return o;
+      o = target as Record<string, unknown>;
+    }
+    if (path.has(o) || depth > MAX_REF_DEPTH) return null;
+    const inner = new Set(path).add(o);
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(o)) if (k !== "$id") out[k] = expand(v, inner, depth + 1);
+    return out;
+  };
+  return expand(data, new Set(), 0);
+}
+
 /**
  * GEMS endpoints return collections in a variety of envelopes:
  *   - bare JSON array
@@ -164,7 +209,7 @@ export class GemsClient {
         `GEMS API ${init?.method ?? "GET"} ${path} failed: ${response.status} ${response.statusText}`
       );
     }
-    return response.json() as Promise<T>;
+    return resolveRefs(await response.json()) as T;
   }
 
   /**
