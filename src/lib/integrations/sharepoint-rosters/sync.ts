@@ -109,19 +109,36 @@ export async function syncSharePointRosters(
           const match = pickClassFolder(folders, hintsFor(session));
           if (match.kind === "none") {
             result.missing.push(`${label}: no class folder dated ${dateFolderPrefix(session.session_date)}`);
-            continue;
-          }
-          if (match.kind === "ambiguous") {
-            result.errors.push(
-              `${label}: several class folders that day and nothing to choose between them (${match.folders.map((f) => folderLabel(f)).join("; ")})`
-            );
+            await clearRoster(service, session.id);
             continue;
           }
 
-          const files = await client.listFiles(match.folder.id);
+          let folder: FolderCandidate;
+          let files: DriveItem[];
+          if (match.kind === "ambiguous") {
+            // Same-day folders that tie on name: only one may hold a roster
+            // (the others empty or not yet filed). Then it's that one.
+            const withRoster: { folder: FolderCandidate; files: DriveItem[] }[] = [];
+            for (const f of match.folders) {
+              const fFiles = await client.listFiles(f.id);
+              if (pickRosterFile(fFiles)) withRoster.push({ folder: f, files: fFiles });
+            }
+            if (withRoster.length !== 1) {
+              result.errors.push(
+                `${label}: several class folders that day and nothing to choose between them (${match.folders.map((f) => folderLabel(f)).join("; ")})`
+              );
+              continue;
+            }
+            ({ folder, files } = withRoster[0]);
+          } else {
+            folder = match.folder;
+            files = await client.listFiles(folder.id);
+          }
+
           const roster = pickRosterFile(files);
           if (!roster) {
-            result.missing.push(`${label}: no roster workbook in ${folderLabel(match.folder)}`);
+            result.missing.push(`${label}: no roster workbook in ${folderLabel(folder)}`);
+            await clearRoster(service, session.id);
             continue;
           }
           result.rosters_found++;
@@ -267,6 +284,23 @@ async function saveRoster(
     matched++;
   }
   return { recorded: rows.length, matched };
+}
+
+/**
+ * The session has no roster (any more): its date moved off the class folder
+ * it was matched to, or the workbook was removed. Drop the entries and
+ * attendance an earlier run took from SharePoint, which belong to another
+ * class or no longer exist.
+ */
+async function clearRoster(service: Service, sessionId: string): Promise<void> {
+  const { error } = await service.from("ilt_roster_entries").delete().eq("session_id", sessionId);
+  if (error) throw new Error(`Clearing roster entries: ${error.message}`);
+  const { error: attErr } = await service
+    .from("ilt_attendance")
+    .delete()
+    .eq("session_id", sessionId)
+    .eq("external_source", EXTERNAL_SOURCE);
+  if (attErr) throw new Error(`Clearing roster attendance: ${attErr.message}`);
 }
 
 async function upsertAttendance(

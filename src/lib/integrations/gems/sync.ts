@@ -303,11 +303,15 @@ async function resolveCourseId(service: Service, event: GemsEvent): Promise<stri
       .limit(1);
     if (data?.[0]?.id) return data[0].id;
   }
-  if (event.course_name) {
+  // By name; with no course name, by the title autoCreateCourse gives it
+  // (the event code), so a nameless event finds the course an earlier run
+  // made instead of making another every sync.
+  const title = event.course_name || (event.course_code ? null : event.title);
+  if (title) {
     const { data } = await service
       .from("courses")
       .select("id")
-      .ilike("title", escapeLike(event.course_name))
+      .ilike("title", escapeLike(title))
       .order("created_at", { ascending: true })
       .limit(1);
     if (data?.[0]?.id) return data[0].id;
