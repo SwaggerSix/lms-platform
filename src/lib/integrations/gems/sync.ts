@@ -64,9 +64,12 @@ export async function syncGemsEvents(integrationId: string): Promise<GemsSyncRes
     .single();
 
   try {
-    const { events, warnings } = await gemsAdapter.fetchEvents(config);
+    const { events: searched, warnings } = await gemsAdapter.fetchEvents(config);
     // A truncated GEMS search means events are missing: the run is partial.
     result.errors.push(...warnings);
+    // The search returns upcoming events only; re-read by id the sessions
+    // it dropped once they started, so they get finalized.
+    const events = [...searched, ...(await fetchStartedSessions(service, config, searched, result))];
 
     // GEMS instructors are mapped to people once, in the partner portal.
     const instructors = await loadPortalInstructorMap(service, result);
@@ -149,6 +152,49 @@ export async function syncGemsEvents(integrationId: string): Promise<GemsSyncRes
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
+
+/** At most this many dropped sessions are re-read per run; the rest go next run. */
+const MAX_REREADS = 100;
+
+/**
+ * GEMS sessions the search no longer returns that started by today and are
+ * still "scheduled", read again by id. GEMS's search lists upcoming events
+ * only, so without this a class would stay "scheduled" in the LMS forever,
+ * with whatever the search row knew. A read with an end date before today
+ * maps it to "completed" (or "cancelled"), so each session is read until
+ * then and not after. One GEMS no longer has is skipped.
+ */
+async function fetchStartedSessions(
+  service: Service,
+  config: GemsConfig,
+  searched: readonly GemsEvent[],
+  result: GemsSyncResult
+): Promise<GemsEvent[]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await service
+    .from("ilt_sessions")
+    .select("external_id")
+    .eq("external_source", EXTERNAL_SOURCE)
+    .eq("status", "scheduled")
+    .lte("session_date", today)
+    .order("session_date", { ascending: true });
+  if (error) {
+    result.errors.push(`Reading started GEMS sessions: ${error.message}`);
+    return [];
+  }
+  const inSearch = new Set(searched.map((e) => e.external_id));
+  const ids = [...new Set((data ?? []).map((r) => r.external_id as string))].filter((id) => !inSearch.has(id));
+  const out: GemsEvent[] = [];
+  for (const id of ids.slice(0, MAX_REREADS)) {
+    try {
+      const event = await gemsAdapter.fetchEvent(config, id, today);
+      if (event) out.push(event);
+    } catch (err) {
+      result.errors.push(`Event ${id} detail: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  return out;
+}
 
 /**
  * GEMS instructor id → LMS user id, through the partner portal's mapping:

@@ -136,6 +136,24 @@ export class GemsHttpAdapter {
   }
 
   /**
+   * One event by its GEMS id, normalized; null when GEMS no longer has it
+   * (404) or it has no start date. For events the search no longer returns:
+   * it lists upcoming events only.
+   */
+  async fetchEvent(
+    config: GemsConfig,
+    eventExternalId: string,
+    today?: string
+  ): Promise<GemsEvent | null> {
+    try {
+      return normalizeEvent(await this.client(config).getTrainingEvent(eventExternalId), today);
+    } catch (err) {
+      if (err instanceof Error && / failed: 404\b/.test(err.message)) return null;
+      throw err;
+    }
+  }
+
+  /**
    * Fetch the attendee roster for an event.
    *
    * TODO(gems): the roster endpoint is unconfirmed. Per the integration
