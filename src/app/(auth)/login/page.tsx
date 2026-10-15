@@ -151,6 +151,8 @@ export default function LoginPage() {
             </label>
             <input
               id="sso-email"
+              name="email"
+              autoComplete="username"
               type="email"
               value={ssoEmail}
               onChange={(e) => {
@@ -230,6 +232,7 @@ export default function LoginPage() {
           </label>
           <input
             id="email"
+            name="username"
             type="text"
             autoComplete="username"
             value={email}
@@ -258,6 +261,8 @@ export default function LoginPage() {
           <div className="relative">
             <input
               id="password"
+              name="password"
+              autoComplete="current-password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

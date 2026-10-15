@@ -420,6 +420,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                       <input
                         type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
+                        name="current-password"
+                        autoComplete="current-password"
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-10 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                       />
@@ -436,6 +438,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     <input
                       type="password"
                       value={newPassword}
+                      name="new-password"
+                      autoComplete="new-password"
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
@@ -445,6 +449,8 @@ export default function SettingsClient({ data }: { data: SettingsData }) {
                     <input
                       type="password"
                       value={confirmPassword}
+                      name="confirm-password"
+                      autoComplete="new-password"
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
