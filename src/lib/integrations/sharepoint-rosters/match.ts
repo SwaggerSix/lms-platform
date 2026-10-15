@@ -54,15 +54,36 @@ function words(s: string): string[] {
 
 const compact = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-/** How well a folder's name and path fit the session: shared words, plus codes found verbatim. */
+/** Same word, or the same stem ("write" / "writing", "manage" / "management"). */
+function sameWord(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (a.length < 4 || b.length < 4) return false;
+  let n = 0;
+  while (n < a.length && n < b.length && a[n] === b[n]) n++;
+  return n >= 4 && n >= Math.min(a.length, b.length) - 2;
+}
+
+/** "Business Writing & Email Etiquette" → "bwee": folders often use a course's initials. */
+function initials(text: string): string | null {
+  const w = words(text.replace(/\(.*?\)/g, ""));
+  return w.length >= 3 ? w.map((x) => x[0]).join("") : null;
+}
+
+/** How well a folder's name and path fit the session: shared words, plus codes or initials found verbatim. */
 export function scoreFolder(folder: FolderCandidate, hints: SessionHints): number {
   const haystack = `${folder.parentPath} ${folder.name}`;
-  const have = new Set(words(haystack));
+  const have = words(haystack);
+  const tokens = new Set(haystack.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
   const packed = compact(haystack);
   let score = 0;
 
   const hintText = [hints.title, hints.course_title, hints.customer_name].filter(Boolean).join(" ");
-  for (const w of new Set(words(hintText))) if (have.has(w)) score += 1;
+  for (const w of new Set(words(hintText))) if (have.some((h) => sameWord(w, h))) score += 1;
+
+  for (const t of [hints.title, hints.course_title]) {
+    const abbr = t ? initials(t) : null;
+    if (abbr && tokens.has(abbr)) score += 3;
+  }
 
   // Codes like "FGR402" / "FCR 404" / "DOE": match ignoring spacing.
   for (const code of [hints.course_code, hints.customer_code]) {
@@ -91,10 +112,18 @@ export function pickClassFolder(candidates: FolderCandidate[], hints: SessionHin
   return { kind: "ambiguous", folders: best };
 }
 
-/** A roster-ish .xlsx in a class folder: the latest one named "roster", else the latest .xlsx. */
+// Workbooks in a class folder that aren't the roster.
+const NOT_ROSTER = /eval|survey|score|certificate|cert\b|sign[\s-]?up|invoice/i;
+
+/**
+ * The class's roster workbook: the final one where several versions exist
+ * ("… FINAL.xlsx" over "… Day 1.xlsx" or "Copy of …"), then anything named
+ * "roster", newest first; never evaluations, certificates or the like.
+ */
 export function pickRosterFile<T extends { name: string; lastModifiedDateTime: string; file?: unknown }>(files: T[]): T | null {
-  const xlsx = files.filter((f) => f.file && f.name.toLowerCase().endsWith(".xlsx"));
+  const xlsx = files.filter((f) => f.file && f.name.toLowerCase().endsWith(".xlsx") && !NOT_ROSTER.test(f.name));
   if (xlsx.length === 0) return null;
-  const latest = (list: T[]) => [...list].sort((a, b) => b.lastModifiedDateTime.localeCompare(a.lastModifiedDateTime))[0];
-  return latest(xlsx.filter((f) => /roster/i.test(f.name))) ?? latest(xlsx);
+  const rank = (f: T) =>
+    (/final/i.test(f.name) ? 4 : 0) + (/roster|attendance|sign[\s-]?in/i.test(f.name) ? 2 : 0) - (/day\s*\d|^copy of/i.test(f.name) ? 3 : 0);
+  return [...xlsx].sort((a, b) => rank(b) - rank(a) || b.lastModifiedDateTime.localeCompare(a.lastModifiedDateTime))[0];
 }

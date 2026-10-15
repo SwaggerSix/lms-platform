@@ -38,6 +38,18 @@ describe("pickClassFolder", () => {
       .toMatchObject({ kind: "match", folder: { id: "navfac" } });
   });
 
+  it("matches a course's initials and word stems (BWEE, WRITE)", () => {
+    const folders = [
+      f("2026.06.16 FGR 402 Ethics in the Grants Environment", "/drive/root:/_Courses/FGR 402 Ethics in Grants Environment", "fgr"),
+      f("2026.06.16 DOE FGR 402", "/drive/root:/_Courses/DOE/FY26", "doe"),
+      f("2026.06.16 DOI BWEE", "/drive/root:/_Courses/WRITE/FY26", "bwee"),
+    ];
+    expect(pickClassFolder(folders, { session_date: "2026-06-16", title: "CM: Business Writing & Email Etiquette (16 hrs)" }))
+      .toMatchObject({ kind: "match", folder: { id: "bwee" } });
+    expect(pickClassFolder(folders, { session_date: "2026-06-16", title: "GR: FGR 402 Ethics in Grants Environment" }))
+      .toMatchObject({ kind: "match", folder: { id: "fgr" } });
+  });
+
   it("reports a tie instead of guessing", () => {
     const out = pickClassFolder(
       [f("2026.07.31 DOI", "/_Courses/MGT/A", "a"), f("2026.07.31 DOI", "/_Courses/MGT/B", "b")],
@@ -63,6 +75,16 @@ describe("pickRosterFile", () => {
       .toBe("Roster - FINAL.xlsx");
     expect(pickRosterFile([file("a.xlsx", "2026-01-01"), file("b.xlsx", "2026-02-01"), file("c.pdf", "2026-03-01")])?.name).toBe("b.xlsx");
     expect(pickRosterFile([{ name: "folder", lastModifiedDateTime: "x" }])).toBeNull();
+  });
+  it("prefers FINAL over a day's copy, and never picks the evaluation", () => {
+    const doe = [
+      file("Federal_Appropriations_Law_PIA_3-Day_Roster_August_4-6_2026 Day 1.xlsx", "2026-08-05T13:42"),
+      file("Federal_Appropriations_Law_PIA_3-Day_Roster_August_4-6_2026 FINAL.xlsx", "2026-08-07T18:28"),
+      file("Federal_Appropriations_Law_PIA_3-Day_Roster_August_4-6_2026 EVALUATION.xlsx", "2026-08-07T18:30"),
+      file("Federal_Appropriations_Law_PIA_3-Day_Roster_August_4-6_2026.xlsx", "2026-08-04T12:17"),
+    ];
+    expect(pickRosterFile(doe)?.name).toBe("Federal_Appropriations_Law_PIA_3-Day_Roster_August_4-6_2026 FINAL.xlsx");
+    expect(pickRosterFile([file("Copy of X Roster.xlsx", "2026-06-22"), file("X FINAL ROSTER.xlsx", "2026-06-25")])?.name).toBe("X FINAL ROSTER.xlsx");
   });
 });
 

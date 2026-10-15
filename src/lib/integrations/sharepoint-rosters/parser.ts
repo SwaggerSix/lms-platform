@@ -27,13 +27,26 @@ function cellToString(v: unknown): string {
 function isPresentMark(v: unknown): boolean {
   const s = cellToString(v).toLowerCase();
   if (!s) return false;
-  return s === "x" || s === "p" || s === "y" || s === "yes" || s === "present" || s === "1" || s === "true";
+  return s === "x" || s === "p" || s === "y" || s === "yes" || s === "present" || s === "1" || s === "true" || s === "✓" || s === "✔";
 }
 
-/** A header naming a class day: "05/29/2024", "2024-05-29", or an Excel date serial. */
+/** An explicit "didn't come": NS (no-show), Absent, A, N, No, 0. */
+function isAbsentMark(v: unknown): boolean {
+  const s = cellToString(v).toLowerCase();
+  return s === "ns" || s === "no show" || s === "no-show" || s === "absent" || s === "a" || s === "n" || s === "no" || s === "0";
+}
+
+const MONTH = "(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?";
+
+/**
+ * A header naming a class day: "05/29/2024", "2024-05-29", "22-Jun",
+ * "August 4, 2026", "Aug 4", or an Excel date serial.
+ */
 function isDateHeader(raw: string): boolean {
   const c = raw.trim();
-  if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(c) || /^\d{4}-\d{2}-\d{2}$/.test(c)) return true;
+  if (/^\d{1,2}\/\d{1,2}(\/\d{2,4})?$/.test(c) || /^\d{4}-\d{2}-\d{2}$/.test(c)) return true;
+  if (new RegExp(`^\\d{1,2}[-\\s]${MONTH}([-\\s]\\d{2,4})?$`, "i").test(c)) return true;
+  if (new RegExp(`^${MONTH}\\s+\\d{1,2}(,?\\s+\\d{4})?$`, "i").test(c)) return true;
   const n = Number(c);
   return Number.isInteger(n) && n > 40000 && n < 60000; // 2009–2064 as Excel serials
 }
@@ -61,12 +74,17 @@ function classifyColumns(columns: string[]) {
   columns.forEach((raw, i) => {
     const c = raw.toLowerCase();
     if (idx.email < 0 && /email/i.test(c)) idx.email = i;
-    else if (idx.full_name < 0 && (/(learner|attendee|student|full)\s*name/i.test(c) || /^name$|last,\s*first/i.test(c))) idx.full_name = i;
+    else if (
+      idx.full_name < 0 &&
+      (/(learner|attendee|student|participant|full)\s*name/i.test(c) || /^name$|last,\s*first|^(registered\s+)?attendees?$/i.test(c))
+    ) idx.full_name = i;
     else if (idx.first_name < 0 && /first\s*name/i.test(c)) idx.first_name = i;
     else if (idx.last_name < 0 && /last\s*name/i.test(c)) idx.last_name = i;
     else if (idx.org < 0 && /(org|organization|agency|unit)/i.test(c)) idx.org = i;
-    // Attendance columns: "Attended Day 1", "Day 2", or one dated column per class day.
-    if (/attend|^day\s*\d+/i.test(c) || isDateHeader(raw)) idx.days.push(i);
+    // Attendance columns: "Attended Day 1", "Attendance", "Day 2", a sign-in
+    // "Signature" column, or one dated column per class day. ("Attendees"
+    // names people, not days.)
+    if (/attended|attendance|^day\s*\d+|^signature$|sign[\s-]?in/i.test(c) || isDateHeader(raw)) idx.days.push(i);
   });
   return idx;
 }
@@ -117,9 +135,14 @@ export function parseRoster(
       0
     );
 
-    // A registration list with no attendance columns says nothing about who came.
+    // Present when marked present on enough days; absent only when marked
+    // absent (NS, Absent…). A row with no marks (a registration list, a walk-in
+    // added at the bottom, a totals row) says nothing about who came.
+    const marked_absent = cols.days.some((c) => isAbsentMark(row[c]));
     const attendance_status: RosterAttendee["attendance_status"] =
-      days_total === 0 ? "unknown" : days_attended / days_total >= threshold ? "present" : "absent";
+      days_attended > 0
+        ? days_attended / days_total >= threshold ? "present" : "absent"
+        : marked_absent ? "absent" : "unknown";
 
     attendees.push({
       email,
