@@ -98,6 +98,7 @@ export default function CreateSessionModal({
         registered_count: 0,
         status: "scheduled",
         attendees: [],
+        roster_entries: [],
       });
       onClose();
     } catch (err) {

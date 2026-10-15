@@ -82,6 +82,8 @@ export function normalizeEvent(
       undefined,
     course_name: course?.productDescription || undefined,
     course_code: course?.productCode || undefined,
+    customer_name: raw.customer?.customerName || undefined,
+    customer_code: raw.customer?.customerCode || undefined,
     enrolled_count: raw.noOfStudents || undefined,
     has_roster: raw.roster === true,
     raw: raw as unknown as Record<string, unknown>,
