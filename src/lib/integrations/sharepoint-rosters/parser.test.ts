@@ -107,4 +107,32 @@ describe("parseRoster", () => {
       ["tracy.a.bennett@nasa.gov", "unknown"],
     ]);
   });
+
+  it("finds the real header under a title that mentions email, and stops at the staff table", () => {
+    const out = parseRoster(
+      workbook([
+        ["Business Writing and Email Etiquette"],
+        ["June 16–17, 2026  |  SAC2026  |  Participant Roster"],
+        [],
+        ["#", "Last Name", "First Name", "Email", "Agency", "Day 1 Jun 16", "Day 2 Jun 17", "Bkout Rms", "Notes"],
+        [1, "Rodriguez", "Jose", "joserodriguez@usagm.gov", "USAGM", "X", "X", 4, ""],
+        [3, "Bullard", "Larry", "lbullard@usagm.gov", "USAGM", "NS", "NS", "NS", ""],
+        [13, "Wohl", "Isaac", "isaac.wohl@usitc.gov", "USITC", "NS-missing due to work conflicts", "NS-missing due to work conflicts", "NS", "late"],
+        [15, "Lee", "Andrew", "leeae@mcc.gov", "MCC", "NS", "NSX", "NS", ""],
+        ["18 - Late Add", "Taylor", "Shari", "", "", "X", "X", 3, "Late Add"],
+        ["Total Participants: 17"],
+        [],
+        ["Administrative Staff"],
+        ["Role", "Name", "Email", "Notes"],
+        ["POC", "Mary Catalano", "mary_catalano@ios.doi.gov", ""],
+      ]),
+      {},
+    );
+    expect(out.map((a) => [a.email, a.full_name, a.org, a.days_total, a.attendance_status])).toEqual([
+      ["joserodriguez@usagm.gov", "Jose Rodriguez", "USAGM", 2, "present"],
+      ["lbullard@usagm.gov", "Larry Bullard", "USAGM", 2, "absent"],
+      ["isaac.wohl@usitc.gov", "Isaac Wohl", "USITC", 2, "absent"],
+      ["leeae@mcc.gov", "Andrew Lee", "MCC", 2, "absent"],
+    ]);
+  });
 });
