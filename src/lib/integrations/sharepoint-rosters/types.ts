@@ -54,8 +54,8 @@ export interface RosterAttendee {
   org?: string;
   days_total: number;
   days_attended: number;
-  /** Derived from days_attended / days_total vs. attendance_threshold. */
-  attendance_status: "present" | "absent";
+  /** Derived from days_attended / days_total vs. attendance_threshold; "unknown" when the roster has no attendance columns. */
+  attendance_status: "present" | "absent" | "unknown";
 }
 
 /** Result of locating + parsing one roster file. */

@@ -226,6 +226,68 @@ export default function SessionRoster({
             </tbody>
           </table>
         </div>
+
+        {/* Attendance from the class's SharePoint roster (no LMS account needed). Read-only: fix it in the roster file. */}
+        {session.roster_entries.length > 0 && (
+          <div className="mt-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-sm font-semibold text-gray-900">
+                From the SharePoint roster
+                <span className="ml-2 font-normal text-gray-500">
+                  {session.roster_entries.filter((r) => r.attendance_status === "present").length} of {session.roster_entries.length} present
+                </span>
+              </h3>
+              {session.roster_entries[0].source_web_url ? (
+                <a
+                  href={session.roster_entries[0].source_web_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-primary-600 hover:text-primary-700"
+                >
+                  {session.roster_entries[0].source_file_name || "Open roster"}
+                </a>
+              ) : (
+                <span className="text-xs text-gray-500">{session.roster_entries[0].source_file_name}</span>
+              )}
+            </div>
+            <div className="mt-2 rounded-xl border border-gray-200 bg-white">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+                    <th className="px-4 py-3">Attendee</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Organization</th>
+                    <th className="px-4 py-3">Days</th>
+                    <th className="px-4 py-3">Attendance</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {session.roster_entries.map((r) => (
+                    <tr key={r.id}>
+                      <td className="px-4 py-3 font-medium text-gray-900">
+                        {r.name || "—"}
+                        {r.has_account && <span className="ml-2 text-xs font-normal text-gray-500">LMS user</span>}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{r.email}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.org || "—"}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.days_total > 0 ? `${r.days_attended} / ${r.days_total}` : "—"}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 text-xs font-medium",
+                            r.attendance_status === "present" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                          )}
+                        >
+                          {r.attendance_status === "present" ? "Present" : r.attendance_status === "absent" ? "Absent" : "Not recorded"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

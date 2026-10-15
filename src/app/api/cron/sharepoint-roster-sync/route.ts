@@ -6,6 +6,8 @@ import { syncSharePointRosters } from "@/lib/integrations/sharepoint-rosters/syn
 // Scheduled to run after the GEMS sync, so the GEMS-sourced ilt_sessions
 // already exist before we try to attach attendees to them.
 export const dynamic = "force-dynamic";
+// Walks the SharePoint class folders and reads each roster: give it room.
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
   return handler(request);

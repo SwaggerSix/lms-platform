@@ -30,6 +30,14 @@ function isPresentMark(v: unknown): boolean {
   return s === "x" || s === "p" || s === "y" || s === "yes" || s === "present" || s === "1" || s === "true";
 }
 
+/** A header naming a class day: "05/29/2024", "2024-05-29", or an Excel date serial. */
+function isDateHeader(raw: string): boolean {
+  const c = raw.trim();
+  if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(c) || /^\d{4}-\d{2}-\d{2}$/.test(c)) return true;
+  const n = Number(c);
+  return Number.isInteger(n) && n > 40000 && n < 60000; // 2009–2064 as Excel serials
+}
+
 function findHeaderRow(rows: Row[]): { headerIdx: number; columns: string[] } | null {
   for (let i = 0; i < Math.min(rows.length, 30); i++) {
     const row = rows[i].map(cellToString);
@@ -53,11 +61,12 @@ function classifyColumns(columns: string[]) {
   columns.forEach((raw, i) => {
     const c = raw.toLowerCase();
     if (idx.email < 0 && /email/i.test(c)) idx.email = i;
-    else if (idx.full_name < 0 && /(learner|attendee|student|full)\s*name/i.test(c)) idx.full_name = i;
+    else if (idx.full_name < 0 && (/(learner|attendee|student|full)\s*name/i.test(c) || /^name$|last,\s*first/i.test(c))) idx.full_name = i;
     else if (idx.first_name < 0 && /first\s*name/i.test(c)) idx.first_name = i;
     else if (idx.last_name < 0 && /last\s*name/i.test(c)) idx.last_name = i;
     else if (idx.org < 0 && /(org|organization|agency|unit)/i.test(c)) idx.org = i;
-    if (/attend|^day\s*\d+/i.test(c)) idx.days.push(i);
+    // Attendance columns: "Attended Day 1", "Day 2", or one dated column per class day.
+    if (/attend|^day\s*\d+/i.test(c) || isDateHeader(raw)) idx.days.push(i);
   });
   return idx;
 }
@@ -108,9 +117,9 @@ export function parseRoster(
       0
     );
 
-    const present_ratio = days_total > 0 ? days_attended / days_total : 0;
+    // A registration list with no attendance columns says nothing about who came.
     const attendance_status: RosterAttendee["attendance_status"] =
-      present_ratio >= threshold ? "present" : "absent";
+      days_total === 0 ? "unknown" : days_attended / days_total >= threshold ? "present" : "absent";
 
     attendees.push({
       email,

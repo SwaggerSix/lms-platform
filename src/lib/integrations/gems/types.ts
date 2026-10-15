@@ -157,6 +157,9 @@ export interface GemsEvent {
   course_name?: string;
   /** GEMS course catalog code. */
   course_code?: string;
+  /** The GEMS customer, kept on the session (external_metadata) to file rosters by. */
+  customer_name?: string;
+  customer_code?: string;
   /** Enrolled count from GEMS (populated after roster submission). */
   enrolled_count?: number;
   /** True once a post-training roster has been filed in GEMS. */

@@ -85,6 +85,11 @@ describe("normalizeEvent", () => {
     const oneDay = { ...raw, endDate: "0001-01-01T00:00:00" } as GemsTrainingEvent;
     expect(normalizeEvent(oneDay, "2026-10-13")?.status).toBe("completed");
   });
+  it("keeps the customer, to tell same-day roster folders apart", () => {
+    const withCustomer = { ...raw, customer: { customerId: 3, customerName: "Department of Energy", customerCode: "DOE" } } as GemsTrainingEvent;
+    expect(normalizeEvent(withCustomer, "2026-10-13")).toMatchObject({ customer_name: "Department of Energy", customer_code: "DOE" });
+    expect(normalizeEvent(raw, "2026-10-13")).toMatchObject({ customer_name: undefined, customer_code: undefined });
+  });
   it("skips an event without a start date", () => {
     expect(normalizeEvent({ ...raw, startDate: "0001-01-01T00:00:00" } as GemsTrainingEvent)).toBeNull();
   });

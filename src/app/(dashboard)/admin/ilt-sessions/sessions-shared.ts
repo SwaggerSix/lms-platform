@@ -27,6 +27,21 @@ export interface SessionItem {
   registered_count: number;
   status: ILTSessionStatus;
   attendees: AttendeeItem[];
+  /** Attendees from the class's SharePoint roster (ilt_roster_entries), LMS account or not. */
+  roster_entries: RosterEntryItem[];
+}
+
+export interface RosterEntryItem {
+  id: string;
+  name: string;
+  email: string;
+  org: string;
+  days_attended: number;
+  days_total: number;
+  attendance_status: "present" | "absent" | "unknown";
+  has_account: boolean;
+  source_file_name: string;
+  source_web_url: string | null;
 }
 
 export interface AttendeeItem {

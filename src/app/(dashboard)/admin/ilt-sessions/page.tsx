@@ -7,6 +7,7 @@ import type {
   AttendeeItem,
   CourseOption,
   InstructorOption,
+  RosterEntryItem,
 } from "./sessions-shared";
 
 export default async function AdminILTSessionsPage() {
@@ -58,6 +59,30 @@ export default async function AdminILTSessionsPage() {
         )
         .in("session_id", shownSessionIds)
     : { data: [] as any[] };
+
+  // Attendance from SharePoint rosters, kept without LMS accounts.
+  const { data: rosterRows } = shownSessionIds.length
+    ? await service
+        .from("ilt_roster_entries")
+        .select("id, session_id, email, full_name, org, days_attended, days_total, attendance_status, user_id, source_file_name, source_web_url")
+        .in("session_id", shownSessionIds)
+        .order("full_name")
+    : { data: [] as any[] };
+  const rosterBySession: Record<string, RosterEntryItem[]> = {};
+  for (const r of (rosterRows ?? []) as any[]) {
+    (rosterBySession[r.session_id] ??= []).push({
+      id: r.id,
+      name: r.full_name ?? "",
+      email: r.email,
+      org: r.org ?? "",
+      days_attended: r.days_attended ?? 0,
+      days_total: r.days_total ?? 0,
+      attendance_status: r.attendance_status,
+      has_account: !!r.user_id,
+      source_file_name: r.source_file_name ?? "",
+      source_web_url: r.source_web_url ?? null,
+    });
+  }
 
   // ─── Fetch courses for the create-session dropdown ────────────
   const { data: coursesRows } = await service
@@ -129,6 +154,7 @@ export default async function AdminILTSessionsPage() {
       registered_count: registeredCountBySession[sessionId] ?? 0,
       status: row.status ?? "scheduled",
       attendees: attendanceBySession[sessionId] ?? [],
+      roster_entries: rosterBySession[sessionId] ?? [],
     };
   });
 

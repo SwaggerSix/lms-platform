@@ -348,6 +348,13 @@ async function upsertSession(
     external_source: EXTERNAL_SOURCE,
     external_id: event.external_id,
     external_integration_id: integrationId,
+    // What the roster sync tells same-day SharePoint class folders apart by.
+    external_metadata: {
+      event_code: event.event_code ?? null,
+      course_code: event.course_code ?? null,
+      customer_name: event.customer_name ?? null,
+      customer_code: event.customer_code ?? null,
+    },
     external_synced_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };

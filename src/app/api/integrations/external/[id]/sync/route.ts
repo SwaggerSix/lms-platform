@@ -8,6 +8,9 @@ import { syncGemsEvents } from "@/lib/integrations/gems/sync";
 import { syncSharePointRosters } from "@/lib/integrations/sharepoint-rosters/sync";
 import { syncPartnerPortalInstructors } from "@/lib/integrations/partner-portal/sync";
 
+// A full GEMS or SharePoint roster sync can take minutes.
+export const maxDuration = 300;
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authorize("super_admin");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
