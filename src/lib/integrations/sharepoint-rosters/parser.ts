@@ -30,10 +30,10 @@ function isPresentMark(v: unknown): boolean {
   return s === "x" || s === "p" || s === "y" || s === "yes" || s === "present" || s === "1" || s === "true" || s === "✓" || s === "✔";
 }
 
-/** An explicit "didn't come": NS (no-show), Absent, A, N, No, 0. */
+/** An explicit "didn't come": NS (also "NS-missing due to …"), no show, absent, A, N, No, 0. */
 function isAbsentMark(v: unknown): boolean {
   const s = cellToString(v).toLowerCase();
-  return s === "ns" || s === "no show" || s === "no-show" || s === "absent" || s === "a" || s === "n" || s === "no" || s === "0";
+  return /^ns\b|^ns[a-z]?$|^no[\s-]?show|^absent/.test(s) || s === "a" || s === "n" || s === "no" || s === "0";
 }
 
 const MONTH = "(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?";
@@ -51,12 +51,22 @@ function isDateHeader(raw: string): boolean {
   return Number.isInteger(n) && n > 40000 && n < 60000; // 2009–2064 as Excel serials
 }
 
+/** A column heading for email ("Email", "Email Address", "Work Email", "Learner's Work Email"), not a title that mentions email. */
+function isEmailHeader(c: string): boolean {
+  return /^((work|learner'?s?|participant'?s?)\s+)*(work\s+)?e-?mail(\s+address)?$/i.test(c.trim());
+}
+
+/**
+ * The column-heading row: the first row with an email heading. Falls back to
+ * any short cell mentioning email, so a title like "Business Writing and Email
+ * Etiquette" above the table isn't mistaken for it.
+ */
 function findHeaderRow(rows: Row[]): { headerIdx: number; columns: string[] } | null {
-  for (let i = 0; i < Math.min(rows.length, 30); i++) {
-    const row = rows[i].map(cellToString);
-    const hasEmail = row.some((c) => /email/i.test(c));
-    if (hasEmail) {
-      return { headerIdx: i, columns: row };
+  const limit = Math.min(rows.length, 30);
+  for (const looksLikeHeader of [isEmailHeader, (c: string) => /email/i.test(c) && c.length <= 40]) {
+    for (let i = 0; i < limit; i++) {
+      const row = (rows[i] ?? []).map(cellToString);
+      if (row.filter(Boolean).length >= 2 && row.some(looksLikeHeader)) return { headerIdx: i, columns: row };
     }
   }
   return null;
@@ -116,6 +126,8 @@ export function parseRoster(
   for (let i = header.headerIdx + 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row) continue;
+    // A second table (e.g. "Administrative Staff": POC, instructors) ends the roster.
+    if (row.some((c) => isEmailHeader(cellToString(c)))) break;
     const email = cellToString(row[cols.email]).toLowerCase();
     if (!email || !email.includes("@")) continue;
 
