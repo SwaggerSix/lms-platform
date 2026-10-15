@@ -49,4 +49,62 @@ describe("parseRoster", () => {
       { email: "rex.amicone@doe.gov", full_name: "Amicone, Rex", org: undefined, days_total: 0, days_attended: 0, attendance_status: "unknown" },
     ]);
   });
+
+  it("reads a sign-in sheet: 'Registered Attendees' names, 'Signature' X / NS, walk-ins unknown", () => {
+    const out = parseRoster(
+      workbook([
+        ["FGR 402 - ETHICS IN THE GRANTS ENVIRONMENT: Session Sign-In Sheet"],
+        ["Date:", "6/16/2026"],
+        ["Registered Attendees", "Email Address", "Signature"],
+        ["Anderson, Nicholas", "nicholas.anderson@netl.doe.gov", "X"],
+        ["Heath, Amie", "amie.heath@netl.doe.gov", "NS"],
+        [],
+        ["Additional Attendees (Please Print Name)", "Address", ""],
+        ["", "melissa.pine@hq.doe.gov", ""],
+      ]),
+      {},
+    );
+    expect(out.map((a) => [a.email, a.full_name, a.attendance_status])).toEqual([
+      ["nicholas.anderson@netl.doe.gov", "Anderson, Nicholas", "present"],
+      ["amie.heath@netl.doe.gov", "Heath, Amie", "absent"],
+      ["melissa.pine@hq.doe.gov", undefined, "unknown"],
+    ]);
+  });
+
+  it("reads 'August 4, 2026' day columns with Present / Absent, and skips people without an email", () => {
+    const out = parseRoster(
+      workbook([
+        ["Federal Appropriations Law & PIA Training"],
+        ["No.", "Participant Name", "Work Email", "Role", "August 4, 2026", "August 5, 2026", "August 6, 2026"],
+        [1, "Amicone, Rex", "rex.amicone@doe.gov", "Participant", "Absent", "Absent", "Absent"],
+        [2, "Cadigan, Kristen", "kristen.cadigan@doe.gov", "Participant", "Present", "Present", "Present"],
+        [20, "Villacis, Caroline", "", "Auditor", "", "", ""],
+      ]),
+      {},
+    );
+    expect(out.map((a) => [a.full_name, a.days_attended, a.days_total, a.attendance_status])).toEqual([
+      ["Amicone, Rex", 0, 3, "absent"],
+      ["Cadigan, Kristen", 3, 3, "present"],
+    ]);
+  });
+
+  it("reads '22-Jun' day columns; a no-show is absent, a totals row or unmarked extra is unknown", () => {
+    const out = parseRoster(
+      workbook([
+        ["FCR 404 - COR Refresher #139743 Roster"],
+        ["#", "Learner Name", "Email Address", "Org", "22-Jun", "23-Jun", "Score", "Completed"],
+        [1, "KIBLER, KEMPER", "K.S.KIBLER@NASA.GOV", "LARC-D107", "X", "X", "100%", "Y"],
+        [4, "UDOH, ENOBONG", "ENOBONG.D.UDOH@NASA.GOV", "JSC-BR111", "NS", "NS", "NA", "NA"],
+        ["", "", "charlyn.r.vanderhoff@nasa.gov", "", 3, 3, "97%", ""],
+        ["", "", "tracy.a.bennett@nasa.gov", "", "", "", "", ""],
+      ]),
+      {},
+    );
+    expect(out.map((a) => [a.email, a.attendance_status])).toEqual([
+      ["k.s.kibler@nasa.gov", "present"],
+      ["enobong.d.udoh@nasa.gov", "absent"],
+      ["charlyn.r.vanderhoff@nasa.gov", "unknown"],
+      ["tracy.a.bennett@nasa.gov", "unknown"],
+    ]);
+  });
 });
