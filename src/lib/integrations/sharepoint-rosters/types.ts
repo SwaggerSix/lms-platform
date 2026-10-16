@@ -49,7 +49,8 @@ export interface SharePointRostersConfig {
 
 /** A parsed attendee row from a roster spreadsheet. */
 export interface RosterAttendee {
-  email: string;
+  /** Null for a late add listed by name only (kept only when the row has attendance marks). */
+  email: string | null;
   full_name?: string;
   org?: string;
   days_total: number;

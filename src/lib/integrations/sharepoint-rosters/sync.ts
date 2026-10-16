@@ -226,9 +226,22 @@ function folderLabel(f: FolderCandidate): string {
 }
 
 /**
+ * Who a roster line is, for matching it run to run: the email, else the
+ * name ("name:" + its words, lowercased and sorted, so "Taylor, Shari" and
+ * "Shari Taylor" are one person).
+ */
+export function attendeeKey(a: Pick<RosterAttendee, "email" | "full_name">): string | null {
+  const email = a.email?.trim().toLowerCase();
+  if (email) return email;
+  const words = (a.full_name ?? "").toLowerCase().split(/[\s,]+/).filter(Boolean).sort();
+  return words.length > 0 ? `name:${words.join(" ")}` : null;
+}
+
+/**
  * Replace the session's roster entries with this roster's attendees (an
  * attendee dropped from the roster is dropped here too), and mirror
- * attendees who are LMS users into ilt_attendance.
+ * attendees who are LMS users into ilt_attendance. Attendees with no email
+ * are kept by name, with no LMS match.
  */
 async function saveRoster(
   service: Service,
@@ -236,12 +249,13 @@ async function saveRoster(
   attendees: RosterAttendee[],
   file: DriveItem
 ): Promise<{ recorded: number; matched: number }> {
-  const byEmail = new Map<string, RosterAttendee>();
+  const byKey = new Map<string, RosterAttendee>();
   for (const a of attendees) {
-    const email = a.email.trim().toLowerCase();
-    if (email) byEmail.set(email, a);
+    const key = attendeeKey(a);
+    if (key) byKey.set(key, a);
   }
-  const emails = [...byEmail.keys()];
+  const keys = [...byKey.keys()];
+  const emails = keys.filter((k) => !k.startsWith("name:"));
 
   const userIds = new Map<string, string>();
   for (let i = 0; i < emails.length; i += 200) {
@@ -251,17 +265,19 @@ async function saveRoster(
   }
 
   const now = new Date().toISOString();
-  const rows = emails.map((email) => {
-    const a = byEmail.get(email)!;
+  const rows = keys.map((key) => {
+    const a = byKey.get(key)!;
+    const email = key.startsWith("name:") ? null : key;
     return {
       session_id: sessionId,
+      attendee_key: key,
       email,
       full_name: a.full_name ?? null,
       org: a.org ?? null,
       days_total: a.days_total,
       days_attended: a.days_attended,
       attendance_status: a.attendance_status,
-      user_id: userIds.get(email) ?? null,
+      user_id: email ? userIds.get(email) ?? null : null,
       source_drive_item_id: file.id,
       source_file_name: file.name,
       source_web_url: file.webUrl ?? null,
@@ -269,18 +285,18 @@ async function saveRoster(
     };
   });
   if (rows.length > 0) {
-    const { error } = await service.from("ilt_roster_entries").upsert(rows, { onConflict: "session_id,email" });
+    const { error } = await service.from("ilt_roster_entries").upsert(rows, { onConflict: "session_id,attendee_key" });
     if (error) throw new Error(`Saving roster entries: ${error.message}`);
   }
   // Drop entries no longer on the roster.
   let stale = service.from("ilt_roster_entries").delete().eq("session_id", sessionId);
-  if (emails.length > 0) stale = stale.not("email", "in", `(${emails.map((e) => `"${e.replace(/"/g, '""')}"`).join(",")})`);
+  if (keys.length > 0) stale = stale.not("attendee_key", "in", `(${keys.map((k) => `"${k.replace(/"/g, '""')}"`).join(",")})`);
   const { error: delErr } = await stale;
   if (delErr) throw new Error(`Clearing old roster entries: ${delErr.message}`);
 
   let matched = 0;
   for (const [email, userId] of userIds) {
-    await upsertAttendance(service, sessionId, userId, byEmail.get(email)!, file.id);
+    await upsertAttendance(service, sessionId, userId, byKey.get(email)!, file.id);
     matched++;
   }
   return { recorded: rows.length, matched };

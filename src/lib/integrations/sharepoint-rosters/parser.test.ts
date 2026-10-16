@@ -71,7 +71,7 @@ describe("parseRoster", () => {
     ]);
   });
 
-  it("reads 'August 4, 2026' day columns with Present / Absent, and skips people without an email", () => {
+  it("reads 'August 4, 2026' day columns with Present / Absent, and skips an unmarked row without an email", () => {
     const out = parseRoster(
       workbook([
         ["Federal Appropriations Law & PIA Training"],
@@ -133,6 +133,18 @@ describe("parseRoster", () => {
       ["lbullard@usagm.gov", "Larry Bullard", "USAGM", 2, "absent"],
       ["isaac.wohl@usitc.gov", "Isaac Wohl", "USITC", 2, "absent"],
       ["leeae@mcc.gov", "Andrew Lee", "MCC", 2, "absent"],
+      // Late add with no email: kept by name because the row has attendance marks.
+      [null, "Shari Taylor", undefined, 2, "present"],
     ]);
+  });
+});
+
+describe("attendeeKey", async () => {
+  const { attendeeKey } = await import("./sync");
+  it("is the email, else the name's words in any order", () => {
+    expect(attendeeKey({ email: "A@X.gov", full_name: "Ann Lee" })).toBe("a@x.gov");
+    expect(attendeeKey({ email: null, full_name: "Taylor, Shari" })).toBe("name:shari taylor");
+    expect(attendeeKey({ email: null, full_name: "Shari Taylor" })).toBe("name:shari taylor");
+    expect(attendeeKey({ email: null, full_name: undefined })).toBeNull();
   });
 });

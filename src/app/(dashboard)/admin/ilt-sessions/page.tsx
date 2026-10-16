@@ -73,7 +73,7 @@ export default async function AdminILTSessionsPage() {
     (rosterBySession[r.session_id] ??= []).push({
       id: r.id,
       name: r.full_name ?? "",
-      email: r.email,
+      email: r.email ?? "",
       org: r.org ?? "",
       days_attended: r.days_attended ?? 0,
       days_total: r.days_total ?? 0,
