@@ -128,8 +128,8 @@ export function parseRoster(
     if (!row) continue;
     // A second table (e.g. "Administrative Staff": POC, instructors) ends the roster.
     if (row.some((c) => isEmailHeader(cellToString(c)))) break;
-    const email = cellToString(row[cols.email]).toLowerCase();
-    if (!email || !email.includes("@")) continue;
+    const emailCell = cellToString(row[cols.email]).toLowerCase();
+    const email = emailCell.includes("@") ? emailCell : null;
 
     const full_name = cols.full_name >= 0
       ? cellToString(row[cols.full_name])
@@ -151,6 +151,9 @@ export function parseRoster(
     // absent (NS, Absent…). A row with no marks (a registration list, a walk-in
     // added at the bottom, a totals row) says nothing about who came.
     const marked_absent = cols.days.some((c) => isAbsentMark(row[c]));
+    // No email: keep a late add listed by name, but only with attendance
+    // marks, so totals rows, notes and staff without marks stay out.
+    if (!email && !(isPersonName(full_name) && (days_attended > 0 || marked_absent))) continue;
     const attendance_status: RosterAttendee["attendance_status"] =
       days_attended > 0
         ? days_attended / days_total >= threshold ? "present" : "absent"
@@ -167,4 +170,10 @@ export function parseRoster(
   }
 
   return attendees;
+}
+
+/** A person's name as rosters write it ("Shari Taylor", "Taylor, Shari"): two or more words, no digits or email. */
+function isPersonName(name: string | undefined): name is string {
+  if (!name || name.length > 60 || /[\d@]/.test(name)) return false;
+  return name.split(/[\s,]+/).filter((w) => /^[a-z][a-z.'-]*$/i.test(w)).length >= 2;
 }

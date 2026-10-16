@@ -268,7 +268,7 @@ export default function SessionRoster({
                         {r.name || "—"}
                         {r.has_account && <span className="ml-2 text-xs font-normal text-gray-500">LMS user</span>}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{r.email}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.email || <span className="text-gray-400">No email on roster</span>}</td>
                       <td className="px-4 py-3 text-gray-600">{r.org || "—"}</td>
                       <td className="px-4 py-3 text-gray-600">{r.days_total > 0 ? `${r.days_attended} / ${r.days_total}` : "—"}</td>
                       <td className="px-4 py-3">
