@@ -1,5 +1,8 @@
 -- Roster attendees listed by name only.
 --
+-- Applied to production 2026-10-16 through the Supabase connector (ledger
+-- version 20261016032555, roster_entries_name_only), before the PR merged.
+--
 -- Late adds are sometimes written onto a class roster with no email (three
 -- on the 2026-06-16 Business Writing roster). Keep them, by name, rather
 -- than drop them. email becomes optional, and attendee_key identifies a
