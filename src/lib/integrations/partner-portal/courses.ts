@@ -16,6 +16,15 @@ import { createServiceClient } from "@/lib/supabase/service";
 // brand. The two Gotham storefront slugs map to the portal `program`:
 //     'gothamculture'    → 'gc'
 //     'gothamgovernment' → 'ggs'
+//
+// Shelf price
+// -----------
+// A course's shelf price is its storefront product's price: the list price
+// of one delivery (session), which the portal uses as the starting point for
+// each client's contracted rate. A price of 0 or none means "not priced yet"
+// (the product form requires a number, so 0 is the placeholder). A course
+// mirrored into both storefronts takes the winning listing's price, or the
+// other listing's when the winner has none, so it only needs entering once.
 // ─────────────────────────────────────────────────────────────────
 
 /** Storefront slug → portal program code. */
@@ -42,6 +51,8 @@ export interface CanonicalGothamCourse {
   description: string | null;
   /** Always true here: only active catalog products are exported. */
   active: boolean;
+  /** List price of one delivery, from the product's price; null when not priced. */
+  shelf_price: number | null;
 }
 
 export interface ProductRow {
@@ -49,7 +60,14 @@ export interface ProductRow {
   name: string | null;
   description: string | null;
   sku: string | null;
+  price?: number | string | null;
   storefront: { slug: string } | { slug: string }[] | null;
+}
+
+/** A product price as a shelf price: a positive amount, else null (not priced yet). */
+export function shelfPriceOf(price: ProductRow["price"]): number | null {
+  const n = typeof price === "string" ? Number(price) : price;
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : null;
 }
 
 function slugOf(row: ProductRow): string | null {
@@ -82,19 +100,20 @@ export function mapAndDedupeCourses(rows: ProductRow[]): CanonicalGothamCourse[]
       code: row.sku?.trim() || null,
       description: row.description ?? null,
       active: true,
+      shelf_price: shelfPriceOf(row.price),
     };
 
     if (!existing) {
       byTitle.set(key, candidate);
       continue;
     }
-    // Keep the higher-priority brand for a dual-listed course.
-    if (
-      PROGRAM_PRIORITY.indexOf(candidate.program) <
-      PROGRAM_PRIORITY.indexOf(existing.program)
-    ) {
-      byTitle.set(key, candidate);
-    }
+    // Keep the higher-priority brand for a dual-listed course, and a price
+    // from whichever listing has one.
+    const [winner, other] =
+      PROGRAM_PRIORITY.indexOf(candidate.program) < PROGRAM_PRIORITY.indexOf(existing.program)
+        ? [candidate, existing]
+        : [existing, candidate];
+    byTitle.set(key, { ...winner, shelf_price: winner.shelf_price ?? other.shelf_price });
   }
 
   return Array.from(byTitle.values()).sort((a, b) =>
@@ -115,7 +134,7 @@ export async function listGothamCourses(): Promise<CanonicalGothamCourse[]> {
   // in the public store, and subcontractors still deliver them.
   const { data, error } = await service
     .from("products")
-    .select("id, name, description, sku, storefront:storefronts!inner(slug)")
+    .select("id, name, description, sku, price, storefront:storefronts!inner(slug)")
     .eq("status", "active")
     .in("storefront.slug", Object.keys(STOREFRONT_PROGRAM))
     .order("name", { ascending: true });
