@@ -224,12 +224,20 @@ export function CartClient({ slug }: { slug: string }) {
               rows={2}
               className={inputClass}
             />
-            <input
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              placeholder="Discount or partner code (optional)"
-              className={inputClass}
-            />
+            <div>
+              <input
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Discount or partner code (optional)"
+                aria-label="Discount or partner code (optional)"
+                aria-describedby="cart-code-help"
+                className={inputClass}
+              />
+              <p id="cart-code-help" className="mt-1 text-xs text-slate-500">
+                Gotham partner codes are for the partner&apos;s own purchases only: use yours with the email your
+                partner account uses.
+              </p>
+            </div>
           </div>
           <div className="mt-5 pt-4 border-t border-slate-200 flex justify-between font-semibold">
             <span>Subtotal</span>
