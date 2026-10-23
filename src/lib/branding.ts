@@ -48,7 +48,7 @@ export interface BrandingConfig {
  * Default branding — gothamCulture green theme (light shell).
  */
 export const defaultBranding: BrandingConfig = {
-  portalName: "LearnHub",
+  portalName: "Mosaic LearnHub LMS",
   tagline: "Empowering continuous learning for federal agencies",
   logoUrl: null,
   faviconUrl: null,
@@ -68,7 +68,7 @@ export const defaultBranding: BrandingConfig = {
   loginBgColor: "linear-gradient(135deg, #F1F7E4 0%, #FBFCFA 100%)",
 
   supportEmail: "support@learnhub.gov",
-  footerText: "© {year} LearnHub. All rights reserved.",
+  footerText: "© {year} Mosaic LearnHub LMS. All rights reserved.",
 };
 
 /**

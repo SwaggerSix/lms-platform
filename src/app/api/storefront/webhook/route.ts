@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
 import { sendOrderEmails, inviteAndEnroll } from "@/lib/storefront/fulfillment";
 import { enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
-import { reportPartnerRedemption } from "@/lib/storefront/partner-code";
+import { reportPartnerRedemption, voidPartnerRedemptionForOrder } from "@/lib/storefront/partner-code";
 
 // Stripe webhook: marks orders paid when Stripe confirms payment, then
 // fulfills them (sales counts, coupon usage, auto-enrollment for buyers who
@@ -24,6 +24,11 @@ export async function POST(request: NextRequest) {
   );
   if (!event) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  if (event.type === "charge.refunded") {
+    await handleChargeRefunded(event.data.object);
+    return NextResponse.json({ received: true });
   }
 
   if (
@@ -187,4 +192,35 @@ export async function POST(request: NextRequest) {
   await enqueueOrderCompleted(service, order.id);
 
   return NextResponse.json({ received: true });
+}
+
+// A charge refunded in Stripe (from the dashboard, or by the admin refund
+// route). Only a FULL refund voids a partner-code use: a partial refund leaves
+// the buyer holding seats. The order's own refund state is recorded by the
+// admin route; this only tells the partner portal. Never throws.
+async function handleChargeRefunded(object: unknown): Promise<void> {
+  const charge = object as {
+    payment_intent?: string | null;
+    refunded?: boolean;
+    metadata?: { order_id?: string };
+  };
+  if (!charge.refunded) return;
+  try {
+    const service = createServiceClient();
+    const orderQuery = service.from("orders").select("id, metadata").limit(1);
+    const orderId = charge.metadata?.order_id;
+    const { data: orders, error } = orderId
+      ? await orderQuery.eq("id", orderId)
+      : charge.payment_intent
+        ? await orderQuery.eq("payment_intent_id", charge.payment_intent)
+        : { data: null, error: null };
+    if (error) {
+      console.error("Storefront webhook: refund order lookup failed:", error.message);
+      return;
+    }
+    const order = orders?.[0];
+    if (order) await voidPartnerRedemptionForOrder(order.metadata);
+  } catch (err) {
+    console.error("Storefront webhook: refund handling failed:", err instanceof Error ? err.message : err);
+  }
 }

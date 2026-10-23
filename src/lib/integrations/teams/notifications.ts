@@ -348,7 +348,7 @@ export function testNotificationCard(): AdaptiveCard {
     "Accent",
     [
       { label: "Status", value: "Connection successful" },
-      { label: "Source", value: "LearnHub LMS Platform" },
+      { label: "Source", value: "Mosaic LearnHub LMS" },
       {
         label: "Time",
         value: new Date().toLocaleString("en-US", {

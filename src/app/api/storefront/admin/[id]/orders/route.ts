@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { refundPayment, isStripeConfigured } from "@/lib/storefront/stripe";
 import { enqueueOrderRefunded } from "@/lib/integrations/qbo-sync";
+import { voidPartnerRedemptionForOrder } from "@/lib/storefront/partner-code";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -69,7 +70,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const service = createServiceClient();
   const { data: order } = await service
     .from("orders")
-    .select("id, status, total, refunded_amount, payment_intent_id, status_history")
+    .select("id, status, total, refunded_amount, payment_intent_id, status_history, metadata")
     .eq("id", body.order_id)
     .eq("storefront_id", id)
     .single();
@@ -137,6 +138,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       body.refund_amount,
       Number(updated.refunded_amount ?? 0)
     );
+  }
+
+  // Refunded in full or cancelled with a gC partner code: report the use void
+  // to the partner portal so it stops counting toward that partner's buyer
+  // limit. A partial refund leaves the buyer holding seats, so it still counts.
+  // Never throws — a portal hiccup must not fail the refund.
+  if (
+    (updated.status === "refunded" || updated.status === "cancelled") &&
+    order.status !== updated.status
+  ) {
+    await voidPartnerRedemptionForOrder(order.metadata);
   }
 
   return NextResponse.json({ order: updated });
