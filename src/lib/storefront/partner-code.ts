@@ -19,6 +19,10 @@ import crypto from "crypto";
 // Every request is signed: HMAC-SHA256(secret, `${ts}.${requestId}.${body}`)
 // in X-Partner-Code-Signature, with X-Partner-Code-Platform: lms.
 
+// A refusal carries the portal's own message, shown to the buyer as is
+// whatever the reason ("invalid", "no_discount", "buyer_limit", or
+// "partner_only": a partner code is for its partner's own purchases, so the
+// portal refuses a buyer email that is not the partner's portal email).
 export type PartnerEvaluation =
   | { valid: true; code: string; percentOff: number }
   | { valid: false; message: string };

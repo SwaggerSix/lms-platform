@@ -147,6 +147,16 @@ describe("storefront checkout — partner code", () => {
     expect(inserted).toHaveLength(0);
   });
 
+  it("shows the portal's partner_only message to a buyer who isn't the partner", async () => {
+    const message =
+      "This code can only be used by the Gotham partner it belongs to, signed in with their own email.";
+    fetchMock.mockResolvedValueOnce(reply(200, { valid: false, reason: "partner_only", message }));
+    const res = await checkout("GCP-ABCDE23456");
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: message });
+    expect(inserted).toHaveLength(0);
+  });
+
   it("fails closed when the portal can't be reached", async () => {
     fetchMock.mockRejectedValueOnce(new Error("ECONNREFUSED"));
     const res = await checkout("GCP-ABCDE23456");
