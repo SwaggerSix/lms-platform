@@ -375,7 +375,7 @@ function buildEventBody(session: ILTSession): string {
   }
 
   parts.push(
-    `<hr><p><em>This event was created by LearnHub LMS Platform.</em></p>`
+    `<hr><p><em>This event was created by Mosaic LearnHub LMS.</em></p>`
   );
 
   return parts.join("\n");

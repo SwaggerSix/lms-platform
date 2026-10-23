@@ -9,7 +9,7 @@ export interface EmailTemplate {
   text: string;
 }
 
-function baseLayout(content: string, portalName: string = "LearnHub"): string {
+function baseLayout(content: string, portalName: string = "Mosaic LearnHub LMS"): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -355,7 +355,7 @@ export function accountInvitation(params: {
   portalName?: string;
 }): EmailTemplate {
   const content = `
-    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You're invited to ${params.portalName ?? "LearnHub"}</h2>
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You're invited to ${params.portalName ?? "Mosaic LearnHub LMS"}</h2>
     <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">Hi ${params.name},</p>
     <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
       ${params.inviterName ? `${params.inviterName} has set up` : "An administrator has set up"} an account for you.
@@ -365,9 +365,9 @@ export function accountInvitation(params: {
     <p style="margin:16px 0 0;color:#6b7280;font-size:12px;">If you weren't expecting this, you can ignore this email. This link expires for security.</p>
   `;
   return {
-    subject: `Your ${params.portalName ?? "LearnHub"} account invitation`,
+    subject: `Your ${params.portalName ?? "Mosaic LearnHub LMS"} account invitation`,
     html: baseLayout(content, params.portalName),
-    text: `Hi ${params.name}, an account has been created for you on ${params.portalName ?? "LearnHub"}. Set your password and sign in: ${params.actionUrl}`,
+    text: `Hi ${params.name}, an account has been created for you on ${params.portalName ?? "Mosaic LearnHub LMS"}. Set your password and sign in: ${params.actionUrl}`,
   };
 }
 

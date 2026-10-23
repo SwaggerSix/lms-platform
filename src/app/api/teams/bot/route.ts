@@ -152,7 +152,7 @@ async function handleConversationUpdate(
     const welcome: BotResponse = {
       type: "message",
       text:
-        "**Welcome to LearnHub LMS!** 🎓\n\n" +
+        "**Welcome to Mosaic LearnHub LMS!** 🎓\n\n" +
         "I can help you access your learning information right here in Teams.\n\n" +
         "Try these commands:\n" +
         "- **my courses** - View your enrolled courses\n" +
@@ -178,7 +178,7 @@ function buildHelpResponse(): BotResponse {
   return {
     type: "message",
     text:
-      "**LearnHub LMS Bot Commands** 🎓\n\n" +
+      "**Mosaic LearnHub LMS Bot Commands** 🎓\n\n" +
       "| Command | Description |\n" +
       "|---------|-------------|\n" +
       "| **my courses** | View your enrolled courses and progress |\n" +

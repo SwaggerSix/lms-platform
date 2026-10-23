@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
 
   const result = await sendEmail({
     to,
-    subject: "LearnHub email delivery test",
-    html: `<p>Hi ${profile?.first_name ?? "there"},</p><p>This is a test email confirming your LearnHub email delivery is configured correctly.</p>`,
-    text: "This is a test email confirming your LearnHub email delivery is configured correctly.",
+    subject: "Mosaic LearnHub LMS email delivery test",
+    html: `<p>Hi ${profile?.first_name ?? "there"},</p><p>This is a test email confirming your Mosaic LearnHub LMS email delivery is configured correctly.</p>`,
+    text: "This is a test email confirming your Mosaic LearnHub LMS email delivery is configured correctly.",
   });
 
   if (!result.success) {

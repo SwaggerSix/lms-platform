@@ -144,3 +144,23 @@ export async function reportPartnerRedemption(params: {
     return false;
   }
 }
+
+/** The portal ref a partner-code order carries in its metadata, if any. */
+export function partnerPortalRef(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const ref = (metadata as { partner_portal_ref?: unknown }).partner_portal_ref;
+  return typeof ref === "string" && ref.trim() ? ref : null;
+}
+
+/**
+ * A partner-code order was refunded in full or cancelled: report the use void
+ * so it stops counting toward the partner's buyer limit. Orders without a
+ * portal ref are ignored. Like reportPartnerRedemption it never throws, so it
+ * can't fail the refund; the portal is idempotent (a repeat answers 200 or
+ * 409, an unknown ref 404), so reporting from more than one path is safe.
+ */
+export async function voidPartnerRedemptionForOrder(metadata: unknown): Promise<boolean> {
+  const orderRef = partnerPortalRef(metadata);
+  if (!orderRef) return false;
+  return reportPartnerRedemption({ orderRef, status: "void" });
+}

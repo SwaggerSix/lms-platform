@@ -2,6 +2,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, updateOrderSchema } from "@/lib/validations";
+import { voidPartnerRedemptionForOrder } from "@/lib/storefront/partner-code";
 
 export async function GET(
   request: NextRequest,
@@ -82,6 +83,12 @@ export async function PUT(
   if (error) {
     console.error("Order update error:", error.message);
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+  }
+
+  // Refunded order paid with a gC partner code: report the use void to the
+  // partner portal. Never throws, so it can't fail the refund.
+  if (validation.data.status === "refunded" && existing.status !== "refunded") {
+    await voidPartnerRedemptionForOrder(existing.metadata);
   }
 
   return NextResponse.json(data);

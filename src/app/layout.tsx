@@ -16,7 +16,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "LearnHub LMS",
+  title: "Mosaic LearnHub LMS",
   description: "Enterprise Learning Management System",
   manifest: "/manifest.json",
   other: {
