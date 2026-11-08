@@ -117,7 +117,7 @@ export default async function CoursePlayerPage({
   const service = createServiceClient();
   const { data: dbUser } = await service
     .from("users")
-    .select("id")
+    .select("id, first_name, last_name")
     .eq("auth_id", user.id)
     .single();
 
@@ -365,6 +365,11 @@ export default async function CoursePlayerPage({
       initialLessonId={currentLessonId ?? playerModules[0]?.lessons[0]?.id ?? ""}
       enrollmentId={enrollment?.id ?? null}
       backHref={backHref}
+      learner={{
+        id: dbUser.id,
+        // SCORM convention is "Last, First".
+        name: [dbUser.last_name, dbUser.first_name].filter(Boolean).join(", "),
+      }}
     />
   );
 }

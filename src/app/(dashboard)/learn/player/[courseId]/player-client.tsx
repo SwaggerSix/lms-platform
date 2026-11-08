@@ -30,13 +30,10 @@ const VideoPlayer = dynamic(
   }
 );
 
-const SCORMPlayer = dynamic(
-  () => import("@/components/course/scorm-player").then((mod) => mod.SCORMPlayer),
-  {
-    loading: () => <div className="animate-pulse bg-muted h-[500px] w-full rounded-lg bg-gray-800" />,
-    ssr: false,
-  }
-);
+const ScormLesson = dynamic(() => import("@/components/course/scorm-lesson"), {
+  loading: () => <div className="animate-pulse bg-muted h-[600px] w-full rounded-lg bg-gray-800" />,
+  ssr: false,
+});
 
 export interface PlayerLesson {
   id: string;
@@ -82,6 +79,8 @@ export interface PlayerProps {
   /** Where the close (X) button returns to — e.g. the learning path the
    *  learner launched the course from. Defaults to My Courses. */
   backHref?: string;
+  /** Learner identity passed to SCORM packages (cmi.core.student_name/id). */
+  learner?: { id: string; name: string } | null;
 }
 
 function sanitizeHTML(html: string): string {
@@ -101,7 +100,7 @@ const lessonIcons = {
   quiz: HelpCircle,
 };
 
-export default function PlayerClient({ course, initialLessonId, enrollmentId, backHref = "/learn/my-courses" }: PlayerProps) {
+export default function PlayerClient({ course, initialLessonId, enrollmentId, backHref = "/learn/my-courses", learner = null }: PlayerProps) {
   const [currentLessonId, setCurrentLessonId] = useState(initialLessonId);
   const [expandedModules, setExpandedModules] = useState<string[]>(
     course.modules.map((m) => m.id).slice(0, 2)
@@ -389,15 +388,18 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
             )}
 
             {currentLesson?.contentTypeRaw === "scorm" && currentLesson.contentUrl && (
-              <SCORMPlayer
-                packageUrl={currentLesson.contentUrl}
+              <ScormLesson
+                key={currentLesson.id}
+                lessonId={currentLesson.id}
                 title={currentLesson.title}
-                learnerName=""
-                learnerId=""
+                packageUrl={currentLesson.contentUrl}
+                enrollmentId={enrollmentId}
+                learnerName={learner?.name ?? ""}
+                learnerId={learner?.id ?? ""}
+                alreadyCompleted={lessonStatuses[currentLesson.id] === "completed"}
                 onComplete={() => {
-                  updateLessonProgress(currentLessonId, "completed");
+                  updateLessonProgress(currentLesson.id, "completed");
                 }}
-                className="min-h-[500px]"
               />
             )}
 

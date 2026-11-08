@@ -74,7 +74,7 @@ export const instructorManual: HelpManual = {
               heading: "Building lessons",
               body:
                 "1. From the course editor, click **Add Lesson** and pick a type.\n" +
-                "2. Add content. Most lesson types support a rich text editor; SCORM and xAPI take uploaded packages.\n" +
+                "2. Add content. Most lesson types support a rich text editor; SCORM and xAPI take uploaded packages. To turn a SCORM .zip into a course in one step, use **Courses → Import SCORM**; to update or add packages later, use **SCORM Packages** in the course's ⋯ menu.\n" +
                 "3. Configure completion rules — *viewed*, *time spent*, *passed quiz*, etc.\n" +
                 "4. Preview the learner experience with the **Preview as learner** toggle.",
             },
