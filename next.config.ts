@@ -19,7 +19,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        // SCORM package files set their own framing headers: the course
+        // player must be able to iframe them (same origin), which DENY forbids.
+        source: "/((?!scorm-content/).*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },

@@ -461,6 +461,11 @@ export const config = {
     // worker ("script resource is behind a redirect") and fails manifest loading
     // on the auth pages. They can't go in publicPaths either — that would bounce
     // an authenticated fetch of /sw.js to /dashboard.
-    "/((?!_next/static|_next/image|favicon.ico|sw\\.js$|manifest\\.json$|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    //
+    // /scorm-content/ is excluded too: one SCORM launch fetches hundreds of
+    // package files, and the route authenticates each request itself. It also
+    // must not receive the app's strict nonce CSP, which would block the
+    // inline scripts every authoring tool emits.
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js$|manifest\\.json$|scorm-content/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -36,6 +36,7 @@ import {
   Sparkles,
   FolderOpen,
   Image as ImageIcon,
+  Package,
 } from 'lucide-react';
 import { CourseCover } from '@/components/course/course-cover';
 
@@ -259,7 +260,10 @@ export default function CoursesClient({
       const payload: Record<string, unknown> = { id: editModal.id };
       if (editForm.title !== undefined) payload.title = editForm.title;
       if (editForm.status !== undefined) payload.status = editForm.status;
-      if (editForm.type !== undefined) payload.course_type = TYPE_TO_DB[editForm.type];
+      // Only send the type when it was changed: types the dropdown can't
+      // represent (e.g. imported SCORM courses) display as self-paced, and
+      // re-sending that would silently rewrite the stored type on every edit.
+      if (editForm.type !== undefined && editForm.type !== editModal.type) payload.course_type = TYPE_TO_DB[editForm.type];
       if (editForm.difficulty !== undefined) payload.difficulty_level = editForm.difficulty;
       if (editForm.categoryId) payload.category_id = editForm.categoryId;
       // Availability window. Empty = unbounded (null). "from" starts at the
@@ -507,6 +511,7 @@ export default function CoursesClient({
             },
             { label: 'Course Content', icon: <FolderOpen className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/courses/${course.slug}/resources`) },
             { label: 'One-Pager', icon: <FileText className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/courses/${course.slug}/one-pager`) },
+            { label: 'SCORM Packages', icon: <Package className="h-3.5 w-3.5" />, onSelect: () => router.push(`/admin/courses/${course.slug}/scorm`) },
           ]}
         />
       ),
@@ -531,6 +536,13 @@ export default function CoursesClient({
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
+          </a>
+          <a
+            href="/admin/courses/scorm-import"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <Package className="h-4 w-4" />
+            Import SCORM
           </a>
           <a
             href="/admin/courses/cover-import"
