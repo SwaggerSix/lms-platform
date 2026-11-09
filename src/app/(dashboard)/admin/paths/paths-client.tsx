@@ -24,8 +24,13 @@ import {
   Search,
   UserPlus,
   Mail,
+  ImageIcon,
+  Upload,
 } from 'lucide-react';
 import { parseInviteList, MAX_PATH_INVITES } from '@/lib/paths/invite-list';
+import { isValidPathImageUrl } from '@/lib/paths/path-image';
+import { COVER_IMAGE_TYPES, COVER_IMAGE_MAX_BYTES } from '@/lib/images/upload-rules';
+import { PathThumbnail } from '@/components/paths/path-thumbnail';
 
 interface InviteRowResult {
   email: string;
@@ -63,6 +68,7 @@ export interface LearningPath {
   id: string;
   title: string;
   description: string;
+  thumbnailUrl: string | null;
   courseCount: number;
   enrolled: number;
   status: 'published' | 'draft' | 'archived';
@@ -91,6 +97,8 @@ interface PathFormData {
   estimated_duration: number;
   selectedCourseIds: string[];
   status: 'published' | 'draft' | 'archived';
+  /** Image URL typed or pasted by the admin (https:// or /site/path). */
+  thumbnailUrl: string;
 }
 
 const emptyForm: PathFormData = {
@@ -100,6 +108,7 @@ const emptyForm: PathFormData = {
   estimated_duration: 0,
   selectedCourseIds: [],
   status: 'draft',
+  thumbnailUrl: '',
 };
 
 const statusBadge: Record<string, string> = {
@@ -132,6 +141,12 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
   const [formData, setFormData] = useState<PathFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Path image: an uploaded file waits here until the path is saved (a new
+  // path has no id to upload against yet).
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState('');
 
   // Available courses for multi-select
   const [availableCourses, setAvailableCourses] = useState<AvailableCourse[]>([]);
@@ -191,6 +206,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
     setEditingPath(null);
     setFormData(emptyForm);
     setCourseSearch('');
+    resetImage();
     setShowModal(true);
   };
 
@@ -203,8 +219,10 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
       estimated_duration: path.totalDuration,
       selectedCourseIds: path.courses.map((c) => c.id),
       status: path.status,
+      thumbnailUrl: path.thumbnailUrl ?? '',
     });
     setCourseSearch('');
+    resetImage();
     setShowModal(true);
   };
 
@@ -213,6 +231,58 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
     setEditingPath(null);
     setFormData(emptyForm);
     setCourseSearch('');
+    resetImage();
+  };
+
+  function resetImage() {
+    setImageFile(null);
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setImageError('');
+  }
+
+  const onImageFileChosen = (file: File | null) => {
+    setImageError('');
+    if (!file) return;
+    if (!COVER_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Use a JPEG, PNG, WebP or GIF image.');
+      return;
+    }
+    if (file.size > COVER_IMAGE_MAX_BYTES) {
+      setImageError('Image must be 5MB or smaller.');
+      return;
+    }
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setImageFile(file);
+    setFormData((prev) => ({ ...prev, thumbnailUrl: '' }));
+  };
+
+  const removeImage = () => {
+    resetImage();
+    setFormData((prev) => ({ ...prev, thumbnailUrl: '' }));
+  };
+
+  const trimmedImageUrl = formData.thumbnailUrl.trim();
+  const imageUrlInvalid = trimmedImageUrl !== '' && !isValidPathImageUrl(trimmedImageUrl);
+  const formPreviewUrl = imagePreview ?? (trimmedImageUrl && !imageUrlInvalid ? trimmedImageUrl : null);
+
+  /** Upload the chosen file for a saved path. Returns the stored URL, or null on failure. */
+  const uploadImage = async (pathId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+    const fd = new FormData();
+    fd.append('file', imageFile);
+    const res = await fetch(`/api/paths/${pathId}/cover`, { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast.error(data.error || 'The path was saved, but the image could not be uploaded');
+      return null;
+    }
+    return data.url as string;
   };
 
   const toggleCourse = (courseId: string) => {
@@ -236,6 +306,10 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
       toast.error('Title is required');
       return;
     }
+    if (imageUrlInvalid) {
+      toast.error('Image URL must start with https:// or be a site path starting with /');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -255,6 +329,9 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             description: formData.description,
             status: formData.status,
             estimated_duration: totalDuration,
+            // An uploaded file replaces the image after the save; otherwise the
+            // typed URL (or '' to clear) is the image.
+            ...(imageFile ? {} : { thumbnail_url: trimmedImageUrl }),
             items,
           }),
         });
@@ -263,6 +340,12 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           const err = await res.json();
           toast.error(err.error || 'Failed to update learning path');
           return;
+        }
+
+        let thumbnailUrl: string | null = imageFile ? editingPath.thumbnailUrl : trimmedImageUrl || null;
+        if (imageFile) {
+          const uploaded = await uploadImage(editingPath.id);
+          if (uploaded) thumbnailUrl = uploaded;
         }
 
         // Update local state
@@ -285,6 +368,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   ...p,
                   title: formData.title,
                   description: formData.description,
+                  thumbnailUrl,
                   status: formData.status,
                   totalDuration,
                   courseCount: selectedCourses.length,
@@ -306,6 +390,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             description: formData.description,
             status: formData.status,
             estimated_duration: totalDuration,
+            ...(imageFile || !trimmedImageUrl ? {} : { thumbnail_url: trimmedImageUrl }),
             items,
           }),
         });
@@ -317,6 +402,11 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
         }
 
         const created = await res.json();
+        let thumbnailUrl: string | null = created.thumbnail_url ?? null;
+        if (imageFile) {
+          const uploaded = await uploadImage(created.id);
+          if (uploaded) thumbnailUrl = uploaded;
+        }
 
         const selectedCourses: PathCourse[] = formData.selectedCourseIds.map((cid) => {
           const avail = availableCourses.find((c) => c.id === cid);
@@ -333,6 +423,7 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
             id: created.id,
             title: formData.title,
             description: formData.description,
+            thumbnailUrl,
             courseCount: selectedCourses.length,
             enrolled: 0,
             status: formData.status,
@@ -541,9 +632,13 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               className="flex items-start gap-4 p-6 cursor-pointer hover:bg-gray-50/50 transition-colors"
               onClick={() => setExpandedId(expandedId === path.id ? null : path.id)}
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-600">
-                <Route className="h-6 w-6" />
-              </div>
+              <PathThumbnail
+                url={path.thumbnailUrl}
+                title={path.title}
+                className="h-12 w-12 shrink-0 rounded-xl"
+                fallbackClassName="flex items-center justify-center bg-primary-100 text-primary-600"
+                fallback={<Route className="h-6 w-6" aria-hidden="true" />}
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
                   <h3 className="text-base font-semibold text-gray-900">{path.title}</h3>
@@ -680,6 +775,80 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               placeholder="Describe what learners will gain from this path..."
             />
+          </div>
+
+          {/* Image */}
+          <div>
+            <label htmlFor="path-image-url" className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="aspect-video w-full shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 sm:w-48">
+                {formPreviewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- preview of a local blob or typed URL
+                  <img
+                    src={formPreviewUrl}
+                    alt={formData.title ? `${formData.title} image preview` : 'Path image preview'}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-gray-400">
+                    <ImageIcon className="h-8 w-8" aria-hidden="true" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <input
+                  id="path-image-url"
+                  type="text"
+                  inputMode="url"
+                  value={imageFile ? '' : formData.thumbnailUrl}
+                  disabled={!!imageFile}
+                  onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                  aria-invalid={imageUrlInvalid}
+                  aria-describedby="path-image-help"
+                  className={cn(
+                    'w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 disabled:bg-gray-50',
+                    imageUrlInvalid
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+                  )}
+                  placeholder={imageFile ? imageFile.name : 'https://… or /images/paths/my-path.jpg'}
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-primary-500">
+                    <Upload className="h-4 w-4" aria-hidden="true" />
+                    Upload image
+                    <input
+                      type="file"
+                      accept={COVER_IMAGE_TYPES.join(',')}
+                      className="sr-only"
+                      onChange={(e) => {
+                        onImageFileChosen(e.target.files?.[0] ?? null);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  {(imageFile || formData.thumbnailUrl) && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <p id="path-image-help" className={cn('text-xs', imageUrlInvalid || imageError ? 'text-red-600' : 'text-gray-500')}>
+                  {imageError
+                    ? imageError
+                    : imageUrlInvalid
+                      ? 'Use a URL starting with https:// or a site path starting with /.'
+                      : imageFile
+                        ? 'Uploads when you save. JPEG, PNG, WebP or GIF, up to 5MB.'
+                        : 'Paste a site path like /images/paths/my-path.jpg, or upload a JPEG, PNG, WebP or GIF (up to 5MB). Images hosted on other websites may be blocked by the site\'s security settings, so uploading is safest. Shown as a 16:9 banner.'}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Difficulty + Duration row */}

@@ -3,32 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
+import { COVER_IMAGE_TYPES, COVER_IMAGE_MAX_BYTES, validImageBytes } from "@/lib/images/upload-rules";
 import { buildProvenanceColumns, emptyProvenanceColumns } from "@/lib/courses/cover-provenance";
 
 const BUCKET = "course-images";
-const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_BYTES = 5 * 1024 * 1024; // 5MB
-
-/** Validate image magic bytes against the claimed MIME type. */
-function validImageBytes(buffer: ArrayBuffer, claimedType: string): boolean {
-  const b = new Uint8Array(buffer.slice(0, 12));
-  switch (claimedType) {
-    case "image/jpeg":
-      return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
-    case "image/png":
-      return b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
-    case "image/gif":
-      return b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38;
-    case "image/webp":
-      // "RIFF" .... "WEBP"
-      return (
-        b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
-        b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50
-      );
-    default:
-      return false;
-  }
-}
+const ALLOWED = COVER_IMAGE_TYPES;
+const MAX_BYTES = COVER_IMAGE_MAX_BYTES;
 
 /** Resolve the course and verify the caller is allowed to edit its cover. */
 async function resolveCourse(slug: string, user: { id: string; role: string }) {
