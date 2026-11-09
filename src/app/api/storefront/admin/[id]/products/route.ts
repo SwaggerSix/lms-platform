@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
+import { bundlePathProblem, listBundlePaths, loadBundlePath } from "@/lib/storefront/bundles";
 
 const productSchema = z.object({
   name: z.string().min(1).max(250),
@@ -36,7 +37,27 @@ const productSchema = z.object({
   nasba_advance_prep: z.string().max(2000).nullable().optional(),
   nasba_delivery_method: z.string().max(200).nullable().optional(),
   course_id: z.string().uuid().nullable().optional(),
+  // Bundle: the learning path whose courses this product sells (null = not a bundle).
+  learning_path_id: z.string().uuid().nullable().optional(),
 });
+
+const BOTH_MESSAGE = "A product is either one course or a bundle, not both.";
+
+/**
+ * Checks a bundle choice before it is saved. Making a product a bundle also
+ * unlinks any single course (the database allows only one of the two).
+ * Returns an error message, or the fields to write.
+ */
+async function bundleFields(
+  service: ReturnType<typeof createServiceClient>,
+  data: { course_id?: string | null; learning_path_id?: string | null }
+): Promise<{ error: string } | { fields: Record<string, unknown> }> {
+  if (!data.learning_path_id) return { fields: {} };
+  if (data.course_id) return { error: BOTH_MESSAGE };
+  const problem = bundlePathProblem(await loadBundlePath(service, data.learning_path_id));
+  if (problem) return { error: problem };
+  return { fields: { learning_path_id: data.learning_path_id, course_id: null } };
+}
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -59,7 +80,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
   if (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json({ products: data });
+  // Learning paths for the bundle picker; each bundle product's courses are
+  // read from the same list.
+  const paths = await listBundlePaths(service);
+  return NextResponse.json({ products: data, paths });
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -78,10 +102,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   const service = createServiceClient();
+  const bundle = await bundleFields(service, parsed.data);
+  if ("error" in bundle) {
+    return NextResponse.json({ error: bundle.error }, { status: 400 });
+  }
   const { data, error } = await service
     .from("products")
     .insert({
       ...parsed.data,
+      ...bundle.fields,
       image_url: parsed.data.image_url || null,
       storefront_id: id,
       status: parsed.data.status || "active",
@@ -115,13 +144,19 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     );
   }
 
+  const service = createServiceClient();
+  const bundle = await bundleFields(service, parsed.data);
+  if ("error" in bundle) {
+    return NextResponse.json({ error: bundle.error }, { status: 400 });
+  }
+
   const update: Record<string, unknown> = {
     ...parsed.data,
+    ...bundle.fields,
     updated_at: new Date().toISOString(),
   };
   if ("image_url" in parsed.data) update.image_url = parsed.data.image_url || null;
 
-  const service = createServiceClient();
   const { data, error } = await service
     .from("products")
     .update(update)

@@ -95,6 +95,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Learning path not found" }, { status: 404 });
   }
 
+  // A path sold as a store bundle is bought, not joined: learners may not
+  // enroll themselves in it (that would hand out every course for free).
+  // Admins and managers can still assign it.
+  if (isSelf && !isPrivileged) {
+    const { data: onSale } = await service
+      .from("products")
+      .select("id")
+      .eq("learning_path_id", path_id)
+      .neq("status", "inactive")
+      .limit(1);
+    if (onSale && onSale.length > 0) {
+      return NextResponse.json(
+        { error: "This learning path is sold in our online store. Purchase it there to enroll." },
+        { status: 403 }
+      );
+    }
+  }
+
   // Check if already enrolled in the path
   const { data: existing } = await service
     .from("learning_path_enrollments")

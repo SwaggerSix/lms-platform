@@ -34,6 +34,66 @@ on/off switch for the whole store.
 **Discount codes:** Admin → eCommerce → Coupons. Customers type the code at
 checkout and the discount is applied on the payment page.
 
+## Selling a bundle (several courses as one product)
+
+A **bundle** is one store product that sells a whole group of courses at one
+price. The group is a **learning path**, so you build the list of courses once
+and the store sells it. When someone buys the bundle, they're enrolled in the
+learning path and in every course on it.
+
+### Example: the Mosaic certification bundle ($599, courses not sold separately)
+
+The five Mosaic certification courses (MOS-100, MOS-210, MOS-220, MOS-230,
+MOS-240) are sold **only** as one bundle for $599. Partners who use their 50%
+partner code pay $299.50.
+
+**Step 1 — Make the learning path (one time)**
+1. Go to **Admin → Learning Paths** → **Create Path**.
+2. Name it, e.g. "Mosaic Certification".
+3. Add the five courses in the order learners should take them: MOS-100,
+   MOS-210, MOS-220, MOS-230, MOS-240.
+4. Save it, then **Publish** it. Buyers then see it, with their progress,
+   under Learning Paths. People who are signed in but haven't bought it can't
+   join it themselves; you and managers can still assign it to someone.
+
+**Step 2 — Make the bundle product**
+1. Go to **Admin → Storefronts** → the store you want it in → **Manage** →
+   **Products** → **Add product**.
+2. Name: "Mosaic Certification Bundle". Add a description.
+3. Tick **Bundle**, then under **Learning path it sells** pick "Mosaic
+   Certification". The form shows **Includes: 5 courses** and lists them.
+   Check that all five are there.
+4. Price: **599**. Leave "Sale price" empty unless you're running a sale.
+5. Keep **Visibility** on "Visible in store" and **Offer in the online store**
+   ticked, then click **Add product**.
+
+In the product list the bundle has a "Bundle · Includes: 5 courses" label. In
+the store it shows as one product with its price and an "Includes 5 courses"
+list.
+
+**Step 3 — Keep the five courses off the store individually**
+The courses don't need store products of their own. A course only appears in
+the store on its own when its **Website catalogs** box is ticked (Admin →
+Courses → edit the course). Leave that box **unticked** on all five Mosaic
+courses. (They're unticked today.) If one of them already has its own store
+product, hide it on the Products tab: edit it → Visibility → "Hidden".
+
+### Good to know
+- **Discount codes work on bundles** just like on a single course. That
+  includes the 50% partner code and any code under Admin → eCommerce → Coupons.
+- **A buyer who already has some of the courses can still buy the bundle.**
+  They keep those courses (and their progress) and get the rest. The price is
+  the same (no partial refund or reduced price).
+- **Changing the learning path changes the bundle.** Buyers get the courses on
+  the path at the time they pay. Adding a course to the path later doesn't
+  give it to people who already bought.
+- You can't delete a learning path that a bundle is selling. Remove the bundle
+  product (or untick Bundle on it) first.
+- **One thing to know about the LMS catalog:** because the five courses are
+  published with open enrollment, anyone who already has an LMS login could
+  join one from the course catalog without paying. If that matters, ask for
+  their enrollment to be switched to "approval required".
+
 ## Bringing over your existing catalogs (one-time)
 
 1. Log in to your current store's admin (Ecwid) → **Catalog → Products →

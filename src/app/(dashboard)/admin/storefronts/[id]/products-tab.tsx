@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { money, type Notify, type Product } from "./store-shared";
+import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
+import { money, type BundlePath, type Notify, type Product } from "./store-shared";
 
 const emptyProductForm = {
   name: "",
@@ -24,21 +24,27 @@ const emptyProductForm = {
   nasba_prerequisites: "",
   nasba_advance_prep: "",
   nasba_delivery_method: "",
+  is_bundle: false,
+  learning_path_id: "",
 };
 const NASBA_LEVELS = ["Basic", "Overview", "Intermediate", "Advanced", "Update"];
 
 interface ProductsTabProps {
   storeId: string;
   products: Product[];
+  paths: BundlePath[];
   notify: Notify;
   onReload: () => Promise<void>;
 }
 
-export default function ProductsTab({ storeId, products, notify, onReload }: ProductsTabProps) {
+export default function ProductsTab({ storeId, products, paths, notify, onReload }: ProductsTabProps) {
+  const pathById = new Map(paths.map((p) => [p.id, p]));
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [productForm, setProductForm] = useState({ ...emptyProductForm });
   const [saving, setSaving] = useState(false);
+  const editingCourseId = editingId ? products.find((p) => p.id === editingId)?.course_id ?? null : null;
+  const selectedPath = productForm.learning_path_id ? pathById.get(productForm.learning_path_id) ?? null : null;
 
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
 
@@ -67,7 +73,13 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
         nasba_prerequisites: productForm.nasba_prerequisites || null,
         nasba_advance_prep: productForm.nasba_advance_prep || null,
         nasba_delivery_method: productForm.nasba_delivery_method || null,
+        // A bundle sells a learning path; switching Bundle off unlinks it.
+        learning_path_id: productForm.is_bundle ? productForm.learning_path_id || null : null,
       };
+      if (productForm.is_bundle && !productForm.learning_path_id) {
+        notify("err", "Pick the learning path this bundle sells");
+        return;
+      }
       const res = await fetch(`/api/storefront/admin/${storeId}/products`, {
         method: editingId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,6 +137,8 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
       nasba_prerequisites: (p as any).nasba_prerequisites ?? "",
       nasba_advance_prep: (p as any).nasba_advance_prep ?? "",
       nasba_delivery_method: (p as any).nasba_delivery_method ?? "",
+      is_bundle: Boolean(p.learning_path_id),
+      learning_path_id: p.learning_path_id ?? "",
     });
     setShowProductForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -166,6 +180,71 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
                 onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
               />
+            </div>
+            <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-white p-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                <input
+                  type="checkbox"
+                  checked={productForm.is_bundle}
+                  disabled={!productForm.is_bundle && Boolean(editingCourseId)}
+                  onChange={(e) => setProductForm({ ...productForm, is_bundle: e.target.checked })}
+                />
+                Bundle (sell several courses as one product)
+              </label>
+              {!productForm.is_bundle && editingCourseId && (
+                <p className="mt-1 text-xs text-gray-500">
+                  This product is linked to a single LMS course, so it can&apos;t become a bundle.
+                  Add a new product for the bundle instead.
+                </p>
+              )}
+              {productForm.is_bundle && (
+                <div className="mt-3 space-y-2">
+                  <label className="block text-sm font-medium">Learning path it sells</label>
+                  <select
+                    value={productForm.learning_path_id}
+                    onChange={(e) => setProductForm({ ...productForm, learning_path_id: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                  >
+                    <option value="">Choose a learning path…</option>
+                    {paths.map((lp) => (
+                      <option key={lp.id} value={lp.id}>
+                        {lp.title} ({lp.courses.length} {lp.courses.length === 1 ? "course" : "courses"}
+                        {lp.status === "draft" ? ", draft" : ""})
+                      </option>
+                    ))}
+                  </select>
+                  {paths.length === 0 && (
+                    <p className="text-xs text-gray-500">
+                      No learning paths yet. Create one under Admin → Learning Paths and add the
+                      courses to it, then come back here.
+                    </p>
+                  )}
+                  {selectedPath && (
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-800">
+                        Includes: {selectedPath.courses.length}{" "}
+                        {selectedPath.courses.length === 1 ? "course" : "courses"}
+                      </div>
+                      <ol className="mt-1 list-decimal pl-5 text-gray-600">
+                        {selectedPath.courses.map((c) => (
+                          <li key={c.id}>{c.title}</li>
+                        ))}
+                      </ol>
+                      <p className="mt-2 text-xs text-gray-500">
+                        Buyers are enrolled in this learning path and every course on it. Courses
+                        they already have are kept; they get the rest. The price below is the
+                        price of the whole bundle.
+                      </p>
+                      {selectedPath.status === "draft" && (
+                        <p className="mt-1 text-xs text-amber-700">
+                          This path is still a draft. Buyers still get every course, but they
+                          only see the path itself under Learning Paths once it is published.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Price ($)</label>
@@ -344,7 +423,15 @@ export default function ProductsTab({ storeId, products, notify, onReload }: Pro
             <tbody className="divide-y divide-gray-100">
               {products.map((p) => (
                 <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium max-w-xs truncate">{p.name}</td>
+                  <td className="px-4 py-3 font-medium max-w-xs">
+                    <div className="truncate">{p.name}</div>
+                    {p.learning_path_id && (
+                      <div className="mt-0.5 inline-flex items-center gap-1 text-xs font-normal text-indigo-700">
+                        <Layers className="h-3 w-3" />
+                        Bundle · Includes: {pathById.get(p.learning_path_id)?.courses.length ?? "?"} courses
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-500">{p.category || "—"}</td>
                   <td className="px-4 py-3">
                     {p.discount_price != null ? (
