@@ -11,6 +11,9 @@ import { MAX_ZIP_BYTES, SCORM_BUCKET, SCORM_STAGING_PREFIX } from "@/lib/scorm/p
  * straight to Supabase Storage. Going through a Vercel function instead caps
  * the request body at ~4.5MB, which most real SCORM exports exceed.
  */
+// Older than any import could still be running on it (maxDuration is 5 min).
+const STALE_STAGED_MS = 60 * 60 * 1000;
+
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin", "instructor");
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -37,6 +40,20 @@ export async function POST(request: NextRequest) {
 
   const path = `${SCORM_STAGING_PREFIX}/${auth.user.id}/${crypto.randomUUID()}.zip`;
   const service = createServiceClient();
+
+  // Best-effort: drop this user's staged zips left behind by imports that
+  // never finished (e.g. a killed or timed-out function).
+  try {
+    const folder = `${SCORM_STAGING_PREFIX}/${auth.user.id}`;
+    const { data: stale } = await service.storage.from(SCORM_BUCKET).list(folder, { limit: 100 });
+    const cutoff = Date.now() - STALE_STAGED_MS;
+    const old = (stale ?? [])
+      .filter((f) => f.created_at && new Date(f.created_at).getTime() < cutoff)
+      .map((f) => `${folder}/${f.name}`);
+    if (old.length > 0) await service.storage.from(SCORM_BUCKET).remove(old);
+  } catch {
+    /* cleanup is optional */
+  }
   const { data, error } = await service.storage.from(SCORM_BUCKET).createSignedUploadUrl(path);
   if (error || !data) {
     console.error("SCORM signed upload URL error:", error?.message);
