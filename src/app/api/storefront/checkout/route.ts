@@ -9,7 +9,7 @@ import {
   type VolumeTier,
 } from "@/lib/storefront/pricing";
 import { createCheckoutSession, isStripeConfigured } from "@/lib/storefront/stripe";
-import { sendOrderEmails } from "@/lib/storefront/fulfillment";
+import { sendOrderEmails, enrollOrderBuyer, testModeEnrolls } from "@/lib/storefront/fulfillment";
 import {
   evaluatePartnerCode,
   isPartnerPortalConfigured,
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   const { data: products } = await service
     .from("products")
     .select(
-      "id, name, description, image_url, price, discount_price, discount_ends_at, status, course_id, category, min_participants, max_participants"
+      "id, name, description, image_url, price, discount_price, discount_ends_at, status, course_id, learning_path_id, category, min_participants, max_participants"
     )
     .eq("storefront_id", store.id)
     .in("id", productIds);
@@ -115,6 +115,26 @@ export async function POST(request: NextRequest) {
           error: `"${p.name}" requires ${p.min_participants ?? 1}${max} seats per order. Please adjust the seat count.`,
         },
         { status: 400 }
+      );
+    }
+  }
+
+  // A bundle sells a learning path: refuse one whose path has lost all its
+  // courses, rather than take payment for nothing. (Admin save checks this too;
+  // the path can change afterwards.)
+  const bundlePathIds = [
+    ...new Set((products || []).map((p) => p.learning_path_id).filter((id): id is string => Boolean(id))),
+  ];
+  if (bundlePathIds.length > 0) {
+    const { data: pathItems } = await service
+      .from("learning_path_items")
+      .select("path_id")
+      .in("path_id", bundlePathIds);
+    const stocked = new Set(((pathItems as { path_id: string }[] | null) || []).map((i) => i.path_id));
+    if (bundlePathIds.some((id) => !stocked.has(id))) {
+      return NextResponse.json(
+        { error: "An item in your cart is no longer available. Please refresh and try again." },
+        { status: 409 }
       );
     }
   }
@@ -233,6 +253,19 @@ export async function POST(request: NextRequest) {
   const nowIso = new Date().toISOString();
   const initialStatus = testMode ? "completed" : "pending";
 
+  const orderMetadata = {
+    storefront_slug: store.slug,
+    volume_discount: pricing.volumeDiscount,
+    coupon_discount: pricing.couponDiscount,
+    ...(coupon && !partner && { coupon_id: coupon.id, coupon_code: coupon.code }),
+    ...(partner && {
+      partner_code: partner.code,
+      partner_discount_percent: partner.percentOff,
+      partner_portal_ref: orderId,
+    }),
+    ...(testMode && { test_mode: true }),
+  };
+
   const { data: order, error: orderError } = await service
     .from("orders")
     .insert({
@@ -254,18 +287,7 @@ export async function POST(request: NextRequest) {
       currency: store.currency,
       payment_method: testMode ? "test_mode" : "card",
       status_history: [{ status: initialStatus, at: nowIso, by: "checkout" }],
-      metadata: {
-        storefront_slug: store.slug,
-        volume_discount: pricing.volumeDiscount,
-        coupon_discount: pricing.couponDiscount,
-        ...(coupon && !partner && { coupon_id: coupon.id, coupon_code: coupon.code }),
-        ...(partner && {
-          partner_code: partner.code,
-          partner_discount_percent: partner.percentOff,
-          partner_portal_ref: orderId,
-        }),
-        ...(testMode && { test_mode: true }),
-      },
+      metadata: orderMetadata,
     })
     .select("id, order_number")
     .single();
@@ -281,6 +303,7 @@ export async function POST(request: NextRequest) {
       order_id: order.id,
       product_id: li.product.id,
       course_id: li.product.course_id,
+      learning_path_id: li.product.learning_path_id ?? null,
       product_name: li.product.name,
       product_category: li.product.category,
       price: li.unitPrice,
@@ -315,7 +338,27 @@ export async function POST(request: NextRequest) {
     }
     // Test mode completes the order on the spot, so it is paid now.
     if (partner) await reportPartnerRedemption({ orderRef: orderId, status: "paid" });
-    await sendOrderEmails(service, order.id, appUrl);
+    // Enroll the buyer so test orders can be checked end to end (bundles
+    // included) — but never on the live site: a production deployment that
+    // has lost its Stripe keys must not hand out courses for free.
+    let enrollmentStatus: Awaited<ReturnType<typeof enrollOrderBuyer>> = null;
+    if (testModeEnrolls()) {
+      enrollmentStatus = await enrollOrderBuyer(
+        service,
+        {
+          id: order.id,
+          customer_email: body.customer_email.toLowerCase().trim(),
+          customer_name: body.customer_name.trim(),
+          metadata: orderMetadata,
+          storefront_id: store.id,
+        },
+        lineItems.map((li) => ({
+          course_id: li.product.course_id,
+          learning_path_id: li.product.learning_path_id ?? null,
+        }))
+      );
+    }
+    await sendOrderEmails(service, order.id, appUrl, enrollmentStatus);
     return NextResponse.json({ checkout_url: successUrl, test_mode: true });
   }
 

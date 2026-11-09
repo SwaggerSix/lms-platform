@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Order, Product, Storefront } from "./store-shared";
+import type { BundlePath, Order, Product, Storefront } from "./store-shared";
 import ProductsTab from "./products-tab";
 import OrdersTab from "./orders-tab";
 import ReportsTab from "./reports-tab";
@@ -18,6 +18,7 @@ type Tab = "products" | "orders" | "import" | "settings" | "discounts" | "report
 export default function ManageStoreClient({ storeId }: { storeId: string }) {
   const [store, setStore] = useState<Storefront | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [paths, setPaths] = useState<BundlePath[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   // The orders API pages server-side (25/page); the UI tracks the current
   // page and status filter and re-fetches on change.
@@ -58,7 +59,11 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
       const data = await storesRes.json();
       setStore((data.storefronts || []).find((x: Storefront) => x.id === storeId) || null);
     }
-    if (productsRes.ok) setProducts((await productsRes.json()).products || []);
+    if (productsRes.ok) {
+      const body = await productsRes.json();
+      setProducts(body.products || []);
+      setPaths(body.paths || []);
+    }
     setLoading(false);
   }, [storeId, loadOrders, ordersPage, ordersStatus]);
 
@@ -122,7 +127,7 @@ export default function ManageStoreClient({ storeId }: { storeId: string }) {
       </Tabs>
 
       {tab === "products" && (
-        <ProductsTab storeId={storeId} products={products} notify={notify} onReload={load} />
+        <ProductsTab storeId={storeId} products={products} paths={paths} notify={notify} onReload={load} />
       )}
       {tab === "orders" && (
         <OrdersTab

@@ -2,9 +2,10 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Clock, Check, Award, Tag, Users, MonitorPlay, BookOpen, GraduationCap, CalendarClock } from "lucide-react";
+import { ChevronLeft, Clock, Check, Award, Tag, Users, MonitorPlay, BookOpen, GraduationCap, CalendarClock, Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { formatPrice } from "@/lib/ecommerce/pricing";
+import { loadBundlePath } from "@/lib/storefront/bundles";
 import { AddToCart } from "./add-to-cart";
 import { RequestPricing } from "./request-pricing";
 import { ProductGallery } from "./product-gallery";
@@ -70,12 +71,16 @@ export default async function ProductPage({
   const { data: product } = await service
     .from("products")
     .select(
-      "id, name, description, price, discount_price, discount_ends_at, image_url, image_urls, category, categories, duration_label, delivery_formats, logistics, min_participants, max_participants, status, learning_objectives, methodology, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level"
+      "id, name, description, price, discount_price, discount_ends_at, image_url, image_urls, category, categories, duration_label, delivery_formats, logistics, min_participants, max_participants, status, learning_objectives, methodology, nasba_certified, nasba_cpe_credits, nasba_field_of_study, nasba_knowledge_level, learning_path_id"
     )
     .eq("id", productId)
     .eq("storefront_id", store.id)
     .single();
   if (!product || product.status !== "active") notFound();
+
+  // A bundle lists the courses it includes (its learning path, in order).
+  const bundlePath = product.learning_path_id ? await loadBundlePath(service, product.learning_path_id) : null;
+  const bundleCourses = bundlePath?.courses ?? [];
 
   const gallery: string[] = [
     ...(product.image_url ? [product.image_url] : []),
@@ -236,6 +241,25 @@ export default async function ProductPage({
             )}
           </div>
 
+          {bundleCourses.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
+                <Layers className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                  Includes {bundleCourses.length} {bundleCourses.length === 1 ? "course" : "courses"}
+                </h2>
+              </div>
+              <ol className="divide-y divide-slate-100">
+                {bundleCourses.map((c, i) => (
+                  <li key={c.id} className="flex gap-3 px-5 py-3 text-slate-700">
+                    <span className="w-5 shrink-0 text-right font-semibold text-slate-400">{i + 1}.</span>
+                    <span>{c.title}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
           {objectives.length > 0 && (
             <div className="mt-8 rounded-2xl border border-slate-200 overflow-hidden">
               <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
@@ -262,7 +286,7 @@ export default async function ProductPage({
             <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
               <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-5 py-3">
                 <BookOpen className="h-4 w-4" style={{ color: "var(--store-primary)" }} />
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">About this course</h2>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900">{product.learning_path_id ? "About this bundle" : "About this course"}</h2>
               </div>
               <p className="px-5 py-4 text-slate-700 leading-relaxed whitespace-pre-line">
                 {product.description}

@@ -50,7 +50,11 @@ function query(table: string) {
 
 vi.mock("@/lib/supabase/service", () => ({ createServiceClient: () => ({ from: (t: string) => query(t) }) }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: async () => ({ success: true }) }));
-vi.mock("@/lib/storefront/fulfillment", () => ({ sendOrderEmails: vi.fn(async () => {}) }));
+vi.mock("@/lib/storefront/fulfillment", () => ({
+  sendOrderEmails: vi.fn(async () => {}),
+  enrollOrderBuyer: vi.fn(async () => null),
+  testModeEnrolls: () => false,
+}));
 const createCheckoutSession = vi.fn();
 let stripeOn = false;
 vi.mock("@/lib/storefront/stripe", () => ({

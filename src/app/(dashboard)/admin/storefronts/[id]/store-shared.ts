@@ -34,6 +34,17 @@ export interface Product {
   is_featured: boolean;
   listed_in_storefront: boolean;
   sales_count: number;
+  course_id?: string | null;
+  /** Set when the product is a bundle that sells this learning path. */
+  learning_path_id?: string | null;
+}
+
+/** A learning path a bundle product can sell, with its courses in order. */
+export interface BundlePath {
+  id: string;
+  title: string;
+  status: string;
+  courses: { id: string; title: string }[];
 }
 
 export interface Order {

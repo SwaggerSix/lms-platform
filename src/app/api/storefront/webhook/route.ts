@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
-import { sendOrderEmails, inviteAndEnroll } from "@/lib/storefront/fulfillment";
+import { sendOrderEmails, enrollOrderBuyer } from "@/lib/storefront/fulfillment";
 import { enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
 import { reportPartnerRedemption, voidPartnerRedemptionForOrder } from "@/lib/storefront/partner-code";
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
   const { data: items } = await service
     .from("order_items")
-    .select("product_id, course_id, quantity")
+    .select("product_id, course_id, learning_path_id, quantity")
     .eq("order_id", order.id);
 
   for (const item of items || []) {
@@ -137,50 +137,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Auto-enroll existing buyers; invite + enroll new buyers
-  let enrollmentStatus: "enrolled" | "invited" | "pending" | null = null;
-
-  if (order.customer_email) {
-    const courseIds = (items || [])
-      .map((i) => i.course_id)
-      .filter((id): id is string => Boolean(id));
-
-    const { data: existingUser } = await service
-      .from("users")
-      .select("id")
-      .eq("email", order.customer_email)
-      .single();
-
-    if (existingUser) {
-      // Buyer already has an LMS account — enroll directly
-      for (const courseId of courseIds) {
-        await service
-          .from("enrollments")
-          .upsert(
-            {
-              user_id: existingUser.id,
-              course_id: courseId,
-              status: "active",
-              enrolled_at: new Date().toISOString(),
-              storefront_id: (order as { storefront_id?: string | null }).storefront_id ?? null,
-            },
-            { onConflict: "user_id,course_id", ignoreDuplicates: true }
-          );
-      }
-      enrollmentStatus = "enrolled";
-    } else {
-      // New buyer — send Auth invite, create user row, and enroll
-      enrollmentStatus = await inviteAndEnroll(
-        service,
-        order.id,
-        (order.metadata as Record<string, unknown> | null),
-        order.customer_email,
-        (order as { customer_name?: string | null }).customer_name ?? null,
-        courseIds,
-        (order as { storefront_id?: string | null }).storefront_id ?? null
-      );
-    }
-  }
+  // Auto-enroll existing buyers; invite + enroll new buyers. A bundle line
+  // expands to its learning path and every course on it.
+  const enrollmentStatus = await enrollOrderBuyer(service, order, items || []);
 
   // Buyer confirmation + internal new-order notification (with enrollment badge)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;

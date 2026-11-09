@@ -63,7 +63,7 @@ vi.mock("@/lib/integrations/qbo-sync", () => ({
   enqueueOrderRefunded: vi.fn(async () => {}),
   enqueueOrderCompleted: vi.fn(async () => {}),
 }));
-vi.mock("@/lib/storefront/fulfillment", () => ({ sendOrderEmails: vi.fn(), inviteAndEnroll: vi.fn() }));
+vi.mock("@/lib/storefront/fulfillment", () => ({ sendOrderEmails: vi.fn(), enrollOrderBuyer: vi.fn() }));
 
 import { PATCH as adminPatch } from "@/app/api/storefront/admin/[id]/orders/route";
 import { PUT as shopPut } from "@/app/api/shop/orders/[id]/route";

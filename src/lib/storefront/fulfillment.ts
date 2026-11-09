@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/sender";
+import { enrollInEntitlements, resolveOrderEntitlements, type FulfilmentItem } from "./bundles";
 import { orderConfirmation, orderNotification, type OrderEmailData } from "./emails";
 
 // Sends the buyer confirmation and the internal new-order notification for a
@@ -9,7 +10,8 @@ import { orderConfirmation, orderNotification, type OrderEmailData } from "./ema
 
 /**
  * Invites a new buyer (no existing LMS account) via Supabase Auth invite,
- * creates their `users` row, and enrolls them in the purchased courses.
+ * creates their `users` row, and enrolls them in the purchased courses (and,
+ * for a bundle, its learning path).
  *
  * Returns:
  *   'invited'  — invite sent, user row created, enrollments upserted
@@ -21,7 +23,7 @@ export async function inviteAndEnroll(
   existingMetadata: Record<string, unknown> | null,
   customerEmail: string,
   customerName: string | null,
-  courseIds: string[],
+  entitlements: { courseIds: string[]; pathIds: string[] },
   storefrontId: string | null
 ): Promise<"invited" | "pending"> {
   // Split display name into first / last
@@ -69,19 +71,8 @@ export async function inviteAndEnroll(
 
     const userId: string = upserted.id;
 
-    // 3. Enroll in each purchased course
-    for (const courseId of courseIds) {
-      await service.from("enrollments").upsert(
-        {
-          user_id: userId,
-          course_id: courseId,
-          status: "active",
-          enrolled_at: now,
-          storefront_id: storefrontId,
-        },
-        { onConflict: "user_id,course_id", ignoreDuplicates: true }
-      );
-    }
+    // 3. Enroll in each purchased course (and learning path, for a bundle)
+    await enrollInEntitlements(service, userId, entitlements, storefrontId, now);
 
     // 4. Stamp the order metadata so the history is self-describing
     await service
@@ -114,6 +105,58 @@ export async function inviteAndEnroll(
 
     return "pending";
   }
+}
+
+/**
+ * Test-mode orders (no Stripe keys) enroll the buyer everywhere except a live
+ * Vercel production deployment, where missing keys mean a misconfiguration and
+ * enrolling would give courses away.
+ */
+export function testModeEnrolls(): boolean {
+  return process.env.VERCEL_ENV !== "production";
+}
+
+/**
+ * Gives a paid order's buyer what they bought: every course on the order, and
+ * for a bundle line the learning path plus all of its courses. An existing LMS
+ * account is enrolled directly; a new buyer is invited first. Idempotent —
+ * enrollments the buyer already holds are left as they are, so a buyer who
+ * owns some of a bundle's courses simply gets the rest.
+ */
+export async function enrollOrderBuyer(
+  service: SupabaseClient,
+  order: {
+    id: string;
+    customer_email: string | null;
+    customer_name?: string | null;
+    metadata?: unknown;
+    storefront_id?: string | null;
+  },
+  items: FulfilmentItem[]
+): Promise<"enrolled" | "invited" | "pending" | null> {
+  if (!order.customer_email) return null;
+  const entitlements = await resolveOrderEntitlements(service, items);
+  const storefrontId = order.storefront_id ?? null;
+
+  const { data: existingUser } = await service
+    .from("users")
+    .select("id")
+    .eq("email", order.customer_email)
+    .maybeSingle();
+
+  if (existingUser) {
+    await enrollInEntitlements(service, existingUser.id, entitlements, storefrontId);
+    return "enrolled";
+  }
+  return inviteAndEnroll(
+    service,
+    order.id,
+    (order.metadata as Record<string, unknown> | null) ?? null,
+    order.customer_email,
+    order.customer_name ?? null,
+    entitlements,
+    storefrontId
+  );
 }
 
 export async function sendOrderEmails(
