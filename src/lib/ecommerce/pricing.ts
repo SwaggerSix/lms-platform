@@ -16,6 +16,7 @@ interface Coupon {
   valid_from: string | null;
   valid_until: string | null;
   is_active: boolean;
+  product_id?: string | null;
 }
 
 interface OrderTotals {
@@ -67,6 +68,13 @@ export async function validateCoupon(
 
   if (!coupon.is_active) {
     return { valid: false, reason: "Coupon is no longer active" };
+  }
+
+  // A code limited to one store product is checked (and only discounts that
+  // product) in the storefront checkout; this cart applies coupons to the
+  // whole order, so it must not accept one.
+  if (coupon.product_id) {
+    return { valid: false, reason: "This code can only be used in the online store" };
   }
 
   if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {

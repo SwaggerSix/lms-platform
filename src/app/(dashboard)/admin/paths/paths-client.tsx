@@ -23,7 +23,34 @@ import {
   AlertTriangle,
   Search,
   UserPlus,
+  Mail,
 } from 'lucide-react';
+import { parseInviteList, MAX_PATH_INVITES } from '@/lib/paths/invite-list';
+
+interface InviteRowResult {
+  email: string;
+  status: 'invited' | 'added' | 'already' | 'failed';
+  reason?: string;
+}
+
+interface InviteResponse {
+  summary: { invited: number; added: number; already: number; failed: number };
+  results: InviteRowResult[];
+}
+
+const inviteStatusLabel: Record<InviteRowResult['status'], string> = {
+  invited: 'Invited (new account)',
+  added: 'Given access',
+  already: 'Already had access',
+  failed: 'Failed',
+};
+
+const inviteStatusClass: Record<InviteRowResult['status'], string> = {
+  invited: 'bg-green-50 text-green-700',
+  added: 'bg-green-50 text-green-700',
+  already: 'bg-gray-100 text-gray-600',
+  failed: 'bg-red-50 text-red-700',
+};
 
 export interface PathCourse {
   id: string;
@@ -121,6 +148,13 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
   const [userSearch, setUserSearch] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [assigning, setAssigning] = useState(false);
+
+  // Invite people (by email)
+  const [invitePath, setInvitePath] = useState<LearningPath | null>(null);
+  const [inviteText, setInviteText] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteResult, setInviteResult] = useState<InviteResponse | null>(null);
+  const [inviteError, setInviteError] = useState('');
 
   const toast = useToast();
 
@@ -416,6 +450,52 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
     }
   };
 
+  const openInviteModal = (path: LearningPath) => {
+    setInvitePath(path);
+    setInviteText('');
+    setInviteResult(null);
+    setInviteError('');
+  };
+
+  const closeInviteModal = () => {
+    setInvitePath(null);
+    setInviteText('');
+    setInviteResult(null);
+    setInviteError('');
+  };
+
+  const invitePreview = parseInviteList(inviteText);
+
+  const handleInvite = async () => {
+    if (!invitePath || invitePreview.invitees.length === 0) return;
+    setInviting(true);
+    setInviteError('');
+    try {
+      const res = await fetch(`/api/paths/${invitePath.id}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inviteText }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setInviteError(data.error || 'Could not send the invites');
+        return;
+      }
+      const result = data as InviteResponse;
+      setInviteResult(result);
+      const newlyEnrolled = result.summary.invited + result.summary.added;
+      if (newlyEnrolled > 0) {
+        setPaths((prev) =>
+          prev.map((p) => (p.id === invitePath.id ? { ...p, enrolled: p.enrolled + newlyEnrolled } : p))
+        );
+      }
+    } catch {
+      setInviteError('An unexpected error occurred');
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const userLabel = (u: AssignableUser) => {
     const name = [u.first_name, u.last_name].filter(Boolean).join(' ').trim();
     return name || u.email;
@@ -492,6 +572,21 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
                   disabled={path.status !== 'published'}
                 >
                   <UserPlus className="h-4 w-4" />
+                </button>
+                <button
+                  title={path.status === 'published' ? 'Invite people by email' : 'Publish the path to invite people'}
+                  aria-label="Invite people"
+                  className={cn(
+                    'rounded-lg p-2 text-gray-400 hover:bg-primary-50 hover:text-primary-600',
+                    path.status !== 'published' && 'opacity-40 pointer-events-none'
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openInviteModal(path);
+                  }}
+                  disabled={path.status !== 'published'}
+                >
+                  <Mail className="h-4 w-4" />
                 </button>
                 <button
                   className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -881,6 +976,93 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
               : `Assign${selectedUserIds.length > 0 ? ` (${selectedUserIds.length})` : ''}`}
           </button>
         </div>
+      </Modal>
+
+      {/* Invite People Modal */}
+      <Modal
+        isOpen={!!invitePath}
+        onClose={closeInviteModal}
+        title={invitePath ? `Invite people — ${invitePath.title}` : 'Invite people'}
+        size="lg"
+      >
+        {inviteResult ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: 'Invited (new)', value: inviteResult.summary.invited },
+                { label: 'Given access', value: inviteResult.summary.added },
+                { label: 'Already had access', value: inviteResult.summary.already },
+                { label: 'Failed', value: inviteResult.summary.failed },
+              ].map((s) => (
+                <div key={s.label} className="rounded-lg border border-gray-200 px-3 py-2">
+                  <p className="text-xs text-gray-500">{s.label}</p>
+                  <p className="text-xl font-semibold text-gray-900">{s.value}</p>
+                </div>
+              ))}
+            </div>
+            <ul className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
+              {inviteResult.results.map((r, i) => (
+                <li key={`${r.email}-${i}`} className="flex items-start justify-between gap-3 px-4 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-900 truncate">{r.email}</p>
+                    {r.reason && <p className="text-xs text-gray-500">{r.reason}</p>}
+                  </div>
+                  <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', inviteStatusClass[r.status])}>
+                    {inviteStatusLabel[r.status]}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+              <Button variant="outline" onClick={() => { setInviteResult(null); setInviteText(''); }}>
+                Invite more
+              </Button>
+              <Button onClick={closeInviteModal}>Done</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Paste email addresses, one per line or separated by commas. You can add a name, like
+              {' '}<span className="font-mono text-gray-700">Jane Doe &lt;jane@example.com&gt;</span>.
+              Each person gets this path and all of its courses, plus an email. People without an
+              account get one and are asked to set a password.
+            </p>
+            <label htmlFor="path-invite-emails" className="sr-only">Email addresses</label>
+            <textarea
+              id="path-invite-emails"
+              value={inviteText}
+              onChange={(e) => setInviteText(e.target.value)}
+              rows={8}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              placeholder={'jane@example.com\nBob Smith <bob@example.com>'}
+            />
+            <p className="text-xs text-gray-500">
+              {invitePreview.invitees.length} email address{invitePreview.invitees.length === 1 ? '' : 'es'} found
+              {invitePreview.invalid.length > 0 && ` · ${invitePreview.invalid.length} line${invitePreview.invalid.length === 1 ? '' : 's'} without an address`}
+              {invitePreview.invitees.length > MAX_PATH_INVITES && ` · at most ${MAX_PATH_INVITES} at a time`}
+            </p>
+            {inviteError && (
+              <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{inviteError}</div>
+            )}
+            <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+              <Button variant="outline" onClick={closeInviteModal}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleInvite}
+                loading={inviting}
+                disabled={
+                  inviting ||
+                  invitePreview.invitees.length === 0 ||
+                  invitePreview.invitees.length > MAX_PATH_INVITES
+                }
+              >
+                {inviting ? 'Sending...' : `Send${invitePreview.invitees.length > 0 ? ` (${invitePreview.invitees.length})` : ''}`}
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

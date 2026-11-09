@@ -302,6 +302,11 @@ export const createCouponSchema = z.object({
   valid_from: z.string().optional().nullable(),
   valid_until: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
+  // Limit the code to one store product (e.g. the certification bundle).
+  product_id: z.string().uuid().optional().nullable(),
+}).refine((c) => c.discount_type !== "percentage" || c.discount_value <= 100, {
+  message: "A percentage discount can't be more than 100",
+  path: ["discount_value"],
 });
 
 // eCommerce - Validate Coupon

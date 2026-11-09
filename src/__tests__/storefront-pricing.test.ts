@@ -91,3 +91,45 @@ describe("calculateStorefrontPricing", () => {
     expect(p.total).toBe(0);
   });
 });
+
+describe("calculateStorefrontPricing — free and product-limited coupons", () => {
+  const cfg = { volumeDiscountsEnabled: false, volumeTiers: [], taxEnabled: true, taxRate: 0.1 };
+
+  it("100% off makes the order exactly free, tax included", () => {
+    const p = calculateStorefrontPricing([{ unitPrice: 599, quantity: 1 }], cfg, {
+      discount_type: "percentage",
+      discount_value: 100,
+    });
+    expect(p.total).toBe(0);
+    expect(p.tax).toBe(0);
+  });
+
+  it("never takes more than 100%", () => {
+    const p = calculateStorefrontPricing([{ unitPrice: 100, quantity: 1 }], cfg, {
+      discount_type: "percentage",
+      discount_value: 150,
+    });
+    expect(p.couponDiscount).toBe(100);
+    expect(p.total).toBe(0);
+  });
+
+  it("a coupon limited to some lines is taken from those lines only", () => {
+    const lines = [
+      { unitPrice: 599, quantity: 1 },
+      { unitPrice: 100, quantity: 2 },
+    ];
+    const pct = calculateStorefrontPricing(lines, cfg, {
+      discount_type: "percentage",
+      discount_value: 100,
+      lineIndexes: [0],
+    });
+    expect(pct.couponDiscount).toBe(599);
+    expect(pct.total).toBe(220);
+    const fixed = calculateStorefrontPricing(lines, cfg, {
+      discount_type: "fixed",
+      discount_value: 5000,
+      lineIndexes: [1],
+    });
+    expect(fixed.couponDiscount).toBe(200);
+  });
+});

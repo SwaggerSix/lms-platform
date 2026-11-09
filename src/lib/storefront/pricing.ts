@@ -13,6 +13,11 @@ export interface VolumeTier {
 export interface PricingCoupon {
   discount_type: "percentage" | "fixed";
   discount_value: number;
+  /**
+   * Indexes of the lines the coupon applies to (a coupon limited to one
+   * product). Omitted => the whole order.
+   */
+  lineIndexes?: number[];
 }
 
 export interface PricingLine {
@@ -78,10 +83,21 @@ export function calculateStorefrontPricing(
 
   let couponDiscount = 0;
   if (coupon) {
+    // What the coupon is taken from: the whole order, or only the lines of
+    // the product it is limited to.
+    const base = coupon.lineIndexes
+      ? round(
+          priced
+            .filter((_, i) => coupon.lineIndexes!.includes(i))
+            .reduce((s, l) => s + l.lineSubtotal - l.volumeDiscount, 0)
+        )
+      : afterVolume;
+    // Never more than 100%: a larger percentage would make the total negative.
+    const percent = Math.min(Math.max(coupon.discount_value, 0), 100);
     couponDiscount =
       coupon.discount_type === "percentage"
-        ? round(afterVolume * (coupon.discount_value / 100))
-        : Math.min(coupon.discount_value, afterVolume);
+        ? round(base * (percent / 100))
+        : Math.min(Math.max(coupon.discount_value, 0), base);
   }
 
   const taxable = round(afterVolume - couponDiscount);

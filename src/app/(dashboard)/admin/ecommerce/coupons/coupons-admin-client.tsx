@@ -18,6 +18,14 @@ interface Coupon {
   valid_from: string | null;
   valid_until: string | null;
   is_active: boolean;
+  product_id: string | null;
+}
+
+interface CouponProduct {
+  id: string;
+  name: string;
+  store: string | null;
+  is_bundle: boolean;
 }
 
 function formatPrice(amount: number): string {
@@ -42,6 +50,7 @@ const statusBadge: Record<CouponStatus, string> = {
 
 export default function CouponsAdminClient() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [products, setProducts] = useState<CouponProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -56,6 +65,7 @@ export default function CouponsAdminClient() {
     valid_from: "",
     valid_until: "",
     is_active: true,
+    product_id: "",
   });
 
   useEffect(() => {
@@ -65,6 +75,7 @@ export default function CouponsAdminClient() {
         if (res.ok) {
           const data = await res.json();
           setCoupons(data.coupons || []);
+          setProducts(data.products || []);
         }
       } catch {
         // silently fail
@@ -89,9 +100,11 @@ export default function CouponsAdminClient() {
           discount_value: parseFloat(form.discount_value),
           max_uses: form.max_uses ? parseInt(form.max_uses) : null,
           min_purchase: form.min_purchase ? parseFloat(form.min_purchase) : null,
-          valid_from: form.valid_from || null,
-          valid_until: form.valid_until || null,
+          // datetime-local has no zone: send it as the admin's local time.
+          valid_from: form.valid_from ? new Date(form.valid_from).toISOString() : null,
+          valid_until: form.valid_until ? new Date(form.valid_until).toISOString() : null,
           is_active: form.is_active,
+          product_id: form.product_id || null,
         }),
       });
       const data = await res.json();
@@ -109,6 +122,7 @@ export default function CouponsAdminClient() {
           valid_from: "",
           valid_until: "",
           is_active: true,
+          product_id: "",
         });
       }
     } catch {
@@ -196,6 +210,7 @@ export default function CouponsAdminClient() {
                     type="number"
                     step="0.01"
                     min="0"
+                    max={form.discount_type === "percentage" ? 100 : undefined}
                     value={form.discount_value}
                     onChange={(e) => setForm({ ...form, discount_value: e.target.value })}
                     required
@@ -203,6 +218,35 @@ export default function CouponsAdminClient() {
                   />
                 </div>
               </div>
+              <div>
+                <label htmlFor="coupon-product" className="block text-sm font-medium text-gray-700 mb-1">
+                  Only for product (optional)
+                </label>
+                <select
+                  id="coupon-product"
+                  value={form.product_id}
+                  onChange={(e) => setForm({ ...form, product_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="">Any product (whole order)</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                      {p.is_bundle ? " (bundle)" : ""}
+                      {p.store ? ` — ${p.store}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  The code then only works when this product is in the cart, and only discounts it.
+                </p>
+              </div>
+              {form.discount_type === "percentage" && Number(form.discount_value) === 100 && (
+                <div className="text-sm text-primary-700 bg-primary-50 rounded-lg px-3 py-2">
+                  100% off makes it free: the customer checks out without paying and is enrolled
+                  straight away.
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Max Uses (optional)</label>
@@ -266,7 +310,7 @@ export default function CouponsAdminClient() {
 
       {/* Coupons Table */}
       <DataTable
-        columns={columns}
+        columns={buildColumns(products)}
         rows={coupons}
         rowKey={(coupon) => coupon.id}
         ariaLabel="Coupons"
@@ -281,7 +325,10 @@ export default function CouponsAdminClient() {
   );
 }
 
-const columns: DataTableColumn<Coupon>[] = [
+function buildColumns(products: CouponProduct[]): DataTableColumn<Coupon>[] {
+  const productName = (id: string | null) =>
+    id ? products.find((p) => p.id === id)?.name ?? "One product" : "Any";
+  return [
   {
     key: "code",
     header: "Code",
@@ -307,6 +354,14 @@ const columns: DataTableColumn<Coupon>[] = [
           </span>
         )}
       </span>
+    ),
+  },
+  {
+    key: "product",
+    header: "Product",
+    sortValue: (c) => productName(c.product_id),
+    render: (coupon) => (
+      <span className="text-sm text-gray-700">{productName(coupon.product_id)}</span>
     ),
   },
   {
@@ -345,3 +400,4 @@ const columns: DataTableColumn<Coupon>[] = [
     },
   },
 ];
+}

@@ -94,6 +94,60 @@ product, hide it on the Products tab: edit it → Visibility → "Hidden".
   join one from the course catalog without paying. If that matters, ask for
   their enrollment to be switched to "approval required".
 
+## Give someone the certification free (coupon code)
+
+Make a code that takes 100% off the Mosaic Certification bundle. Whoever uses
+it checks out without paying (no card page) and is enrolled straight away in
+the learning path and all five courses. New people get an email to set their
+password, the same as a paying buyer.
+
+1. Go to **Admin → eCommerce → Coupons** → **Create Coupon**.
+2. **Coupon Code:** something easy to type, e.g. `MOSAICGIFT`.
+3. **Discount Type:** Percentage (%). **Discount Value:** `100`.
+4. **Only for product:** pick "Mosaic Certification Bundle". The code then
+   works only on the bundle, so it can't make anything else free.
+5. **Max Uses:** how many people may use it (e.g. `5`). Leave it empty for no
+   limit.
+6. **Valid Until:** the date the code stops working (optional).
+7. Keep **Active** ticked → **Create Coupon**.
+8. Send the person the store link and the code. They add the bundle to the
+   cart, type the code in "Discount code", and click check out.
+
+Good to know:
+- The order appears under the store's **Orders** tab at $0, with payment
+  "coupon". The **Usage** column on the Coupons page counts each use.
+- When the uses run out or the date passes, the code simply stops working.
+- A code that leaves something to pay (e.g. 50% off) still goes to the normal
+  card payment page.
+- Prefer this when people should go through the store themselves. To add
+  people directly, use the invite below.
+
+## Invite people to a learning path
+
+Give people a learning path (and every course on it) without them buying
+anything, just by pasting their email addresses.
+
+1. Go to **Admin → Learning Paths**.
+2. On the path (e.g. "Mosaic Certification") click the **envelope** button
+   ("Invite people"). The path must be published.
+3. Paste the email addresses, one per line or separated by commas. You can add
+   names, like `Jane Doe <jane@example.com>` — up to 200 at a time.
+4. Click **Send**.
+
+Everyone on the list gets the path and all of its courses and an email:
+- **People who already have an account** get a "you've been given access"
+  email with a link to the path.
+- **People without an account** get one, plus an email to set their password.
+- **People who already had the path** are left as they are (no email).
+
+When it finishes you see a summary: invited (new accounts), given access,
+already had access, and failed (with the reason, e.g. a typo in an address).
+Managers can invite only their own team members, and only admins can invite
+people who don't have an account yet.
+
+(The person-with-a-plus button next to it, **Assign learners**, does the same
+for people you pick from the list of existing users.)
+
 ## Bringing over your existing catalogs (one-time)
 
 1. Log in to your current store's admin (Ecwid) → **Catalog → Products →

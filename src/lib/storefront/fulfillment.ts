@@ -159,6 +159,31 @@ export async function enrollOrderBuyer(
   );
 }
 
+/**
+ * Adds a completed order's quantities to each product's sales count. Called
+ * once per order, by whichever path completed it (the Stripe webhook after it
+ * claims the order, or checkout for an order a coupon made free).
+ */
+export async function incrementSalesCounts(
+  service: SupabaseClient,
+  items: { product_id: string | null; quantity: number }[]
+): Promise<void> {
+  for (const item of items) {
+    if (!item.product_id) continue;
+    const { data: product } = await service
+      .from("products")
+      .select("sales_count")
+      .eq("id", item.product_id)
+      .single();
+    if (product) {
+      await service
+        .from("products")
+        .update({ sales_count: (product.sales_count ?? 0) + item.quantity })
+        .eq("id", item.product_id);
+    }
+  }
+}
+
 export async function sendOrderEmails(
   service: SupabaseClient,
   orderId: string,

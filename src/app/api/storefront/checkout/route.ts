@@ -9,7 +9,13 @@ import {
   type VolumeTier,
 } from "@/lib/storefront/pricing";
 import { createCheckoutSession, isStripeConfigured } from "@/lib/storefront/stripe";
-import { sendOrderEmails, enrollOrderBuyer, testModeEnrolls } from "@/lib/storefront/fulfillment";
+import {
+  sendOrderEmails,
+  enrollOrderBuyer,
+  testModeEnrolls,
+  incrementSalesCounts,
+} from "@/lib/storefront/fulfillment";
+import { claimCouponUse, releaseCouponUse } from "@/lib/storefront/coupons";
 import {
   evaluatePartnerCode,
   isPartnerPortalConfigured,
@@ -30,6 +36,16 @@ import {
 // applied like a percentage coupon (lib/storefront/partner-code.ts). The
 // order's id is minted up front so it can be the ref the portal records the
 // use under; the webhook reports it paid.
+//
+// A local coupon can be limited to one product (coupons.product_id): it then
+// only works with that product in the cart and is taken from that product's
+// line. When a local coupon brings the server-computed total to exactly $0
+// (e.g. 100% off the Mosaic Certification bundle), Stripe is skipped: Stripe
+// Checkout cannot take a $0 payment. The coupon use is claimed atomically, the
+// order is recorded as completed at $0 (payment_method "coupon") and fulfilled
+// on the spot, the same way the webhook fulfils a paid order. That is the only
+// way an order completes without payment on the live site; the no-Stripe-keys
+// guard (testModeEnrolls) still applies to every other order.
 
 const checkoutSchema = z.object({
   storefront_slug: z.string().min(1),
@@ -171,7 +187,14 @@ export async function POST(request: NextRequest) {
 
   // Coupon (optional): a local coupon, or failing that a gC partner code.
   const orderId = crypto.randomUUID();
-  let coupon: { discount_type: "percentage" | "fixed"; discount_value: number; id?: string; code?: string; current_uses?: number } | null = null;
+  let coupon: {
+    discount_type: "percentage" | "fixed";
+    discount_value: number;
+    id?: string;
+    code?: string;
+    current_uses?: number;
+    lineIndexes?: number[];
+  } | null = null;
   let partner: { code: string; percentOff: number } | null = null;
   if (body.coupon_code) {
     const code = body.coupon_code.toUpperCase().trim();
@@ -221,6 +244,20 @@ export async function POST(request: NextRequest) {
       if (!valid) {
         return NextResponse.json({ error: "That discount code is not valid" }, { status: 400 });
       }
+      // A code limited to one product only works with that product in the
+      // cart, and only discounts that product.
+      let lineIndexes: number[] | undefined;
+      if (c.product_id) {
+        lineIndexes = lineItems
+          .map((li, i) => (li.product.id === c.product_id ? i : -1))
+          .filter((i) => i >= 0);
+        if (lineIndexes.length === 0) {
+          return NextResponse.json(
+            { error: "That discount code is for a different product." },
+            { status: 400 }
+          );
+        }
+      }
       const provisionalSubtotal = lineItems.reduce((s, li) => s + li.unitPrice * li.quantity, 0);
       if (c.min_purchase && provisionalSubtotal < Number(c.min_purchase)) {
         return NextResponse.json(
@@ -228,7 +265,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      coupon = c;
+      coupon = {
+        id: c.id,
+        code: c.code,
+        current_uses: c.current_uses,
+        discount_type: c.discount_type,
+        discount_value: Number(c.discount_value),
+        lineIndexes,
+      };
     }
   }
   // A pending partner use counts toward the partner's buyer limit until it is
@@ -248,10 +292,25 @@ export async function POST(request: NextRequest) {
     coupon
   );
 
-  const testMode = !isStripeConfigured();
+  // Free by coupon: a valid local coupon took the server-computed total to
+  // exactly zero. Anything else at or below zero is refused rather than sent
+  // to Stripe, which cannot take a $0 payment.
+  const freeByCoupon = pricing.total === 0 && Boolean(coupon?.id) && !partner;
+  if (pricing.total <= 0 && !freeByCoupon) {
+    await voidPartner();
+    return NextResponse.json(
+      { error: "This order can't be completed online. Please contact us to place it." },
+      { status: 400 }
+    );
+  }
+  if (freeByCoupon && !(await claimCouponUse(service, coupon!.id!))) {
+    return NextResponse.json({ error: "That discount code is not valid" }, { status: 400 });
+  }
+
+  const testMode = !freeByCoupon && !isStripeConfigured();
   const orderNumber = generateOrderNumber();
   const nowIso = new Date().toISOString();
-  const initialStatus = testMode ? "completed" : "pending";
+  const initialStatus = testMode || freeByCoupon ? "completed" : "pending";
 
   const orderMetadata = {
     storefront_slug: store.slug,
@@ -264,6 +323,7 @@ export async function POST(request: NextRequest) {
       partner_portal_ref: orderId,
     }),
     ...(testMode && { test_mode: true }),
+    ...(freeByCoupon && { free_order: true }),
   };
 
   const { data: order, error: orderError } = await service
@@ -285,8 +345,8 @@ export async function POST(request: NextRequest) {
       tax_amount: pricing.tax,
       total: pricing.total,
       currency: store.currency,
-      payment_method: testMode ? "test_mode" : "card",
-      status_history: [{ status: initialStatus, at: nowIso, by: "checkout" }],
+      payment_method: freeByCoupon ? "coupon" : testMode ? "test_mode" : "card",
+      status_history: [{ status: initialStatus, at: nowIso, by: freeByCoupon ? "coupon" : "checkout" }],
       metadata: orderMetadata,
     })
     .select("id, order_number")
@@ -295,10 +355,11 @@ export async function POST(request: NextRequest) {
   if (orderError || !order) {
     console.error("Storefront checkout: order insert failed:", orderError?.message);
     await voidPartner();
+    if (freeByCoupon) await releaseCouponUse(service, coupon!.id!);
     return NextResponse.json({ error: "Could not start checkout. Please try again." }, { status: 500 });
   }
 
-  await service.from("order_items").insert(
+  const { error: itemsError } = await service.from("order_items").insert(
     lineItems.map((li) => ({
       order_id: order.id,
       product_id: li.product.id,
@@ -310,6 +371,9 @@ export async function POST(request: NextRequest) {
       quantity: li.quantity,
     }))
   );
+  if (itemsError) {
+    console.error("Storefront checkout: order items insert failed:", itemsError.message);
+  }
 
   // Mark a recovered abandoned cart (best-effort).
   if (body.recovery_token) {
@@ -328,6 +392,33 @@ export async function POST(request: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   const successUrl = `${appUrl}/store/${store.slug}/success?order=${order.order_number}`;
+
+  const fulfilmentItems = lineItems.map((li) => ({
+    course_id: li.product.course_id,
+    learning_path_id: li.product.learning_path_id ?? null,
+  }));
+
+  if (freeByCoupon) {
+    // Paid in full by the coupon (its use was claimed above): fulfil now, as
+    // the webhook does for a paid order. Enrollment is idempotent.
+    await incrementSalesCounts(
+      service,
+      lineItems.map((li) => ({ product_id: li.product.id, quantity: li.quantity }))
+    );
+    const enrollmentStatus = await enrollOrderBuyer(
+      service,
+      {
+        id: order.id,
+        customer_email: body.customer_email.toLowerCase().trim(),
+        customer_name: body.customer_name.trim(),
+        metadata: orderMetadata,
+        storefront_id: store.id,
+      },
+      fulfilmentItems
+    );
+    await sendOrderEmails(service, order.id, appUrl, enrollmentStatus);
+    return NextResponse.json({ checkout_url: successUrl, free_order: true });
+  }
 
   if (testMode) {
     if (coupon && !partner && coupon.id) {
@@ -352,10 +443,7 @@ export async function POST(request: NextRequest) {
           metadata: orderMetadata,
           storefront_id: store.id,
         },
-        lineItems.map((li) => ({
-          course_id: li.product.course_id,
-          learning_path_id: li.product.learning_path_id ?? null,
-        }))
+        fulfilmentItems
       );
     }
     await sendOrderEmails(service, order.id, appUrl, enrollmentStatus);
