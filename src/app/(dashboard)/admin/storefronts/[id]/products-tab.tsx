@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
 import { money, type BundlePath, type Notify, type Product } from "./store-shared";
 
@@ -41,6 +41,13 @@ export default function ProductsTab({ storeId, products, paths, notify, onReload
   const pathById = new Map(paths.map((p) => [p.id, p]));
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // The dashboard scrolls inside its own container, not the window, so
+  // window.scrollTo did nothing and Edit looked dead from lower in the list.
+  const formRef = useRef<HTMLFormElement>(null);
+  const [scrollToForm, setScrollToForm] = useState(0);
+  useEffect(() => {
+    if (scrollToForm) formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [scrollToForm]);
   const [productForm, setProductForm] = useState({ ...emptyProductForm });
   const [saving, setSaving] = useState(false);
   const editingCourseId = editingId ? products.find((p) => p.id === editingId)?.course_id ?? null : null;
@@ -141,7 +148,7 @@ export default function ProductsTab({ storeId, products, paths, notify, onReload
       learning_path_id: p.learning_path_id ?? "",
     });
     setShowProductForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setScrollToForm((n) => n + 1);
   }
 
   return (
@@ -160,7 +167,7 @@ export default function ProductsTab({ storeId, products, paths, notify, onReload
       </div>
 
       {showProductForm && (
-        <form onSubmit={saveProduct} className="mb-6 rounded-xl border border-gray-200 p-5 bg-gray-50 space-y-3">
+        <form ref={formRef} onSubmit={saveProduct} className="mb-6 scroll-mt-4 rounded-xl border border-gray-200 p-5 bg-gray-50 space-y-3">
           <div className="font-semibold">{editingId ? "Edit product" : "New product"}</div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="sm:col-span-2">
