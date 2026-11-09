@@ -371,6 +371,42 @@ export function accountInvitation(params: {
   };
 }
 
+/**
+ * Sent by Admin → Learning Paths → Invite people. An existing account gets a
+ * "go to your learning path" link; a new account gets the set-password link
+ * (the same recovery link accountInvitation uses) and lands in the LMS.
+ */
+export function learningPathAccess(params: {
+  name: string;
+  pathTitle: string;
+  courseCount: number;
+  actionUrl: string;
+  isNewAccount: boolean;
+  inviterName?: string;
+  portalName?: string;
+}): EmailTemplate {
+  const portal = params.portalName ?? "Mosaic LearnHub LMS";
+  const name = escapeHtml(params.name);
+  const title = escapeHtml(params.pathTitle);
+  const who = params.inviterName ? escapeHtml(params.inviterName) : "An administrator";
+  const courses = `${params.courseCount} course${params.courseCount === 1 ? "" : "s"}`;
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You've been given access to ${title}</h2>
+    <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.6;">Hi ${name},</p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      ${who} has given you access to the learning path <strong>${title}</strong> (${courses}) on ${escapeHtml(portal)}.
+      ${params.isNewAccount ? "An account has been set up for you. Set your password to get started." : "It's waiting for you under Learning Paths."}
+    </p>
+    ${button(params.isNewAccount ? "Set your password" : "Go to your learning path", params.actionUrl)}
+    <p style="margin:16px 0 0;color:#6b7280;font-size:12px;">${params.isNewAccount ? "This link expires for security. If it has, use “Forgot password” on the sign-in page." : "If you weren't expecting this, you can ignore this email."}</p>
+  `;
+  return {
+    subject: `You've been given access to ${params.pathTitle}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.name}, you've been given access to the learning path ${params.pathTitle} (${courses}) on ${portal}. ${params.isNewAccount ? "Set your password to get started" : "Open it here"}: ${params.actionUrl}`,
+  };
+}
+
 export function scheduledReportDelivery(params: {
   recipientName: string;
   reportName: string;

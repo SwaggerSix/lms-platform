@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { verifyWebhookSignature } from "@/lib/storefront/stripe";
-import { sendOrderEmails, enrollOrderBuyer } from "@/lib/storefront/fulfillment";
+import { sendOrderEmails, enrollOrderBuyer, incrementSalesCounts } from "@/lib/storefront/fulfillment";
 import { enqueueOrderCompleted } from "@/lib/integrations/qbo-sync";
 import { reportPartnerRedemption, voidPartnerRedemptionForOrder } from "@/lib/storefront/partner-code";
 
@@ -101,19 +101,7 @@ export async function POST(request: NextRequest) {
     .select("product_id, course_id, learning_path_id, quantity")
     .eq("order_id", order.id);
 
-  for (const item of items || []) {
-    const { data: product } = await service
-      .from("products")
-      .select("sales_count")
-      .eq("id", item.product_id)
-      .single();
-    if (product) {
-      await service
-        .from("products")
-        .update({ sales_count: product.sales_count + item.quantity })
-        .eq("id", item.product_id);
-    }
-  }
+  await incrementSalesCounts(service, items || []);
 
   // Paid with a gC partner code the partner portal priced: report it, so the
   // use keeps counting toward that partner's buyer limit. Never throws.

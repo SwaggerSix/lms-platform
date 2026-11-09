@@ -4,11 +4,15 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 import { provisionCourseMaterials } from "@/lib/services/course-materials";
+import { grantPathAccess, MAX_PATH_INVITES } from "@/lib/paths/invite";
 
 /**
  * POST /api/paths/enroll
- * Body: { path_id: string, user_id?: string, due_date?: string }
+ * Body: { path_id: string, user_id?: string, user_ids?: string[], due_date?: string }
  *
+ * - user_ids assigns several people at once (Admin → Learning Paths → Assign).
+ *   The dialog always sent user_ids, which this route used to ignore, so it
+ *   enrolled the admin themselves instead of the people they picked.
  * - Learners enroll themselves (omit user_id).
  * - Managers/admins assign a path to someone else (pass user_id). Managers may
  *   only assign to their own direct reports; admins/super admins to anyone.
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
-  let body: { path_id?: string; user_id?: string; due_date?: string | null };
+  let body: { path_id?: string; user_id?: string; user_ids?: unknown; due_date?: string | null };
   try {
     body = await request.json();
   } catch {
@@ -50,6 +54,10 @@ export async function POST(request: NextRequest) {
   const { path_id, user_id, due_date } = body;
   if (!path_id) {
     return NextResponse.json({ error: "path_id is required" }, { status: 400 });
+  }
+
+  if (body.user_ids !== undefined) {
+    return assignMany(service, profile, path_id, body.user_ids, due_date ?? null);
   }
 
   // Resolve the target learner and authorize assignment-on-behalf-of.
@@ -215,6 +223,90 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     { data: enrollment, enrolled_count: 1 },
+    { status: 201 }
+  );
+}
+
+/**
+ * Assigns a published path to several people: admins/super admins to anyone,
+ * managers to their own direct reports (others are skipped). Idempotent —
+ * people who already have the path are counted as skipped.
+ */
+async function assignMany(
+  service: ReturnType<typeof createServiceClient>,
+  profile: { id: string; role: string },
+  pathId: string,
+  rawIds: unknown,
+  dueDate: string | null
+) {
+  const isPrivileged = ["admin", "super_admin"].includes(profile.role);
+  if (profile.role !== "manager" && !isPrivileged) {
+    return NextResponse.json({ error: "You are not allowed to assign learning paths" }, { status: 403 });
+  }
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!Array.isArray(rawIds) || rawIds.length === 0 || !rawIds.every((x) => typeof x === "string" && uuid.test(x))) {
+    return NextResponse.json({ error: "user_ids must be a list of user ids" }, { status: 400 });
+  }
+  const ids = [...new Set(rawIds as string[])];
+  if (ids.length > MAX_PATH_INVITES) {
+    return NextResponse.json({ error: `Assign at most ${MAX_PATH_INVITES} people at a time` }, { status: 400 });
+  }
+
+  const { data: path } = await service
+    .from("learning_paths")
+    .select("id, title")
+    .eq("id", pathId)
+    .eq("status", "published")
+    .maybeSingle();
+  if (!path) {
+    return NextResponse.json({ error: "Learning path not found" }, { status: 404 });
+  }
+
+  const { data: targets } = await service.from("users").select("id, manager_id").in("id", ids);
+  const allowed = ((targets as { id: string; manager_id: string | null }[] | null) || [])
+    .filter((t) => isPrivileged || t.manager_id === profile.id)
+    .map((t) => t.id);
+  if (allowed.length === 0) {
+    return NextResponse.json(
+      { error: isPrivileged ? "User not found" : "You can only assign paths to your own team members" },
+      { status: isPrivileged ? 404 : 403 }
+    );
+  }
+
+  const { data: items } = await service
+    .from("learning_path_items")
+    .select("course_id, sequence_order")
+    .eq("path_id", pathId)
+    .order("sequence_order", { ascending: true });
+  const courseIds = ((items as { course_id: string | null }[] | null) || [])
+    .map((i) => i.course_id)
+    .filter((c): c is string => Boolean(c));
+
+  let enrolled = 0;
+  for (const userId of allowed) {
+    const outcome = await grantPathAccess(service, { userId, pathId, courseIds, assignedBy: profile.id });
+    if (outcome === "enrolled") {
+      enrolled++;
+      if (dueDate) {
+        await service
+          .from("learning_path_enrollments")
+          .update({ due_date: dueDate })
+          .eq("user_id", userId)
+          .eq("path_id", pathId);
+      }
+    }
+  }
+
+  logAudit({
+    userId: profile.id,
+    action: "created",
+    entityType: "learning_path_enrollment",
+    entityId: path.id,
+    newValues: { path_id: pathId, path_title: path.title, assigned_count: enrolled, requested: ids.length },
+  });
+
+  return NextResponse.json(
+    { enrolled_count: enrolled, skipped: ids.length - enrolled },
     { status: 201 }
   );
 }
