@@ -293,8 +293,8 @@ export const checkoutSchema = z.object({
 });
 
 // eCommerce - Coupons
-export const createCouponSchema = z.object({
-  code: z.string().min(1).max(50),
+const couponFields = z.object({
+  code: z.string().trim().min(1).max(50),
   discount_type: z.enum(["percentage", "fixed"]),
   discount_value: z.number().min(0),
   max_uses: z.number().int().positive().optional().nullable(),
@@ -304,10 +304,28 @@ export const createCouponSchema = z.object({
   is_active: z.boolean().default(true),
   // Limit the code to one store product (e.g. the certification bundle).
   product_id: z.string().uuid().optional().nullable(),
-}).refine((c) => c.discount_type !== "percentage" || c.discount_value <= 100, {
+});
+
+const PERCENT_LIMIT = {
   message: "A percentage discount can't be more than 100",
   path: ["discount_value"],
-});
+};
+
+export const createCouponSchema = couponFields.refine(
+  (c) => c.discount_type !== "percentage" || c.discount_value <= 100,
+  PERCENT_LIMIT
+);
+
+// eCommerce - Coupon edit (Admin → eCommerce → Coupons → Edit / Active toggle).
+// Any subset of the create fields; unknown keys (current_uses, created_by…)
+// are dropped, so usage can't be edited. The route merges the change onto the
+// stored coupon and re-checks the whole thing with createCouponSchema, so a
+// change of type alone can't leave a 150% coupon behind.
+export const updateCouponSchema = couponFields
+  .omit({ is_active: true })
+  .extend({ is_active: z.boolean() })
+  .partial()
+  .refine((c) => Object.keys(c).length > 0, { message: "Nothing to change" });
 
 // eCommerce - Validate Coupon
 export const validateCouponSchema = z.object({
