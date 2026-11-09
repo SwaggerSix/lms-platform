@@ -426,7 +426,7 @@ export default function ProductsTab({ storeId, products, paths, notify, onReload
                   <td className="px-4 py-3 font-medium max-w-xs">
                     <div className="truncate">{p.name}</div>
                     {p.learning_path_id && (
-                      <div className="mt-0.5 inline-flex items-center gap-1 text-xs font-normal text-indigo-700">
+                      <div className="mt-0.5 inline-flex items-center gap-1 text-xs font-normal text-primary-700">
                         <Layers className="h-3 w-3" />
                         Bundle · Includes: {pathById.get(p.learning_path_id)?.courses.length ?? "?"} courses
                       </div>
