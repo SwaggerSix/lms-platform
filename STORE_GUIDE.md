@@ -34,6 +34,15 @@ on/off switch for the whole store.
 **Discount codes:** Admin → eCommerce → Coupons. Customers type the code at
 checkout and the discount is applied on the payment page.
 
+**Changing a coupon** (Admin → eCommerce → Coupons, on the coupon's row):
+- **Switch on / off:** click the switch on the row. Off (Inactive) means the
+  code stops working at once; switch it back on any time.
+- **Edit:** click **Edit** to change the code, discount, max uses, minimum
+  purchase, dates, Active, or "Only for product", then **Save Changes**. The
+  usage count can't be edited. Changes apply to future checkouts only.
+- **Delete:** the bin icon, then confirm. A coupon that has already been used
+  can't be deleted (orders refer to it); switch it off instead.
+
 ## Selling a bundle (several courses as one product)
 
 A **bundle** is one store product that sells a whole group of courses at one
