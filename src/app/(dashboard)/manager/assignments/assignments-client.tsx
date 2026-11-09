@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Trash2,
   CalendarPlus,
+  Route,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDate, formatPercent } from "@/utils/format";
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
+import { PathThumbnail } from "@/components/paths/path-thumbnail";
 
 export interface Assignment {
   id: string;
@@ -51,6 +53,7 @@ export interface TeamMemberOption {
 export interface PathOption {
   id: string;
   name: string;
+  thumbnailUrl: string | null;
   duration: string;
   courseCount: number;
 }
@@ -748,12 +751,21 @@ export default function AssignmentsClient({
                           selectedPath === path.id && "bg-primary-50 text-primary-700"
                         )}
                       >
-                        <div>
-                          <p className="font-medium">{path.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {path.courseCount} course{path.courseCount === 1 ? "" : "s"}
-                            {path.duration && path.duration !== "—" ? ` - ${path.duration}` : ""}
-                          </p>
+                        <div className="flex min-w-0 items-center gap-3">
+                          <PathThumbnail
+                            url={path.thumbnailUrl}
+                            title={path.name}
+                            className="h-9 w-9 shrink-0 rounded-md"
+                            fallbackClassName="flex items-center justify-center bg-primary-50 text-primary-600"
+                            fallback={<Route className="h-4 w-4" aria-hidden="true" />}
+                          />
+                          <div className="min-w-0">
+                            <p className="font-medium">{path.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {path.courseCount} course{path.courseCount === 1 ? "" : "s"}
+                              {path.duration && path.duration !== "—" ? ` - ${path.duration}` : ""}
+                            </p>
+                          </div>
                         </div>
                         {selectedPath === path.id && (
                           <CheckCircle2 className="h-4 w-4 text-primary-600" />

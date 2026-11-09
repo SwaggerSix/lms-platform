@@ -7,12 +7,14 @@ import { formatDuration } from "@/utils/format";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getHelp } from "@/lib/help-content";
+import { PathThumbnail } from "@/components/paths/path-thumbnail";
 
 export interface LearningPath {
   id: string;
   slug: string;
   title: string;
   description: string;
+  thumbnailUrl: string | null;
   courseCount: number;
   totalDuration: number;
   skills: string[];
@@ -83,15 +85,14 @@ export default function PathsClient({ paths }: Props) {
               className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
             >
               <div className="flex flex-col md:flex-row">
-                {/* Gradient Banner */}
-                <div
-                  className={cn(
-                    "flex w-full items-center justify-center bg-gradient-to-br p-8 md:w-64 md:shrink-0",
-                    path.gradient
-                  )}
-                >
-                  <Layers className="h-16 w-16 text-white/50" />
-                </div>
+                {/* Image (16:9), or the gradient banner when the path has none */}
+                <PathThumbnail
+                  url={path.thumbnailUrl}
+                  title={path.title}
+                  className="aspect-video w-full md:aspect-auto md:min-h-40 md:w-64 md:shrink-0"
+                  fallbackClassName={cn("flex items-center justify-center bg-gradient-to-br p-8", path.gradient)}
+                  fallback={<Layers className="h-16 w-16 text-white/50" aria-hidden="true" />}
+                />
 
                 {/* Content */}
                 <div className="flex flex-1 flex-col justify-between p-6">

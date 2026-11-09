@@ -156,13 +156,14 @@ export default async function AssignmentsPage() {
   // Fetch published learning paths for the assignment modal
   const { data: pathsData } = await service
     .from("learning_paths")
-    .select("id, title, estimated_duration, items:learning_path_items(id)")
+    .select("id, title, thumbnail_url, estimated_duration, items:learning_path_items(id)")
     .eq("status", "published")
     .order("title", { ascending: true });
 
   const paths: PathOption[] = (pathsData ?? []).map((p: any) => ({
     id: p.id,
     name: p.title ?? "Untitled Path",
+    thumbnailUrl: p.thumbnail_url ?? null,
     duration: formatDuration(p.estimated_duration),
     courseCount: Array.isArray(p.items) ? p.items.length : 0,
   }));

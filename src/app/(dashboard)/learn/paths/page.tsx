@@ -53,7 +53,7 @@ export default async function LearningPathsPage() {
   const { data: rawPaths } = await service
     .from("learning_paths")
     .select(
-      "id, slug, title, description, estimated_duration, tags, learning_path_items(id, course_id)"
+      "id, slug, title, description, thumbnail_url, estimated_duration, tags, learning_path_items(id, course_id)"
     )
     .eq("status", "published")
     .order("created_at", { ascending: false });
@@ -124,6 +124,7 @@ export default async function LearningPathsPage() {
       slug: rp.slug,
       title: rp.title,
       description: rp.description ?? "",
+      thumbnailUrl: rp.thumbnail_url ?? null,
       courseCount,
       totalDuration: rp.estimated_duration ?? 0,
       skills: rp.tags ?? [],

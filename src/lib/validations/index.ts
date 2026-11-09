@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPathImageUrl } from "@/lib/paths/path-image";
 
 // Drip content settings for modules
 export const dripSettingsSchema = z.object({
@@ -179,6 +180,16 @@ export const createPathSchema = z.object({
   description: z.string().max(5000).optional(),
   estimated_duration: z.number().int().positive().optional().nullable(),
   status: z.enum(["draft", "published", "archived"]).optional(),
+  // https URL or a same-origin path ("/images/paths/x.jpg"); "" clears it.
+  thumbnail_url: z
+    .string()
+    .max(2048)
+    .refine((v) => v.trim() === "" || isValidPathImageUrl(v), {
+      message: "Image URL must start with https:// or be a site path starting with /",
+    })
+    .transform((v) => v.trim() || null)
+    .optional()
+    .nullable(),
   items: z.array(z.object({
     course_id: z.string().uuid(),
     sort_order: z.number().int().optional(),

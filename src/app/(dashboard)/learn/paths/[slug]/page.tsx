@@ -51,7 +51,7 @@ export default async function PathDetailPage({
   const { data: rawPath } = await service
     .from("learning_paths")
     .select(
-      "id, slug, title, description, estimated_duration, tags, is_sequential, created_at, learning_path_items(id, course_id, sequence_order, is_required, courses(id, title, slug, description, difficulty_level, estimated_duration))"
+      "id, slug, title, description, thumbnail_url, estimated_duration, tags, is_sequential, created_at, learning_path_items(id, course_id, sequence_order, is_required, courses(id, title, slug, description, difficulty_level, estimated_duration))"
     )
     .eq("slug", slug)
     .eq("status", "published")
@@ -194,6 +194,7 @@ export default async function PathDetailPage({
     slug: rawPath.slug,
     title: rawPath.title,
     description: rawPath.description ?? "",
+    thumbnailUrl: rawPath.thumbnail_url ?? null,
     courseCount: courses.length,
     totalDuration,
     enrolledCount: enrolledCount ?? 0,

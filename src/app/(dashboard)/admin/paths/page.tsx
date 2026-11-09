@@ -44,6 +44,7 @@ export default async function PathsPage() {
       id: row.id,
       title: row.title ?? 'Untitled Path',
       description: row.description ?? '',
+      thumbnailUrl: row.thumbnail_url ?? null,
       courseCount: items.length,
       enrolled: (row.enrollments ?? []).length,
       status: row.status ?? 'draft',

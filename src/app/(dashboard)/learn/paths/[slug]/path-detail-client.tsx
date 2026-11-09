@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { formatDuration, formatDate } from "@/utils/format";
+import { hasPathImage } from "@/lib/paths/path-image";
 
 export interface PathCourse {
   id: string;
@@ -39,6 +40,8 @@ export interface PathDetailData {
   estimatedCompletion: string;
   overallProgress: number;
   gradient: string;
+  /** learning_paths.thumbnail_url — shown as the 16:9 header image when set. */
+  thumbnailUrl: string | null;
   skills: string[];
   courses: PathCourse[];
 }
@@ -89,26 +92,38 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
       <div className={cn("bg-gradient-to-r px-6 py-12 text-white", path.gradient)}>
-        <div className="mx-auto max-w-7xl">
-          <Link
-            href="/learn/paths"
-            className="mb-4 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Learning Paths
-          </Link>
-          <h1 className="text-3xl font-bold md:text-4xl">{path.title}</h1>
-          <p className="mt-3 max-w-2xl text-lg text-white/90">{path.description}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-            <span className="flex items-center gap-1">
-              <BookOpen className="h-4 w-4" /> {path.courseCount} courses
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" /> {formatDuration(path.totalDuration)}
-            </span>
-            <span className="flex items-center gap-1">
-              <Award className="h-4 w-4" /> Certificate on completion
-            </span>
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">
+            <Link
+              href="/learn/paths"
+              className="mb-4 inline-flex items-center gap-1 text-sm text-white/80 hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Learning Paths
+            </Link>
+            <h1 className="text-3xl font-bold md:text-4xl">{path.title}</h1>
+            <p className="mt-3 max-w-2xl text-lg text-white/90">{path.description}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+              <span className="flex items-center gap-1">
+                <BookOpen className="h-4 w-4" /> {path.courseCount} courses
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" /> {formatDuration(path.totalDuration)}
+              </span>
+              <span className="flex items-center gap-1">
+                <Award className="h-4 w-4" /> Certificate on completion
+              </span>
+            </div>
           </div>
+          {hasPathImage(path.thumbnailUrl) && (
+            <div className="aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-white/10 shadow-lg ring-1 ring-white/20 lg:w-[28rem]">
+              {/* eslint-disable-next-line @next/next/no-img-element -- static /images paths or bucket URLs */}
+              <img
+                src={path.thumbnailUrl}
+                alt={path.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
         </div>
       </div>
 

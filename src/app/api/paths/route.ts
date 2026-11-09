@@ -4,6 +4,8 @@ import { authorize } from "@/lib/auth/authorize";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createPathSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
+import { parsePathImageInput } from "@/lib/paths/path-image";
+import { removeStoredPathImage } from "@/lib/paths/path-image-storage";
 
 /**
  * Sum the durations (minutes) of the courses referenced by a path's items.
@@ -131,6 +133,21 @@ export async function PATCH(request: NextRequest) {
   }
   const service = createServiceClient();
 
+  // A replaced or cleared image that was uploaded here is deleted from storage
+  // after the update succeeds.
+  let previousImage: string | null = null;
+  if (updates.thumbnail_url !== undefined) {
+    const image = parsePathImageInput(updates.thumbnail_url);
+    if (!image.ok) return NextResponse.json({ error: image.error }, { status: 400 });
+    updates.thumbnail_url = image.value;
+    const { data: current } = await service
+      .from("learning_paths")
+      .select("thumbnail_url")
+      .eq("id", id)
+      .maybeSingle();
+    previousImage = current?.thumbnail_url ?? null;
+  }
+
   // When the set of courses changes, recompute the authoritative total time.
   if (items?.length) {
     updates.estimated_duration = await computePathDuration(service, items);
@@ -146,6 +163,10 @@ export async function PATCH(request: NextRequest) {
   if (error) {
     console.error("Paths API error:", error.message);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+
+  if (previousImage && previousImage !== updates.thumbnail_url) {
+    await removeStoredPathImage(service, previousImage).catch(() => {});
   }
 
   if (items?.length) {
