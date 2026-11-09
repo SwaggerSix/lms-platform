@@ -5,7 +5,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 import { SCORM_BUCKET, SCORM_STAGING_PREFIX, isUuid } from "@/lib/scorm/package";
-import { ScormPackageError, extractAndStorePackage } from "@/lib/scorm/extract";
+import { ScormPackageError, extractAndStorePackageFrom } from "@/lib/scorm/extract";
+import { httpReader } from "@/lib/scorm/remote-zip";
 import { assertTargetEditable, attachPackage, type AttachTarget } from "@/lib/scorm/attach";
 
 // Extraction downloads, unzips and re-uploads every file in the package.
@@ -70,13 +71,24 @@ export async function POST(request: NextRequest) {
   try {
     await assertTargetEditable(service, user, target);
 
-    const { data: blob, error: dlErr } = await service.storage.from(SCORM_BUCKET).download(uploadPath);
-    if (dlErr || !blob) {
+    // Read the staged zip by byte ranges rather than downloading it whole:
+    // buffering a several-hundred-MB package (plus its inflated files) got
+    // this function killed for running out of memory.
+    const { data: signed, error: signErr } = await service.storage
+      .from(SCORM_BUCKET)
+      .createSignedUrl(uploadPath, 60 * 30);
+    if (signErr || !signed?.signedUrl) {
       return NextResponse.json({ error: "Uploaded file not found. Please upload it again." }, { status: 404 });
     }
-    const zip = new Uint8Array(await blob.arrayBuffer());
+    let reader: Awaited<ReturnType<typeof httpReader>>;
+    try {
+      reader = await httpReader(signed.signedUrl);
+    } catch (e) {
+      console.error("SCORM staged zip read error:", e);
+      return NextResponse.json({ error: "Uploaded file not found. Please upload it again." }, { status: 404 });
+    }
 
-    const pkg = await extractAndStorePackage(service, zip);
+    const pkg = await extractAndStorePackageFrom(service, reader.read, reader.size);
     const result = await attachPackage(service, user, target, pkg, fileName);
 
     logAudit({

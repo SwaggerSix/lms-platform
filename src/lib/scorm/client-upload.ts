@@ -29,10 +29,17 @@ export interface ScormImportTarget {
 async function readError(res: Response, fallback: string) {
   try {
     const d = await res.json();
-    return d.error || fallback;
+    if (d?.error) return d.error as string;
   } catch {
-    return fallback;
+    /* not JSON: the server process died or timed out */
   }
+  if (res.status === 504) {
+    return `${fallback} The server ran out of time unpacking the package. Try again; if it keeps happening, the package may be too large to import in one go.`;
+  }
+  if (res.status >= 500) {
+    return `${fallback} The server stopped while unpacking the package (HTTP ${res.status}). Please try again, and report it if it repeats.`;
+  }
+  return `${fallback} (HTTP ${res.status})`;
 }
 
 /** PUT the file to the signed storage URL with progress (fetch can't report upload progress). */
