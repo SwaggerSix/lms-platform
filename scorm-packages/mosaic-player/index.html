@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOS-100 Mosaic Practitioner Certification</title>
+<link rel="stylesheet" href="player.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div id="app" class="app">
+  <header class="topbar">
+    <img src="mosaic-logo.svg" alt="Mosaic" class="logo" width="168" height="45">
+    <div class="ctitle" id="ctitle">MOS-100 Mosaic Practitioner Certification</div>
+    <button type="button" class="navtoggle" id="navtoggle" aria-expanded="false" aria-controls="nav">Modules</button>
+  </header>
+  <div class="stripe" aria-hidden="true"></div>
+  <div id="mode" class="mode" role="status" hidden></div>
+  <div class="layout">
+    <nav id="nav" class="nav" aria-label="Course contents"></nav>
+    <main id="main" class="main" tabindex="-1"><p>Loading the course…</p></main>
+  </div>
+  <footer class="footer"><span id="footer"></span></footer>
+</div>
+<div id="live" class="sr-only" aria-live="polite"></div>
+<noscript><p class="noscript">This course needs JavaScript turned on.</p></noscript>
+<script src="course-data.js"></script>
+<script src="player.js"></script>
+</body>
+</html>
