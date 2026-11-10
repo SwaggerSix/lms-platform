@@ -172,3 +172,19 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dndchip.ok::after { content: " ✓"; color: var(--enable-deep); font-weight: 700; }
 .dndchip.no { border-color: var(--danger); background: var(--danger-tint); }
 .dndchip.no::after { content: " ✗"; color: var(--danger); font-weight: 700; }
+
+/* drag-to-reorder (practice "order") */
+.dndlist { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.dndrow { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid var(--mosaic-dark); border-radius: 8px; padding: 6px 8px; cursor: grab; touch-action: none; user-select: none; }
+.dndrow:hover { background: var(--adapt-tint); }
+.dndrow.lifted { cursor: grabbing; box-shadow: 0 8px 20px rgba(19,17,61,.25); background: var(--deliver-tint); border-color: var(--deliver); position: relative; z-index: 2; }
+.dndrow .pos { font-family: var(--head); font-weight: 700; color: var(--muted); min-width: 1.4em; text-align: right; }
+.dndrow .dndgrip { color: var(--muted); font-size: 1.1rem; }
+.dndrow .dndtxt { flex: 1; }
+.dndrow .dndtxt p { margin: 0; }
+.dndrow .mv { font: inherit; font-weight: 700; width: 34px; height: 34px; border: 2px solid var(--mosaic-dark); border-radius: 6px; background: #fff; color: var(--mosaic-dark); cursor: pointer; }
+.dndrow .mv:disabled { border-color: var(--line); color: #b9bbc6; cursor: default; }
+.dndrow.ok { border-color: var(--enable-deep); background: var(--enable-tint); }
+.dndrow.ok .dndtxt::after { content: " ✓"; color: var(--enable-deep); font-weight: 700; }
+.dndrow.no { border-color: var(--danger); background: var(--danger-tint); }
+.dndrow.no .dndtxt::after { content: " ✗"; color: var(--danger); font-weight: 700; }

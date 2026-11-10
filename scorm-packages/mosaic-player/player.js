@@ -494,6 +494,7 @@
       var item = ITEMS[q], qp = pre + "-" + n;
       var fs = renderQuestion(qp, 0, 1, q, optOrder(item), null);
       if (item.k === "match") dragSort(fs, item);
+      if (item.k === "order") dragOrder(fs, item);
       var lg = fs.querySelector("legend");
       if (lg) lg.textContent = total > 1 ? "Question " + (n + 1) + " of " + total : "Your answer";
       c.appendChild(fs);
@@ -627,6 +628,126 @@
         chips[i].classList.toggle("ok", ok); chips[i].classList.toggle("no", !ok && a !== null && a !== undefined);
       }
     };
+    fs.appendChild(box);
+  }
+
+  // Drag-to-reorder for a practice "order": the steps are a list of cards;
+  // drag one up or down (it moves live as you pass other cards), or use its
+  // ↑ / ↓ buttons. It keeps the question's hidden <select>s (one per step,
+  // value = position) in step with the list, so grading doesn't change.
+  function dragOrder(fs, it) {
+    var sels = fs.querySelectorAll("select");
+    if (sels.length !== it.o.length) return;
+    var selFor = {};
+    for (var i = 0; i < sels.length; i++) selFor[sels[i].getAttribute("data-orig")] = sels[i];
+    var rows = fs.querySelectorAll(".selrow");
+    for (var r = 0; r < rows.length; r++) rows[r].style.display = "none";
+    var hint = fs.querySelector("p.ms"); if (hint) hint.style.display = "none";
+    var box = el("div", { "class": "dnd" });
+    box.appendChild(el("p", { "class": "ms" }, "<em>Drag the steps into order, first at the top. Or use the ↑ and ↓ buttons.</em>"));
+    var list = el("ol", { "class": "dndlist" });
+    box.appendChild(list);
+    var order = [];
+    for (var k = 0; k < rows.length; k++) order.push(parseInt(rows[k].querySelector("select").getAttribute("data-orig"), 10));
+    var cards = {};
+    function txt(ei) { return it.o[ei].replace(/<[^>]+>/g, ""); }
+    function sync(moved) {
+      var lis = list.children;
+      for (var p = 0; p < lis.length; p++) {
+        var ei = lis[p].getAttribute("data-e");
+        selFor[ei].value = String(p);
+        lis[p].classList.remove("ok", "no");
+        lis[p].querySelector(".up").disabled = p === 0;
+        lis[p].querySelector(".down").disabled = p === lis.length - 1;
+        lis[p].querySelector(".pos").textContent = String(p + 1);
+      }
+      if (moved !== undefined) {
+        var at = Array.prototype.indexOf.call(lis, cards[moved]);
+        announce(txt(moved) + ", now step " + (at + 1) + " of " + lis.length + ".");
+      }
+    }
+    function move(ei, delta) {
+      var li = cards[ei], sib = delta < 0 ? li.previousElementSibling : li.nextElementSibling;
+      if (!sib) return;
+      if (delta < 0) list.insertBefore(li, sib); else list.insertBefore(sib, li);
+      sync(ei);
+      var btn = li.querySelector(delta < 0 ? ".up" : ".down");
+      try { (btn.disabled ? li.querySelector(delta < 0 ? ".down" : ".up") : btn).focus({ preventScroll: true }); } catch (e) {}
+    }
+    order.forEach(function (ei) {
+      var li = el("li", { "class": "dndrow", "data-e": String(ei) });
+      li.appendChild(el("span", { "class": "pos", "aria-hidden": "true" }));
+      var grip = el("span", { "class": "dndgrip", "aria-hidden": "true" }, "⠿");
+      li.appendChild(grip);
+      li.appendChild(el("span", { "class": "dndtxt" }, it.o[ei].replace(/<\/?p>/g, "")));
+      var up = el("button", { type: "button", "class": "mv up", "aria-label": "Move up: " + txt(ei) }, "↑");
+      var dn = el("button", { type: "button", "class": "mv down", "aria-label": "Move down: " + txt(ei) }, "↓");
+      up.addEventListener("click", function () { move(ei, -1); });
+      dn.addEventListener("click", function () { move(ei, 1); });
+      li.appendChild(up); li.appendChild(dn);
+      cards[ei] = li; list.appendChild(li);
+      var start = null, dragging = false, last = null, scroller = null;
+      function reflow(y) {
+        var others = Array.prototype.filter.call(list.children, function (x) { return x !== li; });
+        var before = null;
+        for (var q = 0; q < others.length; q++) {
+          var b = others[q].getBoundingClientRect();
+          if (y < b.top + b.height / 2) { before = others[q]; break; }
+        }
+        if (before) { if (li.nextElementSibling !== before) list.insertBefore(li, before); }
+        else if (list.lastElementChild !== li) list.appendChild(li);
+      }
+      function edgeScroll() {
+        if (!dragging || !last) { scroller = null; return; }
+        var h = window.innerHeight, d = 0, edge = 70;
+        if (last.y > h - edge) d = Math.ceil((last.y - (h - edge)) / 4);
+        else if (last.y < edge) d = -Math.ceil((edge - last.y) / 4);
+        if (d) { window.scrollBy(0, d); reflow(last.y); }
+        scroller = requestAnimationFrame(edgeScroll);
+      }
+      // Track the pointer on the whole window, not with pointer capture: the
+      // card moves in the list as it is dragged, and moving a captured
+      // element drops the capture.
+      li.addEventListener("pointerdown", function (e) {
+        if (e.target.closest && e.target.closest("button")) return;
+        if (e.button !== undefined && e.button !== 0) return;
+        start = { x: e.clientX, y: e.clientY };
+        window.addEventListener("pointermove", onMove, { passive: false });
+        window.addEventListener("pointerup", end);
+        window.addEventListener("pointercancel", end);
+        e.preventDefault();
+      });
+      function onMove(e) {
+        if (!start) return;
+        if (!dragging) {
+          if (Math.abs(e.clientY - start.y) + Math.abs(e.clientX - start.x) < 6) return;
+          dragging = true; li.classList.add("lifted");
+        }
+        last = { x: e.clientX, y: e.clientY };
+        reflow(e.clientY);
+        if (!scroller) scroller = requestAnimationFrame(edgeScroll);
+        e.preventDefault();
+      }
+      function end() {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", end);
+        window.removeEventListener("pointercancel", end);
+        if (dragging) { dragging = false; li.classList.remove("lifted"); sync(ei); }
+        start = null; last = null;
+      }
+    });
+    sync();
+    fs._mark = function () {
+      var lis = list.children, c = it.c;
+      for (var p = 0; p < lis.length; p++) {
+        var ok = parseInt(lis[p].getAttribute("data-e"), 10) === c[p];
+        lis[p].classList.toggle("ok", ok); lis[p].classList.toggle("no", !ok);
+      }
+      if (isCorrect(it, readOrder())) for (var z = 0; z < lis.length; z++) { lis[z].classList.add("ok"); lis[z].classList.remove("no"); }
+    };
+    function readOrder() {
+      var a = []; for (var x = 0; x < it.o.length; x++) a.push(parseInt(selFor[String(x)].value, 10)); return a;
+    }
     fs.appendChild(box);
   }
 
