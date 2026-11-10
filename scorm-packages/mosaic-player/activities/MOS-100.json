@@ -157,8 +157,8 @@
     "f": {
      "0": "<p>Right. <strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
      "1": "<p>Not the best first tool here. <em>Why not CPM?</em> There's nothing to re-measure yet.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>"
+     "2": "<p>Not the best first tool here. <em>Why not Mosaic Signal?</em> It collects stories and what people make of them, with no scores and no benchmark, so it can't show how this organization compares with others.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not Culture Dig?</em> It goes deep, but it's an 8–12 week program that needs seven internal research teams. This client wants a broad, benchmarked picture first.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>"
     }
    },
    {
@@ -172,10 +172,10 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
+     "0": "<p>Not the best first tool here. <em>Why not Culture Mosaic?</em> It measures the whole organization's culture. The question is about one leader.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
      "1": "<p>Right. <strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>"
+     "2": "<p>Not the best first tool here. <em>Why not Mosaic Signal?</em> It collects stories about the organization, with no scores. The question is about one leader.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not Culture Dig?</em> It studies the whole culture over 8–12 weeks with seven internal research teams. The question is about one leader.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>"
     }
    },
    {
@@ -189,10 +189,10 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
+     "0": "<p>Not the best first tool here. <em>Why not Culture Mosaic?</em> Running the whole survey again re-measures all 12 domains. A CPM re-measures just the ones they worked on (up to three), shows the spring baseline next to the new scores, and costs half as much.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
      "1": "<p>Right. <strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>"
+     "2": "<p>Not the best first tool here. <em>Why not LM 360?</em> That's about one leader. The question is whether the organization's Collaboration and Learning scores have moved.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not Mosaic Signal?</em> It collects stories, with no scores, so it can't show whether the spring scores have changed.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>"
     }
    },
    {
@@ -208,8 +208,8 @@
     "f": {
      "0": "<p>Not the best first tool here. <em>Why not Culture Dig?</em> It's 8–12 weeks and needs seven internal research teams.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
      "1": "<p>Right. <strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>"
+     "2": "<p>Not the best first tool here. <em>Why not LM 360?</em> That's about one leader. The question is why people across the organization don't trust leadership decisions.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not Culture Mosaic again?</em> It would re-measure the same scores. The survey already says trust is low; what's missing is why.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>"
     }
    },
    {
@@ -224,9 +224,9 @@
     "c": 0,
     "f": {
      "0": "<p>Right. <strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
-     "1": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>"
+     "1": "<p>Not the best first tool here. <em>Why not Mosaic Signal?</em> Useful for fast stories, but it won't study history, rituals and systems in depth.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
+     "2": "<p>Not the best first tool here. <em>Why not Culture Mosaic?</em> It gives a broad, scored baseline, but it won't study history, rituals and systems in depth. Many clients run one alongside a Culture Dig.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not CPM?</em> There's no baseline, and a CPM re-measures scores. It doesn't explain them.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>"
     }
    },
    {
@@ -240,10 +240,10 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
+     "0": "<p>Not the best first tool here. <em>Why not Six more individual 360s?</em> Each executive already has a 360 from this year. Another round gives six more individual reports, not one view of the team.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
      "1": "<p>Right. <strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
-     "2": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
-     "3": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>"
+     "2": "<p>Not the best first tool here. <em>Why not Culture Mosaic?</em> It measures the whole organization's culture, not this leadership team's 360 results.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
+     "3": "<p>Not the best first tool here. <em>Why not Mosaic Signal?</em> It collects stories, with no scores, so it can't combine the six 360s into a team view.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>"
     }
    }
   ]
