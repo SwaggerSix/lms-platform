@@ -809,11 +809,14 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Avoid validation claims you can't support, and this doesn't address the concern.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
-     "1": "<p>Strong. It acknowledges the challenge, answers with N, coverage and the response rate, admits a real limit, and uses the strengths to show balance.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
-     "2": "<p>Defensive. It ends the dialogue.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
-     "3": "<p>Caving undermines solid data. A 64% response across all departments deserves weight.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>"
-    }
+     "0": "<p>Avoid validation claims you can't support, and this doesn't address the concern.</p>",
+     "1": "<p>Strong. It acknowledges the challenge, answers with N, coverage and the response rate, admits a real limit, and uses the strengths to show balance.</p>",
+     "2": "<p>Defensive. It ends the dialogue.</p>",
+     "3": "<p>Caving undermines solid data. A 64% response across all departments deserves weight.</p>"
+    },
+    "tk": "A “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },
@@ -833,11 +836,14 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Even a hint narrows it down. Never guess or confirm.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
-     "1": "<p>Strong. It holds the line on confidentiality, gives the prevalence, and turns the curiosity into a constructive action.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
-     "2": "<p>Never look for, or offer to look for, a respondent's identity.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
-     "3": "<p>True, but dismissive, and it misses the chance to redirect.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>"
-    }
+     "0": "<p>Even a hint narrows it down. Never guess or confirm.</p>",
+     "1": "<p>Strong. It holds the line on confidentiality, gives the prevalence, and turns the curiosity into a constructive action.</p>",
+     "2": "<p>Never look for, or offer to look for, a respondent's identity.</p>",
+     "3": "<p>True, but dismissive, and it misses the chance to redirect.</p>"
+    },
+    "tk": "Anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },
@@ -857,11 +863,14 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Accurate numbers, but framing a group as “the problem” invites blame and misses the cross-site pattern.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
-     "1": "<p>Strong. It reframes from team to pattern, cites groups that are large enough to report, and points to action.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
-     "2": "<p>Department results at n = 97 and n = 161 are fine to share. Confidentiality doesn't hide well-sized groups.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
-     "3": "<p>Never. Pharmacy (n = 2) was rolled into Other, and “off the record” is still disclosure.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>"
-    }
+     "0": "<p>Accurate numbers, but framing a group as “the problem” invites blame and misses the cross-site pattern.</p>",
+     "1": "<p>Strong. It reframes from team to pattern, cites groups that are large enough to report, and points to action.</p>",
+     "2": "<p>Department results at n = 97 and n = 161 are fine to share. Confidentiality doesn't hide well-sized groups.</p>",
+     "3": "<p>Never. Pharmacy (n = 2) was rolled into Other, and “off the record” is still disclosure.</p>"
+    },
+    "tk": "Move the conversation from blame to system, using only groups the report shows.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },
@@ -881,11 +890,14 @@
     ],
     "c": 2,
     "f": {
-     "0": "<p>There's no pass mark. Inventing one misleads.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
-     "1": "<p>The benchmark isn't “the industry”, and isn't split by sector.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
-     "2": "<p>Strong. It's accurate about what the comparison group is, uses percentiles correctly, and reframes “good” around the client's strategy.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
-     "3": "<p>The percentiles <em>are</em> the benchmark comparison. Use them.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>"
-    }
+     "0": "<p>There's no pass mark. Inventing one misleads.</p>",
+     "1": "<p>The benchmark isn't “the industry”, and isn't split by sector.</p>",
+     "2": "<p>Strong. It's accurate about what the comparison group is, uses percentiles correctly, and reframes “good” around the client's strategy.</p>",
+     "3": "<p>The percentiles <em>are</em> the benchmark comparison. Use them.</p>"
+    },
+    "tk": "Be precise about the comparison group, and anchor “good” to the client's goals.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },
@@ -905,11 +917,14 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>A full re-survey after 3 months is costly, likely to show no meaningful change, and adds survey fatigue.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
-     "1": "<p>Strong. It honours the urgency, explains the timing risk, recommends the right tool (a Culture Progress Monitor on the chosen domains), and offers interim measures.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
-     "2": "<p>Unhelpful and untrue. Culture changes, just over time.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
-     "3": "<p>Gives up your expertise.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>"
-    }
+     "0": "<p>A full re-survey after 3 months is costly, likely to show no meaningful change, and adds survey fatigue.</p>",
+     "1": "<p>Strong. It honours the urgency, explains the timing risk, recommends the right tool (a Culture Progress Monitor on the chosen domains), and offers interim measures.</p>",
+     "2": "<p>Unhelpful and untrue. Culture changes, just over time.</p>",
+     "3": "<p>Gives up your expertise.</p>"
+    },
+    "tk": "Match the measurement cycle to how fast culture can realistically move, and use the right instrument.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },
@@ -929,11 +944,14 @@
     ],
     "c": 2,
     "f": {
-     "0": "<p>True or not, it makes the leader more defensive.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
-     "1": "<p>Never. Rater confidentiality is absolute.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
-     "2": "<p>Strong. It normalises the reaction, corrects the “a couple of people” belief with N, uses the rater spread as a curiosity hook, and hands the thinking back to the leader.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
-     "3": "<p>Avoiding the hardest data wastes the 360.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>"
-    }
+     "0": "<p>True or not, it makes the leader more defensive.</p>",
+     "1": "<p>Never. Rater confidentiality is absolute.</p>",
+     "2": "<p>Strong. It normalises the reaction, corrects the “a couple of people” belief with N, uses the rater spread as a curiosity hook, and hands the thinking back to the leader.</p>",
+     "3": "<p>Avoiding the hardest data wastes the 360.</p>"
+    },
+    "tk": "In a debrief your job is to help the leader become curious about the gap, not to win the argument.",
+    "vr": "✓ That's the strongest response.",
+    "vw": "Not the strongest response."
    }
   ]
  },

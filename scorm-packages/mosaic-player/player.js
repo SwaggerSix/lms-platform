@@ -516,7 +516,9 @@
         // vr / vw: an activity's own verdict line (e.g. "✓ Eligible" / "Not eligible").
         var verdict = ok && item.vr ? item.vr : !ok && item.vw ? item.vw :
           item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
-        fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "");
+        // tk: one takeaway for the whole question, shown once under the option's feedback.
+        fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "") +
+          (item.tk ? '<p class="tk"><strong>Takeaway:</strong> ' + item.tk + "</p>" : "");
         announce(verdict);
       });
       c.appendChild(chk); c.appendChild(fb);

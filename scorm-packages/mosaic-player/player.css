@@ -188,3 +188,4 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dndrow.ok .dndtxt::after { content: " ✓"; color: var(--enable-deep); font-weight: 700; }
 .dndrow.no { border-color: var(--danger); background: var(--danger-tint); }
 .dndrow.no .dndtxt::after { content: " ✗"; color: var(--danger); font-weight: 700; }
+.fb .tk { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 8px; }
