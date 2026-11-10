@@ -23,6 +23,12 @@ interface ScormLessonProps {
   learnerId: string;
   alreadyCompleted: boolean;
   onComplete: () => void;
+  /**
+   * Fill the parent's height instead of a fixed 600px box. The course player
+   * uses this so a package's own navigation (often a header or sidebar) stays
+   * on screen rather than scrolling away with the page.
+   */
+  fill?: boolean;
 }
 
 /**
@@ -40,6 +46,7 @@ export default function ScormLesson({
   learnerId,
   alreadyCompleted,
   onComplete,
+  fill = false,
 }: ScormLessonProps) {
   const [state, setState] = useState<ScormRuntimeState | null | undefined>(enrollmentId ? undefined : null);
 
@@ -82,7 +89,7 @@ export default function ScormLesson({
   }
 
   return (
-    <div>
+    <div className={fill ? "flex h-full min-h-0 flex-col" : undefined}>
       {!enrollmentId && (
         <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
           <Eye className="h-3.5 w-3.5" />
@@ -100,7 +107,8 @@ export default function ScormLesson({
           if (enrollmentId) onComplete();
         }}
         onPersist={persist}
-        className="min-h-[600px]"
+        className={fill ? "min-h-0 flex-1" : "min-h-[600px]"}
+        fill={fill}
       />
     </div>
   );

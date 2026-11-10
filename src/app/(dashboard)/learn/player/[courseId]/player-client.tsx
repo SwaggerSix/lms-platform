@@ -232,6 +232,12 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
 
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  // A SCORM package carries its own navigation between its modules. Give it the
+  // whole content area so that navigation stays on screen, and don't offer the
+  // player's own Previous/Next when the package is the course's only lesson:
+  // those move between LMS lessons, so they'd sit greyed out and look broken.
+  const isScormLesson = currentLesson?.contentTypeRaw === "scorm" && !!currentLesson.contentUrl;
+  const scormOnlyLesson = isScormLesson && allLessons.length === 1;
 
   const toggleModule = (id: string) => {
     setExpandedModules((prev) =>
@@ -329,7 +335,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
         {/* Left Panel - Content Area */}
         <div className={cn("flex flex-1 flex-col", outlineOpen ? "" : "")}>
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className={cn("flex-1", isScormLesson ? "flex min-h-0 flex-col" : "overflow-y-auto")}>
             {!currentLesson && (
               <div className="flex min-h-[400px] items-center justify-center bg-gray-50 p-8">
                 <div className="text-center">
@@ -400,6 +406,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
                 onComplete={() => {
                   updateLessonProgress(currentLesson.id, "completed");
                 }}
+                fill
               />
             )}
 
@@ -519,8 +526,8 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
               </div>
             )}
 
-            {/* Lesson info below content */}
-            {currentLesson && (
+            {/* Lesson info below content (a SCORM package names itself) */}
+            {currentLesson && !isScormLesson && (
             <div className="border-t border-gray-200 bg-white p-6">
               <h2 className="text-xl font-semibold text-gray-900">{currentLesson.title}</h2>
               {currentLesson.content && (
@@ -531,6 +538,11 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
           </div>
 
           {/* Navigation Footer */}
+          {scormOnlyLesson ? (
+            <div className="border-t border-gray-200 bg-white px-6 py-3 text-center text-sm text-gray-500">
+              Use the buttons inside the course to move between its modules. Your place is saved as you go.
+            </div>
+          ) : (
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4">
             <button
               onClick={() => prevLesson && navigateToLesson(prevLesson.id)}
@@ -557,6 +569,7 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
               </button>
             )}
           </div>
+          )}
         </div>
 
         {/* Right Panel - Course Outline */}

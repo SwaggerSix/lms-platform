@@ -32,6 +32,8 @@ export interface SCORMPlayerProps {
    */
   onPersist?: (state: ScormRuntimeState, final: boolean) => void;
   className?: string;
+  /** Fill the container's height (the course player) instead of a 600px minimum. */
+  fill?: boolean;
 }
 
 type Api = Record<string, (...args: string[]) => string>;
@@ -57,6 +59,7 @@ export function SCORMPlayer({
   onComplete,
   onPersist,
   className,
+  fill = false,
 }: SCORMPlayerProps) {
   const src = toPlayableScormUrl(packageUrl);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -475,13 +478,13 @@ export function SCORMPlayer({
         </div>
       </div>
 
-      <div className="relative flex-1">
+      <div className={cn("relative flex-1", fill && "min-h-0")}>
         <iframe
           ref={iframeRef}
           src={src}
           title={`SCORM content: ${title}`}
-          className="h-full w-full border-none"
-          style={{ minHeight: isFullscreen ? "100%" : "600px" }}
+          className={cn("h-full w-full border-none", fill && "absolute inset-0")}
+          style={fill ? undefined : { minHeight: isFullscreen ? "100%" : "600px" }}
           allow="fullscreen; autoplay"
           allowFullScreen
           onLoad={() => setIsLoading(false)}
