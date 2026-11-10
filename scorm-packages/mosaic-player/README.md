@@ -47,6 +47,12 @@ answer them or see feedback. Now each one is real:
 - practice only: nothing is graded, saved or required. Final-exam items are
   never used as practice.
 
+**10 Nov 2026 — real drag and drop.** Every practice `match` is now dragged:
+cards in a tray, dropped into one box per target (pointer events, so mouse,
+touch and pen; the page scrolls while a card is held near the top or bottom
+edge). Keyboard and tap: choose a card, then a box. It drives the question's
+hidden `<select>`s, so grading is unchanged; after Check each card shows ✓/✗.
+
 Counts: MOS-100 31, MOS-210 4, MOS-220 6, MOS-230 11, MOS-240 6.
 
 The text is the design's own wording, converted screen by screen. Pause times

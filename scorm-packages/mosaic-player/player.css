@@ -153,3 +153,22 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .actdet > summary:hover { color: var(--adapt-deep); }
 .openq textarea { display: block; width: 100%; font: inherit; padding: 8px 10px; border: 1px solid #8A8C99; border-radius: 6px; margin: 4px 0 8px; }
 .opt .optl { font-family: var(--head); font-weight: 700; color: var(--mosaic-dark); min-width: 1.4em; }
+
+/* drag and drop sorting (practice "match") */
+.dnd .dndtray { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 10px; border: 2px dashed var(--line); border-radius: 10px; background: var(--panel); margin: 6px 0 12px; }
+.dndzones { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.dndzone { border: 2px solid var(--adapt); border-radius: 10px; background: #fff; min-height: 120px; display: flex; flex-direction: column; }
+.dndzone.over, .dndtray.over { border-color: var(--mosaic-dark); background: var(--adapt-tint); }
+.dndzhead { font: inherit; font-family: var(--head); font-weight: 700; color: #fff; background: var(--mosaic-dark); border: 0; border-radius: 7px 7px 0 0; padding: 8px 10px; text-align: left; cursor: pointer; }
+.dnd.picking .dndzhead { outline: 3px dashed var(--deliver); outline-offset: -3px; }
+.dndbody { display: flex; flex-direction: column; gap: 6px; padding: 8px; flex: 1; }
+.dndchip { font: inherit; font-size: .95rem; text-align: left; background: #fff; color: var(--strong); border: 2px solid var(--mosaic-dark); border-radius: 8px; padding: 6px 10px; cursor: grab; touch-action: none; user-select: none; }
+.dndchip p { margin: 0; }
+.dndchip:hover { background: var(--adapt-tint); }
+.dndchip.picked { background: var(--deliver-tint); border-color: var(--deliver); box-shadow: 0 0 0 3px var(--deliver); }
+.dndchip.dragging { opacity: .35; }
+.dndchip.ghost { position: fixed; z-index: 1000; pointer-events: none; box-shadow: 0 8px 20px rgba(19,17,61,.3); cursor: grabbing; }
+.dndchip.ok { border-color: var(--enable-deep); background: var(--enable-tint); }
+.dndchip.ok::after { content: " ✓"; color: var(--enable-deep); font-weight: 700; }
+.dndchip.no { border-color: var(--danger); background: var(--danger-tint); }
+.dndchip.no::after { content: " ✗"; color: var(--danger); font-weight: 700; }
