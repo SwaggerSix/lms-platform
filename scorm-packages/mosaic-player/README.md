@@ -53,6 +53,13 @@ touch and pen; the page scrolls while a card is held near the top or bottom
 edge). Keyboard and tap: choose a card, then a box. It drives the question's
 hidden `<select>`s, so grading is unchanged; after Check each card shows ✓/✗.
 
+**10 Nov 2026 — drag to reorder.** Practice `order` activities (e.g. M3 "Put
+the launch steps in order") are a list of cards: drag one up or down, or use
+its ↑ / ↓ buttons. Dragging tracks the pointer on the window rather than with
+pointer capture, because the card moves in the list mid-drag and moving a
+captured element drops the capture. Hidden `<select>`s still carry the answer
+(including `alt` orders); after Check each step shows ✓/✗ against the main order.
+
 Counts: MOS-100 31, MOS-210 4, MOS-220 6, MOS-230 11, MOS-240 6.
 
 The text is the design's own wording, converted screen by screen. Pause times
