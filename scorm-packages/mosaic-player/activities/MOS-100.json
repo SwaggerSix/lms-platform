@@ -1,0 +1,987 @@
+[
+ {
+  "id": "M1-03",
+  "title": "Warm-up: which tile is missing?",
+  "intro": "<p>A hospital CEO tells you: \"Our people love our mission and they're brilliant clinicians. But every time we try to change how we work, it stalls. Departments don't share information, and nobody wants to be the one who speaks up.\"</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Before you learn the model, trust your instincts. Which of these would you most want to look at?</p>",
+    "o": [
+     "<p>How clear and inspiring the purpose is</p>",
+     "<p>How ready people are for change, and how well teams collaborate</p>",
+     "<p>How well the organization understands its customers</p>",
+     "<p>Whether the strategy is written down</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Most practitioners pick B, and the CEO's own words point there. Notice that the CEO describes a <em>strong</em> tile (purpose) alongside <em>weak</em> ones (change, collaboration, speaking up). That mix is exactly what the framework is built to show. You'll meet these tiles by name in a few minutes: Purpose, Change Ready, Collaboration and Empowered Teams.</p>",
+     "1": "<p>Most practitioners pick B, and the CEO's own words point there. Notice that the CEO describes a <em>strong</em> tile (purpose) alongside <em>weak</em> ones (change, collaboration, speaking up). That mix is exactly what the framework is built to show. You'll meet these tiles by name in a few minutes: Purpose, Change Ready, Collaboration and Empowered Teams.</p>",
+     "2": "<p>Most practitioners pick B, and the CEO's own words point there. Notice that the CEO describes a <em>strong</em> tile (purpose) alongside <em>weak</em> ones (change, collaboration, speaking up). That mix is exactly what the framework is built to show. You'll meet these tiles by name in a few minutes: Purpose, Change Ready, Collaboration and Empowered Teams.</p>",
+     "3": "<p>Most practitioners pick B, and the CEO's own words point there. Notice that the CEO describes a <em>strong</em> tile (purpose) alongside <em>weak</em> ones (change, collaboration, speaking up). That mix is exactly what the framework is built to show. You'll meet these tiles by name in a few minutes: Purpose, Change Ready, Collaboration and Empowered Teams.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M1-07",
+  "title": "Quick check: dimensions",
+  "items": [
+   {
+    "ref": "KC-M1-01"
+   },
+   {
+    "ref": "KC-M1-02"
+   }
+  ]
+ },
+ {
+  "id": "M1-10",
+  "title": "Build the diamond",
+  "intro": "<p>Place each tile in its dimension. Then match three taglines to their tiles.</p>",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Place each tile in its dimension.</p>",
+    "p": [
+     "<p>Change Ready</p>",
+     "<p>Future Focused</p>",
+     "<p>Customer</p>",
+     "<p>Purpose</p>",
+     "<p>Strategy</p>",
+     "<p>Values</p>",
+     "<p>Efficiency</p>",
+     "<p>Decisions</p>",
+     "<p>Collaboration</p>",
+     "<p>Empowered Teams</p>",
+     "<p>Capability Development</p>",
+     "<p>Learning</p>"
+    ],
+    "o": [
+     "<p>Adapt</p>",
+     "<p>Inspire</p>",
+     "<p>Deliver</p>",
+     "<p>Enable</p>"
+    ],
+    "c": [
+     0,
+     0,
+     0,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     3,
+     3,
+     3
+    ],
+    "fr": "<p>Correct. Adapt = Change Ready, Future Focused, Customer. Inspire = Purpose, Strategy, Values. Deliver = Efficiency, Decisions, Collaboration. Enable = Empowered Teams, Capability Development, Learning.</p>",
+    "fw": "<p>Not quite. Check the tagline: which dimension's definition does it belong to?</p><ul><li>Customer placed in Deliver? Close, and a common slip. Customer sits under <strong>Adapt</strong>: understanding customers and adapting to serve them. Deliver's middle tile is <strong>Decisions</strong>. (Culture Mosaic reports produced before late 2026 put Customer in Deliver, so you may see that in older files.)</li><li>Learning sits under <strong>Enable</strong>. It's about people growing on the job.</li><li>Values sits under <strong>Inspire</strong>, with Purpose and Strategy, because together they give direction.</li></ul>"
+   },
+   {
+    "k": "match",
+    "s": "<p>Match three taglines to their tiles.</p>",
+    "p": [
+     "<p>\"Our superstars are not just born, they're made\"</p>",
+     "<p>\"We're always looking out for opportunity and change on the horizon\"</p>",
+     "<p>\"Collaborating in teams and across our business is the norm\"</p>"
+    ],
+    "o": [
+     "<p>Capability Development</p>",
+     "<p>Future Focused</p>",
+     "<p>Collaboration</p>"
+    ],
+    "c": [
+     0,
+     1,
+     2
+    ],
+    "fr": "<p>Correct. These taglines map to Capability Development, Future Focused and Collaboration.</p>",
+    "fw": "<p>Not quite. \"Our superstars are not just born, they're made\" is Capability Development; \"We're always looking out for opportunity and change on the horizon\" is Future Focused; \"Collaborating in teams and across our business is the norm\" is Collaboration.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M1-14",
+  "title": "Quick check: two lenses",
+  "items": [
+   {
+    "ref": "KC-M1-07"
+   },
+   {
+    "ref": "KC-M1-08"
+   }
+  ]
+ },
+ {
+  "id": "M1-16",
+  "title": "\"So this proves culture drives ROI?\"",
+  "intro": "<p>Priya Natarajan, Northwind's CFO, leans in during the readout: \"This slide says Inspire is linked to return on assets. Our Purpose score is 82. So our purpose is driving our returns, right?\"</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What do you say?</p>",
+    "o": [
+     "<p>\"Yes. Purpose at 82 is a strong driver of financial performance.\"</p>",
+     "<p>\"Research on comparable culture frameworks finds an <em>association</em> between dimensions like these and outcomes such as returns. It isn't Mosaic-specific, and it doesn't tell us what's driving <em>your</em> returns. What your 82 does tell us is that purpose is a real strength here, one we can build on.\"</p>",
+     "<p>\"We can't say anything about performance, so let's skip this slide.\"</p>",
+     "<p>\"Yes, but only if your Strategy score were higher too.\"</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>That's the overclaim the slide's own footnote warns against. A CFO will test it, and your credibility goes with it.</p>",
+     "1": "<p>Exactly. You're accurate about the evidence and you still give the CFO something useful: purpose is a strength to build on.</p>",
+     "2": "<p>Too far the other way. The research is a legitimate reason the dimensions are measured. Just describe it accurately.</p>",
+     "3": "<p>This invents a rule. Nothing in the research supports it.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M2-05",
+  "title": "Which tool? Six client cards",
+  "intro": "<p>For each client, pick the best first tool. Then read why.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Card 1: \"We just finished a big reorganization. Before we plan anything, we want an honest picture of our culture across all 900 people, and how we compare with other organizations.\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Culture Mosaic</p>",
+     "<p>CPM</p>",
+     "<p>Mosaic Signal</p>",
+     "<p>Culture Dig</p>"
+    ],
+    "c": 0,
+    "f": {
+     "0": "<p>Right. <strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
+     "1": "<p>Not the best first tool here. <em>Why not CPM?</em> There's nothing to re-measure yet.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: Culture Mosaic.</strong> A broad, anonymous baseline with benchmark comparisons is exactly what it's for.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Card 2: \"Our new VP of Sales has been in role for a year. Their manager wants them to get candid input from their team and peers.\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Culture Mosaic</p>",
+     "<p>LM 360</p>",
+     "<p>Mosaic Signal</p>",
+     "<p>Culture Dig</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
+     "1": "<p>Right. <strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: LM 360.</strong> The question is about one leader's behaviour, seen by Self, Boss, Peers, Direct Reports and Others. Position it as development, not evaluation.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Card 3: \"We ran a Culture Mosaic in SurveyCraft last spring. Collaboration and Learning were low, so we've spent nine months on them. Has anything moved?\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Culture Mosaic</p>",
+     "<p>CPM</p>",
+     "<p>LM 360</p>",
+     "<p>Mosaic Signal</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
+     "1": "<p>Right. <strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: CPM.</strong> It re-measures up to three domains from that baseline and tells you whether each change is meaningful. <em>Check:</em> the baseline is in the same organization and has at least 5 completed responses.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Card 4: \"Our survey says people don't trust leadership decisions. We don't know <em>why</em>, and we need answers in about six weeks.\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Culture Dig</p>",
+     "<p>Mosaic Signal</p>",
+     "<p>LM 360</p>",
+     "<p>Culture Mosaic again</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best first tool here. <em>Why not Culture Dig?</em> It's 8–12 weeks and needs seven internal research teams.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
+     "1": "<p>Right. <strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: Mosaic Signal.</strong> Stories about real decisions, which people then interpret themselves, can explain a survey result quickly.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Card 5: \"Our board wants a deep understanding of how our 40-year-old culture really works before we merge with another firm. We can free up about 20 staff to help over a quarter.\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Culture Dig</p>",
+     "<p>Mosaic Signal</p>",
+     "<p>Culture Mosaic</p>",
+     "<p>CPM</p>"
+    ],
+    "c": 0,
+    "f": {
+     "0": "<p>Right. <strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
+     "1": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: Culture Dig.</strong> The history, rituals, systems and stories behind the culture are its home ground, and the client has the time and people (seven teams of 2–4). Many clients pair it with a Culture Mosaic.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Card 6: \"Each of our six executives has had a 360 this year. The CEO wants to see the team's collective strengths and gaps, without anyone being singled out.\"</p><p>Which is the best first tool?</p>",
+    "o": [
+     "<p>Six more individual 360s</p>",
+     "<p>The LM Team Report</p>",
+     "<p>Culture Mosaic</p>",
+     "<p>Mosaic Signal</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
+     "1": "<p>Right. <strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
+     "2": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>",
+     "3": "<p>Not the best first tool here.</p><p><strong>Best: the LM Team Report.</strong> It combines 3–25 leaders' closed 360s into one deck with no leader identified. Leaders appear only as unlabeled dots, and bosses are pooled.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M3-07",
+  "title": "Right-sizing Northwind's order",
+  "intro": "<p>Alex Moreau, Northwind's Chief People Officer, plans to invite all <strong>640</strong> employees. Their last engagement survey got about two-thirds participation.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Which respondent tier should Northwind choose?</p>",
+    "o": [
+     "<p><strong>A tier capped at 250.</strong> It's the largest you can buy online, and you can always upgrade.</p>",
+     "<p><strong>A tier capped at 500.</strong> Expected responses are about 384–448, which leaves headroom. Order it through the Mosaic team, since it's above the online ceiling.</p>",
+     "<p><strong>A tier capped at 1,000, because there are 640 employees.</strong></p>",
+     "<p><strong>No tier is needed for a census. The cap only applies to sampled surveys.</strong></p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not quite. 640 × about 65% is roughly 415 responses. A 250 cap would stop the survey partway through fieldwork. You can upgrade, but planning to outgrow your tier on day one creates avoidable stress and a gap in data collection.</p>",
+     "1": "<p>Correct. Tiers count responses, not invitations. 60–70% of 640 is 384–448, so a 500 cap fits with headroom. You'll still watch the 80% warning email, which comes at 400 responses.</p>",
+     "2": "<p>Over-scoped. The tier counts completed responses. Even a very high response rate won't reach 640, let alone exceed 500.</p>",
+     "3": "<p>No. Every bought Culture Mosaic carries a respondent cap equal to its tier, census or not.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M3-15",
+  "title": "Put the launch steps in order",
+  "items": [
+   {
+    "k": "order",
+    "s": "<p>Drag the steps into the order you'd do them for a new Culture Mosaic.</p>",
+    "o": [
+     "<p>Claim the order and create the survey</p>",
+     "<p>Edit the demographic block and set the leader question</p>",
+     "<p>Take the survey yourself end-to-end</p>",
+     "<p>Publish the survey</p>",
+     "<p>Upload the roster and send invitations</p>",
+     "<p>Turn on automatic reminders</p>",
+     "<p>Close the survey</p>",
+     "<p>Generate the Culture Mosaic report</p>"
+    ],
+    "c": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "fr": "<p>Right. Everything that shapes the questions happens before Publish, and the report waits until the survey is closed.</p>",
+    "fw": "<p>Not quite. Everything that shapes the questions happens before Publish, and the report waits until the survey is closed.</p><ul><li>Publishing first means people can start answering a survey with the wrong categories. Set demographics before you publish.</li><li>You can generate early, but that report won't join the benchmark. Close first, then generate.</li></ul>",
+    "alt": [
+     [
+      0,
+      1,
+      2,
+      3,
+      5,
+      4,
+      6,
+      7
+     ]
+    ]
+   }
+  ]
+ },
+ {
+  "id": "M4-04",
+  "title": "Is this baseline eligible?",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Four clients want a Culture Progress Monitor. Which one can go ahead today?</p>",
+    "o": [
+     "<p>A client ran a Culture Mosaic in 2024 with a previous provider and has the PDF report.</p>",
+     "<p>Northwind Health: Culture Mosaic closed in March 2026 with 412 responses, in Northwind's own SurveyCraft organization.</p>",
+     "<p>A client's Culture Mosaic is still in Draft. They want to \"set up the follow-up now\".</p>",
+     "<p>A client's Culture Mosaic has 3 real responses and 50 test responses.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not eligible. The baseline must be a Culture Mosaic run in SurveyCraft. Recommend a Culture Mosaic first.</p>",
+     "1": "<p>Eligible: a SurveyCraft Culture Mosaic, same organization, launched, and well above 5 responses.</p>",
+     "2": "<p>Not eligible. A Draft survey isn't a baseline; there's nothing to compare against yet.</p>",
+     "3": "<p>Not eligible. Test responses don't count, and 3 is under the 5-response minimum.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M6-07",
+  "title": "Which template fits?",
+  "intro": "<p>For each client request, choose the template you'd start from.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p><strong>Scenario 1.</strong> A hospital's patient-experience team wants to hear what happened when patients called the scheduling line, and how it felt.</p>",
+    "o": [
+     "<p>Organizational Culture Probe</p>",
+     "<p>Customer Experience Journey</p>",
+     "<p>Change Readiness Assessment</p>",
+     "<p>Quick Narrative Capture</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
+     "1": "<p>Right. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
+     "2": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
+     "3": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Scenario 2.</strong> Northwind is rolling out a shared scheduling system across all clinics. Leaders want to know whether staff are willing, able and ready.</p>",
+    "o": [
+     "<p>Quick Narrative Capture</p>",
+     "<p>Organizational Culture Probe</p>",
+     "<p>Change Readiness Assessment</p>",
+     "<p>Customer Experience Journey</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
+     "1": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
+     "2": "<p>Right. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
+     "3": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Scenario 3.</strong> A facilitator is running a two-hour leadership offsite and wants a quick story per table, with just a couple of follow-ups.</p>",
+    "o": [
+     "<p>Quick Narrative Capture</p>",
+     "<p>Change Readiness Assessment</p>",
+     "<p>Customer Experience Journey</p>",
+     "<p>Organizational Culture Probe</p>"
+    ],
+    "c": 0,
+    "f": {
+     "0": "<p>Right. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
+     "1": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
+     "2": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
+     "3": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Scenario 4.</strong> A client wants to understand everyday culture: how formal things feel, and whether people act as individuals, teams or \"the organization\".</p>",
+    "o": [
+     "<p>Customer Experience Journey</p>",
+     "<p>Organizational Culture Probe</p>",
+     "<p>Quick Narrative Capture</p>",
+     "<p>Change Readiness Assessment</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
+     "1": "<p>Right. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
+     "2": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
+     "3": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M6-10",
+  "title": "Design workshop: Northwind clinic staff",
+  "intro": "<p><strong>Your brief.</strong> Alex Moreau, Northwind's Chief People Officer, says:</p><p><em>\"Clinic staff tell us they 'feel like a different company' since the merger. The Culture Mosaic showed Collaboration and Change Ready among our lowest tiles, with the Clinic Network lowest of all. I want to hear what's actually happening for clinic staff when they work with the hospital or other clinics.\"</em></p><p><strong>Your task:</strong> draft three things for a Mosaic Signal survey for Northwind's clinic staff:</p><ol><li><strong>One story prompt</strong></li><li><strong>One triad</strong>: three corner labels and the question that introduces it</li><li><strong>One dyad</strong>: the question and the two end labels</li></ol><p>Type your drafts in the boxes, then reveal the model answer and score yourself with the rubric.</p>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p><strong>1. One story prompt.</strong> Draft the story prompt.</p>",
+    "model": "<p><strong>Prompt:</strong> \"Think of a recent time when you needed something from the hospital or another Northwind clinic to do your job. What happened?\"</p><p><em>Why it works:</em> a specific moment, a time window (\"recent\"), neutral, and about what happened rather than who.</p><p><strong>Self-check (score each 0, 1 or 2):</strong></p><table><tr><th>Criterion</th><th>0</th><th>1</th><th>2</th></tr><tr><td>Prompt asks for <strong>one concrete experience</strong>, not an opinion</td><td>Asks for opinion or evaluation</td><td>Story-like but vague (\"talk about collaboration\")</td><td>A specific moment (\"a recent time when…\")</td></tr><tr><td>Prompt is <strong>neutral</strong> and allows good, bad and mixed stories</td><td>Leading (\"why is it hard…\")</td><td>Mostly neutral, with a loaded word</td><td>Fully neutral</td></tr><tr><td>Prompt asks about <strong>what happened, not who</strong></td><td>Invites naming people</td><td>Silent on it</td><td>Clearly about events</td></tr></table>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>2. One triad.</strong> Draft the question that introduces it and three corner labels.</p>",
+    "model": "<p><strong>Triad:</strong> \"In this story, what mattered most in how things went?\" Corners: <strong>Shared systems and processes / Personal relationships / Working around the rules</strong></p><p><em>Why it works:</em> three real ways things get done across sites, all of which someone would plausibly pick. The tension between them, systems vs. who-you-know vs. workarounds, is what leaders rarely hear.</p><p><strong>Self-check (score 0, 1 or 2):</strong></p><table><tr><th>Criterion</th><th>0</th><th>1</th><th>2</th></tr><tr><td>Triad corners <strong>compete</strong> and are <strong>all reasonable</strong></td><td>One corner is obviously \"right\" or \"wrong\"</td><td>Corners overlap or aren't comparable</td><td>Three distinct, plausible forces in tension</td></tr></table>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>3. One dyad.</strong> Draft the question and the two end labels.</p>",
+    "model": "<p><strong>Dyad:</strong> \"How connected did you feel to the rest of Northwind in this story?\" Ends: <strong>Like a separate organization ↔ Like one team</strong></p><p><em>Why it works:</em> both ends are honest places a clinic employee might be, and it goes straight at the \"different company\" concern. Where the middle sits will be the finding.</p><p><strong>Self-check (score each 0, 1 or 2):</strong></p><table><tr><th>Criterion</th><th>0</th><th>1</th><th>2</th></tr><tr><td>Dyad ends are <strong>both places a real person would choose</strong></td><td>One end is a caricature</td><td>Ends are uneven</td><td>Both ends are honest positions</td></tr><tr><td>Fit to the client's question</td><td>Unrelated</td><td>Partly related</td><td>Directly tests the \"different company\" concern</td></tr></table><p><strong>Scoring</strong> (all six rows across your three drafts): 10–12 is strong. 7–9: revisit the weakest row. Below 7: re-read M6-08 and M6-09 and try again.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M7-10",
+  "title": "Who can do what?",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Drag each task to the <strong>least-privileged role</strong> that can do it.</p>",
+    "p": [
+     "<p>Change the program's configuration and dates</p>",
+     "<p>Read every team's findings to advise the client, without editing anything</p>",
+     "<p>Add interview observations to the Rituals team workspace</p>",
+     "<p>Be tracked for story collection only, with no data access</p>",
+     "<p>Mark the findings report Final</p>",
+     "<p>See the Stakeholders team's workspace</p>"
+    ],
+    "o": [
+     "<p>Program Lead</p>",
+     "<p>Facilitator</p>",
+     "<p>Team Member (Rituals)</p>",
+     "<p>Participant</p>"
+    ],
+    "c": [
+     0,
+     1,
+     2,
+     3,
+     0,
+     [
+      0,
+      1
+     ]
+    ],
+    "fr": "<p>Right. Least privilege keeps research data safe, and it keeps advisors from editing the client's work.</p>",
+    "fw": "<p>Facilitators read everything but change nothing. That's what makes the role right for an advising consultant.</p><ul><li>Changing the program's configuration and dates, and marking the findings report Final, are Program Lead tasks.</li><li>The Stakeholders team's workspace can be seen by a Program Lead or a Facilitator, not by a Rituals Team Member.</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "M7-14",
+  "title": "Fix this observation",
+  "intro": "<p>A Team Member on the HR Systems team entered this:</p><ul><li><strong>Source:</strong> \"Jamie Chen, payroll, told me in the kitchen\"</li><li><strong>Quote:</strong> \"Promotions here go to whoever the director plays golf with — everyone knows it, including what happened to Pat last year.\"</li><li><strong>Theme:</strong> \"favoritism??\"</li></ul>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What's the <strong>most important</strong> fix?</p>",
+    "o": [
+     "<p>Change the theme to \"Promotion favoritism\" so it reads more professionally.</p>",
+     "<p>Remove the names from Source and the Quote, and record the role and context instead.</p>",
+     "<p>Shorten the quote to save space.</p>",
+     "<p>Delete the observation; hearsay doesn't count.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Consistent, clear themes matter. But this entry has a bigger problem: it names people.</p>",
+     "1": "<p>Right. Source must never hold a name (\"Payroll staff member, informal conversation\"), and the quote names a third person. Remove or generalise identifying details (\"…including what happened to a colleague last year\") so nobody can be identified. Then tidy the theme, and reuse the team's existing wording if there is any.</p>",
+     "2": "<p>Near-verbatim quotes are the point. Keep the words, lose the identifiers.</p>",
+     "3": "<p>Informal remarks are valid evidence about what stories circulate. Record them carefully; don't discard them.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M7-21",
+  "title": "Plan Northwind's Culture Dig",
+  "intro": "<p><strong>The situation (November 2026).</strong> Northwind's Culture Progress Monitor shows Collaboration improving. But Empowered Teams is flat, and \"Decisions made without frontline input\" is a <strong>steady</strong> comment theme. Alex Moreau, the CPO, wants to understand <em>why decisions feel closed</em>, and is considering a Culture Dig in early 2027. Northwind will run it themselves, with you advising.</p><p><strong>Your task:</strong> draft a one-page plan covering the seven sections below. Then compare each section with the model plan and tick the completeness checklist yourself.</p>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p><strong>1. License route.</strong> Which way in, and what it does and doesn't include.</p>",
+    "model": "<p><strong>License:</strong> Self-serve website purchase (one program, first wave). Software only: Northwind runs it, you advise under a separate advisory agreement. <em>(If Northwind wanted the Mosaic team to run it, it would be the invoiced route instead.)</em></p><p><strong>Checklist:</strong></p><ul><li>License route named, and it says <strong>software, not facilitation</strong>, unless the Mosaic team is contracted</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>2. Roles.</strong> Who is Program Lead (and backup)? What's your role?</p>",
+    "model": "<p><strong>Roles:</strong> Program Lead: Alex Moreau (CPO). Second lead: an HR business partner. You: <strong>Facilitator</strong>. The executive sponsor (Dana Okafor, CEO) does not need a role, because findings are briefed at the end.</p><p><strong>Checklist:</strong></p><ul><li>Program Lead <strong>and</strong> a second lead named</li><li>Your role is <strong>Facilitator</strong> (read-only), not Lead, if you're advising</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>3. Team staffing.</strong> Seven teams; how many people; who.</p>",
+    "model": "<p><strong>Teams:</strong> 7 teams × 3 people = 21 researchers, mixing hospital, clinic network, nursing and support services, frontline and managers. Example: the HR Systems team has a nurse manager, a clinic coordinator and an HR analyst.</p><p><strong>Checklist:</strong></p><ul><li>All <strong>seven</strong> domains staffed, 2–4 people each, every Team Member assigned a domain</li><li>Teams mix sites and levels (hospital, clinics, frontline, managers)</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>4. Dates.</strong> Start date and the four milestones.</p>",
+    "model": "<p><strong>Dates:</strong> Start Mon Jan 11, 2027. \"Suggest dates\" gives findings due Feb 1 (+3 weeks), stories close Feb 15 (+5), analysis Feb 22 (+6), report Mar 8 (+8).</p><p><strong>Checklist:</strong></p><ul><li>Milestones set (findings, stories close, analysis, report)</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>5. Prompts.</strong> At least one approved prompt per domain, with an example for one domain.</p>",
+    "model": "<p><strong>Prompts:</strong> Link the Culture Mosaic so Collaboration, Change Ready and Empowered Teams prompts surface first. Draft prompts for every domain, then edit and approve at least one each. Example (HR Systems): \"Think of a recent decision about your schedule, role or development. What happened, and how was it made?\"</p><p><strong>Confidentiality:</strong> Observations record role and context only. The story page asks about what happened, not who. No quotes from any domain under 10 stories.</p><p><strong>Checklist:</strong></p><ul><li>At least one prompt per domain, about <strong>what happened, not who</strong></li><li>Interviewee confidentiality explained: role-level attribution, never names</li><li>Optional: link the Feb 2026 Culture Mosaic so prompts on the lowest subcomponents surface first</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>6. Communications.</strong> How the story link reaches clinic and hospital staff.</p>",
+    "model": "<p><strong>Comms:</strong> CEO announcement; story link and QR code at every huddle for two weeks; a reminder at the midpoint; the 3-minute promise in every message.</p><p><strong>Checklist:</strong></p><ul><li>Story link channels reach frontline staff without email (huddles, QR code)</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>7. Waves.</strong> Whether and when to run a second wave.</p>",
+    "model": "<p><strong>Waves:</strong> Buy a second wave for about Sept–Oct 2027. Reuse last wave's prompts. Compare with the ranges, and pair it with the next Culture Progress Monitor.</p><p><strong>Checklist:</strong></p><ul><li>Second wave planned 6–12 months later, with identical follow-up wording</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "M8-11",
+  "title": "Quick check: the toolkit",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>On Northwind's Culture Mosaic, \"Our purpose is well understood…\" shows Your Score 4.4, Typical 3.9, %ile 88. Which statement is accurate?</p>",
+    "o": [
+     "<p>88% of Northwind employees agreed with the statement.</p>",
+     "<p>Northwind's average on this item was higher than about 88% of benchmark organizations' averages.</p>",
+     "<p>Northwind scored 88 out of 100 on the Purpose tile.</p>",
+     "<p>Northwind needs to reach 3.9 to be typical.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>A percentile isn't a share of people who agreed. It ranks Northwind's average against other organizations' averages.</p>",
+     "1": "<p>Right. The percentile places Northwind's item average among the benchmark organizations.</p>",
+     "2": "<p>The Purpose <em>tile</em> score is 82. The 88 here is the <em>item's</em> percentile, a different measure.</p>",
+     "3": "<p>Northwind is already above the typical marker (4.4 vs 3.9), and \"typical\" is a reference point, not a target.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>A leader's All Others mean on a Leadership Mosaic item is 5.5. What is that on the 0–100 scale?</p>",
+    "o": [
+     "<p>75</p>",
+     "<p>88</p>",
+     "<p>110</p>",
+     "<p>55</p>"
+    ],
+    "c": 0,
+    "f": {
+     "0": "<p>Correct: (5.5 − 1) ÷ 6 × 100 = 75.</p>",
+     "1": "<p>That uses the Culture Mosaic formula (÷ 4). The Leadership Mosaic is a 1–7 scale, so divide by 6.</p>",
+     "2": "<p>That's the old ×20 shortcut, which only fits a 1–5 scale, and even there it's wrong.</p>",
+     "3": "<p>That just moves the decimal point. Use (mean − 1) ÷ 6 × 100.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M8-24",
+  "title": "Blind spot, hidden strength, or agreement?",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Drag each Jordan Reyes result into the right bin: Blind spot, Hidden strength, or Agreement.</p>",
+    "p": [
+     "<p>Q45 \"…create space for others to contribute\": Self 6, Direct Reports 3.4</p>",
+     "<p>Empowered Teams tile: Self 5.6, All Others 4.1</p>",
+     "<p>Decisions tile: Self 5.0, All Others 6.0</p>",
+     "<p>Q34 \"…use of data in decision-making\": Self 5, Direct Reports 6.3</p>",
+     "<p>Deliver dimension: Self 6.1, All Others 5.9</p>",
+     "<p>Inspire dimension: Self 5.5, All Others 5.6</p>"
+    ],
+    "o": [
+     "<p>Blind spot</p>",
+     "<p>Hidden strength</p>",
+     "<p>Agreement</p>"
+    ],
+    "c": [
+     0,
+     0,
+     1,
+     1,
+     2,
+     2
+    ],
+    "fr": "<p>Right. Here's why each result belongs where it does:</p><ul><li><strong>Q45 \"…create space for others to contribute\": Self 6, Direct Reports 3.4</strong> → Blind spot. Direct reports rate this 2.6 points below Self, far past the 1.0 item threshold.</li><li><strong>Empowered Teams tile: Self 5.6, All Others 4.1</strong> → Blind spot. A 1.5 gap at tile level (threshold 0.5).</li><li><strong>Decisions tile: Self 5.0, All Others 6.0</strong> → Hidden strength. Others rate Jordan a full point higher than Jordan does.</li><li><strong>Q34 \"…use of data in decision-making\": Self 5, Direct Reports 6.3</strong> → Hidden strength. 1.3 points higher from direct reports, which fits the Decisions pattern.</li><li><strong>Deliver dimension: Self 6.1, All Others 5.9</strong> → Agreement. 0.2 is below the 0.5 dimension threshold.</li><li><strong>Inspire dimension: Self 5.5, All Others 5.6</strong> → Agreement. 0.1 is below the threshold.</li></ul>",
+    "fw": "<p>Not quite. Check each result against these:</p><ul><li><strong>Q45 \"…create space for others to contribute\": Self 6, Direct Reports 3.4</strong> → Blind spot. Direct reports rate this 2.6 points below Self, far past the 1.0 item threshold.</li><li><strong>Empowered Teams tile: Self 5.6, All Others 4.1</strong> → Blind spot. A 1.5 gap at tile level (threshold 0.5).</li><li><strong>Decisions tile: Self 5.0, All Others 6.0</strong> → Hidden strength. Others rate Jordan a full point higher than Jordan does.</li><li><strong>Q34 \"…use of data in decision-making\": Self 5, Direct Reports 6.3</strong> → Hidden strength. 1.3 points higher from direct reports, which fits the Decisions pattern.</li><li><strong>Deliver dimension: Self 6.1, All Others 5.9</strong> → Agreement. 0.2 is below the 0.5 dimension threshold.</li><li><strong>Inspire dimension: Self 5.5, All Others 5.6</strong> → Agreement. 0.1 is below the threshold.</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "M8-36",
+  "title": "Strong finding or weak finding?",
+  "intro": "<p>A colleague drafts this finding for the Northwind board:</p><p><em>\"The Clinic Network has a culture problem. Its Collaboration score is 36, the lowest in the organization, and the merger has clearly failed.\"</em></p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What's the best feedback?</p>",
+    "o": [
+     "<p>It's fine. The data clearly shows the Clinic Network is lowest.</p>",
+     "<p>Rewrite it to describe the pattern without a verdict, add the evidence and its N, and replace \"the merger has failed\" with what the evidence supports.</p>",
+     "<p>Remove it. Department comparisons shouldn't go to a board.</p>",
+     "<p>Make it stronger by naming the clinic managers responsible.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>The number is right, but \"culture problem\" and \"merger has failed\" go well beyond what one score shows.</p>",
+     "1": "<p>Yes. For example: \"Collaboration is lowest in the Clinic Network (36, n = 97), and comments point to cross-site coordination since the merger. It's a priority area for integration.\" Evidence, a fair claim, and a so-what.</p>",
+     "2": "<p>Department patterns at n = 97 are well above every floor and are often the most useful thing in a report. Present them carefully. Don't hide them.</p>",
+     "3": "<p>Never attach results to named individuals in a group report. That breaks the confidentiality respondents were promised, and it misreads what culture data shows.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M8-39",
+  "title": "Case A: Northwind's Culture Mosaic",
+  "intro": "<p><strong>Exhibits:</strong> Northwind Culture Mosaic, Feb–Mar 2026 (Exhibits A1–A8 in your case file): the methodology box, headline diamond, selected item rows, PSI, leader comparison, department heatmap, comment themes and benchmark status.</p><p><strong>A1. Research methodology box</strong></p><table><tr><th></th><th></th></tr><tr><td>Invited</td><td>640</td></tr><tr><td>Responded</td><td>412</td></tr><tr><td>Response rate</td><td>64% (64.4)</td></tr><tr><td>Sampling methodology</td><td>Census</td></tr></table><p>Breakdown bought: one, <em>By department</em>.</p><p><strong>A2. Headline diamond: 0–100 tile scores</strong></p><table><tr><th>Dimension</th><th>Tile</th><th>Score</th><th>Dimension score</th></tr><tr><td>ADAPT</td><td>Change Ready</td><td>48</td><td>59</td></tr><tr><td></td><td>Future Focused</td><td>55</td><td></td></tr><tr><td></td><td>Customer</td><td>74</td><td></td></tr><tr><td>INSPIRE</td><td>Purpose</td><td>82</td><td>66</td></tr><tr><td></td><td>Strategy</td><td>51</td><td></td></tr><tr><td></td><td>Values</td><td>66</td><td></td></tr><tr><td>DELIVER</td><td>Efficiency</td><td>57</td><td>58</td></tr><tr><td></td><td>Decisions</td><td>73</td><td></td></tr><tr><td></td><td>Collaboration</td><td>44</td><td></td></tr><tr><td>ENABLE</td><td>Empowered Teams</td><td>49</td><td>54</td></tr><tr><td></td><td>Capability Development</td><td>53</td><td></td></tr><tr><td></td><td>Learning</td><td>61</td><td></td></tr></table><p>Tile-size bands</p><table><tr><th>Band</th><th>Tiles</th></tr><tr><td>84–100</td><td>none</td></tr><tr><td>68–83</td><td>Purpose, Customer, Decisions</td></tr><tr><td>52–67</td><td>Values, Learning, Efficiency, Future Focused, Capability Development</td></tr><tr><td>36–51</td><td>Strategy, Empowered Teams, Change Ready, Collaboration</td></tr></table><p><strong>A3. Selected item rows</strong> (1–5 scale; benchmark percentile; typical = median of benchmark org means)</p><table><tr><th>Tile</th><th>Item</th><th>Your score</th><th>Typical</th><th>%ile</th><th>N</th></tr><tr><td>Purpose</td><td>\"Our purpose is well understood and clearly describes why we exist.\"</td><td>4.4</td><td>3.9</td><td>88</td><td>410</td></tr><tr><td>Collaboration</td><td>\"Disagreements are rarely openly explored and managed to keep momentum.\" (reverse-scored; shown after reversal, higher = better)</td><td>2.6</td><td>3.3</td><td>14</td><td>405</td></tr><tr><td>Empowered Teams</td><td>\"Speaking up is done regularly by people at all levels, even on difficult topics.\"</td><td>2.9</td><td>3.4</td><td>21</td><td>408</td></tr><tr><td>Learning</td><td>\"Mistakes are viewed as learning opportunities.\"</td><td>3.3</td><td>3.5</td><td>38</td><td>407</td></tr><tr><td>Learning</td><td>\"Diverse perspectives are sought out and listened to.\"</td><td>3.2</td><td>3.4</td><td>33</td><td>409</td></tr><tr><td>Change Ready (leader-only)</td><td>\"When it comes to our response to changes outside of our control, we are informed and prepared to pivot.\"</td><td>3.9</td><td>3.6</td><td>71</td><td>58</td></tr><tr><td>Future Focused (leader-only)</td><td>\"Strategic options and opportunities are regularly explored by scanning the external environment.\"</td><td>3.4</td><td>3.5</td><td>44</td><td>58</td></tr><tr><td>Decisions</td><td>\"We weigh evidence and different viewpoints before committing to a decision.\"</td><td>4.2</td><td>3.4</td><td>91</td><td>409</td></tr><tr><td>Decisions</td><td>\"We know when a decision should be made collaboratively and when it should not.\"</td><td>3.1</td><td>3.1</td><td>49</td><td>406</td></tr></table><p><strong>A4. Psychological Safety Index</strong></p><ul><li>The PSI is the mean of 4 items, computed per respondent: Collaboration (reversed), Speaking up, Mistakes as learning, Diverse perspectives.</li><li>Org PSI = 2.96, which rounds to 3. The report therefore shows the PSI 3 slide: \"The level of psychological safety in your organization is acceptable to attempt to create change in your organization but presents a risk to success. You may want to first focus on improving psychological safety prior to focusing on other change efforts.\"</li></ul><p><strong>A5. Leader vs non-leader</strong> (Leader Status comparison; leader question = \"Level\", leader values = Manager, Director, VP, Executive)</p><table><tr><th>Tile</th><th>Leaders (n=58)</th><th>Non-leaders (n=354)</th><th>Gap</th></tr><tr><td>Strategy</td><td>72</td><td>47</td><td>25</td></tr><tr><td>Empowered Teams</td><td>70</td><td>45</td><td>25</td></tr><tr><td>Purpose</td><td>86</td><td>81</td><td>5</td></tr><tr><td>Collaboration</td><td>55</td><td>42</td><td>13</td></tr></table><p><strong>A6. Comparison heatmap by department</strong> (0–100; min group size = 3)</p><table><tr><th>Tile</th><th>Nursing (n=161)</th><th>Clinic Network (n=97)</th><th>Support Services (n=88)</th><th>Admin &amp; Corporate (n=46)</th><th>Other* (n=20)</th><th>OVERALL (412)</th></tr><tr><td>Change Ready</td><td>45</td><td>39</td><td>52</td><td>63</td><td>50</td><td>48</td></tr><tr><td>Purpose</td><td>84</td><td>77</td><td>80</td><td>88</td><td>82</td><td>82</td></tr><tr><td>Strategy</td><td>46</td><td>44</td><td>52</td><td>74</td><td>53</td><td>51</td></tr><tr><td>Collaboration</td><td>38</td><td>36</td><td>49</td><td>61</td><td>50</td><td>44</td></tr><tr><td>Customer</td><td>79</td><td>72</td><td>66</td><td>74</td><td>70</td><td>74</td></tr><tr><td>Empowered Teams</td><td>44</td><td>46</td><td>52</td><td>66</td><td>51</td><td>49</td></tr></table><p>* \"Other\" includes Pharmacy (n=2), which is below the group minimum and rolls up into Other.</p><p><strong>A7. Free-response AI themes</strong></p><p><strong>\"What aspects of our culture… will continue to serve us well?\"</strong> (318 of 412 responded)</p><ul><li>Headline: \"People are proud of the care they give and the teams they work in day to day.\"</li><li>Commitment to patients (Many)</li><li>Strong teamwork within units (Several)</li><li>Flexible scheduling in clinics (A few)</li></ul><p><strong>\"…biggest areas of opportunity to improve?\"</strong> (301 of 412 responded)</p><ul><li>Headline: \"Since the merger, sites feel disconnected and frontline voices feel unheard.\"</li><li>Cross-site coordination after the merger (Many)</li><li>Staffing and workload (Many)</li><li>Decisions made without frontline input (Several)</li><li>Unclear \"One Northwind\" priorities (A few)</li></ul><p><strong>A8. Benchmark status</strong></p><ul><li>The report was generated after the survey closed.</li><li>The buyer consented to the research database at checkout (US organization, so the box was pre-ticked and left ticked).</li><li>412 responses is above the 10-respondent minimum.</li><li>So Northwind joined the Culture Mosaic benchmark.</li><li>The pool had more than 5 organizations, so percentiles and typical markers display.</li></ul><p><strong>Your task (25 minutes):</strong></p><ol><li>Write <strong>three Finding Cards</strong> (Claim · Evidence · Confidence · So-what).</li><li>Name <strong>one thing you'd be careful <em>not</em> to say</strong> to the executive team, and why.</li><li>State the <strong>\"Where to start\"</strong> tiles the report would suggest.</li></ol>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Write <strong>three Finding Cards</strong> (Claim · Evidence · Confidence · So-what).</p>",
+    "model": "<p><em>Finding 1 — Clear purpose, unclear path.</em></p><ul><li>Claim: people are proud of why Northwind exists but unclear how it's getting there.</li><li>Evidence:<ul><li>Purpose 82 (the item \"Our purpose is well understood…\" is 4.4, at the 88th percentile).</li><li>Strategy 51.</li><li>Leaders 72 vs. non-leaders 47 on Strategy.</li><li>Themes: \"Commitment to patients (Many)\" and \"Unclear 'One Northwind' priorities (A few)\".</li></ul></li><li>Confidence: High.</li><li>So-what: the strategy is understood at the top but not translated for the frontline. That's a risk to the integration.</li></ul><p><em>Finding 2 — Collaboration across the merged sites is the weakest point.</em></p><ul><li>Claim: collaboration is the lowest tile, concentrated in Nursing and the Clinic Network.</li><li>Evidence:<ul><li>Collaboration 44 overall; Nursing 38 (n = 161); Clinic Network 36 (n = 97); Admin &amp; Corporate 61.</li><li>The disagreement item is at the 14th percentile.</li><li>Theme: \"Cross-site coordination after the merger (Many)\".</li></ul></li><li>Confidence: High.</li><li>So-what: the merger's integration work needs to focus on cross-site working, starting with nursing and the clinics.</li></ul><p><em>Finding 3 — The frontline has less voice than leaders think, and psychological safety is fragile.</em></p><ul><li>Claim: frontline staff feel less able to speak up and shape decisions than leaders do.</li><li>Evidence:<ul><li>Empowered Teams 49 (leaders 70 vs. non-leaders 45).</li><li>\"Speaking up\" item 2.9, at the 21st percentile.</li><li>PSI 2.96, which shows the PSI 3 slide at the cautious end.</li><li>Theme: \"Decisions made without frontline input (Several)\".</li></ul></li><li>Confidence: High.</li><li>So-what: change efforts will struggle unless people feel safe raising problems. Build voice into how integration decisions are made.</li></ul><p><strong>\"Meets\" standard:</strong></p><ul><li>At least 3 Finding Cards, each with a fair claim, at least 2 correct data points with the right measure named, a justified confidence level, and a so-what.</li><li>No suppressed group reported.</li><li>No causal or validation overclaim.</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Name <strong>one thing you'd be careful <em>not</em> to say</strong> to the executive team, and why.</p>",
+    "model": "<p>Any one, with its reason:</p><ul><li>\"Pharmacy is the unhappiest team.\" It was rolled into Other; never report it.</li><li>\"Our culture ranks in the bottom 20%.\" Percentiles are per item, not an overall rank.</li><li>\"Raising Adapt will grow market share.\" That's a causal overclaim.</li><li>\"Staffing and workload is a Mosaic finding.\" It's a comment theme, not a tile. Present it as what employees raised.</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p>State the <strong>\"Where to start\"</strong> tiles the report would suggest.</p>",
+    "model": "<p>Collaboration (44), Change Ready (48), Empowered Teams (49).</p>"
+   }
+  ]
+ },
+ {
+  "id": "M8-40",
+  "title": "Case B: Jordan Reyes's 360",
+  "intro": "<p><strong>Exhibits:</strong> Leadership Mosaic 360 for Jordan Reyes, COO (Exhibit C): rater mix, dimension and tile means, selected items, and direct reports' comment summaries.</p><p><strong>C1. Rater mix</strong></p><table><tr><th>Category</th><th>Invited</th><th>Completed</th><th>Shown in report?</th></tr><tr><td>Self</td><td>1</td><td>1</td><td>Yes</td></tr><tr><td>Boss (Dana Okafor, CEO)</td><td>1</td><td>1</td><td>Yes. Named as \"Boss 1 (Dana Okafor)\"</td></tr><tr><td>Peers</td><td>5</td><td>4</td><td>Yes (≥ 3)</td></tr><tr><td>Direct Reports</td><td>8</td><td>7</td><td>Yes (≥ 3)</td></tr><tr><td>Other (board liaison and external partner)</td><td>2</td><td>2</td><td>No. The category is folded because it has fewer than 3. The folded pool (2) is also under 3, so these 2 are excluded from All Others and their comments are withheld.</td></tr></table><p>All Others = Boss + Peers + Direct Reports = 12 raters.</p><p><strong>C2. Dimension and selected subcomponent means</strong> (1–7 scale)</p><table><tr><th></th><th>Self</th><th>All Others</th><th>Boss 1</th><th>Peers</th><th>Direct Reports</th><th>Gap (Self − All Others)</th></tr><tr><td><strong>ADAPT</strong></td><td>5.9</td><td>4.6</td><td>5.0</td><td>4.2</td><td>4.7</td><td>+1.3</td></tr><tr><td>Change Ready</td><td>6.2</td><td>4.4</td><td>5.1</td><td>4.0</td><td>4.5</td><td>+1.8</td></tr><tr><td><strong>INSPIRE</strong></td><td>5.5</td><td>5.6</td><td>6.0</td><td>5.4</td><td>5.6</td><td>−0.1</td></tr><tr><td><strong>DELIVER</strong></td><td>6.1</td><td>5.9</td><td>6.2</td><td>5.8</td><td>5.9</td><td>+0.2</td></tr><tr><td>Decisions</td><td>5.0</td><td>6.0</td><td>6.3</td><td>5.9</td><td>6.0</td><td>−1.0</td></tr><tr><td><strong>ENABLE</strong></td><td>5.2</td><td>4.3</td><td>5.4</td><td>4.8</td><td>3.8</td><td>+0.9</td></tr><tr><td>Empowered Teams</td><td>5.6</td><td>4.1</td><td>5.5</td><td>4.8</td><td>3.6</td><td>+1.5</td></tr></table><p>0–100 conversion examples, using (mean − 1) / 6 × 100: All Others ADAPT 4.6 → 60; Self ADAPT 5.9 → 82.</p><p><strong>C3. Selected items</strong></p><table><tr><th>Item</th><th>Self</th><th>Boss 1</th><th>Peers</th><th>DR</th><th>All Others %ile</th></tr><tr><td>Q2 \"…involve my team in change efforts to maximize their involvement and commitment.\"</td><td>6</td><td>5</td><td>3.8</td><td>3.9</td><td>19</td></tr><tr><td>Q4 \"…deliberate in communicating changes… including the 'why'…\"</td><td>6</td><td>5</td><td>4.0</td><td>4.1</td><td>24</td></tr><tr><td>Q34 \"…encourage and expect the use of data in decision-making…\"</td><td>5</td><td>6</td><td>6.0</td><td>6.3</td><td>82</td></tr><tr><td>Q45 \"…create space for others to contribute.\"</td><td>6</td><td>5</td><td>4.5</td><td>3.4</td><td>12</td></tr></table><p>(The LM pool was ≥ 30 leaders, so percentiles display.)</p><p><strong>C4. AI free-response summaries (direct reports)</strong></p><ul><li><strong>Strengths:</strong> \"Direct reports describe a sharp, data-driven operator who makes timely calls and protects the team from noise.\" (Positive)</li><li><strong>Improve:</strong> \"Several want more say before changes land; integration decisions feel finished before they hear about them.\" (Mixed)</li><li><strong>Blind spot:</strong> \"May not see how quickly urgency shuts down debate in meetings.\" (Mixed)</li></ul><p><strong>Your task (20 minutes):</strong></p><ol><li>Identify <strong>two blind spots</strong> and <strong>one hidden strength</strong>, with the numbers.</li><li>Describe <strong>one rater-group disagreement</strong> and what it might mean.</li><li>Explain to Jordan, in <strong>two sentences</strong>, why the \"Other\" raters don't appear anywhere in the report.</li><li>Name the <strong>one development theme</strong> you'd open the debrief with, and why.</li></ol>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Identify <strong>two blind spots</strong> and <strong>one hidden strength</strong>, with the numbers.</p>",
+    "model": "<p><strong>Blind spots:</strong></p><ul><li>Change Ready: Self 6.2 vs. All Others 4.4, a +1.8 gap.</li><li>Empowered Teams: Self 5.6 vs. 4.1, a +1.5 gap.</li><li>Item evidence: Q2 \"involve my team in change efforts\" (Self 6 vs. Peers 3.8 / DR 3.9, 19th percentile). Q45 \"create space for others to contribute\" (Self 6 vs. DR 3.4, 12th percentile).</li></ul><p><strong>Hidden strength:</strong></p><ul><li>Decisions: Self 5.0 vs. All Others 6.0, a −1.0 gap.</li><li>Item evidence: Q34 data in decisions (DR 6.3, 82nd percentile).</li></ul><p><strong>Meets:</strong> correct direction and approximate size for at least 2 blind spots and 1 hidden strength.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Describe <strong>one rater-group disagreement</strong> and what it might mean.</p>",
+    "model": "<p>On Empowered Teams, Boss 5.5 vs. Direct Reports 3.6, a spread of 1.9. The CEO sees an empowering operator, while the team experiences decisions that are already made. Jordan likely manages up and manages down differently.</p><p><strong>Meets:</strong> the disagreement is identified with both groups' scores.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Explain to Jordan, in <strong>two sentences</strong>, why the \"Other\" raters don't appear anywhere in the report.</p>",
+    "model": "<p>\"You invited two raters in the Other category. Because fewer than three responded in that category, their answers were combined out of the report, and their comments withheld, so that no one's feedback can be singled out.\"</p><p><strong>Meets:</strong> the folding explanation is accurate and doesn't speculate about who the raters were.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Name the <strong>one development theme</strong> you'd open the debrief with, and why.</p>",
+    "model": "<p>\"How much room your team has to shape change\". It links the two blind spots, the direct-report comments (\"integration decisions feel finished before they hear about them\"), and the hidden strength. Jordan's data-driven decisiveness is valued, and the opportunity is to bring people in <em>before</em> deciding. Opening with the hidden strength first is good coaching practice.</p><p><strong>Meets:</strong> the development theme is framed as development, not judgment.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M8-41",
+  "title": "Case C: Northwind's progress check",
+  "intro": "<p><strong>Exhibits:</strong> Culture Progress Monitor, Oct 2026 (Exhibit E): the progress summary, Collaboration by department, and how the comments shifted.</p><ul><li><strong>Baseline:</strong> the Feb 2026 Culture Mosaic, which had 412 responses.</li><li><strong>Domains re-measured:</strong> Collaboration, Change Ready, Empowered Teams.</li><li><strong>Invited:</strong> 610 (headcount changed). <strong>Responded:</strong> 287. <strong>Response rate:</strong> 47%.</li><li>Minimum group size: 3.</li></ul><p><strong>E1. Progress summary (0–100)</strong></p><table><tr><th>Domain</th><th>Baseline (Feb 2026, n=412)</th><th>Now (Oct 2026, n=287)</th><th>Change</th><th>Label</th></tr><tr><td>Collaboration</td><td>44</td><td>52</td><td>+8</td><td>Meaningful improvement (p &lt; .001)</td></tr><tr><td>Change Ready</td><td>48</td><td>51</td><td>+3</td><td>No meaningful change (p = .19)</td></tr><tr><td>Empowered Teams</td><td>49</td><td>47</td><td>−2</td><td>No meaningful change (p = .41)</td></tr></table><p><strong>E2. Progress by group: Department, Collaboration</strong></p><table><tr><th>Group</th><th>Baseline</th><th>Now</th><th>Change</th></tr><tr><td>Nursing</td><td>38 (n=161)</td><td>41 (n=104)</td><td>+3</td></tr><tr><td>Clinic Network</td><td>36 (n=97)</td><td>49 (n=64)</td><td>+13</td></tr><tr><td>Support Services</td><td>49 (n=88)</td><td>55 (n=71)</td><td>+6</td></tr><tr><td>Admin &amp; Corporate</td><td>61 (n=46)</td><td>62 (n=40)</td><td>+1</td></tr><tr><td>Other</td><td>50 (n=20)</td><td>53 (n=8)</td><td>+3</td></tr></table><p><strong>E3. How the comments shifted (\"biggest areas of opportunity\")</strong></p><ul><li><strong>Direction:</strong> more positive.</li><li><strong>Themes:</strong><ul><li>\"Cross-site coordination after the merger\" — FADED</li><li>\"Staffing and workload\" — STEADY</li><li>\"Decisions made without frontline input\" — STEADY</li><li>\"New cross-site huddles are helping\" — NEW</li></ul></li><li>Then/Now quotes are shown (whole-org level, with 5+ answers each wave).</li></ul><p><strong>Your task (20 minutes):</strong></p><ol><li>In <strong>one sentence each</strong>, describe what happened to each of the three domains, using the report's language correctly.</li><li>Name <strong>two caveats</strong> you'd attach to these results.</li><li>The CEO asks: \"So did the huddles work?\" Write a <strong>3-sentence answer</strong>.</li><li>Recommend a <strong>next step</strong> for Empowered Teams.</li></ol>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>In <strong>one sentence each</strong>, describe what happened to each of the three domains, using the report's language correctly.</p>",
+    "model": "<ul><li><strong>Collaboration</strong> improved meaningfully: up 8 points, from 44 to 52. The biggest gain was in the Clinic Network (+13, 36 → 49).</li><li><strong>Change Ready</strong> moved +3 (48 → 51), which is within normal variation.</li><li><strong>Empowered Teams</strong> moved −2 (49 → 47), also within normal variation.</li></ul><p><strong>Meets:</strong> correct labels for all 3 domains, with no domain called \"failed\".</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Name <strong>two caveats</strong> you'd attach to these results.</p>",
+    "model": "<p>Any two:</p><ul><li>The response rate fell from 64% to 47%, and Nursing's responses fell from 161 to 104, so the mix of respondents changed.</li><li>\"No meaningful change\" may mean too small, too soon or too few, not \"failed\".</li><li>Two waves can't prove the actions caused the change.</li><li>The \"Other\" group is only 8 people.</li></ul><p><strong>Meets:</strong> at least 2 valid caveats, including the response rate.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>The CEO asks: \"So did the huddles work?\" Write a <strong>3-sentence answer</strong>.</p>",
+    "model": "<p>\"Collaboration improved meaningfully over the period the huddles ran, and most where they started, in the Clinic Network. Comments about cross-site coordination have faded, and a new theme says the huddles are helping. That's encouraging evidence, though a survey can't prove the huddles alone caused it.\"</p><p><strong>Meets:</strong> the CEO answer avoids a causal claim.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Recommend a <strong>next step</strong> for Empowered Teams.</p>",
+    "model": "<p>The comment theme \"Decisions made without frontline input\" is STEADY and the score hasn't moved, so revisit the decision-rights work. Use stories (Mosaic Signal or a Culture Dig) to understand <em>why</em> decisions still feel closed, then re-measure in 6–9 months.</p><p><strong>Meets:</strong> a next step is tied to the evidence.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M8-42",
+  "title": "Case D: Harbor & Pine's Culture Dig",
+  "intro": "<p><strong>Exhibit:</strong> Harbor &amp; Pine Credit Union, Culture Dig Wave 1, story patterns (Exhibit F). There were 214 stories in total.</p><table><tr><th>Domain</th><th>Stories</th><th>Composite</th><th>±95%</th></tr><tr><td>Espoused Beliefs and Values</td><td>41</td><td>58.6</td><td>4.9</td></tr><tr><td>HR Systems</td><td>33</td><td>41.7</td><td>5.6</td></tr><tr><td>Organizational Artifacts</td><td>29</td><td>63.2</td><td>5.8</td></tr><tr><td>Organizational History</td><td>38</td><td>49.9</td><td>5.1</td></tr><tr><td>Organizational Stories</td><td>36</td><td>48.2</td><td>5.3</td></tr><tr><td>Rituals and Rites of Passage</td><td>8</td><td>—</td><td>—</td></tr><tr><td>Stakeholder Relations</td><td>29</td><td>66.5</td><td>5.9</td></tr></table><p><strong>Your task (15 minutes):</strong></p><ol><li>Which differences between domains can you state with confidence, and which can't you?</li><li>What should the report say about Rituals, and what can't it include?</li><li>The sponsor says: \"HR Systems scored worst, so HR is failing.\" How do you respond?</li></ol>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Which differences between domains can you state with confidence, and which can't you?</p>",
+    "model": "<ul><li><em>Confident:</em> Stakeholder Relations (60.6–72.4) and Artifacts (57.4–69.0) sit clearly above HR Systems (36.1–47.3). Their ranges don't overlap.</li><li><em>Not confident:</em> HR Systems, Stories (42.9–53.5) and History (44.8–55.0) overlap, so don't rank those three against each other.</li></ul><p><strong>Meets:</strong> uses the margins to separate firm from unfirm differences.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>What should the report say about Rituals, and what can't it include?</p>",
+    "model": "<p>\"Only 8 stories — too few to score\". No composite, and <strong>no quotes</strong>, because quotes need at least 10 stories in a domain that wave. Note it as a gap and consider prompts that draw more ritual stories in the next wave.</p><p><strong>Meets:</strong> correctly handles Rituals: no score and no quotes.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>The sponsor says: \"HR Systems scored worst, so HR is failing.\" How do you respond?</p>",
+    "model": "<p>\"A lower composite isn't a grade. Culture Dig describes what the culture does, not whether it passes. In HR Systems, people's stories read as less predictable, more draining or more blame-driven than in other domains. Let's look at the grid and the triangle to see which, and check what the HR Systems research team found in their interviews. If their findings differ from the stories, that difference is itself important.\"</p><p><strong>Meets:</strong> reframes \"failing\" as a pattern to investigate, with a next analytic step.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M9-06",
+  "title": "Pick the best headline",
+  "intro": "<p>You're briefing Northwind's executives on the October progress check.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Pick the best headline.</p>",
+    "o": [
+     "<p>“Our progress check shows Collaboration +8, Change Ready +3 and Empowered Teams −2.”</p>",
+     "<p>“Collaboration across sites has meaningfully improved since the huddles began, but people still feel shut out of decisions.”</p>",
+     "<p>“The huddles fixed our collaboration problem.”</p>",
+     "<p>“Two of our three culture priorities have failed.”</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Accurate, but it's a list. What should the executives take away?</p>",
+     "1": "<p>Yes. One sentence, a tension, and every word backed by the data (meaningful improvement on Collaboration; Empowered Teams flat, with the “decisions without frontline input” theme STEADY).</p>",
+     "2": "<p>“Fixed” overstates a +8 to 52, and “the huddles fixed” is a causal claim two waves can't prove.</p>",
+     "3": "<p>“No meaningful change” isn't “failed”.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-11",
+  "title": "Which exhibit for which finding?",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Match each Northwind finding to the single best exhibit.</p>",
+    "p": [
+     "<p>“People know why we exist but not how we're getting there.”</p>",
+     "<p>“Leaders and the frontline see empowerment very differently.”</p>",
+     "<p>“Collaboration has meaningfully improved since the huddles began.”</p>",
+     "<p>“Cross-site coordination concerns have faded; decisions still feel closed.”</p>",
+     "<p>“The COO's team experiences less room to contribute than the COO sees.”</p>"
+    ],
+    "o": [
+     "<p>“How the comments shifted” themes (FADED / STEADY / NEW)</p>",
+     "<p>Inspire tiles side by side (Purpose 82 · Strategy 51 · Values 66)</p>",
+     "<p>Self vs. Direct Reports on Q45 and Empowered Teams</p>",
+     "<p>Leader vs. Non-Leader comparison for Empowered Teams and Strategy</p>",
+     "<p>Progress summary row for Collaboration (44 → 52, Meaningful improvement)</p>"
+    ],
+    "c": [
+     1,
+     3,
+     4,
+     0,
+     2
+    ],
+    "fr": "<p>Right. Each finding has one best exhibit:</p><ul><li><strong>Inspire tiles side by side (Purpose 82 · Strategy 51 · Values 66)</strong>: The spread within one dimension makes the point at a glance.</li><li><strong>Leader vs. Non-Leader comparison for Empowered Teams and Strategy</strong>: The 25-point gaps are the point.</li><li><strong>Progress summary row for Collaboration (44 → 52, Meaningful improvement)</strong>: It shows the change and its label together.</li><li><strong>“How the comments shifted” themes (FADED / STEADY / NEW)</strong>: The theme tags carry the change in what people say.</li><li><strong>Self vs. Direct Reports on Q45 and Empowered Teams</strong>: Used only in Jordan's <strong>private</strong> debrief, never in a group briefing.</li></ul>",
+    "fw": "<p>Not quite. Look for the exhibit that makes each point on its own:</p><ul><li><strong>Inspire tiles side by side (Purpose 82 · Strategy 51 · Values 66)</strong>: The spread within one dimension makes the point at a glance.</li><li><strong>Leader vs. Non-Leader comparison for Empowered Teams and Strategy</strong>: The 25-point gaps are the point.</li><li><strong>Progress summary row for Collaboration (44 → 52, Meaningful improvement)</strong>: It shows the change and its label together.</li><li><strong>“How the comments shifted” themes (FADED / STEADY / NEW)</strong>: The theme tags carry the change in what people say.</li><li><strong>Self vs. Direct Reports on Q45 and Empowered Teams</strong>: Used only in Jordan's <strong>private</strong> debrief, never in a group briefing.</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "M9-15",
+  "title": "“The data's wrong”",
+  "intro": "<p><strong>Priya Natarajan (CFO):</strong> “I don't buy it. The people who answer these surveys are the unhappy ones. This is biased.”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“The survey is scientifically validated, so the results are accurate.”</p>",
+     "<p>“That's a fair challenge. 412 of 640 people answered, 64%, across every department, so this isn't a small, self-selected group. It's still possible some views are under-represented, and I can show you response numbers by department. And the strengths are as clear as the concerns: Purpose is at the 88th percentile. Unhappy people don't usually rate purpose that highly.”</p>",
+     "<p>“If you don't trust the data, we can't help you.”</p>",
+     "<p>“You may be right. Let's not put too much weight on it.”</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Avoid validation claims you can't support, and this doesn't address the concern.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
+     "1": "<p>Strong. It acknowledges the challenge, answers with N, coverage and the response rate, admits a real limit, and uses the strengths to show balance.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
+     "2": "<p>Defensive. It ends the dialogue.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>",
+     "3": "<p>Caving undermines solid data. A 64% response across all departments deserves weight.</p><p><strong>Why:</strong> a “biased sample” challenge is answered with facts about who responded, plus an honest limit. Never with a credential claim, and never by conceding.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-16",
+  "title": "“Who said that?”",
+  "intro": "<p><strong>Sam Whitfield (CNO):</strong> “That comment about decisions being made without frontline input, that's someone on 4 West, isn't it? I need to know so I can follow up.”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“I can't say who, but it was probably someone from nursing.”</p>",
+     "<p>“I don't know who said it, and I wouldn't share it if I did. People answered on the promise that their comments couldn't be traced. What I can tell you is that it came up several times, across the organization. If you want to follow up, the most powerful thing is to ask your teams openly what decisions they'd like a say in.”</p>",
+     "<p>“Let me check the raw data and get back to you.”</p>",
+     "<p>“It doesn't matter who said it.”</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Even a hint narrows it down. Never guess or confirm.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
+     "1": "<p>Strong. It holds the line on confidentiality, gives the prevalence, and turns the curiosity into a constructive action.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
+     "2": "<p>Never look for, or offer to look for, a respondent's identity.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>",
+     "3": "<p>True, but dismissive, and it misses the chance to redirect.</p><p><strong>Why:</strong> anonymity is the reason people answered honestly. Protecting it isn't negotiable, and the executive's real need (to act) can be met another way.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-17",
+  "title": "“Which team is the problem?”",
+  "intro": "<p><strong>Dana Okafor (CEO):</strong> “Just tell me which team is the problem so we can deal with it.”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“The Clinic Network. It has the lowest Collaboration and Change Ready scores.”</p>",
+     "<p>“There isn't a problem team. There's a pattern. Collaboration is lowest where the merged sites meet: Nursing at 38 and the Clinic Network at 36, against 61 in Admin and Corporate. The comments point to cross-site coordination, so this is about how the sites work <em>together</em>, not about one team. That's where I'd focus.”</p>",
+     "<p>“I can't tell you that. It would breach confidentiality.”</p>",
+     "<p>“Pharmacy, but that's off the record.”</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Accurate numbers, but framing a group as “the problem” invites blame and misses the cross-site pattern.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
+     "1": "<p>Strong. It reframes from team to pattern, cites groups that are large enough to report, and points to action.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
+     "2": "<p>Department results at n = 97 and n = 161 are fine to share. Confidentiality doesn't hide well-sized groups.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>",
+     "3": "<p>Never. Pharmacy (n = 2) was rolled into Other, and “off the record” is still disclosure.</p><p><strong>Why:</strong> move the conversation from blame to system, using only groups the report shows.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-18",
+  "title": "“What's the benchmark?”",
+  "intro": "<p><strong>Alex Moreau (CPO):</strong> “How do we compare to other health systems? What's a good score?”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“Anything over 70 is good.”</p>",
+     "<p>“You're below the industry average on Collaboration.”</p>",
+     "<p>“The percentiles compare you with organizations in the Mosaic benchmark, not specifically health systems. Purpose is at the 88th percentile and the disagreement item at the 14th, so you can see where you stand. There's no ‘good score’ as such. The question is whether a score is strong enough for what One Northwind needs. On Collaboration, I'd say it isn't yet.”</p>",
+     "<p>“We don't share benchmark data.”</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>There's no pass mark. Inventing one misleads.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
+     "1": "<p>The benchmark isn't “the industry”, and isn't split by sector.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
+     "2": "<p>Strong. It's accurate about what the comparison group is, uses percentiles correctly, and reframes “good” around the client's strategy.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>",
+     "3": "<p>The percentiles <em>are</em> the benchmark comparison. Use them.</p><p><strong>Why:</strong> be precise about the comparison group, and anchor “good” to the client's goals.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-19",
+  "title": "“Fix it by next quarter”",
+  "intro": "<p><strong>Jordan Reyes (COO):</strong> “Fine. Let's fix collaboration by next quarter and re-survey everyone in January to prove it.”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“Great, I'll set up a full Culture Mosaic for January.”</p>",
+     "<p>“Love the urgency. Culture moves more slowly than a quarter, though, and re-measuring too soon risks showing ‘no meaningful change’ even if things are improving, which could demoralise people. I'd suggest starting actions now and running a progress check on just your three priority domains in six to eight months. Meanwhile, we can track early signals, like whether the cross-site huddles are actually happening.”</p>",
+     "<p>“Culture can't be fixed.”</p>",
+     "<p>“Whatever you'd like.”</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>A full re-survey after 3 months is costly, likely to show no meaningful change, and adds survey fatigue.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
+     "1": "<p>Strong. It honours the urgency, explains the timing risk, recommends the right tool (a Culture Progress Monitor on the chosen domains), and offers interim measures.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
+     "2": "<p>Unhelpful and untrue. Culture changes, just over time.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>",
+     "3": "<p>Gives up your expertise.</p><p><strong>Why:</strong> match the measurement cycle to how fast culture can realistically move, and use the right instrument.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-20",
+  "title": "Defensiveness after a 360",
+  "intro": "<p>In a private debrief, <strong>Jordan Reyes</strong> looks at the Empowered Teams results and says: “My direct reports gave me 3.6? That's ridiculous. I involve them constantly. A couple of people with an axe to grind have skewed this.”</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Choose the strongest response:</p>",
+    "o": [
+     "<p>“The data doesn't lie, Jordan.”</p>",
+     "<p>“Let's figure out who the two people are.”</p>",
+     "<p>“It's a big gap, and it's normal for it to sting. Seven of your eight direct reports responded, so this isn't one or two voices. Interestingly, Dana rates you 5.5 on the same thing. So your team and your boss are seeing different parts of how you work. What do you think your team might be experiencing that Dana doesn't see?”</p>",
+     "<p>“Let's skip this section and focus on your strengths.”</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>True or not, it makes the leader more defensive.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
+     "1": "<p>Never. Rater confidentiality is absolute.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
+     "2": "<p>Strong. It normalises the reaction, corrects the “a couple of people” belief with N, uses the rater spread as a curiosity hook, and hands the thinking back to the leader.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>",
+     "3": "<p>Avoiding the hardest data wastes the 360.</p><p><strong>Why:</strong> in a debrief your job is to help the leader become curious about the gap, not to win the argument.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "M9-23",
+  "title": "Your debrief habits",
+  "intro": "<p>Think about the last time you gave someone difficult feedback.</p><p>Your notes are private and aren't graded.</p>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Did you talk more or listen more?</p>",
+    "model": "<p>There's no right or wrong answer here. Your notes are private and aren't graded.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Did you start with what was hard or with what was strong?</p>",
+    "model": "<p>There's no right or wrong answer here. Your notes are private and aren't graded.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>What's one habit from the talk-track you'd like to adopt?</p>",
+    "model": "<p>There's no right or wrong answer here. Your notes are private and aren't graded.</p>"
+   }
+  ]
+ },
+ {
+  "id": "M9-27",
+  "title": "Practice briefing assignment",
+  "intro": "<p><strong>Build and record a 5-minute briefing.</strong> It's a gate to the capstone, but it isn't scored for certification. Treat it as your rehearsal.</p><p><strong>Choose one:</strong></p><ul><li><strong>Option 1 — Progress-check briefing.</strong> Brief Northwind's executive team on the October Culture Progress Monitor (Exhibit E, plus your Case C answers from Module 8).</li><li><strong>Option 2 — 360 debrief opening.</strong> Record the first 5 minutes of Jordan Reyes's debrief (Exhibit C, plus your Case B answers). Use a colleague, or speak to camera as if to Jordan.</li></ul><p><strong>Deliverables</strong></p><ol><li>A 1-3-1 Briefing Template filled in (Option 1), or a debrief plan (Option 2).</li><li>Up to 3 exhibits (Option 1) or 2 report pages (Option 2), with slide surgery applied.</li><li>A recording of 5–6 minutes (video or audio with slides).</li><li>A self-score against the rubric below, with one sentence of evidence per criterion.</li></ol><p><strong>Practice rubric</strong> (the same criteria as the capstone briefing; 1 = not yet, 2 = developing, 3 = meets, 4 = strong). What “Meets” (3) looks like:</p><ul><li><strong>B1 Structure and headline</strong>: Clear 1-3-1 shape; a one-sentence headline that is fair to the data</li><li><strong>B2 Accuracy</strong>: Every number uses the right measure; no misread labels</li><li><strong>B3 Honest uncertainty</strong>: Limits named (N, response rate, “no meaningful change”, small groups); no causal claims</li><li><strong>B4 Handling pushback</strong>: (Self-test: answer one pushback prompt drawn at random from the playbook.) Acknowledges, clarifies, holds the line, redirects</li><li><strong>B5 Decision focus and next steps</strong>: Ends with a decision, owner, next measurement and share-back (Option 1), or the leader's own commitment (Option 2)</li><li><strong>B6 Presence and clarity</strong>: Plain language, steady pace, no jargon without a gloss</li></ul><p><strong>Optional peer review:</strong> swap recordings with another learner and score each other's work with the same rubric.</p>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Deliverable 1: Fill in the 1-3-1 Briefing Template (Option 1), or write your debrief plan (Option 2).</p>",
+    "model": "<p>Measure it against the rubric. A plan that “meets” has:</p><ul><li><strong>B1 Structure and headline</strong>: Clear 1-3-1 shape; a one-sentence headline that is fair to the data</li><li><strong>B2 Accuracy</strong>: Every number uses the right measure; no misread labels</li><li><strong>B3 Honest uncertainty</strong>: Limits named (N, response rate, “no meaningful change”, small groups); no causal claims</li><li><strong>B5 Decision focus and next steps</strong>: Ends with a decision, owner, next measurement and share-back (Option 1), or the leader's own commitment (Option 2)</li></ul>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Deliverable 2: List the exhibits (up to 3, Option 1) or report pages (2, Option 2) you'll use, with the slide surgery you applied to each.</p>",
+    "model": "<p>Every number uses the right measure, with no misread labels (B2 Accuracy).</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>B4 self-test: answer one pushback prompt drawn at random from the playbook.</p>",
+    "model": "<p>A response that “meets” acknowledges, clarifies, holds the line, redirects.</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Deliverable 4: After recording your 5–6 minute briefing, score yourself 1–4 on each criterion (B1–B6), with one sentence of evidence per criterion.</p>",
+    "model": "<p><strong>Practice rubric</strong> (the same criteria as the capstone briefing; 1 = not yet, 2 = developing, 3 = meets, 4 = strong). What “Meets” (3) looks like:</p><ul><li><strong>B1 Structure and headline</strong>: Clear 1-3-1 shape; a one-sentence headline that is fair to the data</li><li><strong>B2 Accuracy</strong>: Every number uses the right measure; no misread labels</li><li><strong>B3 Honest uncertainty</strong>: Limits named (N, response rate, “no meaningful change”, small groups); no causal claims</li><li><strong>B4 Handling pushback</strong>: (Self-test: answer one pushback prompt drawn at random from the playbook.) Acknowledges, clarifies, holds the line, redirects</li><li><strong>B5 Decision focus and next steps</strong>: Ends with a decision, owner, next measurement and share-back (Option 1), or the leader's own commitment (Option 2)</li><li><strong>B6 Presence and clarity</strong>: Plain language, steady pace, no jargon without a gloss</li></ul>"
+   }
+  ]
+ }
+]

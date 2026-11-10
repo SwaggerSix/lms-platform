@@ -1,0 +1,229 @@
+[
+ {
+  "id": "MS-M1-03",
+  "title": "Signal, something else, or both?",
+  "intro": "<p>Three requests reach you in one week. Choose the best response to each.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p><strong>1. Taylor Brooks (VP, Clinic Operations):</strong> \"Our Culture Mosaic says Collaboration is 36 in the clinics. I want to know what's actually going on when clinic staff need something from the hospital.\"</p>",
+    "o": [
+     "<p>Run a second Culture Mosaic for clinics only.</p>",
+     "<p>Run a Mosaic Signal for clinic staff about a recent time they needed something from the hospital or another clinic.</p>",
+     "<p>Interview the four clinic managers.</p>",
+     "<p>Nothing more is needed; the score says it all.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
+     "1": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
+     "2": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
+     "3": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>2. A board member:</strong> \"Prove to us the huddles improved collaboration.\"</p>",
+    "o": [
+     "<p>Mosaic Signal: collect stories about the huddles.</p>",
+     "<p>A Culture Progress Monitor on Collaboration, and be clear that even a meaningful improvement shows change, not cause.</p>",
+     "<p>A Mosaic Signal benchmark against other hospitals.</p>",
+     "<p>Culture Dig.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
+     "1": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
+     "2": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
+     "3": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>3. Alex Moreau:</strong> \"Decisions feel closed to the frontline. Before we redesign decision rights, I want to hear how decisions actually land.\"</p>",
+    "o": [
+     "<p>Culture Mosaic again.</p>",
+     "<p>Mosaic Signal on \"a decision that affected your work\", and use the stories to shape the redesign.</p>",
+     "<p>A Leadership Mosaic 360 for every manager.</p>",
+     "<p>Wait for a Culture Dig in 2027.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
+     "1": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
+     "2": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
+     "3": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "MS-M1-09",
+  "title": "Rewrite Jamie's prompt",
+  "intro": "<p>Jamie Ortiz has started the decisions study. Here's their draft story question:</p><ul><li><strong>Question text:</strong> \"Decisions at Northwind\"</li><li><strong>Description:</strong> (none)</li><li><strong>Prompt:</strong> \"Tell us about a time a decision was made without asking frontline staff.\"</li></ul>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p><strong>Your task:</strong> rewrite all three pieces of text (question text, description, prompt) so they ask one thing, in Northwind's words, without naming the answer. Then compare with the model answer.</p>",
+    "model": "<ul><li><strong>Question text:</strong> \"Tell us about a decision that affected your work\"</li><li><strong>Description:</strong> \"Big or small, made by anyone. There are no right or wrong stories.\"</li><li><strong>Prompt:</strong> \"Think of a recent time, in the last three months, when a decision affected your work. What happened?\"</li></ul><p><em>Why it works:</em> the draft prompt names the answer (\"without asking frontline staff\"), so it would collect only one kind of story and confirm what leaders already suspect. The rewrite lets good, bad and mixed decisions in, sets a time window, and asks what happened. The heading and description now support the prompt instead of saying something else.</p><p><strong>Self-check:</strong> Does your prompt (1) point to one recent moment, (2) let a good story in, (3) avoid saying what went wrong, (4) ask what happened rather than who?</p>"
+   }
+  ]
+ },
+ {
+  "id": "MS-M2-09",
+  "title": "Design review: Jamie's draft framework",
+  "intro": "<p>Jamie has drafted the rest of the decisions survey. For each part, choose the main problem. Then compare with the framework Morgan Ellis fielded.</p><table><tr><th>Part</th><th>Jamie's draft</th></tr><tr><td>1. Intro text</td><td>\"This survey is completely anonymous.\" (The plan: email it by roster with Anonymous Responses off, \"so we can follow up\".)</td></tr><tr><td>2. Triad</td><td>\"How good was this decision?\" Good / Bad / Unclear</td></tr><tr><td>3. Dyad 1</td><td>Respectful ↔ Disrespectful</td></tr><tr><td>4. Dyad 2</td><td>Strategic ↔ Tactical</td></tr><tr><td>5. Stones</td><td>Leadership, Management, Communication, Trust, Teamwork, Resources, Process, Culture; axes \"Agree ↔ Disagree\"</td></tr><tr><td>6. Context</td><td>\"Which unit and shift do you work?\" (23 units × 3 shifts)</td></tr></table>",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Match each problem to the part of Jamie's draft it describes.</p>",
+    "p": [
+     "<p>Promise the distribution doesn't keep</p>",
+     "<p>A rating in a triangle</p>",
+     "<p>One end nobody would choose</p>",
+     "<p>Abstract ends</p>",
+     "<p>Too many, overlapping items and a rating axis with no arrow</p>",
+     "<p>Groups too small, identifying</p>"
+    ],
+    "o": [
+     "<p>1. Intro text</p>",
+     "<p>2. Triad</p>",
+     "<p>3. Dyad 1</p>",
+     "<p>4. Dyad 2</p>",
+     "<p>5. Stones</p>",
+     "<p>6. Context</p>"
+    ],
+    "c": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "fr": "<p>Right. Intro text: a promise the distribution doesn't keep. Triad: a rating in a triangle. Dyad 1: one end nobody would choose. Dyad 2: abstract ends. Stones: too many, overlapping items and a rating axis with no arrow. Context: groups too small, identifying.</p><p><strong>Morgan's framework</strong></p><ul><li><strong>Intro:</strong> \"This takes about five minutes. Share one real story about a decision that affected your work. It can be good, bad or mixed. Your answers are anonymous: we don't collect your name or email. Please write about what happened rather than who was involved…\" Sent by anonymous link. Anonymous Responses on.</li><li><strong>Triad:</strong> \"In this story, what shaped the decision most?\" <strong>The people doing the work / Data and evidence / The deadline</strong></li><li><strong>Dyad 1:</strong> \"When did you hear about this decision?\" <strong>Before it was made ↔ After it was in place</strong></li><li><strong>Dyad 2:</strong> \"Afterwards, what did people mostly do?\" <strong>Worked around it ↔ Made it work as intended</strong></li><li><strong>Stones:</strong> \"How did each of these show up in your story? Leave out any that weren't part of it.\" <strong>Why it was decided, A chance to give input, The information I needed, My manager</strong>; axes <strong>Absent → Fully present</strong>, <strong>Hindered → Helped</strong></li><li><strong>Context (optional):</strong> where you mostly work (3 options), your role (3), when you joined (3)</li></ul><p><em>Why it works:</em> three real pulls on a decision; dyads on two different concrete dimensions; four distinct stones on story axes, with an arrow on each; three broad context questions that test the client's hypotheses; and a welcome text that matches how the link is sent.</p>",
+    "fw": "<p>Not quite. Check the intro's \"completely anonymous\" against the plan to email it by roster with Anonymous Responses off. \"How good was this decision?\" is a rating. Nobody would choose \"Disrespectful\". \"Strategic ↔ Tactical\" is abstract. Eight overlapping stones sit on an \"Agree ↔ Disagree\" axis. 23 units × 3 shifts makes groups too small.</p><p><strong>Morgan's framework</strong></p><ul><li><strong>Intro:</strong> \"This takes about five minutes. Share one real story about a decision that affected your work. It can be good, bad or mixed. Your answers are anonymous: we don't collect your name or email. Please write about what happened rather than who was involved…\" Sent by anonymous link. Anonymous Responses on.</li><li><strong>Triad:</strong> \"In this story, what shaped the decision most?\" <strong>The people doing the work / Data and evidence / The deadline</strong></li><li><strong>Dyad 1:</strong> \"When did you hear about this decision?\" <strong>Before it was made ↔ After it was in place</strong></li><li><strong>Dyad 2:</strong> \"Afterwards, what did people mostly do?\" <strong>Worked around it ↔ Made it work as intended</strong></li><li><strong>Stones:</strong> \"How did each of these show up in your story? Leave out any that weren't part of it.\" <strong>Why it was decided, A chance to give input, The information I needed, My manager</strong>; axes <strong>Absent → Fully present</strong>, <strong>Hindered → Helped</strong></li><li><strong>Context (optional):</strong> where you mostly work (3 options), your role (3), when you joined (3)</li></ul><p><em>Why it works:</em> three real pulls on a decision; dyads on two different concrete dimensions; four distinct stones on story axes, with an arrow on each; three broad context questions that test the client's hypotheses; and a welcome text that matches how the link is sent.</p>"
+   }
+  ]
+ },
+ {
+  "id": "MS-M3-08",
+  "title": "Three fielding calls",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p><strong>1.</strong> Clinic staff want to tell their stories on the shared tablet at the front desk, one after another. Jamie asks if that's a problem.</p>",
+    "o": [
+     "<p>Yes. SurveyCraft will block the second person on the same device.</p>",
+     "<p>It works, because anonymous surveys don't block repeat submissions. Make sure each person starts a fresh survey and nobody can read the previous story on screen.</p>",
+     "<p>Switch Anonymous Responses off so each person can be told apart.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>",
+     "1": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>",
+     "2": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>2.</strong> A clinic manager asks Jamie to filter the results to \"just my clinic's front desk\" (four people) \"so I can see what they said\".</p>",
+    "o": [
+     "<p>Fine; filtering is a standard feature.</p>",
+     "<p>Fine, if the manager promises not to share it.</p>",
+     "<p>No. A group that small can be identified from its stories. Offer the clinic-wide or site-wide pattern instead.</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>",
+     "1": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>",
+     "2": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>3.</strong> Ten days in, the decisions survey has 196 stories and a cap of 250, with a week to go. Huddles haven't happened at two clinics yet.</p>",
+    "o": [
+     "<p>Raise the cap in settings.</p>",
+     "<p>Keep going, but watch it: if the cap is reached, later stories (including those two clinics) can't get in. Consider pausing the poster channel so the clinics' huddles get their turn.</p>",
+     "<p>Do nothing; caps don't apply to anonymous surveys.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>",
+     "1": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>",
+     "2": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "MS-M4-13",
+  "title": "Write two Pattern Cards",
+  "intro": "<p>Use Exhibit S1 and the case file. Write two Pattern Cards: one on <strong>how news of change reaches people</strong>; one on <strong>support</strong>.</p><p><strong>Exhibit S1: Change Readiness, wave 1 (deeper view)</strong> — Teaching case: fictional data</p><ul><li><strong>Survey:</strong> template Change Readiness Assessment. Northwind changed the story question's prompt to <em>\"Tell us about a time in the last few months when a change at Northwind affected your work. What happened?\"</em> and <strong>added one context question</strong>, because the template has none: <strong>\"Where do you mostly work?\"</strong> Hospital / A clinic.</li><li><strong>Fielded:</strong> Mar 16 – Apr 10, 2026. Link at huddles and on QR posters. No invited count.</li><li><strong>Band bought:</strong> 101–250 (cap 250). <strong>Stories:</strong> 142. <strong>Average words:</strong> 64.</li></ul><table><tr><th>View</th><th>All (142)</th><th>Hospital (81)</th><th>Clinic (61)</th></tr><tr><td>Triad average, Willing / Able / Ready</td><td>52% / 18% / 30%</td><td>50% / 22% / 28%</td><td>55% / 13% / 32%</td></tr><tr><td>Stories with Able ≥ 50%</td><td>9</td><td>6</td><td>3</td></tr><tr><td>Dyad \"Waited to see (0) ↔ Jumped in early (100)\"</td><td>One hump, mean 62</td><td>—</td><td>—</td></tr><tr><td>Dyad \"Official announcements (0) ↔ Word of mouth (100)\": stories 0–15</td><td>54 (38%)</td><td>42</td><td>12</td></tr><tr><td>… stories 16–84</td><td>30 (21%)</td><td>17</td><td>13</td></tr><tr><td>… stories 85–100</td><td>58 (41%)</td><td>22</td><td>36</td></tr><tr><td>… mean</td><td>52</td><td>40</td><td>68</td></tr></table><p><strong>Stones</strong> (x: Absent → Fully Present; y: Ineffective → Highly Effective)</p><ul><li>Vision: present, moderately effective.</li><li>Resources: mostly absent, ineffective.</li><li>Skills: present, effective.</li><li>Support: split. Filtered to Clinic, Support sits absent and ineffective; filtered to Hospital, present. Unfiltered, its average sits near the middle of the grid.</li></ul><p><strong>Stories</strong> (paraphrased for teaching)</p><ul><li>S1-a \"We were told to use the shared scheduling system on Monday. Nobody had logins until Thursday.\" (Clinic)</li><li>S1-b \"I want the cross-site float pool to work, but I've never been trained on the other clinic's charting.\" (Hospital)</li><li>S1-c \"I heard about the new courier times from the driver, not from anyone here.\" (Clinic; Word of mouth 96)</li><li>S1-d \"Our unit manager walked us through the new admission screen at the huddle before it went live. Questions got answered.\" (Hospital; Official announcements 6; Able 58%)</li></ul>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p><strong>Pattern Card 1:</strong> how news of change reaches people. Each card has six fields: Pattern, Where, How many, Stories, Confidence, What it isn't.</p>",
+    "model": "<ul><li><em>Pattern:</em> \"Hospital staff mostly hear about changes through official channels; many clinic staff hear by word of mouth.\"</li><li><em>Where:</em> channel dyad, sliced by site.</li><li><em>How many:</em> 58 of 142 stories near word of mouth; 36 of those are clinic stories (of 61 clinic stories in all). 42 of 81 hospital stories sit near official announcements.</li><li><em>Stories:</em> courier times heard from the driver; admission screen explained at the huddle.</li><li><em>Confidence:</em> medium-high. Large groups and clear shapes, but site doesn't explain every story (12 clinic stories near official; 22 hospital near word of mouth).</li><li><em>What it isn't:</em> \"clinic managers don't communicate\". The stories describe channels, not people.</li></ul><p><strong>Self-check:</strong> Is each pattern in respondents' terms? Is every number a story count with its total? Did you rule out an overclaim?</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p><strong>Pattern Card 2:</strong> support. Each card has six fields: Pattern, Where, How many, Stories, Confidence, What it isn't.</p>",
+    "model": "<ul><li><em>Pattern:</em> \"Clinic stories describe change without support; hospital stories describe support being there.\"</li><li><em>Where:</em> Support stone, Individual view, sliced by site.</li><li><em>How many:</em> clinic slice 61 stories; hospital 81.</li><li><em>Stories:</em> read 10–15 clinic stories near \"Support: absent\" before choosing.</li><li><em>Confidence:</em> medium. Clear split, both groups large; need the stories to say what \"support\" means.</li><li><em>What it isn't:</em> \"clinic staff are less capable\". Skills sit present and effective overall.</li></ul><p><strong>Self-check:</strong> Is each pattern in respondents' terms? Is every number a story count with its total? Did you rule out an overclaim?</p>"
+   }
+  ]
+ },
+ {
+  "id": "MS-M5-08",
+  "title": "Pushback in the readout",
+  "intro": "<p>You're presenting the decisions study to Northwind's executives. Choose the best reply.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p><strong>1. Priya Natarajan (CFO):</strong> \"Give me one number. What percentage of staff think decisions are made badly?\"</p>",
+    "o": [
+     "<p>\"Sixty-one percent.\"</p>",
+     "<p>\"Mosaic Signal doesn't measure opinions of decisions, and it counts stories, not staff. What I can tell you is that 124 of 204 stories placed hearing about the decision after it was in place, and those stories lean toward workarounds.\"</p>",
+     "<p>\"About half; the slider average is 50.\"</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>",
+     "1": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>",
+     "2": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>2. Jordan Reyes (COO):</strong> \"Which clinic told the courier story? I want to fix it.\"</p>",
+    "o": [
+     "<p>\"The details point to one clinic, but I can't be sure.\"</p>",
+     "<p>\"I won't identify where a story came from. What I can do is describe the pattern: decisions about shared services reach clinics after they're in place. Let's look at how those decisions get made.\"</p>",
+     "<p>\"I'll find out and send it to you privately.\"</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>",
+     "1": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>",
+     "2": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>3. Dana Okafor (CEO):</strong> \"So if we tell people earlier, the workarounds will stop?\"</p>",
+    "o": [
+     "<p>\"Yes, the data shows that.\"</p>",
+     "<p>\"The stories show the two go together. It's a strong reason to try telling people earlier, and a second wave after the charter redesign would show whether the pattern moves.\"</p>",
+     "<p>\"We can't say anything about that.\"</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>",
+     "1": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>",
+     "2": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>"
+    }
+   }
+  ]
+ }
+]
