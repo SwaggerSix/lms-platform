@@ -105,7 +105,15 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
   const [expandedModules, setExpandedModules] = useState<string[]>(
     course.modules.map((m) => m.id).slice(0, 2)
   );
-  const [outlineOpen, setOutlineOpen] = useState(true);
+  // A course that is one SCORM package has nothing to pick in the outline (it
+  // lists that one lesson), and the package needs the width: its own module
+  // list collapses behind a "Modules" button when its window is narrow. So the
+  // outline starts closed there, and its toggle shows at every width.
+  const singleScormCourse = (() => {
+    const lessons = course.modules.flatMap((m) => m.lessons);
+    return lessons.length === 1 && lessons[0].contentTypeRaw === "scorm";
+  })();
+  const [outlineOpen, setOutlineOpen] = useState(!singleScormCourse);
   const [lessonStatuses, setLessonStatuses] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {};
     for (const mod of course.modules) {
@@ -324,7 +332,12 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
           </div>
           <button
             onClick={() => setOutlineOpen(!outlineOpen)}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white lg:hidden"
+            aria-label={outlineOpen ? "Hide course outline" : "Show course outline"}
+            aria-expanded={outlineOpen}
+            className={cn(
+              "rounded-lg p-1.5 text-gray-400 hover:bg-gray-700 hover:text-white",
+              !singleScormCourse && "lg:hidden"
+            )}
           >
             <FileText className="h-5 w-5" />
           </button>
