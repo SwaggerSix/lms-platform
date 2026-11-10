@@ -1,0 +1,209 @@
+[
+ {
+  "id": "CS-M1-10",
+  "title": "Avery's first morning",
+  "intro": "<p>It's 1 September. Avery Santos signs in to the Mosaic team's workspace for the first time. Their account is new, and the workspace requires coach setup. Avery clicks <strong>Engagements</strong> in the menu and lands back on the setup page.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What's happening?</p>",
+    "o": [
+     "<p>The Engagements page is broken. Report a bug.</p>",
+     "<p>Avery is held on coach setup. The amber notice names the page they tried to open, and they'll go straight to it once setup is done.</p>",
+     "<p>Avery's role doesn't include Engagements.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Nothing's broken. The menu brings held coaches back to setup on purpose.</p>",
+     "1": "<p>Correct. New accounts are held at once when setup is required; finishing the five steps opens everything.</p>",
+     "2": "<p>Coaches do see Engagements, once setup is finished.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Avery pastes their Calendly link as the way to host sessions. What happens?</p>",
+    "o": [
+     "<p>It saves and counts.</p>",
+     "<p>Coach setup warns and won't save it, because coachees would land on a booking page instead of a call.</p>",
+     "<p>It saves, and coachees are sent to Calendly to pick a time.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>A booking page never counts as a way to host sessions.</p>",
+     "1": "<p>Correct. Avery connects Zoom instead.</p>",
+     "2": "<p>That's exactly the problem the warning prevents.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Avery's partner organization blocks calendar connections. What should Avery do?</p>",
+    "o": [
+     "<p>Skip setup and come back later.</p>",
+     "<p>Choose <strong>I can't connect a calendar</strong>, pick a reason and <strong>Skip this step</strong>. Admins can see the reason.</p>",
+     "<p>Connect a personal calendar instead, without telling anyone.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>While held, Avery can't use the rest of the Studio.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>Connecting the wrong calendar gives coachees wrong availability.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "CS-M2-13",
+  "title": "Avery's week: where does it go?",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Drag each of Avery's tasks to the place in the Studio where they'd do it.</p>",
+    "p": [
+     "<p>Review the recap before session 2</p>",
+     "<p>Add \"Leading across sites\" as a theme for session 2</p>",
+     "<p>Share the huddles goal with the sponsor</p>",
+     "<p>Start a weekday-morning micro-action</p>",
+     "<p>Change their office hours to weekdays 8 AM – 6 PM</p>",
+     "<p>Check that a session-change email reached Casey</p>"
+    ],
+    "o": [
+     "<p>Communications tab</p>",
+     "<p>Engagement Details</p>",
+     "<p>Goals tab</p>",
+     "<p>Habit Shaper tab</p>",
+     "<p>Overview tab</p>",
+     "<p>Settings → Calendar</p>"
+    ],
+    "c": [
+     4,
+     1,
+     2,
+     3,
+     5,
+     0
+    ],
+    "fr": "<p>Correct. Each of Avery's six tasks is in the right place in the Studio.</p>",
+    "fw": "<p>Not quite. Check where each task lives:</p><ul><li><strong>Overview tab:</strong> The Prep for your next session card is on Overview (and on each upcoming session).</li><li><strong>Engagement Details:</strong> Themes, action items and notes live on each session in Engagement Details.</li><li><strong>Goals tab:</strong> Visibility is set per goal on the Goals tab.</li><li><strong>Habit Shaper tab:</strong> Add a single action on the engagement's Habit Shaper tab.</li><li><strong>Settings → Calendar:</strong> Office hours live under Settings → Calendar (Open Office Hours).</li><li><strong>Communications tab:</strong> Automated emails show there with their delivery status.</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "CS-M4-10",
+  "title": "Things to check, and a question you mustn't answer",
+  "intro": "<p>It's session 2, 14 October. Avery has Casey's progress card open.</p><p><strong>Progress card: 14 Oct 2026 (card \"Live\")</strong></p><table><tr><td>Launched</td><td>5 Oct 2026 · Goal to close: 26 Oct 2026</td></tr><tr><td>Self-assessment</td><td><strong>Complete</strong></td></tr><tr><td>Raters</td><td><strong>3 of 7 responded</strong> (43%)</td></tr></table><table><tr><th>Rater group</th><th>Responded</th><th>Added</th></tr><tr><td>Boss</td><td>1</td><td>1</td></tr><tr><td>Peers</td><td>2</td><td>4</td></tr><tr><td>Direct reports</td><td>0</td><td>2</td></tr><tr><td>Others</td><td>0</td><td>0</td></tr></table><p><strong>Things to check:</strong> \"Only 2 direct reports added. Direct reports need 3 responses to get their own section in the report, so ask the coachee to add more.\"</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>Casey has 6 direct reports but added only 2. What should Avery do?</p>",
+    "o": [
+     "<p>Nothing yet; there's time.</p>",
+     "<p>Explain that direct reports need 3 responses to get their own section, and suggest Casey add their other direct reports in their portal.</p>",
+     "<p>Add the direct reports for Casey.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>With only 2 added, the group can't reach 3 even if both respond.</p>",
+     "1": "<p>Correct. Casey added the other 4 the next day.</p>",
+     "2": "<p>In a 360 launched from the Studio, the leader invites their own raters.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Casey asks, \"Which of my peers haven't done it yet? I'll nudge them.\" What does Avery say?</p>",
+    "o": [
+     "<p>Look it up and tell Casey.</p>",
+     "<p>Avery's card shows counts only. Suggest Casey use <strong>Remind pending raters</strong> in their SurveyCraft portal, which reminds only the people who haven't finished.</p>",
+     "<p>Ask Taylor Brooks to chase the peers.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>The Studio shows counts, never names, and you never identify raters.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>Pressure through the boss erodes candour.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p>Others shows 0 of 0. Should Avery worry?</p>",
+    "o": [
+     "<p>Yes, the report can't be generated.</p>",
+     "<p>No. With nobody added there's simply no Others section. It's worth asking only if Casey wants a view from outside their line, such as other clinic leads.</p>",
+     "<p>Yes, Others is mandatory.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>The report still generates.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>",
+     "1": "<p>Correct. The card raises no flag for it.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>",
+     "2": "<p>It isn't.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "CS-M5-11",
+  "title": "Quinn's Monday",
+  "intro": "<p>Quinn Harper has four requests on Monday.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p><strong>Request 1.</strong> Alex Moreau asks Quinn to make the Northwind client portal show \"the coaching themes and session notes for the clinic directors\". What does Quinn say?</p>",
+    "o": [
+     "<p>Turn it on in Settings.</p>",
+     "<p>Sponsors and client contacts never see notes; Quinn offers the reports portal and the Sponsor Dashboard, which show progress, sessions and shared goals.</p>",
+     "<p>Export the notes to a spreadsheet for Alex.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>There's no such setting.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>That breaks the boundary outside the platform.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Request 2.</strong> A new partner coach can't connect their calendar because their other employer blocks it. They're held on setup. What should Quinn suggest?</p>",
+    "o": [
+     "<p>Turn off coach setup for everyone.</p>",
+     "<p>Use <strong>I can't connect a calendar</strong>, give a reason, and skip the step. Quinn sees the reason in the progress table.</p>",
+     "<p>Make the coach an admin so they aren't held.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Overkill; the skip exists for this.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>Never change someone's role to dodge a check.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Request 3.</strong> A client wants AI switched off for all their coaching. Who does it?</p>",
+    "o": [
+     "<p>Quinn, on Settings → Company.</p>",
+     "<p>The platform team, on the organization's record. Quinn passes the request to support.</p>",
+     "<p>Each coach, by opting out.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Tenant admins can't change the AI switch.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>Coach opt-outs only cover recording in their own engagements.</p>"
+    }
+   },
+   {
+    "k": "mcq",
+    "s": "<p><strong>Request 4.</strong> A coachee left Northwind. Alex asks Quinn to \"get rid of their engagement\". What should Quinn do?</p>",
+    "o": [
+     "<p>Delete the coachee permanently straight away.</p>",
+     "<p>Set the engagement to Completed (which cancels upcoming sessions), and archive it, unless the contract requires deletion.</p>",
+     "<p>Leave it Active.</p>"
+    ],
+    "c": 1,
+    "f": {
+     "0": "<p>Permanent and irreversible; check first.</p>",
+     "1": "<p>Correct.</p>",
+     "2": "<p>Sessions would stay booked and reminders would go out.</p>"
+    }
+   }
+  ]
+ }
+]

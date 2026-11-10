@@ -1,0 +1,154 @@
+[
+ {
+  "id": "SC-M1-05",
+  "title": "Where should Northwind's pulse live?",
+  "intro": "<p>Northwind's SurveyCraft account was created when Alex claimed the Culture Mosaic order. Alex wants the huddle pulse \"in our account, so Riley can watch responses come in\". You run surveys for three other clients in your firm's licensed workspace.</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What do you recommend?</p>",
+    "o": [
+     "<p>Build it in Northwind's account; it's theirs.</p>",
+     "<p>Build it in your firm's workspace and invite Riley as a Viewer so they can watch.</p>",
+     "<p>Build it in your firm's workspace, keep Riley out of it, and send Riley progress counts and prepared results. If Northwind wants to run surveys themselves, suggest they license SurveyCraft, which turns the builder on in their account.</p>",
+     "<p>Create a new free survey by duplicating Northwind's Culture Mosaic and deleting the items.</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>It's a buyer account: it has no survey builder. You'd find no Surveys tab to build in.</p>",
+     "1": "<p>Riley would see every survey in your workspace, including your other clients' results, and could export them. Roles apply to the whole workspace.</p>",
+     "2": "<p>Right. Client data stays separated, and Northwind has a clear path to self-service.</p>",
+     "3": "<p>A bought instrument can't be copied into a free survey, and it wouldn't be the right tool anyway.</p>"
+    }
+   }
+  ]
+ },
+ {
+  "id": "SC-M1-10",
+  "title": "What happens when you press it?",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Match each action to its result.</p>",
+    "p": [
+     "<p>Publish</p>",
+     "<p>Unpublish (nobody has finished)</p>",
+     "<p>Close</p>",
+     "<p>Reopen</p>",
+     "<p>Restore from archive</p>",
+     "<p>Close Date passes</p>"
+    ],
+    "o": [
+     "<p>Back to Draft; link stops working</p>",
+     "<p>Comes back as a Draft</p>",
+     "<p>Link stops taking answers; responses kept</p>",
+     "<p>Live again on the same link</p>",
+     "<p>No new answers; status still says Live</p>",
+     "<p>Survey goes Live; link created; nobody contacted</p>"
+    ],
+    "c": [
+     5,
+     0,
+     2,
+     3,
+     1,
+     4
+    ],
+    "fr": "<p>Right. Each action is matched to its result.</p>",
+    "fw": "<p>Not quite. Check the life-cycle diagram:</p><ul><li><strong>Publish:</strong> Survey goes Live; link created; nobody contacted</li><li><strong>Unpublish (nobody has finished):</strong> Back to Draft; link stops working</li><li><strong>Close:</strong> Link stops taking answers; responses kept</li><li><strong>Reopen:</strong> Live again on the same link</li><li><strong>Restore from archive:</strong> Comes back as a Draft</li><li><strong>Close Date passes:</strong> No new answers; status still says Live</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "SC-M2-05",
+  "title": "Name the fault",
+  "items": [
+   {
+    "k": "match",
+    "s": "<p>Drag each question to the fault it shows.</p>",
+    "p": [
+     "<p>\"Our managers communicate clearly and listen well.\"</p>",
+     "<p>\"Don't you agree the new rota is fairer?\"</p>",
+     "<p>\"I never feel stressed at work.\"</p>",
+     "<p>\"Rate the EHR-IT handoff SLA.\"</p>",
+     "<p>\"How will the strategy affect our market share?\"</p>",
+     "<p>\"Which of our three pharmacy technicians are you?\"</p>"
+    ],
+    "o": [
+     "<p>Double-barrelled</p>",
+     "<p>Identifying</p>",
+     "<p>Jargon</p>",
+     "<p>Leading</p>",
+     "<p>Loaded or absolute</p>",
+     "<p>Unanswerable</p>"
+    ],
+    "c": [
+     0,
+     3,
+     4,
+     2,
+     5,
+     1
+    ],
+    "fr": "<p>Right. Each question is matched to the fault it shows.</p>",
+    "fw": "<p>Look again:</p><ul><li>\"Our managers communicate clearly and listen well.\" <strong>Double-barrelled</strong>: two ideas, one answer.</li><li>\"Don't you agree the new rota is fairer?\" <strong>Leading</strong>: the wording pushes an answer.</li><li>\"I never feel stressed at work.\" <strong>Loaded or absolute</strong>: \"always\", \"never\", \"every\".</li><li>\"Rate the EHR-IT handoff SLA.\" <strong>Jargon</strong>: acronyms and insider terms.</li><li>\"How will the strategy affect our market share?\" <strong>Unanswerable</strong>: asks people to know or remember what they can't.</li><li>\"Which of our three pharmacy technicians are you?\" <strong>Identifying</strong>: asks for a name, a tiny unit or a unique detail in an anonymous survey.</li></ul>"
+   }
+  ]
+ },
+ {
+  "id": "SC-M2-12",
+  "title": "Critique Riley's first draft",
+  "intro": "<p>Riley Okonkwo drafted eight questions for the huddle pulse (Exhibit S3). Read them and the draft settings, then write what you'd change and why. Aim for one line per problem.</p><p><strong>Exhibit S3 (Riley's draft)</strong></p><ol><li>\"What is your name and which clinic do you work at?\" (Short text)</li><li>\"How great have the new cross-site huddles been for patient care and morale?\" (1–5, \"Not great\" to \"Very great\")</li><li>\"Do you always attend huddles?\" (Yes / No)</li><li>\"The huddles are well run and the follow-up is good.\" (Agree scale)</li><li>\"How satisfied are you with the CDS integration?\" (1–10 slider, no end labels)</li><li>\"Which unit do you work on?\" (Dropdown, 23 units, 4 with fewer than 5 staff)</li><li>\"Why don't you go to huddles?\" (Long text, required, shown to everyone)</li><li>\"Any other comments?\" (Long text)</li></ol><p>Settings: Anonymous Responses <strong>off</strong> \"so we can follow up\". Invitation text: \"This survey is completely anonymous.\"</p>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>List the problems and your fix for each.</p>",
+    "model": "<ul><li>Q1 asks for identity in a survey promised as anonymous. Remove it; department comes from a choice question or the roster.</li><li>Q2 is leading and double-barrelled, on an unbalanced scale. Use a neutral agreement item about one thing.</li><li>Q3 uses an absolute and no time frame. Ask \"In the last month, have you taken part in a cross-site huddle?\"</li><li>Q4 is double-barrelled. Split into \"help coordinate care\" and \"problems raised are followed up\".</li><li>Q5 is jargon, off-objective, and unlabelled. Cut it.</li><li>Q6 creates groups smaller than any safe minimum. Ask department (two options) and a broad role level.</li><li>Q7 is required and shown to people who do attend. Make it a Checkbox question with \"Other\", shown only to people who answered No (display logic).</li><li>Q8 is vague. Replace with one specific optional question.</li></ul><p><strong>Self-check:</strong> Did you find the anonymity contradiction? At least five of the eight item problems? A fix for each, not just a label?</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Name the single most serious problem.</p>",
+    "model": "<p><strong>Most serious:</strong> the invitation promises \"completely anonymous\" while Anonymous Responses is off. With personal links, each answer would be linked to a name. Either turn anonymity on or tell people the truth.</p>"
+   }
+  ]
+ },
+ {
+  "id": "SC-M5-11",
+  "title": "Read Northwind's huddle pulse",
+  "intro": "<p>The huddle pulse closed on June 26. Alex wants three findings for the July board pre-read. Read Exhibit S5 and draft them.</p><p><strong>Exhibit S5 (summary)</strong></p><ul><li>Audience 392; finished 231; response rate 59% (completion rate 88%). Nursing 138 (56%), Clinic Network 93 (64%). Rough margin of error about ±6 points.</li><li>Taken part in a huddle in the last month: Nursing 52 of 138 (38%), Clinic Network 61 of 93 (66%). Compare Two Questions: \"Statistically significant\".</li><li>Among those who took part (113): \"The huddles help me coordinate care…\" mean 3.8, 64% agree. \"When I raise a problem…, I see it followed up\" mean 3.2, 41% agree.</li><li>Barriers (118 who didn't take part; choose all that apply): shift timing clashes 52%; didn't know they were happening 40%; not relevant to my role 19%; other 8%.</li><li>All (231): \"I know who to contact at another site\" 3.4 (Nursing 3.1, Clinic Network 3.9). \"Decisions that affect my work are made with input from people in roles like mine\" 2.7, 24% agree (Nursing 2.6, Clinic Network 2.9).</li><li>Role by department: Clinic Network \"Manager or above\" = 4 (shown as \"*\").</li><li>Comments (96): scheduling logins, float-pool training, huddle times that miss night shift.</li></ul>",
+  "items": [
+   {
+    "k": "open",
+    "s": "<p>Write three findings, each with the evidence and one sentence on what it means.</p>",
+    "model": "<ol><li><strong>Huddles help people who go, but nursing reach is low.</strong> 64% of attendees say huddles help coordinate care, yet only 38% of nurses took part, against 66% in Clinic Network. The gap is statistically significant, and the reasons point to timing and awareness: shift clashes (52%) and not knowing (40%). <em>So what:</em> schedule huddles that fit nursing shifts, including nights, and announce them on the units.</li><li><strong>Follow-up is the weak spot.</strong> Only 41% of attendees see problems followed up. <em>So what:</em> close the loop on issues raised, or attendance will fade.</li><li><strong>Voice in decisions is still low.</strong> 24% agree decisions are made with input from roles like theirs (mean 2.7), consistent with February's comment theme \"Decisions made without frontline input\". <em>So what:</em> involve frontline staff in the decision-rights charter; re-ask the same item in September.</li></ol><p><strong>Never include:</strong> any result for Clinic Network managers (4 people).</p>"
+   },
+   {
+    "k": "open",
+    "s": "<p>Add one limit you'd state.</p>",
+    "model": "<p><strong>Limits:</strong> 59% response rate (nursing 56%); QR-link answers can't be tied to the 70 staff without email; a pulse shows associations, not causes; ±6 points on whole-sample percentages.</p><p><strong>Self-check:</strong> Did you report the response rate, not 88%? Did you avoid saying the huddles \"caused\" anything? Did you leave out the four managers?</p>"
+   }
+  ]
+ },
+ {
+  "id": "SC-M5-12",
+  "title": "Taylor asks for four managers' answers",
+  "intro": "<p>Taylor Brooks (VP, Clinic Operations) writes: \"Can you send me the raw answers from my four clinic managers? I want to see who isn't bought in to the huddles.\"</p>",
+  "items": [
+   {
+    "k": "mcq",
+    "s": "<p>What do you reply?</p>",
+    "o": [
+     "<p>Export the CSV, filter to Clinic Network managers, and send it.</p>",
+     "<p>Send the Compare Two Questions table instead; the managers' cell shows \"*\".</p>",
+     "<p>Decline kindly: four people can't be reported separately, and the survey promised department-level results. Offer the Clinic Network results and a combined \"Supervisor or above\" view (13 people), and a conversation about the barriers data.</p>"
+    ],
+    "c": 2,
+    "f": {
+     "0": "<p>Critical error. Four people is below the survey's minimum group size, the survey promised anonymity and department-level results, and the export is raw data.</p>",
+     "1": "<p>Better, but the row total and the Nursing cell let anyone work out the hidden four. Combine categories first.</p>",
+     "2": "<p>Right. You protect the managers and still give Taylor something useful.</p>"
+    }
+   }
+  ]
+ }
+]

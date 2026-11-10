@@ -236,6 +236,8 @@
     // videos
     if (!m.videos.length) main.appendChild(el("div", { "class": "notice" }, "<p>No video for this module.</p>"));
     m.videos.forEach(function (v, vi) { main.appendChild(videoBlock(mi, vi, v, m.videos.length)); });
+    var actList = activitiesList(mi);
+    if (actList) main.appendChild(actList);
 
     var after = el("div", { id: "after-video" });
     main.appendChild(after);
@@ -373,6 +375,7 @@
     var txt = el("span");
     bar.appendChild(cc); bar.appendChild(meter); bar.appendChild(txt);
     wrap.appendChild(bar);
+    wireVideoActivities(video, wrap, mi, v.label);
     var capsOn = true;
     function applyCaps() {
       for (var i = 0; i < video.textTracks.length; i++) video.textTracks[i].mode = capsOn ? "showing" : "hidden";
@@ -434,6 +437,133 @@
     return c;
   }
 
+  // ------------------------------------------------------------ practice activities
+  // The in-video activities (warm-ups, scenarios, sorting, quick checks,
+  // practice cases). They arrive in activities.js; a course without it simply
+  // has none. The video pauses at each one (t = seconds into that video), and
+  // every module lists its activities after the video so they can be redone.
+  // Practice only: nothing here is scored, saved or required.
+  var ACTS = [];
+  (function loadActs() {
+    if (!window.MOSAIC_ACTS) return;
+    try { ACTS = decode(window.MOSAIC_ACTS, window.MOSAIC_K) || []; } catch (e) { ACTS = []; return; }
+    var byId = {};
+    for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id) byId[ITEMS[i].id] = i;
+    ACTS.forEach(function (a) {
+      a.q = [];
+      (a.items || []).forEach(function (it) {
+        if (it.ref) { if (byId[it.ref] !== undefined) a.q.push(byId[it.ref]); }
+        else if (it.k === "open") a.q.push({ open: it });
+        else { it.act = true; ITEMS.push(it); a.q.push(ITEMS.length - 1); }
+      });
+    });
+  })();
+  function actsFor(mi, label) {
+    return ACTS.filter(function (a) { return a.mod === MODS[mi].id && (!label || a.video === label); })
+      .sort(function (x, y) { return (x.video || "") === (y.video || "") ? x.t - y.t : ((x.video || "") < (y.video || "") ? -1 : 1); });
+  }
+  function isReveal(it) {
+    // A warm-up with one reveal for every choice has no right answer to grade.
+    if (it.k !== "mcq" || !it.f) return false;
+    var seen = null;
+    for (var i = 0; i < it.o.length; i++) { var f = it.f[String(i)]; if (!f) return false; if (seen === null) seen = f; else if (f !== seen) return false; }
+    return true;
+  }
+  function activityCard(a, where) {
+    var pre = (where + "-" + a.id).replace(/[^A-Za-z0-9-]/g, "");
+    var c = el("section", { "class": "card act", "aria-labelledby": pre + "-h" });
+    c.appendChild(el("p", { "class": "kicker" }, "Practice activity · not graded"));
+    c.appendChild(el("h3", { id: pre + "-h", tabindex: "-1" }, esc(a.title)));
+    if (a.intro) c.appendChild(el("div", { "class": "actintro" }, a.intro));
+    var total = a.q.length;
+    a.q.forEach(function (q, n) {
+      if (q && q.open) {
+        var it = q.open, box = el("div", { "class": "q openq" });
+        if (total > 1) box.appendChild(el("p", { "class": "ms" }, "<strong>Part " + (n + 1) + " of " + total + "</strong>"));
+        box.appendChild(el("div", { "class": "stem" }, it.s));
+        var tid = pre + "-t" + n;
+        box.appendChild(el("label", { "for": tid, "class": "ms" }, "Your notes (just for you; not saved or sent)"));
+        box.appendChild(el("textarea", { id: tid, rows: "4" }));
+        var reveal = el("div", { "class": "fb", hidden: "" }, "<p><strong>What a strong answer includes</strong></p>" + it.model);
+        var b = el("button", { type: "button", "class": "btn secondary" }, "Show a model answer");
+        b.addEventListener("click", function () { reveal.hidden = false; b.hidden = true; announce("Model answer shown."); });
+        box.appendChild(b); box.appendChild(reveal);
+        c.appendChild(box);
+        return;
+      }
+      var item = ITEMS[q], qp = pre + "-" + n;
+      var fs = renderQuestion(qp, 0, 1, q, optOrder(item), null);
+      var lg = fs.querySelector("legend");
+      if (lg) lg.textContent = total > 1 ? "Question " + (n + 1) + " of " + total : "Your answer";
+      c.appendChild(fs);
+      var fb = el("div", { "class": "fb", role: "status", hidden: "" });
+      var chk = el("button", { type: "button", "class": "btn" }, isReveal(item) ? "See what practitioners pick" : "Check my answer");
+      chk.addEventListener("click", function () {
+        var ans = readAnswer(qp, 0, q);
+        fb.hidden = false;
+        if (!answered(ans)) { fb.className = "fb"; fb.innerHTML = "<p>Choose an answer first.</p>"; return; }
+        if (isReveal(item)) { fb.className = "fb"; fb.innerHTML = feedbackFor(item, ans, true); return; }
+        var ok = isCorrect(item, ans);
+        fb.className = "fb " + (ok ? "ok" : "no");
+        var verdict = item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
+        fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "");
+        announce(verdict);
+      });
+      c.appendChild(chk); c.appendChild(fb);
+    });
+    return c;
+  }
+  function activitiesList(mi) {
+    var list = actsFor(mi);
+    if (!list.length) return null;
+    var c = el("section", { "class": "card", "aria-labelledby": "acts-h" });
+    c.innerHTML = '<h2 id="acts-h">Practice activities (' + list.length + ")</h2><p>The video pauses for each of these. You can also open any of them here, as often as you like. They aren't graded.</p>";
+    list.forEach(function (a) {
+      var d = el("details", { "class": "actdet" });
+      d.appendChild(el("summary", null, esc(a.title)));
+      var filled = false;
+      d.addEventListener("toggle", function () { if (d.open && !filled) { filled = true; d.appendChild(activityCard(a, "ls")); } });
+      c.appendChild(d);
+    });
+    return c;
+  }
+  function wireVideoActivities(video, wrap, mi, label) {
+    var pts = actsFor(mi, label);
+    if (!pts.length) return;
+    var panel = el("div", { "class": "actpanel", hidden: "" });
+    wrap.appendChild(panel);
+    var fired = {}, last = 0;
+    function show(a) {
+      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+      panel.innerHTML = "";
+      panel.hidden = false;
+      panel.appendChild(el("p", { "class": "actnote" }, "⏸ The video is paused so you can try this. Then press <strong>Continue the video</strong>."));
+      panel.appendChild(activityCard(a, "vp"));
+      var go = el("button", { type: "button", "class": "btn big" }, "Continue the video ▶");
+      go.addEventListener("click", function () { panel.hidden = true; panel.innerHTML = ""; try { video.play(); } catch (e) {} video.focus(); });
+      panel.appendChild(go);
+      announce("Video paused for a practice activity: " + a.title);
+      try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { panel.scrollIntoView(); }
+      var h = panel.querySelector("h3"); if (h) setTimeout(function () { try { h.focus({ preventScroll: true }); } catch (e) {} }, 400);
+    }
+    video.addEventListener("timeupdate", function () {
+      var t = video.currentTime;
+      if (!video.paused && !video.seeking) {
+        for (var i = 0; i < pts.length; i++) {
+          var a = pts[i];
+          if (!fired[a.id] && last < a.t && t >= a.t && t - a.t < 2) { fired[a.id] = 1; video.pause(); show(a); break; }
+        }
+      }
+      last = t;
+    });
+    video.addEventListener("seeked", function () {
+      var t = video.currentTime;
+      pts.forEach(function (a) { if (a.t > t + 0.5) delete fired[a.id]; });
+      last = t;
+    });
+    video.addEventListener("play", function () { if (!panel.hidden) { panel.hidden = true; panel.innerHTML = ""; } });
+  }
+
   // ------------------------------------------------------------ questions
   function drawFrom(pool, n, always, minType) {
     var chosen = always.slice();
@@ -451,6 +581,8 @@
   function optOrder(it) {
     var n = it.o ? it.o.length : 0, a = [];
     for (var i = 0; i < n; i++) a.push(i);
+    // Practice activities keep the authored order: their feedback can say "most people pick B".
+    if (it.act && it.k !== "order") return a;
     return (it.k === "mcq" || it.k === "multi" || it.k === "order") ? shuffle(a) : a;
   }
   // answers: mcq -> int, multi -> [ints], order -> [position per element], match -> [choice per prompt]
@@ -458,8 +590,19 @@
     if (ans === null || ans === undefined) return false;
     if (it.k === "mcq") return ans === it.c;
     if (it.k === "multi") { var a = ans.slice().sort(), b = it.c.slice().sort(); return a.join() === b.join(); }
-    if (it.k === "order") { for (var i = 0; i < it.c.length; i++) if (ans[it.c[i]] !== i) return false; return true; }
-    if (it.k === "match") { for (var j = 0; j < it.c.length; j++) if (ans[j] !== it.c[j]) return false; return true; }
+    if (it.k === "order") {
+      // alt: other accepted orders (practice activities), same form as c.
+      var orders = [it.c].concat(it.alt || []);
+      return orders.some(function (c) { for (var i = 0; i < c.length; i++) if (ans[c[i]] !== i) return false; return true; });
+    }
+    if (it.k === "match") {
+      // A prompt may accept more than one target: c[j] is an index or a list of them.
+      for (var j = 0; j < it.c.length; j++) {
+        var cj = it.c[j];
+        if (Array.isArray(cj) ? cj.indexOf(ans[j]) < 0 : ans[j] !== cj) return false;
+      }
+      return true;
+    }
     return false;
   }
   function feedbackFor(it, ans, ok) {
@@ -492,6 +635,7 @@
         if (it.k === "mcq" && ans === oi) inp.checked = true;
         if (it.k === "multi" && ans && has(ans, oi)) inp.checked = true;
         lab.appendChild(inp);
+        if (it.act) lab.appendChild(el("span", { "class": "optl" }, String.fromCharCode(65 + oi) + "."));
         lab.appendChild(el("span", null, it.o[oi]));
         fs.appendChild(lab);
       });

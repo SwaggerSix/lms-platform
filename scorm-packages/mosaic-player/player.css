@@ -140,3 +140,16 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .todo { border-left: 5px solid var(--adapt-deep); }
 .todo ol { margin: .4em 0 .6em 1.2em; padding: 0; }
 .btn.big { font-size: 1.15rem; padding: 14px 28px; }
+
+/* practice activities: video pauses, activity shows under it */
+.actpanel { margin: 14px 0; padding: 14px 16px; border: 3px solid var(--adapt-deep); border-radius: 12px; background: var(--adapt-tint); }
+.actpanel .card { margin: 10px 0; }
+.actnote { font-family: var(--head); font-weight: 600; color: var(--mosaic-dark); margin: 0; }
+.act .kicker { color: var(--inspire-deep); }
+.act h3 { margin-top: .3em; }
+.actintro { margin-bottom: 8px; }
+.actdet { border-top: 1px solid var(--line); padding: 8px 0; }
+.actdet > summary { cursor: pointer; font-family: var(--head); font-weight: 600; color: var(--mosaic-dark); padding: 6px 0; }
+.actdet > summary:hover { color: var(--adapt-deep); }
+.openq textarea { display: block; width: 100%; font: inherit; padding: 8px 10px; border: 1px solid #8A8C99; border-radius: 6px; margin: 4px 0 8px; }
+.opt .optl { font-family: var(--head); font-weight: 700; color: var(--mosaic-dark); min-width: 1.4em; }
