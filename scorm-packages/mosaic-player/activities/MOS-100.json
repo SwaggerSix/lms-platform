@@ -335,7 +335,9 @@
      "1": "<p>Eligible: a SurveyCraft Culture Mosaic, same organization, launched, and well above 5 responses.</p>",
      "2": "<p>Not eligible. A Draft survey isn't a baseline; there's nothing to compare against yet.</p>",
      "3": "<p>Not eligible. Test responses don't count, and 3 is under the 5-response minimum.</p>"
-    }
+    },
+    "vr": "✓ Eligible: Northwind can go ahead.",
+    "vw": "Not this one."
    }
   ]
  },

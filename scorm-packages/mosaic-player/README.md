@@ -42,7 +42,8 @@ answer them or see feedback. Now each one is real:
 - each module lists its activities after the video, to redo any time;
 - questions reuse the player's question types (`mcq`, `multi`, `order`,
   `match`) with instant feedback; written tasks (`open`) give a model answer.
-  `order` may list other accepted orders in `alt`; a `match` answer may be a
+  `order` may list other accepted orders in `alt`; any question may set its own
+  verdict lines `vr` / `vw` (default "✓ That's the best answer." / "Not the best answer."); a `match` answer may be a
   list of accepted targets. `{"ref": "KC-…"}` reuses a module-check item.
 - practice only: nothing is graded, saved or required. Final-exam items are
   never used as practice.

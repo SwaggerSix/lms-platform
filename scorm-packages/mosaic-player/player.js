@@ -513,7 +513,9 @@
         var ok = isCorrect(item, ans);
         if (fs._mark) fs._mark(ans);
         fb.className = "fb " + (ok ? "ok" : "no");
-        var verdict = item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
+        // vr / vw: an activity's own verdict line (e.g. "✓ Eligible" / "Not eligible").
+        var verdict = ok && item.vr ? item.vr : !ok && item.vw ? item.vw :
+          item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
         fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "");
         announce(verdict);
       });
