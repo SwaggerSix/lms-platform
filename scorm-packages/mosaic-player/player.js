@@ -493,6 +493,7 @@
       }
       var item = ITEMS[q], qp = pre + "-" + n;
       var fs = renderQuestion(qp, 0, 1, q, optOrder(item), null);
+      if (item.k === "match") dragSort(fs, item);
       var lg = fs.querySelector("legend");
       if (lg) lg.textContent = total > 1 ? "Question " + (n + 1) + " of " + total : "Your answer";
       c.appendChild(fs);
@@ -501,9 +502,15 @@
       chk.addEventListener("click", function () {
         var ans = readAnswer(qp, 0, q);
         fb.hidden = false;
-        if (!answered(ans)) { fb.className = "fb"; fb.innerHTML = "<p>Choose an answer first.</p>"; return; }
+        if (!answered(ans)) {
+          var left = Array.isArray(ans) ? ans.filter(function (x) { return x === null || x === undefined; }).length : (item.p ? item.p.length : 0);
+          fb.className = "fb";
+          fb.innerHTML = item.k === "match" && left ? "<p>Place every card first (" + left + " left).</p>" : "<p>Choose an answer first.</p>";
+          return;
+        }
         if (isReveal(item)) { fb.className = "fb"; fb.innerHTML = feedbackFor(item, ans, true); return; }
         var ok = isCorrect(item, ans);
+        if (fs._mark) fs._mark(ans);
         fb.className = "fb " + (ok ? "ok" : "no");
         var verdict = item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
         fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "");
@@ -513,6 +520,116 @@
     });
     return c;
   }
+  // Drag-and-drop for a practice "match": chips (it.p) dragged into zones
+  // (it.o). It drives the question's own <select>s, so reading and grading the
+  // answer don't change. Pointer events, so mouse, touch and pen all drag.
+  // Keyboard / tap: choose a chip (it lifts), then choose a zone or the tray.
+  function dragSort(fs, it) {
+    var sels = fs.querySelectorAll("select");
+    if (sels.length !== it.p.length) return;
+    var rows = fs.querySelectorAll(".selrow");
+    for (var r = 0; r < rows.length; r++) rows[r].style.display = "none";
+    var box = el("div", { "class": "dnd" });
+    box.appendChild(el("p", { "class": "ms" }, "<em>Drag each card into its box. Or choose a card, then choose a box. Drag a card back to the tray to undo.</em>"));
+    var tray = el("div", { "class": "dndtray", role: "group", "aria-label": "Cards not placed yet" });
+    var zones = el("div", { "class": "dndzones" });
+    box.appendChild(tray); box.appendChild(zones);
+    var zoneEls = [], chips = [], picked = null;
+    function holder(z) { return z < 0 ? tray : zoneEls[z].querySelector(".dndbody"); }
+    it.o.forEach(function (lab, zi) {
+      var z = el("div", { "class": "dndzone", "data-z": String(zi) });
+      var b = el("button", { type: "button", "class": "dndzhead" }, lab.replace(/<\/?p>/g, ""));
+      b.addEventListener("click", function () { if (picked !== null) place(picked, zi); });
+      z.appendChild(b);
+      z.appendChild(el("div", { "class": "dndbody" }));
+      zones.appendChild(z); zoneEls.push(z);
+    });
+    tray.addEventListener("click", function (e) { if (e.target === tray && picked !== null) place(picked, -1); });
+    function status(pi) {
+      var v = sels[pi].value;
+      return v === "" ? "not placed" : "in " + it.o[parseInt(v, 10)].replace(/<[^>]+>/g, "");
+    }
+    function setPicked(pi) {
+      picked = pi;
+      chips.forEach(function (c, i) { c.classList.toggle("picked", i === pi); c.setAttribute("aria-pressed", i === pi ? "true" : "false"); });
+      box.classList.toggle("picking", pi !== null);
+    }
+    function place(pi, zi) {
+      sels[pi].value = zi < 0 ? "" : String(zi);
+      holder(zi).appendChild(chips[pi]);
+      chips[pi].classList.remove("ok", "no");
+      chips[pi].setAttribute("aria-label", it.p[pi].replace(/<[^>]+>/g, "") + ", " + status(pi));
+      setPicked(null);
+      announce(it.p[pi].replace(/<[^>]+>/g, "") + " " + status(pi) + ".");
+      try { chips[pi].focus({ preventScroll: true }); } catch (e) {}
+    }
+    it.p.forEach(function (pr, pi) {
+      var c = el("button", { type: "button", "class": "dndchip", "aria-pressed": "false" }, pr.replace(/<\/?p>/g, ""));
+      c.setAttribute("aria-label", pr.replace(/<[^>]+>/g, "") + ", not placed");
+      chips.push(c); tray.appendChild(c);
+      var start = null, ghost = null, over = null, last = null, scroller = null;
+      function hit(x, y) {
+        var t = document.elementFromPoint(x, y);
+        var z = t && t.closest ? (t.closest(".dndzone") || (t.closest(".dndtray") === tray ? tray : null)) : null;
+        if (z && !box.contains(z)) z = null;
+        if (over !== z) { if (over) over.classList.remove("over"); over = z; if (over) over.classList.add("over"); }
+      }
+      // Scroll the page while a card is held near the top or bottom edge,
+      // so a box below the fold can still be reached.
+      function edgeScroll() {
+        if (!ghost || !last) { scroller = null; return; }
+        var h = window.innerHeight, d = 0, edge = 70;
+        if (last.y > h - edge) d = Math.ceil((last.y - (h - edge)) / 4);
+        else if (last.y < edge) d = -Math.ceil((edge - last.y) / 4);
+        if (d) { window.scrollBy(0, d); hit(last.x, last.y); }
+        scroller = requestAnimationFrame(edgeScroll);
+      }
+      c.addEventListener("pointerdown", function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        start = { x: e.clientX, y: e.clientY }; try { c.setPointerCapture(e.pointerId); } catch (er) {}
+      });
+      c.addEventListener("pointermove", function (e) {
+        if (!start) return;
+        if (!ghost) {
+          if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) < 6) return;
+          ghost = c.cloneNode(true); ghost.className = "dndchip ghost";
+          ghost.style.width = c.offsetWidth + "px";
+          document.body.appendChild(ghost); c.classList.add("dragging"); setPicked(null);
+        }
+        ghost.style.left = (e.clientX - c.offsetWidth / 2) + "px";
+        ghost.style.top = (e.clientY - 18) + "px";
+        last = { x: e.clientX, y: e.clientY };
+        hit(e.clientX, e.clientY);
+        if (!scroller) scroller = requestAnimationFrame(edgeScroll);
+        e.preventDefault();
+      });
+      function end() {
+        if (ghost) {
+          ghost.parentNode.removeChild(ghost); ghost = null; c.classList.remove("dragging");
+          if (over) { over.classList.remove("over"); place(pi, over === tray ? -1 : parseInt(over.getAttribute("data-z"), 10)); }
+          over = null; start = null; c._dragged = true; return;
+        }
+        start = null;
+      }
+      c.addEventListener("pointerup", end);
+      c.addEventListener("pointercancel", function () { if (ghost) { ghost.parentNode.removeChild(ghost); ghost = null; c.classList.remove("dragging"); } if (over) over.classList.remove("over"); over = null; start = null; });
+      c.addEventListener("click", function () {
+        if (c._dragged) { c._dragged = false; return; }
+        setPicked(picked === pi ? null : pi);
+        if (picked === pi) announce("Picked " + pr.replace(/<[^>]+>/g, "") + ". Now choose a box.");
+      });
+      c.addEventListener("keydown", function (e) { if (e.key === "Escape") setPicked(null); });
+    });
+    fs._mark = function (ans) {
+      for (var i = 0; i < chips.length; i++) {
+        var cj = it.c[i], a = ans ? ans[i] : null;
+        var ok = a !== null && a !== undefined && (Array.isArray(cj) ? cj.indexOf(a) >= 0 : a === cj);
+        chips[i].classList.toggle("ok", ok); chips[i].classList.toggle("no", !ok && a !== null && a !== undefined);
+      }
+    };
+    fs.appendChild(box);
+  }
+
   function activitiesList(mi) {
     var list = actsFor(mi);
     if (!list.length) return null;
