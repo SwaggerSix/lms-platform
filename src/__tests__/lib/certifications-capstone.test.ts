@@ -259,7 +259,9 @@ describe("Specialist practicals (MOS-210 to MOS-240)", () => {
     const base = { userId: U, cert: scCert, cfg: sc, kind: "practical" as const };
     expect(await submitPiece(service, { ...base, filePath: doc, note: "Decision-rights pulse" })).toMatchObject({ ok: false, status: 400 });
     expect(await submitPiece(service, { ...base, link: "https://www.mosaicsurvey.com/s/abc", note: "Decision-rights pulse" })).toMatchObject({ ok: false, status: 400 });
-    expect(await submitPiece(service, { ...base, filePath: doc, link: "https://www.mosaicsurvey.com/s/abc" })).toMatchObject({ ok: false, status: 400 });
+    const noName = await submitPiece(service, { ...base, filePath: doc, link: "https://www.mosaicsurvey.com/s/abc" });
+    expect(noName).toMatchObject({ ok: false, status: 400 });
+    expect((noName as any).error).toBe("Add the survey's exact name in the Mosaic Practice Workspace.");
     const ok = await submitPiece(service, { ...base, filePath: doc, link: "https://www.mosaicsurvey.com/s/abc", note: "Decision-rights pulse" });
     expect(ok).toMatchObject({ ok: true, attempt: 1 });
     expect(db.certification_pushback_answers).toHaveLength(0);
