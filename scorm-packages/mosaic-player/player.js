@@ -126,7 +126,7 @@
       list.push({ key: "m:" + i, id: m.id, title: m.title, mi: i });
     }
     list.push({ key: "exam", id: "Final exam", title: EX.total + " questions · " + EX.time + " min", exam: true });
-    list.push({ key: "practical", id: "Practical task", title: "How to submit", practical: true });
+    list.push({ key: "practical", id: "Certification capstone", title: "After all five courses", practical: true });
     return list;
   }
   function renderNav() {
@@ -149,7 +149,7 @@
         else if (!examUnlocked()) { cls += " lock"; stTxt = "Locked"; }
         else if (S.e.n >= EX.attempts) { stTxt = "Attempts used"; }
         else stTxt = S.e.n ? "Attempt " + S.e.n + " of " + EX.attempts + " used" : "Available";
-      } else if (it.practical) { stTxt = "Marked by your assessor"; }
+      } else if (it.practical) { stTxt = "One capstone for the certification"; }
       else { stTxt = ""; }
       var inner = '<span class="' + cls + '" aria-hidden="true">' + st + '</span><span class="lbl">' +
         (it.id ? '<span class="mid">' + esc(it.id) + '</span>' : "") +
@@ -208,7 +208,7 @@
       (MODS.some(function (m) { return m.sim; }) ? " (plus its simulation, where there is one)" : "") +
       ". Checks draw fresh questions each time, and you can retake them as often as you like.</li>" +
       "<li>The final exam opens when every module before the practical module is complete.</li>" +
-      "<li>The practical task is marked by Dr. Chris Cancialosi outside this course; the last page explains how to submit it.</li>" +
+      "<li>There's no separate practical in this course. After all five Mosaic courses, one certification capstone, marked by Dr. Chris Cancialosi, opens on your Mosaic learning path. The last page explains.</li>" +
       "<li>Captions are on by default. Use the Captions button under each video to turn them off or on.</li></ul></div>";
     h += '<div class="card"><h2>Your progress</h2><p>' + done + " of " + req.length + " modules complete. " +
       (S.e.p ? '<span class="status ok">Final exam passed</span>' : (S.e.n ? "Final exam attempts used: " + S.e.n + " of " + EX.attempts + "." : "Final exam not yet taken.")) +
@@ -248,11 +248,17 @@
     renderNextStep(ns, mi);
 
     if (m.final) {
+      // The video was recorded when each course had its own practical task.
+      main.insertBefore(el("div", { "class": "notice" },
+        "<p><strong>Heads up:</strong> this video describes a practical task for this course. That's been replaced: " +
+        "there's now one certification capstone after all five Mosaic courses, on your learning path. " +
+        "You don't need to submit anything for this course beyond its final exam. " +
+        "The Northwind case material here is still worth your time: the capstone uses the same case.</p>"), main.firstChild);
       var c = el("div", { "class": "card" });
-      c.innerHTML = "<h2>Next steps</h2><p>Take the final exam and submit your practical task.</p>";
+      c.innerHTML = "<h2>Next steps</h2><p>Take the final exam. Once you've finished all five Mosaic courses, your certification capstone opens on your learning path.</p>";
       var b1 = el("button", { type: "button", "class": "btn" }, "Go to the final exam");
       b1.addEventListener("click", function () { go("exam"); });
-      var b2 = el("button", { type: "button", "class": "btn secondary" }, "How to submit the practical");
+      var b2 = el("button", { type: "button", "class": "btn secondary" }, "About the capstone");
       b2.addEventListener("click", function () { go("practical"); });
       c.appendChild(b1); c.appendChild(b2);
       main.appendChild(c);
@@ -264,7 +270,7 @@
   // module ends with a "Continue to <next>" button, and a pager sits on top.
   function keyLabel(key) {
     if (key === "exam") return "the final exam";
-    if (key === "practical") return "the practical task";
+    if (key === "practical") return "the certification capstone";
     if (key.indexOf("m:") === 0) { var m = MODS[parseInt(key.slice(2), 10)]; return m.id + ": " + m.title; }
     return "the course home";
   }
@@ -1243,11 +1249,19 @@
 
   // ------------------------------------------------------------ practical
   function renderPractical(main) {
+    // Operator decision 2026-11-11: the per-course practical tasks are
+    // replaced by one certification capstone after all five courses, opened
+    // and marked on the LMS. C.practical (the old per-course instructions) is
+    // no longer shown.
     main.appendChild(el("p", { "class": "kicker" }, esc(C.code)));
-    main.appendChild(el("h1", null, "Practical task: how to submit"));
-    main.appendChild(el("div", { "class": "notice" }, "<p>The practical task is marked by hand by Dr. Chris Cancialosi, outside this course. " +
-      "This page isn't graded and doesn't collect files: follow the submission instructions below.</p>"));
-    var c = el("div", { "class": "card" }, C.practical || "<p>See your course instructions.</p>");
+    main.appendChild(el("h1", null, "Certification capstone"));
+    var c = el("div", { "class": "card" },
+      "<p>There's no separate practical task for this course. The Mosaic Practitioner Certification ends in <strong>one capstone</strong> that brings all the tools together.</p>" +
+      "<ul><li>It opens once you've completed all five Mosaic courses (MOS-100, MOS-210, MOS-220, MOS-230 and MOS-240), each by passing its final exam.</li>" +
+      "<li>You'll find the brief and submit your work on your Mosaic learning path, outside this course window.</li>" +
+      "<li>Dr. Chris Cancialosi marks it within 10 business days. If it isn't there yet, you get written feedback and one resubmission.</li>" +
+      "<li>Pass, and you're certified for five years, with a certificate you can share.</li></ul>" +
+      '<p><a class="btn" href="/learn/paths/mosaic-certification-bundle-mw9odd0f" target="_top" rel="noopener">Go to your Mosaic learning path</a></p>');
     main.appendChild(c);
   }
 

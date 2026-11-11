@@ -17,6 +17,20 @@ copy of the player's source.
 
 ## Change log
 
+**11 Nov 2026 — one certification capstone.** Operator decision: the five
+per-course practical tasks are replaced by one capstone after all five
+courses, opened and marked on the LMS (`/learn/capstone/<certification id>`,
+migration `20261111120000_capstone_certifications.sql`). The player now:
+
+- names the last nav item "Certification capstone" and its page explains the
+  capstone and links to the Mosaic learning path (`target="_top"`, out of the
+  course frame); `C.practical`, the old per-course instructions, isn't shown;
+- says so on the home page and in the last module's "Next steps";
+- puts a notice above the last module's video, which still narrates the old
+  per-course practical (the videos weren't re-cut).
+
+No change to content, scoring, completion rules or saved state.
+
 **10 Nov 2026 — moving between modules.** Learners had to find the "Modules"
 menu (collapsed whenever the course window is under 860px wide, which it
 usually is inside the LMS) to get to the next module. Now:
