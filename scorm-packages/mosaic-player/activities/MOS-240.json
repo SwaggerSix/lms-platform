@@ -15,11 +15,13 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
-     "1": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
-     "2": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>",
-     "3": "<p>B. They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.</p>"
-    }
+     "0": "<p>A second Culture Mosaic would repeat the measurement; Taylor already has the number and wants the why.</p>",
+     "1": "",
+     "2": "<p>Four manager interviews would hear four managers, not the frontline clinic staff who need things from the hospital.</p>",
+     "3": "<p>The score shows where Collaboration is stuck, not why; Taylor is asking what's actually going on, which is what stories add.</p>"
+    },
+    "tk": "They have the number and want the why, across many people. A second Culture Mosaic would repeat the measurement; four manager interviews would hear four managers, not the frontline.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -32,11 +34,13 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
-     "1": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
-     "2": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>",
-     "3": "<p>B. \"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.</p>"
-    }
+     "0": "<p>Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and \"did it move?\" is a re-measurement question.</p>",
+     "1": "",
+     "2": "<p>There's no Mosaic Signal benchmark, so this isn't something you can offer.</p>",
+     "3": "<p>Culture Dig is a facilitated program on what the culture is doing and why; the Culture Progress Monitor is the tool that re-measures a chosen tile like Collaboration.</p>"
+    },
+    "tk": "\"Did it move?\" is a re-measurement question. Mosaic Signal could tell you how the huddles feel, but it can't measure change in a score, and nothing can prove cause. There's no Mosaic Signal benchmark.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -49,11 +53,13 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
-     "1": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
-     "2": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>",
-     "3": "<p>B. It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.</p>"
-    }
+     "0": "<p>Another Culture Mosaic would repeat the measurement; Alex wants to hear how decisions actually land for the frontline.</p>",
+     "1": "",
+     "2": "<p>A Leadership Mosaic 360 gives each leader an individual report on their own leadership; it doesn't collect frontline stories about how decisions land.</p>",
+     "3": "<p>Alex wants this before the redesign, and a 2027 Culture Dig is only a possibility; Mosaic Signal is quick now, and a Culture Dig later could go deeper.</p>"
+    },
+    "tk": "It's the next step the Mosaic capstone recommended. It's quick, it reaches the frontline directly, and its patterns can feed the redesign. A Culture Dig later could go deeper.",
+    "tkl": "Why"
    }
   ]
  },
@@ -120,10 +126,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>",
-     "1": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>",
-     "2": "<p>B. Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.</p>"
-    }
+     "0": "<p>Nothing blocks repeat stories on an anonymous survey, so the second person on the tablet can still submit; the real risk is privacy at a shared screen.</p>",
+     "1": "",
+     "2": "<p>Switching Anonymous Responses off would break the anonymity promise made to the people telling their stories.</p>"
+    },
+    "tk": "Nothing blocks repeat stories on an anonymous survey. The risk is privacy at a shared screen, not the software. C would break the anonymity promise.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -135,10 +143,12 @@
     ],
     "c": 2,
     "f": {
-     "0": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>",
-     "1": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>",
-     "2": "<p>C. The filter would work, but four stories are four people. Never help anyone work out who said what.</p>"
-    }
+     "0": "<p><strong>Critical error:</strong> four stories are four people, so this helps the manager work out who said what. Never show or quote a group under 10 stories.</p>",
+     "1": "<p><strong>Critical error:</strong> a promise not to share doesn't change that four stories can identify four people. Never help anyone work out who said what.</p>",
+     "2": ""
+    },
+    "tk": "SurveyCraft won't show a group of fewer than 10 stories, and four stories are four people. Never help anyone work out who said what.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -150,10 +160,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>",
-     "1": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>",
-     "2": "<p>B. The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.</p>"
-    }
+     "0": "<p>A purchased cap can be lowered but never raised past what was bought, so there's no setting to raise it.</p>",
+     "1": "",
+     "2": "<p>The cap applies however the survey is distributed and counts every completed story, anonymous or not.</p>"
+    },
+    "tk": "The cap can't be raised past what was bought, and it counts every completed story. Plan so late groups aren't shut out.",
+    "tkl": "Why"
    }
   ]
  },
@@ -189,10 +201,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>",
-     "1": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>",
-     "2": "<p>B. A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.</p>"
-    }
+     "0": "<p>This turns a slider into a vote: Mosaic Signal counts stories, not staff, and doesn't measure opinions of decisions, so there is no honest \"x% of staff\".</p>",
+     "1": "",
+     "2": "<p>A slider average is a mean that can hide two camps, and it isn't a share of staff; report a count of stories with its total instead.</p>"
+    },
+    "tk": "A count of stories with its total, in plain words. A turns a slider into a vote; C quotes a mean that hides two camps.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -204,10 +218,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>",
-     "1": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>",
-     "2": "<p>B. Never identify a storyteller or narrow it down. Move the conversation to the pattern.</p>"
-    }
+     "0": "<p><strong>Critical error:</strong> saying the details point to one clinic narrows down who told the story, even with \"I can't be sure\".</p>",
+     "1": "",
+     "2": "<p><strong>Critical error:</strong> trying to find out who told a story, and passing it on, breaks the rule never to identify a storyteller or help anyone else do it.</p>"
+    },
+    "tk": "Never identify a storyteller or narrow it down. Move the conversation to the pattern.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -219,10 +235,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>",
-     "1": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>",
-     "2": "<p>B. A relationship is a reason to act and to test, not proof of cause.</p>"
-    }
+     "0": "<p>The stories show the two go together, not that late notice causes workarounds; a relationship isn't proof of cause.</p>",
+     "1": "",
+     "2": "<p>Too cautious: the relationship is a strong reason to try telling people earlier, and a second wave can show whether the pattern moves.</p>"
+    },
+    "tk": "A relationship is a reason to act and to test, not proof of cause.",
+    "tkl": "Why"
    }
   ]
  }

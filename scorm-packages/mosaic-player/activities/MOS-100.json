@@ -357,11 +357,13 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
-     "1": "<p>Right. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
-     "2": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>",
-     "3": "<p>Not the best start here: Customer Experience Journey fits better. Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.</p>"
-    }
+     "0": "<p>The Culture Probe is about experiences at work, not what customers went through on a service call.</p>",
+     "1": "",
+     "2": "<p>Change Readiness is about how ready people are for an internal change, not a patient's experience of the scheduling line.</p>",
+     "3": "<p>Quick Narrative Capture is for fast, light collection at events, and it has no journey stones to follow the call from first contact to follow-up.</p>"
+    },
+    "tk": "Customer Experience Journey is built for customers' stories. Its triad weighs speed, quality and empathy, and its stones follow the service journey from first contact to follow-up.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -374,11 +376,13 @@
     ],
     "c": 2,
     "f": {
-     "0": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
-     "1": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
-     "2": "<p>Right. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>",
-     "3": "<p>Not the best start here: Change Readiness Assessment fits better. The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.</p>"
-    }
+     "0": "<p>Quick Narrative Capture is for fast collection at events or workshops; its People / Process / Purpose triad doesn't ask whether staff are willing, able and ready.</p>",
+     "1": "<p>The Culture Probe explores everyday work through Individual / Team / Organization, not readiness for a specific change like the scheduling rollout.</p>",
+     "2": "",
+     "3": "<p>Customer Experience Journey is for customers' stories about speed, quality and empathy, not staff readiness for an internal change.</p>"
+    },
+    "tk": "The triad corners are exactly the client's question: Willing / Able / Ready. Its dyads also show how people engage with change and where they hear about it.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -391,11 +395,13 @@
     ],
     "c": 0,
     "f": {
-     "0": "<p>Right. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
-     "1": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
-     "2": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>",
-     "3": "<p>Not the best start here: Quick Narrative Capture fits better. Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.</p>"
-    }
+     "0": "",
+     "1": "<p>Change Readiness is built to assess readiness for a change and adds two dyads and four stones, more than a quick story per table needs.</p>",
+     "2": "<p>Customer Experience Journey is for customers' stories and adds four journey stones; it isn't built for a quick story at a leadership offsite.</p>",
+     "3": "<p>The Culture Probe asks for longer stories (25–500 words) with two dyads and four stones, which is heavier than a two-hour offsite needs.</p>"
+    },
+    "tk": "Quick Narrative Capture is the lightweight one: a short story, one triad (People / Process / Purpose), one dyad and no stones. That fits a workshop.",
+    "tkl": "Why"
    },
    {
     "k": "mcq",
@@ -408,11 +414,13 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
-     "1": "<p>Right. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
-     "2": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>",
-     "3": "<p>Not the best start here: Organizational Culture Probe fits better. The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).</p>"
-    }
+     "0": "<p>Customer Experience Journey is for customers' stories about speed, quality and empathy, not how everyday work feels inside the organization.</p>",
+     "1": "",
+     "2": "<p>Quick Narrative Capture's triad is People / Process / Purpose and it has no formality dyad, so it misses both parts of the client's question.</p>",
+     "3": "<p>Change Readiness asks whether people are willing, able and ready for a change, not how formal things feel or how individuals, teams and the organization act.</p>"
+    },
+    "tk": "The Culture Probe's triad is Individual / Team / Organization, and its first dyad runs from Very Formal to Very Informal. It is also the template Culture Dig builds its story collection from (M7).",
+    "tkl": "Why"
    }
   ]
  },
@@ -980,7 +988,7 @@
  {
   "id": "M9-27",
   "title": "Practice briefing assignment",
-  "intro": "<p><strong>Build and record a 5-minute briefing.</strong> It's a gate to the capstone, but it isn't scored for certification. Treat it as your rehearsal.</p><p><strong>Choose one:</strong></p><ul><li><strong>Option 1 — Progress-check briefing.</strong> Brief Northwind's executive team on the October Culture Progress Monitor (Exhibit E, plus your Case C answers from Module 8).</li><li><strong>Option 2 — 360 debrief opening.</strong> Record the first 5 minutes of Jordan Reyes's debrief (Exhibit C, plus your Case B answers). Use a colleague, or speak to camera as if to Jordan.</li></ul><p><strong>Deliverables</strong></p><ol><li>A 1-3-1 Briefing Template filled in (Option 1), or a debrief plan (Option 2).</li><li>Up to 3 exhibits (Option 1) or 2 report pages (Option 2), with slide surgery applied.</li><li>A recording of 5–6 minutes (video or audio with slides).</li><li>A self-score against the rubric below, with one sentence of evidence per criterion.</li></ol><p><strong>Practice rubric</strong> (the same criteria as the capstone briefing; 1 = not yet, 2 = developing, 3 = meets, 4 = strong). What “Meets” (3) looks like:</p><ul><li><strong>B1 Structure and headline</strong>: Clear 1-3-1 shape; a one-sentence headline that is fair to the data</li><li><strong>B2 Accuracy</strong>: Every number uses the right measure; no misread labels</li><li><strong>B3 Honest uncertainty</strong>: Limits named (N, response rate, “no meaningful change”, small groups); no causal claims</li><li><strong>B4 Handling pushback</strong>: (Self-test: answer one pushback prompt drawn at random from the playbook.) Acknowledges, clarifies, holds the line, redirects</li><li><strong>B5 Decision focus and next steps</strong>: Ends with a decision, owner, next measurement and share-back (Option 1), or the leader's own commitment (Option 2)</li><li><strong>B6 Presence and clarity</strong>: Plain language, steady pace, no jargon without a gloss</li></ul><p><strong>Optional peer review:</strong> swap recordings with another learner and score each other's work with the same rubric.</p>",
+  "intro": "<p><strong>Build and record a 5-minute briefing.</strong> It's a gate to the capstone, but it isn't scored for certification. Treat it as your rehearsal.</p><p><strong>How to submit:</strong> you don't upload anything here. Keep your recording and your filled-in template, and score yourself with the rubric below. For the optional peer review, swap recordings with another learner directly and score each other's work with the same rubric.</p><p><strong>Choose one:</strong></p><ul><li><strong>Option 1 — Progress-check briefing.</strong> Brief Northwind's executive team on the October Culture Progress Monitor (Exhibit E, plus your Case C answers from Module 8).</li><li><strong>Option 2 — 360 debrief opening.</strong> Record the first 5 minutes of Jordan Reyes's debrief (Exhibit C, plus your Case B answers). Use a colleague, or speak to camera as if to Jordan.</li></ul><p><strong>Deliverables</strong></p><ol><li>A 1-3-1 Briefing Template filled in (Option 1), or a debrief plan (Option 2).</li><li>Up to 3 exhibits (Option 1) or 2 report pages (Option 2), with slide surgery applied.</li><li>A recording of 5–6 minutes (video or audio with slides).</li><li>A self-score against the rubric below, with one sentence of evidence per criterion.</li></ol><p><strong>Practice rubric</strong> (the same criteria as the capstone briefing; 1 = not yet, 2 = developing, 3 = meets, 4 = strong). What “Meets” (3) looks like:</p><ul><li><strong>B1 Structure and headline</strong>: Clear 1-3-1 shape; a one-sentence headline that is fair to the data</li><li><strong>B2 Accuracy</strong>: Every number uses the right measure; no misread labels</li><li><strong>B3 Honest uncertainty</strong>: Limits named (N, response rate, “no meaningful change”, small groups); no causal claims</li><li><strong>B4 Handling pushback</strong>: (Self-test: answer one pushback prompt drawn at random from the playbook.) Acknowledges, clarifies, holds the line, redirects</li><li><strong>B5 Decision focus and next steps</strong>: Ends with a decision, owner, next measurement and share-back (Option 1), or the leader's own commitment (Option 2)</li><li><strong>B6 Presence and clarity</strong>: Plain language, steady pace, no jargon without a gloss</li></ul><p><strong>Optional peer review:</strong> swap recordings with another learner and score each other's work with the same rubric.</p>",
   "items": [
    {
     "k": "open",

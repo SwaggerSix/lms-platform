@@ -156,7 +156,7 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 
 /* drag and drop sorting (practice "match") */
 .dnd .dndtray { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 10px; border: 2px dashed var(--line); border-radius: 10px; background: var(--panel); margin: 6px 0 12px; }
-.dndzones { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.dndzones { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
 .dndzone { border: 2px solid var(--adapt); border-radius: 10px; background: #fff; min-height: 120px; display: flex; flex-direction: column; }
 .dndzone.over, .dndtray.over { border-color: var(--mosaic-dark); background: var(--adapt-tint); }
 .dndzhead { font: inherit; font-family: var(--head); font-weight: 700; color: #fff; background: var(--mosaic-dark); border: 0; border-radius: 7px 7px 0 0; padding: 8px 10px; text-align: left; cursor: pointer; }
@@ -189,3 +189,4 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dndrow.no { border-color: var(--danger); background: var(--danger-tint); }
 .dndrow.no .dndtxt::after { content: " ✗"; color: var(--danger); font-weight: 700; }
 .fb .tk { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 8px; }
+@media (max-width: 600px) { .dndzones { grid-template-columns: 1fr 1fr; gap: 8px; } .dndzone { min-height: 84px; } .dndzhead { padding: 6px 8px; } .dndchip { padding: 5px 8px; } }

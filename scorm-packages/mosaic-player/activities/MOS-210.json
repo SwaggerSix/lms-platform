@@ -132,10 +132,12 @@
     ],
     "c": 1,
     "f": {
-     "0": "<p>The report still generates.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>",
-     "1": "<p>Correct. The card raises no flag for it.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>",
-     "2": "<p>It isn't.</p><p><strong>Outcome (snapshot 2, 30 Oct):</strong> Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.</p>"
-    }
+     "0": "<p>The report still generates without anyone in Others; with nobody added there's simply no Others section.</p>",
+     "1": "",
+     "2": "<p>Others isn't mandatory; when nobody is added to Others, the progress card raises no flag.</p>"
+    },
+    "tk": "Outcome (snapshot 2, 30 Oct): Boss 1 of 1, Peers 3 of 4, Direct reports 5 of 6, Others 0. Raters 9 of 11 (82%). Every group Casey cared about reached 3, so the report shows Self, Boss 1 (Taylor Brooks), Peers and Direct Reports.",
+    "tkl": "Why"
    }
   ]
  },
