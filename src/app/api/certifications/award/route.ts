@@ -4,6 +4,7 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { awardCertification, revokeCertification } from "@/lib/certifications/issue";
+import { sendAwardedEmail, sendRevokedEmail } from "@/lib/certifications/notify";
 import { submissionsFor, type PushbackRow, type SubmissionRow } from "@/lib/certifications/capstone-service";
 import { answeredLate, answerSeconds, capstoneFor, latestOf, passDates, type CapstoneConfig } from "@/lib/certifications/capstone";
 
@@ -222,6 +223,9 @@ export async function POST(request: NextRequest) {
     note: body.note,
   });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+  await sendAwardedEmail(service, result.userCertificationId).catch((e) =>
+    console.error("Award email error:", (e as Error)?.message)
+  );
   return NextResponse.json(
     { user_certification_id: result.userCertificationId, reawarded: result.reawarded },
     { status: result.reawarded ? 200 : 201 }
@@ -250,7 +254,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Course-completion certificates can't be revoked here" }, { status: 400 });
   }
 
+  const { data: before } = await service.from("user_certifications").select("status").eq("id", id).maybeSingle();
   const result = await revokeCertification(service, { userCertificationId: id, revokedBy: auth.user.id });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+  if (before?.status === "active") {
+    await sendRevokedEmail(service, id).catch((e) => console.error("Revoke email error:", (e as Error)?.message));
+  }
   return NextResponse.json({ ok: true });
 }
