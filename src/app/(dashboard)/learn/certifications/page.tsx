@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import CertificationsClient from "./certifications-client";
 import type { Certificate } from "./certifications-client";
 import { deriveStatus } from "@/lib/certifications/status";
+import { capstoneFor } from "@/lib/certifications/capstone";
 
 export const metadata: Metadata = {
   title: "Certifications | LMS Platform",
@@ -85,7 +86,7 @@ export default async function CertificationsPage() {
   // working towards: enrolled in the required course, not certified yet.
   const { data: capstoneCerts } = await service
     .from("certifications")
-    .select("id, name, award_requires_course_id")
+    .select("id, name, award_requires_course_id, capstone_key")
     .not("capstone_key", "is", null)
     .is("course_id", null)
     .eq("status", "active")
@@ -102,7 +103,7 @@ export default async function CertificationsPage() {
   const enrolledIn = new Set((myEnrollments ?? []).map((e: any) => e.course_id));
   const capstones = (capstoneCerts ?? [])
     .filter((c: any) => !heldIds.has(c.id) && (!c.award_requires_course_id || enrolledIn.has(c.award_requires_course_id)))
-    .map((c: any) => ({ id: c.id as string, name: c.name as string }));
+    .map((c: any) => ({ id: c.id as string, name: c.name as string, summary: capstoneFor(c.capstone_key)?.summary ?? null }));
 
   return <CertificationsClient certificates={certificates} userName={userName} capstones={capstones} />;
 }

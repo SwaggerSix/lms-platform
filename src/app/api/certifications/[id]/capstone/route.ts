@@ -18,8 +18,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
   const { subs, pushback } = data;
-  const briefing = latestOf(subs, "briefing");
-  const pb = briefing ? pushback.filter((p) => p.submission_id === briefing.id) : [];
+  const pbPiece = cfg.pieces.find((p) => p.pushback);
+  const pbSub = pbPiece ? latestOf(subs, pbPiece.kind) : null;
+  const pb = pbSub ? pushback.filter((p) => p.submission_id === pbSub.id) : [];
 
   const { data: held } = await service
     .from("user_certifications")
@@ -30,26 +31,43 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   return NextResponse.json({
     certification: { id: cert.id, name: cert.name },
-    config: { title: cfg.title, intro: cfg.intro, memo: cfg.memo, briefing: cfg.briefing, turnaround: cfg.turnaround,
-      pushback: { count: cfg.pushback.count, prepSeconds: cfg.pushback.prepSeconds, answerSeconds: cfg.pushback.answerSeconds } },
+    config: {
+      title: cfg.title,
+      intro: cfg.intro,
+      turnaround: cfg.turnaround,
+      pieces: cfg.pieces.map((p) => ({
+        kind: p.kind,
+        title: p.title,
+        instructions: p.instructions,
+        file: p.file,
+        link: p.link,
+        linkLabel: p.linkLabel ?? null,
+        requiredNote: p.requiredNote ?? null,
+        warning: p.warning ?? null,
+      })),
+      pushback: cfg.pushback
+        ? { count: cfg.pushback.count, prepSeconds: cfg.pushback.prepSeconds, answerSeconds: cfg.pushback.answerSeconds }
+        : null,
+    },
     certified: held?.status === "active",
     submissions: subs.map((s) => ({
       id: s.id, kind: s.kind, attempt: s.attempt, status: s.status, submittedAt: s.submitted_at,
       fileName: s.file_name, hasFile: !!s.file_path, link: s.link_url, reviewedAt: s.reviewed_at, feedback: s.feedback,
     })),
-    next: { memo: nextAttempt(subs, "memo"), briefing: nextAttempt(subs, "briefing") },
-    pushback: briefing
-      ? {
-          submissionId: briefing.id,
-          open: briefing.status === "submitted",
-          questions: pb.map((p) => ({
-            position: p.position,
-            revealedAt: p.revealed_at,
-            answered: !!p.answered_at,
-            // Never send a question before it is shown: the draw is the point.
-            prompt: p.revealed_at ? cfg.pushback.bank[p.prompt_index] : null,
-          })),
-        }
-      : null,
+    next: Object.fromEntries(cfg.pieces.map((p) => [p.kind, nextAttempt(subs, p.kind)])),
+    pushback:
+      pbSub && cfg.pushback
+        ? {
+            submissionId: pbSub.id,
+            open: pbSub.status === "submitted",
+            questions: pb.map((p) => ({
+              position: p.position,
+              revealedAt: p.revealed_at,
+              answered: !!p.answered_at,
+              // Never send a question before it is shown: the draw is the point.
+              prompt: p.revealed_at ? cfg.pushback!.bank[p.prompt_index] : null,
+            })),
+          }
+        : null,
   });
 }

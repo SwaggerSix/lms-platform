@@ -3,9 +3,10 @@ import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
 import { learnerContext } from "../_shared";
 import { startUpload } from "@/lib/certifications/capstone-service";
+import { pieceOf } from "@/lib/certifications/capstone";
 
 const Schema = z.object({
-  slot: z.enum(["memo", "briefing", "pushback"]),
+  slot: z.enum(["memo", "briefing", "practical", "pushback"]),
   file_size: z.number().int().positive(),
   content_type: z.string().min(1).max(200),
 });
@@ -19,10 +20,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!rl.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   const parsed = Schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  const slot = parsed.data.slot;
+  const piece = slot === "pushback" ? null : pieceOf(ctx.cfg, slot);
+  if (slot === "pushback" ? !ctx.cfg.pushback : !piece) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const r = await startUpload(ctx.service, {
     userId: ctx.auth.user.id,
     certificationId: ctx.cert.id,
-    slot: parsed.data.slot,
+    slot,
+    fileKind: piece ? piece.file : "video",
+    linkInstead: piece?.link === "or-file",
     fileSize: parsed.data.file_size,
     contentType: parsed.data.content_type,
   });
