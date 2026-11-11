@@ -6,8 +6,10 @@ name: Upload Mosaic course files
 # The files it replaces are kept as this run's "previous-course-files"
 # artifact. See scorm-packages/live/README.md.
 #
-# Setup (once): add the SUPABASE_SERVICE_ROLE_KEY repository secret
-# (Supabase dashboard → Project Settings → API Keys → service_role, "Reveal").
+# Setup (once): add the SUPABASE_SERVICE_ROLE_KEY repository secret: a secret
+# key (Supabase dashboard → Project Settings → API Keys → "Publishable and
+# secret API keys" → Secret keys, sb_secret_...) or the legacy service_role key
+# ("Legacy API keys" tab). Either works.
 
 on:
   workflow_dispatch: {}

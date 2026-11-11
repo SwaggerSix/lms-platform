@@ -8,7 +8,14 @@ set -euo pipefail
 : "${SUPABASE_SERVICE_ROLE_KEY:?Add the SUPABASE_SERVICE_ROLE_KEY repository secret}"
 
 BASE="${SUPABASE_URL%/}/storage/v1/object/course-content/scorm"
-AUTH=(-H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}")
+# A new-style secret key (sb_secret_...) goes on the apikey header only: on
+# Authorization it's parsed as a JWT and refused. The legacy service_role key
+# (a JWT) goes on both.
+if [[ "$SUPABASE_SERVICE_ROLE_KEY" == sb_secret_* ]]; then
+  AUTH=(-H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}")
+else
+  AUTH=(-H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}")
+fi
 PACKAGES=(
   2a1c6b35-3be3-42ae-9609-6aa3b685fff5
   488f5096-04d6-4501-bfce-76a70aabf4ba
