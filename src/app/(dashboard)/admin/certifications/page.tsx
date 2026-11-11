@@ -38,14 +38,14 @@ export default async function CertificationsPage() {
   // Fetch certifications with linked course/path names
   const { data: rows } = await service
     .from('certifications')
-    .select('*, recertification_course:courses!recertification_course_id(title), recertification_path:learning_paths!recertification_path_id(title)')
+    .select('*, completion_course:courses!course_id(title), award_course:courses!award_requires_course_id(title), recertification_course:courses!recertification_course_id(title), recertification_path:learning_paths!recertification_path_id(title)')
     .order('created_at', { ascending: false });
 
   // Fetch user_certifications status counts grouped by certification_id
   const { data: statusRows } = await service
     .from('user_certifications')
     .select('certification_id, status')
-    .limit(200);
+    .limit(5000);
 
   // Aggregate counts per certification
   const countsMap: Record<string, { issued: number; active: number; expired: number }> = {};
@@ -75,6 +75,8 @@ export default async function CertificationsPage() {
 
     // Determine linked course or path name
     const linkedCourse =
+      (row as any).completion_course?.title ??
+      (row as any).award_course?.title ??
       (row as any).recertification_course?.title ??
       (row as any).recertification_path?.title ??
       'None';
@@ -89,6 +91,7 @@ export default async function CertificationsPage() {
       activeCount: counts.active,
       expiredCount: counts.expired,
       color: GRADIENTS[index % GRADIENTS.length],
+      kind: row.course_id ? 'course' : 'award',
     };
   });
 

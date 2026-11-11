@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/modal';
+import AwardPanel from './award-panel';
 
 export interface CertificationItem {
   id: string;
@@ -29,6 +30,8 @@ export interface CertificationItem {
   activeCount: number;
   expiredCount: number;
   color: string;
+  /** 'course': issued automatically on finishing a course. 'award': staff press Award. */
+  kind: 'course' | 'award';
 }
 
 interface CertificationsClientProps {
@@ -58,6 +61,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [awardCert, setAwardCert] = useState<CertificationItem | null>(null);
 
   const openCreateModal = () => {
     setEditingCert(null);
@@ -137,6 +141,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
             activeCount: 0,
             expiredCount: 0,
             color: 'from-primary-500 to-blue-600',
+            kind: 'award',
           },
           ...prev,
         ]);
@@ -226,7 +231,10 @@ export default function CertificationsClient({ certifications: initialCerts }: C
 
               <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
                 <BookOpen className="h-4 w-4 text-gray-400" />
-                <span>Linked: <span className="font-medium text-primary-600">{cert.linkedCourse}</span></span>
+                <span>
+                  {cert.kind === 'course' ? 'Issued automatically on completing: ' : 'Awarded by staff · requires: '}
+                  <span className="font-medium text-primary-600">{cert.linkedCourse}</span>
+                </span>
               </div>
 
               {/* Stats */}
@@ -264,6 +272,14 @@ export default function CertificationsClient({ certifications: initialCerts }: C
 
               {/* Actions */}
               <div className="mt-5 flex gap-2">
+                {cert.kind === 'award' && (
+                  <button
+                    onClick={() => setAwardCert(cert)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+                  >
+                    <Award className="h-3.5 w-3.5" /> Award
+                  </button>
+                )}
                 <button
                   onClick={() => openEditModal(cert)}
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -375,6 +391,28 @@ export default function CertificationsClient({ certifications: initialCerts }: C
               </div>
             </form>
         </Modal>
+      )}
+      {awardCert && (
+        <AwardPanel
+          certificationId={awardCert.id}
+          certificationName={awardCert.name}
+          isOpen={!!awardCert}
+          onClose={() => setAwardCert(null)}
+          onChanged={(d) =>
+            setCertifications((prev) =>
+              prev.map((c) =>
+                c.id === awardCert.id
+                  ? {
+                      ...c,
+                      issuedCount: c.issuedCount + d.issued,
+                      activeCount: c.activeCount + d.active,
+                      expiredCount: Math.max(0, c.expiredCount + d.expired),
+                    }
+                  : c
+              )
+            )
+          }
+        />
       )}
     </div>
   );
