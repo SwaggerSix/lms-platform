@@ -36,6 +36,8 @@ export interface CertificationItem {
   color: string;
   /** 'course': issued automatically on finishing a course. 'award': staff press Award. */
   kind: 'course' | 'award';
+  /** Switched off (e.g. the Culture Dig / Mosaic Signal Specialists, folded into the Mosaic Practitioner capstone): no Award. */
+  retired?: boolean;
 }
 
 interface CertificationsClientProps {
@@ -220,7 +222,12 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   <Award className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{cert.name}</h3>
+                  <h3 className="text-lg font-bold text-white">
+                    {cert.name}
+                    {cert.retired && (
+                      <span className="ml-2 rounded-full bg-white/25 px-2 py-0.5 align-middle text-xs font-medium">Retired</span>
+                    )}
+                  </h3>
                   <div className="flex items-center gap-1 text-sm text-white/80">
                     <Calendar className="h-3.5 w-3.5" />
                     Valid for {cert.validityPeriod}
@@ -287,7 +294,7 @@ export default function CertificationsClient({ certifications: initialCerts }: C
 
               {/* Actions */}
               <div className="mt-5 flex gap-2">
-                {cert.kind === 'award' && (
+                {cert.kind === 'award' && !cert.retired && (
                   <button
                     onClick={() => setAwardCert(cert)}
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"

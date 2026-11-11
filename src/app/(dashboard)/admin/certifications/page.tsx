@@ -80,7 +80,12 @@ export default async function CertificationsPage() {
     }
   }
 
-  const certifications: CertificationItem[] = (rows ?? []).map((row: any, index: number) => {
+  // Current staff-awarded credentials first, then course certificates;
+  // retired ones (status inactive) last, marked and without Award.
+  const rank = (r: any) => (r.status !== 'active' ? 2 : r.course_id ? 1 : 0);
+  const ordered = [...(rows ?? [])].sort((a: any, b: any) => rank(a) - rank(b));
+
+  const certifications: CertificationItem[] = ordered.map((row: any, index: number) => {
     const counts = countsMap[row.id] ?? { issued: 0, active: 0, expired: 0 };
 
     // Determine validity period display
@@ -110,8 +115,9 @@ export default async function CertificationsPage() {
       expiredCount: counts.expired,
       expiringSoonCount: expiringMap[row.id] ?? 0,
       unmarkedCount: unmarkedMap[row.id] ?? 0,
-      color: GRADIENTS[index % GRADIENTS.length],
+      color: row.status !== 'active' ? 'from-gray-400 to-gray-500' : GRADIENTS[index % GRADIENTS.length],
       kind: row.course_id ? 'course' : 'award',
+      retired: row.status !== 'active',
     };
   });
 
