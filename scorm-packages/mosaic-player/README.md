@@ -17,6 +17,18 @@ copy of the player's source.
 
 ## Change log
 
+**11 Nov 2026 — one capstone for the bundle.** MOS-100, MOS-230 and MOS-240
+now lead to one certification, Mosaic Practitioner Certified, through one
+capstone handed in on the LMS (`/learn/capstone/<id>`) once all three
+courses are finished. The player takes its hand-in wording from the course
+data when `C.handIn` is set (nav label, the practical page's heading and
+notice, the home-page line, the final module's "Next steps"), and shows a
+module's `note` (HTML) above its video, used on M10, CD-M6 and MS-M6 to say
+what has changed since the narration was recorded. Without them (MOS-210,
+MOS-220) it reads exactly as before. The three courses' `course-data.js`
+were edited to match: the "How you'll be certified" and "What happens next"
+screens, the hand-in lines, and MOS-230's exam intro.
+
 **10 Nov 2026 — moving between modules.** Learners had to find the "Modules"
 menu (collapsed whenever the course window is under 860px wide, which it
 usually is inside the LMS) to get to the next module. Now:

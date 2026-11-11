@@ -14,6 +14,21 @@
   }
   var C = decode(window.MOSAIC_COURSE, window.MOSAIC_K);
   var MODS = C.modules, ITEMS = C.items, EX = C.exam;
+  // Wording for the hand-in step. A course whose work goes into the Mosaic
+  // Practitioner capstone on the LMS (MOS-100, MOS-230, MOS-240) overrides it
+  // in course-data.js (C.handIn); MOS-210/220 keep their own practical.
+  var HI = C.handIn || {};
+  var HAND = {
+    navId: HI.navId || "Practical task",
+    navTitle: HI.navTitle || "How to submit",
+    label: HI.label || "the practical task",
+    heading: HI.heading || "Practical task: how to submit",
+    notice: HI.notice || "<p>The practical task is marked by hand by Dr. Chris Cancialosi, outside this course. " +
+      "This page isn't graded and doesn't collect files: follow the submission instructions below.</p>",
+    home: HI.home || "The practical task is marked by Dr. Chris Cancialosi outside this course; the last page explains how to submit it.",
+    next: HI.next || "<p>Take the final exam and submit your practical task.</p>",
+    nextButton: HI.nextButton || "How to submit the practical"
+  };
   var VIDEO_DONE = 90;
 
   // ------------------------------------------------------------ SCORM 1.2
@@ -126,7 +141,7 @@
       list.push({ key: "m:" + i, id: m.id, title: m.title, mi: i });
     }
     list.push({ key: "exam", id: "Final exam", title: EX.total + " questions · " + EX.time + " min", exam: true });
-    list.push({ key: "practical", id: "Practical task", title: "How to submit", practical: true });
+    list.push({ key: "practical", id: HAND.navId, title: HAND.navTitle, practical: true });
     return list;
   }
   function renderNav() {
@@ -208,7 +223,7 @@
       (MODS.some(function (m) { return m.sim; }) ? " (plus its simulation, where there is one)" : "") +
       ". Checks draw fresh questions each time, and you can retake them as often as you like.</li>" +
       "<li>The final exam opens when every module before the practical module is complete.</li>" +
-      "<li>The practical task is marked by Dr. Chris Cancialosi outside this course; the last page explains how to submit it.</li>" +
+      "<li>" + esc(HAND.home) + "</li>" +
       "<li>Captions are on by default. Use the Captions button under each video to turn them off or on.</li></ul></div>";
     h += '<div class="card"><h2>Your progress</h2><p>' + done + " of " + req.length + " modules complete. " +
       (S.e.p ? '<span class="status ok">Final exam passed</span>' : (S.e.n ? "Final exam attempts used: " + S.e.n + " of " + EX.attempts + "." : "Final exam not yet taken.")) +
@@ -233,6 +248,9 @@
     stat.innerHTML = modDone(mi) ? '<span class="status ok">✓ Module complete</span>' : '<span class="status wait">In progress</span>';
     main.appendChild(stat);
 
+    // A note from the course data above the video (e.g. where what the
+    // narration describes has since changed).
+    if (m.note) main.appendChild(el("div", { "class": "notice" }, m.note));
     // videos
     if (!m.videos.length) main.appendChild(el("div", { "class": "notice" }, "<p>No video for this module.</p>"));
     m.videos.forEach(function (v, vi) { main.appendChild(videoBlock(mi, vi, v, m.videos.length)); });
@@ -249,10 +267,10 @@
 
     if (m.final) {
       var c = el("div", { "class": "card" });
-      c.innerHTML = "<h2>Next steps</h2><p>Take the final exam and submit your practical task.</p>";
+      c.innerHTML = "<h2>Next steps</h2>" + HAND.next;
       var b1 = el("button", { type: "button", "class": "btn" }, "Go to the final exam");
       b1.addEventListener("click", function () { go("exam"); });
-      var b2 = el("button", { type: "button", "class": "btn secondary" }, "How to submit the practical");
+      var b2 = el("button", { type: "button", "class": "btn secondary" }, esc(HAND.nextButton));
       b2.addEventListener("click", function () { go("practical"); });
       c.appendChild(b1); c.appendChild(b2);
       main.appendChild(c);
@@ -264,7 +282,7 @@
   // module ends with a "Continue to <next>" button, and a pager sits on top.
   function keyLabel(key) {
     if (key === "exam") return "the final exam";
-    if (key === "practical") return "the practical task";
+    if (key === "practical") return HAND.label;
     if (key.indexOf("m:") === 0) { var m = MODS[parseInt(key.slice(2), 10)]; return m.id + ": " + m.title; }
     return "the course home";
   }
@@ -1252,9 +1270,8 @@
   // ------------------------------------------------------------ practical
   function renderPractical(main) {
     main.appendChild(el("p", { "class": "kicker" }, esc(C.code)));
-    main.appendChild(el("h1", null, "Practical task: how to submit"));
-    main.appendChild(el("div", { "class": "notice" }, "<p>The practical task is marked by hand by Dr. Chris Cancialosi, outside this course. " +
-      "This page isn't graded and doesn't collect files: follow the submission instructions below.</p>"));
+    main.appendChild(el("h1", null, esc(HAND.heading)));
+    main.appendChild(el("div", { "class": "notice" }, HAND.notice));
     var c = el("div", { "class": "card" }, C.practical || "<p>See your course instructions.</p>");
     main.appendChild(c);
   }
