@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { awardCertification, revokeCertification } from "@/lib/certifications/issue";
 import { sendAwardedEmail, sendRevokedEmail } from "@/lib/certifications/notify";
+import { syncCertificationToPortal } from "@/lib/integrations/partner-portal/certification";
 import { submissionsFor, type PushbackRow, type SubmissionRow } from "@/lib/certifications/capstone-service";
 import { answeredLate, answerSeconds, capstoneFor, latestOf, passDates, type CapstoneConfig } from "@/lib/certifications/capstone";
 
@@ -233,8 +234,9 @@ export async function POST(request: NextRequest) {
   await sendAwardedEmail(service, result.userCertificationId).catch((e) =>
     console.error("Award email error:", (e as Error)?.message)
   );
+  const portal = await syncCertificationToPortal(service, result.userCertificationId, "award");
   return NextResponse.json(
-    { user_certification_id: result.userCertificationId, reawarded: result.reawarded },
+    { user_certification_id: result.userCertificationId, reawarded: result.reawarded, portal },
     { status: result.reawarded ? 200 : 201 }
   );
 }
@@ -267,5 +269,6 @@ export async function DELETE(request: NextRequest) {
   if (before?.status === "active") {
     await sendRevokedEmail(service, id).catch((e) => console.error("Revoke email error:", (e as Error)?.message));
   }
-  return NextResponse.json({ ok: true });
+  const portal = before?.status === "active" ? await syncCertificationToPortal(service, id, "revoke") : "skipped";
+  return NextResponse.json({ ok: true, portal });
 }
