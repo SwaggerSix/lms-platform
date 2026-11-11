@@ -239,8 +239,11 @@ describe("hand in, pushback, marking, award", () => {
     expect(await reviewPiece(service, { submissionId: m2, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: false, status: 409 });
     expect(await reviewPiece(service, { submissionId: bid, reviewerId: "chris", decision: "passed", now: new Date("2026-11-21T09:00:00Z") })).toMatchObject({ ok: true });
 
-    // The Culture Dig and Mosaic Signal pieces are part of the same capstone.
-    expect(await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    // The Culture Dig and Mosaic Signal pieces are part of the same capstone,
+    // and the refusal names only what's still to pass.
+    const early = await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" });
+    expect(early).toMatchObject({ ok: false, status: 409 });
+    expect((early as any).error).toBe("Mark this learner's Culture Dig plan and synthesis and Mosaic Signal analysis memo as passed first.");
     for (const [kind, path] of [["dig", digPath], ["signal", signalPath]] as const) {
       const sub = await submitPiece(service, { userId: U, cert, cfg, kind, filePath: path });
       expect(sub).toMatchObject({ ok: true, attempt: 1 });
@@ -317,7 +320,7 @@ describe("one Mosaic Practitioner capstone across MOS-100, MOS-230 and MOS-240",
     ];
     db.enrollments.find((e) => e.course_id === "mos240")!.status = "in_progress";
     expect(await learnerBlockedReason(service, U, cert)).toBe(
-      "Your capstone opens once you've finished MOS-100, MOS-230 and MOS-240, final exams included."
+      "Your capstone opens once you've also finished MOS-240, final exam included."
     );
     db.enrollments.find((e) => e.course_id === "mos240")!.status = "completed";
     expect(await learnerBlockedReason(service, U, cert)).toBeNull();

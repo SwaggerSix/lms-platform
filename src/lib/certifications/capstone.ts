@@ -131,7 +131,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
       {
         kind: "briefing",
         label: "Briefing",
-        noun: "executive briefing",
+        noun: "board briefing",
         title: "Task 4: Recorded board briefing",
         file: "video",
         link: "or-file",
@@ -222,6 +222,12 @@ export const ALLOWED_TYPES: Record<FileKind, Record<string, string>> = {
   },
   video: { "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov" },
 };
+
+/** "a", "a and b", "a, b and c". */
+export function listOf(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
 
 export function capstoneFor(key: string | null | undefined): CapstoneConfig | null {
   return key && Object.prototype.hasOwnProperty.call(CAPSTONES, key) ? CAPSTONES[key] : null;

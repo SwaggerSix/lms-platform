@@ -35,7 +35,7 @@ describe("piecesToMark", () => {
   it("lists the briefing once all three answers are in", () => {
     const subs = [sub({ id: "b", kind: "briefing" })];
     const pb = [1, 2, 3].map((n) => ({ id: `p${n}`, submission_id: "b", position: n, prompt_index: n, revealed_at: daysAgo(3), answered_at: daysAgo(3), file_path: "x", recorded_in_browser: true })) as any;
-    expect(piecesToMark(mos, subs, pb).map((m) => m.piece)).toEqual(["executive briefing"]);
+    expect(piecesToMark(mos, subs, pb).map((m) => m.piece)).toEqual(["board briefing"]);
   });
   it("looks only at the newest attempt", () => {
     const subs = [sub({ id: "m1", status: "resubmit", reviewed_at: daysAgo(5) }), sub({ id: "m2", attempt: 2, status: "passed", reviewed_at: daysAgo(1) })];
