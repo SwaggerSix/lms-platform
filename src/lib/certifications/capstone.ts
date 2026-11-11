@@ -53,6 +53,12 @@ export interface CapstoneConfig {
   pieces: PieceConfig[];
   pushback: { count: number; prepSeconds: number; answerSeconds: number; bank: PushbackPrompt[] } | null;
   turnaround: string;
+  /**
+   * Another credential (its capstone key) the learner must hold, active and
+   * unexpired, before this one can be awarded. Handing in and marking aren't
+   * blocked; Award is (operator decision 2026-11-11).
+   */
+  requiresCredential?: { key: string; name: string };
 }
 
 const ASSESSOR =
@@ -174,7 +180,8 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
   // MOS-230 · docs/training/culture-dig-certification/modules/CD-M6-practical-task.md
   "culture-dig-specialist": {
     title: "Practical: plan a dig, then make sense of one",
-    intro: `Hand in your practical task here. ${ASSESSOR}`,
+    intro: `Hand in your practical task here. ${ASSESSOR} This certification is awarded once you also hold Mosaic Certified (MOS-100).`,
+    requiresCredential: { key: "mosaic-practitioner", name: "Mosaic Certified (MOS-100)" },
     summary: "Hand in your practical task for marking. The course exam alone doesn't certify you.",
     pieces: [
       practical({
@@ -193,7 +200,8 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
   // MOS-240 · docs/training/mosaic-signal-certification/modules/MS-M6-practical.md
   "mosaic-signal-specialist": {
     title: "Practical: analysis memo for Alex Moreau",
-    intro: `Hand in your analysis memo here. ${ASSESSOR}`,
+    intro: `Hand in your analysis memo here. ${ASSESSOR} This certification is awarded once you also hold Mosaic Certified (MOS-100).`,
+    requiresCredential: { key: "mosaic-practitioner", name: "Mosaic Certified (MOS-100)" },
     summary: "Hand in your analysis memo for marking. The course exam alone doesn't certify you.",
     pieces: [
       practical({

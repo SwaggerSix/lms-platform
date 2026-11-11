@@ -133,6 +133,30 @@ export async function awardCertification(
     }
   }
 
+  // A credential that builds on another (Culture Dig and Mosaic Signal on
+  // Mosaic Certified) is awarded only to someone who holds that one now.
+  const prereq = capstoneFor(cert.capstone_key)?.requiresCredential;
+  if (prereq) {
+    const { data: prereqCerts } = await service
+      .from("certifications")
+      .select("id")
+      .eq("capstone_key", prereq.key);
+    const ids = (prereqCerts ?? []).map((c: { id: string }) => c.id);
+    const { data: held } = ids.length
+      ? await service
+          .from("user_certifications")
+          .select("expires_at")
+          .eq("user_id", args.userId)
+          .eq("status", "active")
+          .in("certification_id", ids)
+      : { data: [] as { expires_at: string | null }[] };
+    const today = (args.now ?? new Date()).toISOString();
+    const ok = (held ?? []).some((h: { expires_at: string | null }) => !h.expires_at || h.expires_at > today);
+    if (!ok) {
+      return { ok: false, status: 409, error: `This learner needs ${prereq.name} before this certification can be awarded.` };
+    }
+  }
+
   // Dates each piece of work passed, by kind (memo / briefing / practical).
   let piecesPassedOn: Record<string, string>;
   const cfg = capstoneFor(cert.capstone_key);

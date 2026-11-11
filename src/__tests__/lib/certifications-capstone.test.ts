@@ -280,3 +280,38 @@ describe("Specialist practicals (MOS-210 to MOS-240)", () => {
     expect(await submitPiece(service, { userId: U, cert, cfg, kind: "practical", filePath: memoPath })).toMatchObject({ ok: false, status: 404 });
   });
 });
+
+describe("Culture Dig and Mosaic Signal need Mosaic Certified first", () => {
+  const ms = CAPSTONES["mosaic-signal-specialist"];
+  const msCert: CapstoneCert = { ...cert, id: "cert-ms", name: "Certified · Mosaic Signal Specialist", award_requires_course_id: "mos240", capstone_key: "mosaic-signal-specialist" };
+  const doc = `${U}/cert-ms/practical-a.pdf`;
+
+  beforeEach(() => {
+    files.add(doc);
+    db.certifications.push({ id: "cert-ms", name: msCert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: "mos240", capstone_key: "mosaic-signal-specialist" });
+    db.enrollments.push({ id: "e3", user_id: U, course_id: "mos240", status: "completed" });
+  });
+
+  it("only Culture Dig and Mosaic Signal carry the requirement", () => {
+    expect(CAPSTONES["culture-dig-specialist"].requiresCredential?.key).toBe("mosaic-practitioner");
+    expect(ms.requiresCredential?.key).toBe("mosaic-practitioner");
+    for (const k of ["mosaic-practitioner", "coaching-studio-specialist", "surveycraft-specialist"]) expect(CAPSTONES[k].requiresCredential).toBeUndefined();
+  });
+
+  it("hands in and marks freely, but Award waits for an active, unexpired Mosaic Certified", async () => {
+    const sub = await submitPiece(service, { userId: U, cert: msCert, cfg: ms, kind: "practical", filePath: doc });
+    expect(sub).toMatchObject({ ok: true });
+    expect(await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: true });
+
+    const award = () => awardCertification(service, { certificationId: "cert-ms", userId: U, awardedBy: "chris", now: new Date("2026-11-20T00:00:00Z") });
+    const refused = await award();
+    expect(refused).toMatchObject({ ok: false, status: 409 });
+    expect((refused as any).error).toContain("Mosaic Certified (MOS-100)");
+
+    db.user_certifications.push({ id: "mc-old", user_id: U, certification_id: "cert-mc", status: "active", expires_at: "2026-11-01T00:00:00Z" });
+    expect(await award()).toMatchObject({ ok: false, status: 409 });
+
+    db.user_certifications.push({ id: "mc", user_id: U, certification_id: "cert-mc", status: "active", expires_at: "2031-11-11T00:00:00Z" });
+    expect(await award()).toMatchObject({ ok: true });
+  });
+});
