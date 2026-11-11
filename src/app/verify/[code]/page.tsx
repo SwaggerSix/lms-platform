@@ -234,7 +234,7 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-gray-500">Issue Date</p>
             <p className="mt-1 font-medium text-gray-900">{certData.issue_date || "N/A"}</p>
@@ -242,10 +242,6 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-gray-500">Expiry Date</p>
             <p className="mt-1 font-medium text-gray-900">{certData.expiry_date}</p>
-          </div>
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Credential ID</p>
-            <p className="mt-1 font-medium font-mono text-gray-900">{credentialId}</p>
           </div>
         </div>
 
@@ -269,28 +265,18 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
               <Download className="h-4 w-4" /> Download PDF
             </a>
           </div>
-          <div className="flex justify-center overflow-auto">
-            <div
-              style={{
-                width: designData.dimensions.width * 0.65,
-                height: designData.dimensions.height * 0.65,
-              }}
-              className="shadow-lg rounded overflow-hidden"
-            >
-              {/* Rendered via <img> so the SVG can never execute scripts,
-                  regardless of what the template contains. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`data:image/svg+xml;base64,${Buffer.from(svgString).toString("base64")}`}
-                alt={`Certificate for ${certData.learner_name}`}
-                style={{
-                  transform: "scale(0.65)",
-                  transformOrigin: "top left",
-                  width: designData.dimensions.width,
-                  height: designData.dimensions.height,
-                }}
-              />
-            </div>
+          <div className="flex justify-center">
+            {/* Rendered via <img> so the SVG can never execute scripts,
+                regardless of what the template contains. Scales to the
+                card's width, phones included. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`data:image/svg+xml;base64,${Buffer.from(svgString).toString("base64")}`}
+              alt={`Certificate for ${certData.learner_name}`}
+              width={designData.dimensions.width}
+              height={designData.dimensions.height}
+              className="h-auto w-full max-w-3xl rounded shadow-lg"
+            />
           </div>
         </div>
         )}
