@@ -100,6 +100,8 @@ describe("sendWeeklyDigests", () => {
       certification_submissions: [
         { ...sub({ id: "m-ann", user_id: "ann" }), certification_id: "mc" },
         { ...sub({ id: "m-bo", user_id: "bo", status: "passed", reviewed_at: daysAgo(2) }), certification_id: "mc" },
+        { ...sub({ id: "d-bo", user_id: "bo", kind: "dig", status: "passed", reviewed_at: daysAgo(2) }), certification_id: "mc" },
+        { ...sub({ id: "s-bo", user_id: "bo", kind: "signal", status: "passed", reviewed_at: daysAgo(2) }), certification_id: "mc" },
         { ...sub({ id: "b-bo", user_id: "bo", kind: "briefing", status: "passed", reviewed_at: daysAgo(1) }), certification_id: "mc" },
         { ...sub({ id: "p-x", user_id: "ann", kind: "practical" }), certification_id: "sc" },
       ],

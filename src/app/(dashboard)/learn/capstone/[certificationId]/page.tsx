@@ -5,7 +5,7 @@ import CapstoneClient from "./capstone-client";
 
 export const metadata: Metadata = {
   title: "Capstone hand-in | LMS Platform",
-  description: "Hand in your capstone memo and briefing",
+  description: "Hand in your capstone work for marking",
 };
 
 export default async function CapstonePage({ params }: { params: Promise<{ certificationId: string }> }) {

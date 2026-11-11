@@ -10,7 +10,7 @@
  * - work to mark: the newest hand-in of a piece is still "submitted" (and, for
  *   a briefing, all its pushback answers are in, so it can actually be marked),
  *   with how long it has waited;
- * - ready to award: every piece passed and the required course completed, but
+ * - ready to award: every piece passed and the required course(s) finished, but
  *   no current certificate (an expired holder shows here too — Award renews);
  * - expiring within 30 days: so a renewal can be arranged before it lapses.
  *
@@ -22,6 +22,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { customTemplate } from "@/lib/email/templates";
 import { capstoneFor, latestOf, passDates, type CapstoneConfig } from "./capstone";
 import { submissionsFor, type PushbackRow, type SubmissionRow } from "./capstone-service";
+import { finishedAll, requiredCourseIds } from "./requirements";
 
 const DAY_MS = 86_400_000;
 export const DIGEST_EXPIRING_DAYS = 30;
@@ -79,7 +80,7 @@ export interface CertDigest {
 /** What is waiting on one certification, whoever is reading. */
 export async function digestFor(
   service: SupabaseClient,
-  cert: { id: string; name: string; capstone_key: string; award_requires_course_id: string | null },
+  cert: { id: string; name: string; capstone_key: string; award_requires_course_id: string | null; award_requires_course_ids?: string[] | null },
   now: Date
 ): Promise<CertDigest | null> {
   const cfg = capstoneFor(cert.capstone_key);
@@ -106,14 +107,8 @@ export async function digestFor(
 
   const marking = piecesToMark(cfg, subs, pushback).filter((m) => !current.has(m.userId));
   let ready = allPiecesPassed(cfg, subs).filter((uid) => !current.has(uid));
-  if (ready.length && cert.award_requires_course_id) {
-    const { data: done } = await service
-      .from("enrollments")
-      .select("user_id")
-      .eq("course_id", cert.award_requires_course_id)
-      .eq("status", "completed")
-      .in("user_id", ready);
-    const finished = new Set((done ?? []).map((d: { user_id: string }) => d.user_id));
+  if (ready.length && requiredCourseIds(cert).length) {
+    const finished = await finishedAll(service, requiredCourseIds(cert), ready);
     ready = ready.filter((uid) => finished.has(uid));
   }
 
@@ -192,7 +187,7 @@ const appUrl = () => (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
 export async function sendWeeklyDigests(service: SupabaseClient, now = new Date()): Promise<{ sent: number; records_processed: number }> {
   const { data: certs, error } = await service
     .from("certifications")
-    .select("id, name, capstone_key, award_requires_course_id, notify_user_ids")
+    .select("id, name, capstone_key, award_requires_course_id, award_requires_course_ids, notify_user_ids")
     .eq("status", "active")
     .not("capstone_key", "is", null)
     .limit(50);

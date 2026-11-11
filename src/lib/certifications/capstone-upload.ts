@@ -1,9 +1,11 @@
 "use client";
 
+import type { CapstoneKind } from "./capstone";
+
 /** Ask for a signed URL, then PUT the file straight to storage. Returns the stored path. */
 export async function uploadCapstoneFile(
   certificationId: string,
-  slot: "memo" | "briefing" | "practical" | "pushback",
+  slot: CapstoneKind | "pushback",
   file: Blob,
   onProgress?: (pct: number) => void
 ): Promise<string> {

@@ -21,6 +21,7 @@ import {
   type FileKind,
   type SubmissionStatus,
 } from "./capstone";
+import { enrolledInAny, hasFinishedAll, opensOnCompletion, requiredCourseIds } from "./requirements";
 
 export interface CapstoneCert {
   id: string;
@@ -28,6 +29,7 @@ export interface CapstoneCert {
   status: string;
   course_id: string | null;
   award_requires_course_id: string | null;
+  award_requires_course_ids?: string[] | null;
   capstone_key: string | null;
   notify_user_ids: string[] | null;
 }
@@ -46,7 +48,7 @@ export async function loadCapstoneCert(
 ): Promise<{ cert: CapstoneCert; cfg: CapstoneConfig } | null> {
   const { data: cert } = await service
     .from("certifications")
-    .select("id, name, status, course_id, award_requires_course_id, capstone_key, notify_user_ids")
+    .select("id, name, status, course_id, award_requires_course_id, award_requires_course_ids, capstone_key, notify_user_ids")
     .eq("id", certificationId)
     .maybeSingle();
   const cfg = capstoneFor(cert?.capstone_key);
@@ -54,16 +56,24 @@ export async function loadCapstoneCert(
   return { cert: cert as CapstoneCert, cfg };
 }
 
-/** A learner may hand in work once enrolled in the course the credential requires. */
-export async function learnerMayUse(service: SupabaseClient, userId: string, cert: CapstoneCert): Promise<boolean> {
-  if (!cert.award_requires_course_id) return true;
-  const { data } = await service
-    .from("enrollments")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("course_id", cert.award_requires_course_id)
-    .limit(1);
-  return !!data && data.length > 0;
+/**
+ * Why this learner can't use the capstone yet, or null if they can. Mosaic
+ * Practitioner opens once every required course is finished; a Specialist
+ * once the learner is enrolled in its course (requirements.ts).
+ */
+export async function learnerBlockedReason(service: SupabaseClient, userId: string, cert: CapstoneCert): Promise<string | null> {
+  const ids = requiredCourseIds(cert);
+  if (!ids.length) return null;
+  if (opensOnCompletion(cert)) {
+    if (await hasFinishedAll(service, cert, userId)) return null;
+    const { data: courses } = await service.from("courses").select("id, title").in("id", ids);
+    const names = ids
+      .map((id) => (courses ?? []).find((c: { id: string; title: string }) => c.id === id)?.title?.split(" ")[0])
+      .filter(Boolean) as string[];
+    const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0] ?? "the required courses";
+    return `Your capstone opens once you've finished ${list}, final exams included.`;
+  }
+  return (await enrolledInAny(service, cert, userId)) ? null : "Enroll in the course first to hand in your capstone.";
 }
 
 export interface SubmissionRow {
@@ -466,7 +476,7 @@ async function notifyLearner(
   const lines: Record<string, string> = {
     passed: `Your ${noun} for ${name} has passed.`,
     resubmit: `Your ${noun} for ${name} doesn't meet the bar yet. You have one resubmission.`,
-    not_passed: `Your resubmitted ${noun} for ${name} didn't meet the bar.`,
+    not_passed: `Your resubmitted ${noun} for ${name} didn't meet the bar. Dr. Chris Cancialosi will be in touch to set up a call about next steps.`,
   };
   const tpl = customTemplate({
     subject: `${name}: your ${noun}`,

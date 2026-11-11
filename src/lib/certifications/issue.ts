@@ -7,16 +7,18 @@
  *   course (every lesson complete; for a Mosaic course, the final exam passed)
  *   issues them automatically — `issueCourseCompletionCertificates`.
  * - **Staff-awarded credentials** have no `course_id`, so nothing issues them
- *   automatically. "Mosaic Certified" is one: passing the exam is not enough,
- *   the assessor must also pass the learner's memo and briefing, then press
- *   Award — `awardCertification`. `award_requires_course_id` names a course
- *   the learner must have completed first.
+ *   automatically. Mosaic Practitioner Certified is one: finishing MOS-100,
+ *   MOS-230 and MOS-240 is not enough, the assessor must also pass every
+ *   piece of the capstone, then press Award — `awardCertification`.
+ *   `award_requires_course_id(s)` name the course(s) the learner must have
+ *   finished first (requirements.ts).
  *
  * One row per learner per certification (unique index); re-awarding after a
  * revoke reactivates that row.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { capstoneFor, passDates, type SubmissionLike } from "./capstone";
+import { hasFinishedAll, requiredCourseIds } from "./requirements";
 
 /** `expires_at` for a certificate issued at `issuedAt`, or null if it never expires. */
 export function expiryFor(validityMonths: number | null | undefined, issuedAt: Date): string | null {
@@ -96,7 +98,7 @@ export async function awardCertification(
 
   const { data: cert } = await service
     .from("certifications")
-    .select("id, name, course_id, status, validity_months, award_requires_course_id, capstone_key")
+    .select("id, name, course_id, status, validity_months, award_requires_course_id, award_requires_course_ids, capstone_key")
     .eq("id", args.certificationId)
     .maybeSingle();
   if (!cert) return { ok: false, status: 404, error: "Certification not found" };
@@ -116,45 +118,15 @@ export async function awardCertification(
     .maybeSingle();
   if (!learner) return { ok: false, status: 404, error: "Learner not found" };
 
-  if (cert.award_requires_course_id) {
-    const { data: done } = await service
-      .from("enrollments")
-      .select("id")
-      .eq("user_id", args.userId)
-      .eq("course_id", cert.award_requires_course_id)
-      .eq("status", "completed")
-      .limit(1);
-    if (!done || done.length === 0) {
-      return {
-        ok: false,
-        status: 409,
-        error: "This learner hasn't completed the required course (final exam passed) yet.",
-      };
-    }
-  }
-
-  // A credential that builds on another (Culture Dig and Mosaic Signal on
-  // Mosaic Certified) is awarded only to someone who holds that one now.
-  const prereq = capstoneFor(cert.capstone_key)?.requiresCredential;
-  if (prereq) {
-    const { data: prereqCerts } = await service
-      .from("certifications")
-      .select("id")
-      .eq("capstone_key", prereq.key);
-    const ids = (prereqCerts ?? []).map((c: { id: string }) => c.id);
-    const { data: held } = ids.length
-      ? await service
-          .from("user_certifications")
-          .select("expires_at")
-          .eq("user_id", args.userId)
-          .eq("status", "active")
-          .in("certification_id", ids)
-      : { data: [] as { expires_at: string | null }[] };
-    const today = (args.now ?? new Date()).toISOString();
-    const ok = (held ?? []).some((h: { expires_at: string | null }) => !h.expires_at || h.expires_at > today);
-    if (!ok) {
-      return { ok: false, status: 409, error: `This learner needs ${prereq.name} before this certification can be awarded.` };
-    }
+  if (requiredCourseIds(cert).length && !(await hasFinishedAll(service, cert, args.userId))) {
+    return {
+      ok: false,
+      status: 409,
+      error:
+        requiredCourseIds(cert).length > 1
+          ? "This learner hasn't finished all the required courses (final exams passed) yet."
+          : "This learner hasn't completed the required course (final exam passed) yet.",
+    };
   }
 
   // Dates each piece of work passed, by kind (memo / briefing / practical).
