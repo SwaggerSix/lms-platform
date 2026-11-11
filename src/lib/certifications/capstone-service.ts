@@ -35,6 +35,9 @@ export interface CapstoneCert {
 type Fail = { ok: false; status: number; error: string };
 const fail = (status: number, error: string): Fail => ({ ok: false, status, error });
 
+/** "The survey's name in the Mosaic Practice Workspace" → "the survey's name in the Mosaic Practice Workspace". */
+const lowerFirst = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
+
 const appUrl = () => (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
 
 export async function loadCapstoneCert(
@@ -222,8 +225,8 @@ export async function submitPiece(
   if (piece.link !== "or-file" && !args.filePath) {
     return fail(400, piece.file === "document" ? "Upload your work as a PDF or Word document." : "Upload your video.");
   }
-  if (piece.link === "required" && !link) return fail(400, `Add ${piece.linkLabel ? piece.linkLabel.toLowerCase() : "the link"}.`);
-  if (piece.requiredNote && !args.note?.trim()) return fail(400, `Add ${piece.requiredNote.toLowerCase()}.`);
+  if (piece.link === "required" && !link) return fail(400, `Add ${lowerFirst(piece.linkLabel ?? "the link")}.`);
+  if (piece.requiredNote && !args.note?.trim()) return fail(400, `Add ${lowerFirst(piece.requiredNote)}.`);
   if (args.filePath) {
     const there = await uploadedFileExists(service, { userId: args.userId, certificationId: args.cert.id, path: args.filePath });
     if (!there) return fail(400, "The upload didn't arrive. Please try again.");
