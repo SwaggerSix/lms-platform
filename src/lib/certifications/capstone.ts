@@ -256,6 +256,8 @@ export interface SubmissionLike {
   attempt: number;
   status: SubmissionStatus;
   reviewed_at: string | null;
+  /** Set when the assessor reopened a not-passed piece after the call. */
+  reopened_at?: string | null;
 }
 
 /** The newest attempt of one kind, or null. */
@@ -266,11 +268,15 @@ export function latestOf<T extends SubmissionLike>(subs: T[], kind: CapstoneKind
 /**
  * Whether the learner may hand in (another) piece of this kind, and which
  * attempt it would be. First time: attempt 1. After "resubmit": attempt 2.
+ * After "not passed" only if the assessor reopened it (after the call): the
+ * next attempt, which is then marked Pass or Not passed.
  */
 export function nextAttempt(subs: SubmissionLike[], kind: CapstoneKind): number | null {
   const last = latestOf(subs, kind);
   if (!last) return 1;
   if (last.status === "resubmit" && last.attempt < MAX_ATTEMPTS) return last.attempt + 1;
+  // Failed twice, then reopened by the assessor after the call: one more.
+  if (last.status === "not_passed" && last.reopened_at) return last.attempt + 1;
   return null;
 }
 

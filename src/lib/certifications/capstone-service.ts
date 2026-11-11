@@ -89,6 +89,7 @@ export interface SubmissionRow {
   submitted_at: string;
   reviewed_at: string | null;
   feedback: string | null;
+  reopened_at?: string | null;
 }
 
 export interface PushbackRow {
@@ -103,7 +104,7 @@ export interface PushbackRow {
 }
 
 const SUB_COLS =
-  "id, user_id, kind, attempt, status, file_path, file_name, link_url, learner_note, submitted_at, reviewed_at, feedback";
+  "id, user_id, kind, attempt, status, file_path, file_name, link_url, learner_note, submitted_at, reviewed_at, feedback, reopened_at";
 const PB_COLS = "id, submission_id, position, prompt_index, revealed_at, answered_at, file_path, recorded_in_browser";
 
 export async function submissionsFor(
@@ -432,7 +433,78 @@ export async function reviewPiece(
   return { ok: true, userId: sub.user_id, certificationId: sub.certification_id };
 }
 
+/**
+ * After the call: reopen a piece the learner failed twice, so they can hand
+ * it in once more. Only the newest hand-in of that piece, only when it's
+ * "not passed", and only once per hand-in. The learner is emailed.
+ */
+export async function reopenPiece(
+  service: SupabaseClient,
+  args: { submissionId: string; reopenedBy: string; note?: string; now?: Date }
+): Promise<{ ok: true; userId: string; certificationId: string } | Fail> {
+  const { data: sub } = await service
+    .from("certification_submissions")
+    .select("id, user_id, certification_id, kind, attempt, status, reopened_at")
+    .eq("id", args.submissionId)
+    .maybeSingle();
+  if (!sub) return fail(404, "Not found");
+  if (sub.status !== "not_passed") return fail(409, "Only a piece marked Not passed can be reopened.");
+  if (sub.reopened_at) return fail(409, "This piece is already open for another attempt.");
+  const { data: newer } = await service
+    .from("certification_submissions")
+    .select("id")
+    .eq("user_id", sub.user_id)
+    .eq("certification_id", sub.certification_id)
+    .eq("kind", sub.kind)
+    .gt("attempt", sub.attempt)
+    .limit(1);
+  if (newer && newer.length) return fail(409, "The learner has already handed in a newer attempt.");
+  const { data: upd, error } = await service
+    .from("certification_submissions")
+    .update({ reopened_at: (args.now ?? new Date()).toISOString(), reopened_by: args.reopenedBy })
+    .eq("id", sub.id)
+    .eq("status", "not_passed")
+    .is("reopened_at", null)
+    .select("id");
+  if (error) {
+    console.error("Capstone reopen error:", error.message);
+    return fail(500, "Internal server error");
+  }
+  if (!upd || upd.length === 0) return fail(409, "This piece is already open for another attempt.");
+  const { data: certRow } = await service
+    .from("certifications")
+    .select("name, capstone_key")
+    .eq("id", sub.certification_id)
+    .maybeSingle();
+  const piece = pieceOf(capstoneFor(certRow?.capstone_key) ?? ({ pieces: [] } as unknown as CapstoneConfig), sub.kind);
+  await notifyReopened(service, sub.user_id, sub.certification_id, certRow?.name ?? null, piece?.noun ?? "work", args.note).catch(() => {});
+  return { ok: true, userId: sub.user_id, certificationId: sub.certification_id };
+}
+
 // ---------------------------------------------------------------- email
+
+async function notifyReopened(
+  service: SupabaseClient,
+  userId: string,
+  certificationId: string,
+  certName: string | null,
+  noun: string,
+  note?: string
+) {
+  const { data: u } = await service.from("users").select("email, first_name").eq("id", userId).maybeSingle();
+  if (!u?.email) return;
+  const name = certName ?? "your certification";
+  const tpl = customTemplate({
+    subject: `${name}: your ${noun} is open again`,
+    bodyText:
+      `Hi ${u.first_name || "there"},\n\n` +
+      `As discussed, your ${noun} for ${name} is open for another attempt. Hand it in on your capstone page when you're ready.` +
+      (note?.trim() ? `\n\nA note from your assessor:\n${note.trim()}` : ""),
+    ctaText: "Open your hand-in page",
+    ctaUrl: `${appUrl()}/learn/capstone/${certificationId}`,
+  });
+  await sendEmail({ to: u.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+}
 
 async function notifyStaff(
   service: SupabaseClient,
