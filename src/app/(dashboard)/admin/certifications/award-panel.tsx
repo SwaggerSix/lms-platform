@@ -241,6 +241,27 @@ function PieceReview({
   );
 }
 
+/** What happened on the partner portal after an award or revoke (see syncCertificationToPortal). */
+function portalNotice(outcome: string | undefined, action: 'award' | 'revoke', name: string): { text: string; warn: boolean } | null {
+  const done = action === 'award' ? 'awarded' : 'revoked';
+  switch (outcome) {
+    case 'updated':
+      return {
+        text: `${name}: ${done}. Their partner portal badge was ${action === 'award' ? 'added' : 'removed'} automatically.`,
+        warn: false,
+      };
+    case 'not_a_partner':
+      return { text: `${name}: ${done}. They aren't a partner on the portal, so there was no badge to ${action === 'award' ? 'add' : 'remove'}.`, warn: false };
+    case 'refused':
+      return { text: `${name}: ${done}, but the partner portal declined the badge (a company account that doesn't do the work itself). Check their profile there.`, warn: true };
+    case 'failed':
+    case 'not_configured':
+      return { text: `${name}: ${done}, but the partner portal couldn't be updated. ${action === 'award' ? 'Add' : 'Remove'} their badge by hand in the portal.`, warn: true };
+    default:
+      return null;
+  }
+}
+
 /**
  * Award a staff-awarded credential (e.g. Mosaic Certified). For a credential
  * with a capstone, it is also where the assessor marks each piece of the learner's
@@ -262,6 +283,7 @@ export default function AwardPanel({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; warn: boolean } | null>(null);
   const [holders, setHolders] = useState<Holder[]>([]);
   const [ready, setReady] = useState<Ready[]>([]);
   const [capstone, setCapstone] = useState<Capstone | null>(null);
@@ -292,6 +314,7 @@ export default function AwardPanel({
     if (isOpen) {
       setOpen(null);
       setConfirmRevoke(null);
+      setNotice(null);
       setLoading(true);
       load();
     }
@@ -327,6 +350,7 @@ export default function AwardPanel({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Could not award');
       onChanged(body.reawarded ? { issued: 0, active: 1, expired: -1 } : { issued: 1, active: 1, expired: 0 });
+      setNotice(portalNotice(body.portal, 'award', learner.name));
       setOpen(null);
       setNote('');
       await load();
@@ -345,6 +369,7 @@ export default function AwardPanel({
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Could not revoke');
       onChanged({ issued: 0, active: -1, expired: 1 });
+      setNotice(portalNotice(body.portal, 'revoke', holder.name));
       setConfirmRevoke(null);
       await load();
     } catch (e: any) {
@@ -454,6 +479,15 @@ export default function AwardPanel({
             <input type="checkbox" checked={capstone.notifyMe} onChange={(e) => toggleNotify(e.target.checked)} className="h-4 w-4 rounded border-gray-300" />
             Email me when a learner hands in work
           </label>
+        )}
+
+        {notice && (
+          <div
+            role="status"
+            className={`rounded-lg border px-4 py-3 text-sm ${notice.warn ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800'}`}
+          >
+            {notice.text}
+          </div>
         )}
 
         {error && (
