@@ -6,6 +6,7 @@ import CertificationsClient from "./certifications-client";
 import type { Certificate } from "./certifications-client";
 import { deriveStatus } from "@/lib/certifications/status";
 import { capstoneFor } from "@/lib/certifications/capstone";
+import { CERTIFICATE_COMPANY_NAME } from "@/lib/branding";
 
 export const metadata: Metadata = {
   title: "Certifications | LMS Platform",
@@ -50,6 +51,7 @@ export default async function CertificationsPage() {
         description,
         recertification_course_id,
         course_id,
+        capstone_key,
         completion_course:courses!certifications_course_id_fkey ( title ),
         recertification_course:courses!certifications_recertification_course_id_fkey ( title )
       )
@@ -79,6 +81,8 @@ export default async function CertificationsPage() {
       status: deriveStatus(row.status, row.expires_at),
       credentialId,
       verificationCode: row.verification_code ?? null,
+      issuer: cert?.capstone_key ? "gothamCulture" : CERTIFICATE_COMPANY_NAME,
+      awarded: !cert?.course_id && !!cert?.capstone_key,
     };
   });
 

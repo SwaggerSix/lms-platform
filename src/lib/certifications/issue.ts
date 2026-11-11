@@ -203,6 +203,8 @@ export async function awardCertification(
     expires_at: expiryFor(cert.validity_months, now),
     status: "active",
     metadata,
+    // A renewal starts the expiry warnings over (expiry.ts).
+    expiry_reminders_sent: [] as number[],
   };
 
   if (existing) {

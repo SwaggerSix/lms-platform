@@ -153,4 +153,21 @@ describe("awardCertification", () => {
     expect(db.user_certifications).toHaveLength(1);
     expect(db.user_certifications[0].status).toBe("active");
   });
+
+  it("renews an expired certificate for another five years and starts its warnings over", async () => {
+    const first = await awardCertification(service, {
+      ...base, certificationId: "c-mc", userId: "u1", now: new Date("2021-11-01T00:00:00Z"),
+    });
+    expect(first.ok).toBe(true);
+    Object.assign(db.user_certifications[0], { status: "expired", expiry_reminders_sent: [90, 30] });
+    const renewed = await awardCertification(service, {
+      ...base, certificationId: "c-mc", userId: "u1", now: new Date("2026-11-11T00:00:00Z"),
+    });
+    expect(renewed).toMatchObject({ ok: true, reawarded: true });
+    expect(db.user_certifications[0]).toMatchObject({
+      status: "active",
+      expires_at: "2031-11-11T00:00:00.000Z",
+      expiry_reminders_sent: [],
+    });
+  });
 });

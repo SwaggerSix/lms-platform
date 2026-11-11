@@ -2,8 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * LMS → Partner Portal: a staff-awarded credential (Mosaic Certified, a
- * Specialist) was awarded or revoked. The portal puts the matching
- * certification badge on — or takes it off — the partner's badge wall
+ * Specialist) was awarded, revoked, or ran past its expiry date. The portal
+ * puts the matching certification badge on — or takes it off — the partner's
+ * badge wall
  * (gc-partner-portal POST /api/integrations/lms-certification), and for
  * MOS-100 its Mosaic Certified (+5% partner code) follows.
  *
@@ -23,7 +24,7 @@ export type PortalSyncOutcome =
 export async function syncCertificationToPortal(
   service: SupabaseClient,
   userCertificationId: string,
-  action: "award" | "revoke"
+  action: "award" | "revoke" | "expire"
 ): Promise<PortalSyncOutcome> {
   try {
     const { data } = await service

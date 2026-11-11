@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import CertificationsClient, { type CertificationItem } from './certifications-client';
 import { createServiceClient } from "@/lib/supabase/service";
+import { expiringSoon } from '@/lib/certifications/status';
 
 const GRADIENTS = [
   'from-green-500 to-emerald-600',
@@ -44,8 +45,25 @@ export default async function CertificationsPage() {
   // Fetch user_certifications status counts grouped by certification_id
   const { data: statusRows } = await service
     .from('user_certifications')
-    .select('certification_id, status')
+    .select('certification_id, status, expires_at')
     .limit(5000);
+
+  // Hand-ins nobody has marked yet (staff-awarded certifications).
+  const { data: unmarked } = await service
+    .from('certification_submissions')
+    .select('certification_id')
+    .eq('status', 'submitted')
+    .limit(5000);
+  const unmarkedMap: Record<string, number> = {};
+  for (const row of unmarked ?? []) {
+    unmarkedMap[row.certification_id] = (unmarkedMap[row.certification_id] ?? 0) + 1;
+  }
+  const expiringMap: Record<string, number> = {};
+  for (const row of statusRows ?? []) {
+    if (expiringSoon(row.expires_at, row.status)) {
+      expiringMap[row.certification_id] = (expiringMap[row.certification_id] ?? 0) + 1;
+    }
+  }
 
   // Aggregate counts per certification
   const countsMap: Record<string, { issued: number; active: number; expired: number }> = {};
@@ -90,6 +108,8 @@ export default async function CertificationsPage() {
       issuedCount: counts.issued,
       activeCount: counts.active,
       expiredCount: counts.expired,
+      expiringSoonCount: expiringMap[row.id] ?? 0,
+      unmarkedCount: unmarkedMap[row.id] ?? 0,
       color: GRADIENTS[index % GRADIENTS.length],
       kind: row.course_id ? 'course' : 'award',
     };

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
+import { expiringSoon } from '@/lib/certifications/status';
 
 type Status = 'submitted' | 'passed' | 'resubmit' | 'not_passed';
 
@@ -380,6 +381,9 @@ export default function AwardPanel({
   };
 
   const active = holders.filter((h) => h.status === 'active');
+  // A holder whose certificate ran out shows up as ready again: Award renews.
+  const lapsedOn = (userId: string) =>
+    holders.find((h) => h.userId === userId && h.status === 'expired')?.expiresAt ?? null;
 
   const learnerRow = (r: Ready, examPassed: boolean) => {
     const w = capstone?.work[r.userId] ?? null;
@@ -393,6 +397,11 @@ export default function AwardPanel({
             <p className="truncate text-xs text-gray-500">
               {r.email} · {examPassed ? `exam passed ${fmt(r.completedAt)}` : 'exam not passed yet'}
             </p>
+            {lapsedOn(r.userId) && (
+              <p className="text-xs text-amber-700">
+                Certification expired {fmt(lapsedOn(r.userId))}. Award renews it.
+              </p>
+            )}
             {capstone && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {capstone.pieces.map((pc) => (
@@ -534,6 +543,9 @@ export default function AwardPanel({
                         <p className="truncate text-xs text-gray-500">
                           {h.email} · awarded {fmt(h.issuedAt)} · valid until {fmt(h.expiresAt)}
                         </p>
+                        {expiringSoon(h.expiresAt, h.status) && (
+                          <p className="text-xs font-medium text-amber-700">Expires within 90 days</p>
+                        )}
                       </div>
                       {confirmRevoke === h.id ? (
                         <div className="flex gap-1">

@@ -213,6 +213,13 @@ export async function middleware(request: NextRequest) {
     return finalize(supabaseResponse);
   }
 
+  // Certificate share links (/verify/<code>): whoever was handed one — an
+  // employer, a client, LinkedIn's preview — opens it without an account, and
+  // a signed-in learner checking their own link sees the same page.
+  if (pathname.startsWith("/verify/")) {
+    return finalize(supabaseResponse);
+  }
+
   // Public storefronts: customers browse and buy without an LMS account,
   // and logged-in staff can view the shops too (no dashboard redirect).
   if (pathname.startsWith("/store/") || pathname.startsWith("/api/storefront/")) {
