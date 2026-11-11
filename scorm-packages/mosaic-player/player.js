@@ -482,8 +482,16 @@
         if (total > 1) box.appendChild(el("p", { "class": "ms" }, "<strong>Part " + (n + 1) + " of " + total + "</strong>"));
         box.appendChild(el("div", { "class": "stem" }, it.s));
         var tid = pre + "-t" + n;
-        box.appendChild(el("label", { "for": tid, "class": "ms" }, "Your notes (just for you; not saved or sent)"));
-        box.appendChild(el("textarea", { id: tid, rows: "4" }));
+        box.appendChild(el("label", { "for": tid, "class": "ms" }, "Your notes (kept on this device so you can come back to them; never sent anywhere)"));
+        var ta = el("textarea", { id: tid, rows: "4" });
+        // Saved in this browser only (not the LMS): per course, activity and part.
+        var nk = "mosaic-notes:" + C.code + ":" + a.id + ":" + n, saveT = null;
+        try { ta.value = localStorage.getItem(nk) || ""; } catch (e) {}
+        ta.addEventListener("input", function () {
+          clearTimeout(saveT);
+          saveT = setTimeout(function () { try { if (ta.value) localStorage.setItem(nk, ta.value); else localStorage.removeItem(nk); } catch (e) {} }, 400);
+        });
+        box.appendChild(ta);
         var reveal = el("div", { "class": "fb", hidden: "" }, "<p><strong>What a strong answer includes</strong></p>" + it.model);
         var b = el("button", { type: "button", "class": "btn secondary" }, "Show a model answer");
         b.addEventListener("click", function () { reveal.hidden = false; b.hidden = true; announce("Model answer shown."); });
@@ -518,7 +526,7 @@
           item.k === "mcq" ? (ok ? "✓ That's the best answer." : "Not the best answer.") : (ok ? "✓ Correct." : "Not quite.");
         // tk: one takeaway for the whole question, shown once under the option's feedback.
         fb.innerHTML = "<p><strong>" + verdict + "</strong>" + (ok ? "" : " Change your answer and check again, or read on.") + "</p>" + (feedbackFor(item, ans, ok) || "") +
-          (item.tk ? '<p class="tk"><strong>Takeaway:</strong> ' + item.tk + "</p>" : "");
+          (item.tk ? '<p class="tk"><strong>' + esc(item.tkl || "Takeaway") + ":</strong> " + item.tk + "</p>" : "");
         announce(verdict);
       });
       c.appendChild(chk); c.appendChild(fb);

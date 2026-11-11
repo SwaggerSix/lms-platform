@@ -44,7 +44,7 @@ answer them or see feedback. Now each one is real:
   `match`) with instant feedback; written tasks (`open`) give a model answer.
   `order` may list other accepted orders in `alt`; any question may set its own
   verdict lines `vr` / `vw` (default "✓ That's the best answer." / "Not the best answer.")
-  and one closing `tk` ("Takeaway:") shown under whichever option's feedback; a `match` answer may be a
+  and one closing `tk` shown under whichever option's feedback, labelled `tkl` (default "Takeaway"); a `match` answer may be a
   list of accepted targets. `{"ref": "KC-…"}` reuses a module-check item.
 - practice only: nothing is graded, saved or required. Final-exam items are
   never used as practice.
@@ -61,6 +61,14 @@ its ↑ / ↓ buttons. Dragging tracks the pointer on the window rather than wit
 pointer capture, because the card moves in the list mid-drag and moving a
 captured element drops the capture. Hidden `<select>`s still carry the answer
 (including `alt` orders); after Check each step shows ✓/✗ against the main order.
+
+**11 Nov 2026 — feedback sweep, phones, notes.** Every wrong choice now has its
+own reason in MOS-100 M6-07, MOS-240 MS-M1-03 / M3-08 / M5-08 and MOS-210
+CS-M4-10 Q3 (the shared explanation moved to one `tk` "Why:" line). Drag boxes
+sit two across on screens under 600px. Written answers (`open`) are saved in
+the learner's browser (localStorage `mosaic-notes:<course>:<activity>:<part>`),
+never sent anywhere. M9-27 says plainly that nothing is uploaded (operator
+decision 2026-11-11: no upload; self-score; peer review by swapping directly).
 
 Counts: MOS-100 31, MOS-210 4, MOS-220 6, MOS-230 11, MOS-240 6.
 
