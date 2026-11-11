@@ -56,6 +56,8 @@ type TabKey = (typeof TABS)[number]["key"];
 interface CertificationsClientProps {
   certificates: Certificate[];
   userName: string;
+  /** Credentials the learner is working towards that need a capstone hand-in. */
+  capstones?: { id: string; name: string }[];
 }
 
 function handleDownloadPDF(cert: Certificate, userName: string) {
@@ -111,7 +113,7 @@ function handleDownloadPDF(cert: Certificate, userName: string) {
   };
 }
 
-export default function CertificationsClient({ certificates, userName }: CertificationsClientProps) {
+export default function CertificationsClient({ certificates, userName, capstones = [] }: CertificationsClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("active");
   const [renewingId, setRenewingId] = useState<string | null>(null);
   const [shareMenuId, setShareMenuId] = useState<string | null>(null);
@@ -279,6 +281,23 @@ export default function CertificationsClient({ certificates, userName }: Certifi
             <p className="mt-1 text-gray-500">View and manage your earned certificates.</p>
           </div>
         </div>
+
+        {capstones.map((c) => (
+          <div key={c.id} className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary-200 bg-primary-50 p-5">
+            <div>
+              <p className="font-semibold text-gray-900">{c.name}</p>
+              <p className="mt-0.5 text-sm text-gray-600">
+                Hand in your interpretation memo and recorded briefing for marking. The course exam alone doesn&apos;t certify you.
+              </p>
+            </div>
+            <a
+              href={`/learn/capstone/${c.id}`}
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+            >
+              Open capstone hand-in
+            </a>
+          </div>
+        ))}
 
         {/* Stats Row */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

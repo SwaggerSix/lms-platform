@@ -359,8 +359,21 @@ export default async function CoursePlayerPage({
     version: versionNumber,
   };
 
+  // A credential awarded on top of this course with a capstone hand-in
+  // (MOS-100 → Mosaic Certified): link its hand-in page from the top bar.
+  const { data: capstoneCert } = await service
+    .from("certifications")
+    .select("id")
+    .eq("award_requires_course_id", course.id)
+    .not("capstone_key", "is", null)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+  const capstoneHref = capstoneCert ? `/learn/capstone/${capstoneCert.id}` : null;
+
   return (
     <PlayerClient
+      capstoneHref={capstoneHref}
       course={playerCourse}
       initialLessonId={currentLessonId ?? playerModules[0]?.lessons[0]?.id ?? ""}
       enrollmentId={enrollment?.id ?? null}

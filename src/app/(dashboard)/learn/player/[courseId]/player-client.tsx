@@ -81,6 +81,8 @@ export interface PlayerProps {
   backHref?: string;
   /** Learner identity passed to SCORM packages (cmi.core.student_name/id). */
   learner?: { id: string; name: string } | null;
+  /** Hand-in page for a credential this course leads to (Mosaic Certified's memo and briefing). */
+  capstoneHref?: string | null;
 }
 
 function sanitizeHTML(html: string): string {
@@ -100,7 +102,7 @@ const lessonIcons = {
   quiz: HelpCircle,
 };
 
-export default function PlayerClient({ course, initialLessonId, enrollmentId, backHref = "/learn/my-courses", learner = null }: PlayerProps) {
+export default function PlayerClient({ course, initialLessonId, enrollmentId, backHref = "/learn/my-courses", learner = null, capstoneHref = null }: PlayerProps) {
   const [currentLessonId, setCurrentLessonId] = useState(initialLessonId);
   const [expandedModules, setExpandedModules] = useState<string[]>(
     course.modules.map((m) => m.id).slice(0, 2)
@@ -321,6 +323,14 @@ export default function PlayerClient({ course, initialLessonId, enrollmentId, ba
           )}
         </div>
         <div className="flex items-center gap-3">
+          {capstoneHref && (
+            <a
+              href={capstoneHref}
+              className="rounded-lg border border-gray-600 px-2.5 py-1 text-xs font-medium text-gray-200 hover:bg-gray-700 hover:text-white"
+            >
+              Capstone hand-in
+            </a>
+          )}
           <div className="flex items-center gap-2">
             <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-700">
               <div
