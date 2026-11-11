@@ -17,7 +17,7 @@
  * revoke reactivates that row.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { capstoneFor, passDates, type SubmissionLike } from "./capstone";
+import { capstoneFor, listOf, passDates, type SubmissionLike } from "./capstone";
 import { hasFinishedAll, requiredCourseIds } from "./requirements";
 
 /** `expires_at` for a certificate issued at `issuedAt`, or null if it never expires. */
@@ -140,8 +140,9 @@ export async function awardCertification(
       .eq("certification_id", cert.id);
     const dates = passDates((subs ?? []) as SubmissionLike[], cfg.pieces.map((p) => p.kind));
     if (!dates) {
-      const what = cfg.pieces.map((p) => p.noun).join(" and ");
-      return { ok: false, status: 409, error: `Mark this learner's ${what} as passed first.` };
+      // Name only the pieces still to pass.
+      const todo = cfg.pieces.filter((p) => !passDates((subs ?? []) as SubmissionLike[], [p.kind])).map((p) => p.noun);
+      return { ok: false, status: 409, error: `Mark this learner's ${listOf(todo)} as passed first.` };
     }
     piecesPassedOn = dates;
   } else if (args.memoPassedOn && args.briefingPassedOn) {

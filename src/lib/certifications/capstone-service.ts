@@ -17,6 +17,7 @@ import {
   isAcceptableLink,
   nextAttempt,
   type CapstoneConfig,
+  listOf,
   type CapstoneKind,
   type FileKind,
   type SubmissionStatus,
@@ -66,12 +67,21 @@ export async function learnerBlockedReason(service: SupabaseClient, userId: stri
   if (!ids.length) return null;
   if (opensOnCompletion(cert)) {
     if (await hasFinishedAll(service, cert, userId)) return null;
-    const { data: courses } = await service.from("courses").select("id, title").in("id", ids);
-    const names = ids
+    // Name the courses still to finish, not all of them.
+    const { data: done } = await service
+      .from("enrollments")
+      .select("course_id")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .in("course_id", ids);
+    const finished = new Set((done ?? []).map((d: { course_id: string }) => d.course_id));
+    const left = ids.filter((id) => !finished.has(id));
+    const { data: courses } = await service.from("courses").select("id, title").in("id", left);
+    const names = left
       .map((id) => (courses ?? []).find((c: { id: string; title: string }) => c.id === id)?.title?.split(" ")[0])
       .filter(Boolean) as string[];
-    const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0] ?? "the required courses";
-    return `Your capstone opens once you've finished ${list}, final exams included.`;
+    const list = names.length ? listOf(names) : "the required courses";
+    return `Your capstone opens once you've also finished ${list}, final ${names.length > 1 ? "exams" : "exam"} included.`;
   }
   return (await enrolledInAny(service, cert, userId)) ? null : "Enroll in the course first to hand in your capstone.";
 }
