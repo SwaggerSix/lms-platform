@@ -56,12 +56,18 @@ export async function GET(request: NextRequest) {
 
   const scopeOrg = auth.user.role === "super_admin" ? null : auth.user.organization_id;
 
-  const { data: held } = await service
+  // Name the foreign key in each embed: enrollments has two keys to users
+  // (user_id, assigned_by), and an ambiguous embed fails the whole query.
+  const { data: held, error: heldError } = await service
     .from("user_certifications")
-    .select("id, user_id, status, issued_at, expires_at, metadata, user:users(first_name, last_name, email, organization_id)")
+    .select("id, user_id, status, issued_at, expires_at, metadata, user:users!user_certifications_user_id_fkey(first_name, last_name, email, organization_id)")
     .eq("certification_id", id)
     .order("issued_at", { ascending: false })
     .limit(500);
+  if (heldError) {
+    console.error("Award list error:", heldError.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
   const holders = (held ?? [])
     .filter((r: any) => !scopeOrg || r.user?.organization_id === scopeOrg)
@@ -81,13 +87,17 @@ export async function GET(request: NextRequest) {
   // Ready = completed the required course, not already an active holder.
   let ready: { userId: string; name: string; email: string; completedAt: string | null }[] = [];
   if (cert.award_requires_course_id) {
-    const { data: done } = await service
+    const { data: done, error: doneError } = await service
       .from("enrollments")
-      .select("user_id, completed_at, user:users(first_name, last_name, email, organization_id)")
+      .select("user_id, completed_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization_id)")
       .eq("course_id", cert.award_requires_course_id)
       .eq("status", "completed")
       .order("completed_at", { ascending: false })
       .limit(500);
+    if (doneError) {
+      console.error("Award list error:", doneError.message);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
     const seen = new Set<string>();
     ready = (done ?? [])
       .filter((r: any) => !scopeOrg || r.user?.organization_id === scopeOrg)
