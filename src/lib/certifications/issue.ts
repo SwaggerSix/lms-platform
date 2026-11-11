@@ -16,6 +16,7 @@
  * revoke reactivates that row.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { capstoneFor, passDates, type SubmissionLike } from "./capstone";
 
 /** `expires_at` for a certificate issued at `issuedAt`, or null if it never expires. */
 export function expiryFor(validityMonths: number | null | undefined, issuedAt: Date): string | null {
@@ -84,8 +85,9 @@ export async function awardCertification(
     certificationId: string;
     userId: string;
     awardedBy: string;
-    memoPassedOn: string;
-    briefingPassedOn: string;
+    /** Ignored for a credential with a capstone: the marked hand-ins give the dates. */
+    memoPassedOn?: string;
+    briefingPassedOn?: string;
     note?: string;
     now?: Date;
   }
@@ -94,7 +96,7 @@ export async function awardCertification(
 
   const { data: cert } = await service
     .from("certifications")
-    .select("id, name, course_id, status, validity_months, award_requires_course_id")
+    .select("id, name, course_id, status, validity_months, award_requires_course_id, capstone_key")
     .eq("id", args.certificationId)
     .maybeSingle();
   if (!cert) return { ok: false, status: 404, error: "Certification not found" };
@@ -131,11 +133,29 @@ export async function awardCertification(
     }
   }
 
+  let memoPassedOn = args.memoPassedOn;
+  let briefingPassedOn = args.briefingPassedOn;
+  if (capstoneFor(cert.capstone_key)) {
+    const { data: subs } = await service
+      .from("certification_submissions")
+      .select("kind, attempt, status, reviewed_at")
+      .eq("user_id", args.userId)
+      .eq("certification_id", cert.id);
+    const dates = passDates((subs ?? []) as SubmissionLike[]);
+    if (!dates) {
+      return { ok: false, status: 409, error: "Mark this learner's memo and briefing as passed first." };
+    }
+    memoPassedOn = dates.memo;
+    briefingPassedOn = dates.briefing;
+  } else if (!memoPassedOn || !briefingPassedOn) {
+    return { ok: false, status: 400, error: "Enter the dates the memo and briefing passed." };
+  }
+
   const metadata = {
     issued_by: "staff_award",
     awarded_by: args.awardedBy,
-    memo_passed_on: args.memoPassedOn,
-    briefing_passed_on: args.briefingPassedOn,
+    memo_passed_on: memoPassedOn,
+    briefing_passed_on: briefingPassedOn,
     ...(args.note ? { note: args.note } : {}),
   };
 

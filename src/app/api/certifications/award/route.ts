@@ -4,6 +4,8 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { awardCertification, revokeCertification } from "@/lib/certifications/issue";
+import { submissionsFor, type PushbackRow, type SubmissionRow } from "@/lib/certifications/capstone-service";
+import { answeredLate, answerSeconds, capstoneFor, latestOf, passDates, type CapstoneConfig } from "@/lib/certifications/capstone";
 
 /**
  * Staff-awarded credentials (e.g. "Mosaic Certified"): who holds one, who is
@@ -16,8 +18,10 @@ const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a date (YYYY-MM-DD)");
 const AwardSchema = z.object({
   certification_id: z.string().uuid(),
   user_id: z.string().uuid(),
-  memo_passed_on: DATE,
-  briefing_passed_on: DATE,
+  // Required only for a credential without a capstone; with one, the marked
+  // hand-ins give the dates.
+  memo_passed_on: DATE.optional(),
+  briefing_passed_on: DATE.optional(),
   note: z.string().max(1000).optional(),
 });
 
@@ -46,7 +50,7 @@ export async function GET(request: NextRequest) {
 
   const { data: cert } = await service
     .from("certifications")
-    .select("id, name, course_id, status, award_requires_course_id")
+    .select("id, name, course_id, status, award_requires_course_id, capstone_key, notify_user_ids")
     .eq("id", id)
     .maybeSingle();
   if (!cert) return NextResponse.json({ error: "Certification not found" }, { status: 404 });
@@ -110,7 +114,85 @@ export async function GET(request: NextRequest) {
       }));
   }
 
-  return NextResponse.json({ certification: { id: cert.id, name: cert.name }, holders, ready });
+  const cfg = capstoneFor(cert.capstone_key);
+  if (!cfg) {
+    return NextResponse.json({ certification: { id: cert.id, name: cert.name }, holders, ready, capstone: null });
+  }
+
+  // Capstone hand-ins: what each learner has sent, its marks, and pushback timing.
+  let subs: SubmissionRow[] = [];
+  let pushback: PushbackRow[] = [];
+  try {
+    ({ subs, pushback } = await submissionsFor(service, cert.id));
+  } catch (e) {
+    console.error("Award list error:", (e as Error).message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+  const known = new Map<string, { name: string; email: string; org: string | null }>();
+  const others = [...new Set(subs.map((x) => x.user_id))];
+  if (others.length) {
+    const { data: us } = await service
+      .from("users")
+      .select("id, first_name, last_name, email, organization_id")
+      .in("id", others);
+    for (const u of us ?? []) known.set(u.id, { name: fullName(u), email: u.email ?? "", org: u.organization_id });
+  }
+  const work: Record<string, ReturnType<typeof workFor>> = {};
+  for (const uid of others) {
+    const k = known.get(uid);
+    if (!k || (scopeOrg && k.org !== scopeOrg)) continue;
+    work[uid] = workFor(cfg, subs.filter((x) => x.user_id === uid), pushback);
+  }
+  // Learners who have handed something in but haven't passed the exam yet.
+  const readyIds = new Set(ready.map((r) => r.userId));
+  const handedIn = Object.keys(work)
+    .filter((uid) => !readyIds.has(uid) && !activeHolders.has(uid))
+    .map((uid) => ({ userId: uid, name: known.get(uid)!.name, email: known.get(uid)!.email }));
+
+  return NextResponse.json({
+    certification: { id: cert.id, name: cert.name },
+    holders,
+    ready,
+    capstone: { work, handedIn, notifyMe: (cert.notify_user_ids ?? []).includes(auth.user.id) },
+  });
+}
+
+function workFor(cfg: CapstoneConfig, mine: SubmissionRow[], pushback: PushbackRow[]) {
+  const piece = (kind: "memo" | "briefing") => {
+    const s = latestOf(mine, kind);
+    if (!s) return null;
+    return {
+      id: s.id,
+      attempt: s.attempt,
+      status: s.status,
+      submittedAt: s.submitted_at,
+      reviewedAt: s.reviewed_at,
+      feedback: s.feedback,
+      fileName: s.file_name,
+      hasFile: !!s.file_path,
+      link: s.link_url,
+      note: s.learner_note,
+      pushback:
+        kind === "briefing"
+          ? pushback
+              .filter((p) => p.submission_id === s.id)
+              .map((p) => {
+                const seconds = answerSeconds(p.revealed_at, p.answered_at);
+                return {
+                  position: p.position,
+                  prompt: cfg.pushback.bank[p.prompt_index],
+                  revealedAt: p.revealed_at,
+                  answeredAt: p.answered_at,
+                  seconds,
+                  late: answeredLate(cfg, seconds),
+                  hasFile: !!p.file_path,
+                  recordedInBrowser: p.recorded_in_browser,
+                };
+              })
+          : [],
+    };
+  };
+  return { memo: piece("memo"), briefing: piece("briefing"), passDates: passDates(mine) };
 }
 
 export async function POST(request: NextRequest) {

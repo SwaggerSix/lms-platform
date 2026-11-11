@@ -81,5 +81,28 @@ export default async function CertificationsPage() {
     };
   });
 
-  return <CertificationsClient certificates={certificates} userName={userName} />;
+  // Credentials with a capstone hand-in (Mosaic Certified) the learner is
+  // working towards: enrolled in the required course, not certified yet.
+  const { data: capstoneCerts } = await service
+    .from("certifications")
+    .select("id, name, award_requires_course_id")
+    .not("capstone_key", "is", null)
+    .is("course_id", null)
+    .eq("status", "active")
+    .limit(20);
+  const heldIds = new Set(
+    (rows ?? []).filter((r: any) => r.status === "active").map((r: any) => r.certification?.id)
+  );
+  const requiredCourseIds = (capstoneCerts ?? [])
+    .map((c: any) => c.award_requires_course_id)
+    .filter(Boolean);
+  const { data: myEnrollments } = requiredCourseIds.length
+    ? await service.from("enrollments").select("course_id").eq("user_id", profile.id).in("course_id", requiredCourseIds)
+    : { data: [] as { course_id: string }[] };
+  const enrolledIn = new Set((myEnrollments ?? []).map((e: any) => e.course_id));
+  const capstones = (capstoneCerts ?? [])
+    .filter((c: any) => !heldIds.has(c.id) && (!c.award_requires_course_id || enrolledIn.has(c.award_requires_course_id)))
+    .map((c: any) => ({ id: c.id as string, name: c.name as string }));
+
+  return <CertificationsClient certificates={certificates} userName={userName} capstones={capstones} />;
 }
