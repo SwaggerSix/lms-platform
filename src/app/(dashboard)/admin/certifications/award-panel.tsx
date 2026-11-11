@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
+import { expiringSoon } from '@/lib/certifications/status';
 
 type Status = 'submitted' | 'passed' | 'resubmit' | 'not_passed';
 
@@ -265,7 +266,7 @@ function portalNotice(outcome: string | undefined, action: 'award' | 'revoke', n
 /**
  * Award a staff-awarded credential (e.g. Mosaic Certified). For a credential
  * with a capstone, it is also where the assessor marks each piece of the learner's
- * work; Award appears once every piece has passed and the course exam is passed.
+ * work; Award appears once every piece has passed and the required courses are finished.
  * Without a capstone, the assessor enters the dates the work passed.
  */
 export default function AwardPanel({
@@ -380,6 +381,9 @@ export default function AwardPanel({
   };
 
   const active = holders.filter((h) => h.status === 'active');
+  // A holder whose certificate ran out shows up as ready again: Award renews.
+  const lapsedOn = (userId: string) =>
+    holders.find((h) => h.userId === userId && h.status === 'expired')?.expiresAt ?? null;
 
   const learnerRow = (r: Ready, examPassed: boolean) => {
     const w = capstone?.work[r.userId] ?? null;
@@ -391,8 +395,13 @@ export default function AwardPanel({
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-gray-900">{r.name}</p>
             <p className="truncate text-xs text-gray-500">
-              {r.email} · {examPassed ? `exam passed ${fmt(r.completedAt)}` : 'exam not passed yet'}
+              {r.email} · {examPassed ? `required courses finished ${fmt(r.completedAt)}` : 'required courses not finished yet'}
             </p>
+            {lapsedOn(r.userId) && (
+              <p className="text-xs text-amber-700">
+                Certification expired {fmt(lapsedOn(r.userId))}. Award renews it.
+              </p>
+            )}
             {capstone && (
               <div className="mt-1 flex flex-wrap gap-1">
                 {capstone.pieces.map((pc) => (
@@ -470,7 +479,7 @@ export default function AwardPanel({
       <div className="space-y-6">
         <p className="text-sm text-gray-600">
           {capstone
-            ? `Mark each learner’s ${capstone.pieces.map((p) => p.label).join(' and ')} here. Award appears once ${capstone.pieces.length > 1 ? 'all have' : 'it has'} passed and the course exam is passed. Passing the exam alone does not certify anyone.`
+            ? `Mark each learner’s ${capstone.pieces.map((p) => p.label).join(', ')} here. Award appears once ${capstone.pieces.length > 1 ? 'every piece has' : 'it has'} passed and the required courses are finished. Finishing the courses alone does not certify anyone.`
             : 'Award this only after you have marked the learner’s work as passing. Passing the course exam alone does not certify anyone.'}
         </p>
 
@@ -513,8 +522,8 @@ export default function AwardPanel({
 
             {capstone && capstone.handedIn.length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-gray-900">Handed in work, exam not passed yet ({capstone.handedIn.length})</h3>
-                <p className="mt-0.5 text-xs text-gray-500">You can mark their work now; Award waits for the exam.</p>
+                <h3 className="text-sm font-semibold text-gray-900">Handed in work, required courses not finished yet ({capstone.handedIn.length})</h3>
+                <p className="mt-0.5 text-xs text-gray-500">You can mark their work now; Award waits for the courses.</p>
                 <ul className="mt-3 divide-y divide-gray-100 rounded-lg border border-gray-200">
                   {capstone.handedIn.map((r) => learnerRow(r, false))}
                 </ul>
@@ -534,6 +543,9 @@ export default function AwardPanel({
                         <p className="truncate text-xs text-gray-500">
                           {h.email} · awarded {fmt(h.issuedAt)} · valid until {fmt(h.expiresAt)}
                         </p>
+                        {expiringSoon(h.expiresAt, h.status) && (
+                          <p className="text-xs font-medium text-amber-700">Expires within 90 days</p>
+                        )}
                       </div>
                       {confirmRevoke === h.id ? (
                         <div className="flex gap-1">

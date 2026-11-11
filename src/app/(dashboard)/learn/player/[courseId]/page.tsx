@@ -360,11 +360,12 @@ export default async function CoursePlayerPage({
   };
 
   // A credential awarded on top of this course with a capstone hand-in
-  // (MOS-100 → Mosaic Certified): link its hand-in page from the top bar.
+  // (MOS-100/230/240 → Mosaic Practitioner Certified, MOS-210/220 → their
+  // Specialist): link its hand-in page from the top bar.
   const { data: capstoneCert } = await service
     .from("certifications")
     .select("id")
-    .eq("award_requires_course_id", course.id)
+    .or(`award_requires_course_id.eq.${course.id},award_requires_course_ids.cs.{${course.id}}`)
     .not("capstone_key", "is", null)
     .eq("status", "active")
     .limit(1)

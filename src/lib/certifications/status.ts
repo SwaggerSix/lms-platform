@@ -18,3 +18,10 @@ export function deriveStatus(dbStatus: string, expiresAt: string | null): CertSt
   }
   return "active";
 }
+
+/** For staff screens: an active certificate expiring within EXPIRING_SOON_DAYS. */
+export function expiringSoon(expiresAt: string | null, status: string, now = new Date()): boolean {
+  if (status !== "active" || !expiresAt) return false;
+  const left = new Date(expiresAt).getTime() - now.getTime();
+  return left > 0 && left <= EXPIRING_SOON_DAYS * 86_400_000;
+}

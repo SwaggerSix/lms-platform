@@ -18,12 +18,14 @@ let nextId = 0;
 
 function table(name: string) {
   const filters: [string, string, unknown][] = [];
+  const ins: [string, unknown[]][] = [];
   let op: "select" | "insert" | "update" | "upsert" = "select";
   let payload: any = null;
   let opts: any = {};
   let lim = Infinity;
   const match = (r: Row) =>
-    filters.every(([kind, col, v]) => (kind === "eq" ? r[col] === v : r[col] !== v));
+    filters.every(([kind, col, v]) => (kind === "eq" ? r[col] === v : r[col] !== v)) &&
+    ins.every(([col, vs]) => vs.includes(r[col]));
   const run = () => {
     const rows = db[name] ?? (db[name] = []);
     if (op === "select") return rows.filter(match).slice(0, lim);
@@ -52,6 +54,7 @@ function table(name: string) {
     upsert: (p: any, o: any) => ((op = "upsert"), (payload = p), (opts = o), q),
     eq: (c: string, v: unknown) => (filters.push(["eq", c, v]), q),
     neq: (c: string, v: unknown) => (filters.push(["neq", c, v]), q),
+    in: (c: string, vs: unknown[]) => (ins.push([c, vs]), q),
     order: () => q,
     limit: (n: number) => ((lim = n), q),
     maybeSingle: async () => ({ data: run()[0] ?? null, error: null }),
@@ -152,5 +155,22 @@ describe("awardCertification", () => {
     expect(again).toMatchObject({ ok: true, reawarded: true });
     expect(db.user_certifications).toHaveLength(1);
     expect(db.user_certifications[0].status).toBe("active");
+  });
+
+  it("renews an expired certificate for another five years and starts its warnings over", async () => {
+    const first = await awardCertification(service, {
+      ...base, certificationId: "c-mc", userId: "u1", now: new Date("2021-11-01T00:00:00Z"),
+    });
+    expect(first.ok).toBe(true);
+    Object.assign(db.user_certifications[0], { status: "expired", expiry_reminders_sent: [90, 30] });
+    const renewed = await awardCertification(service, {
+      ...base, certificationId: "c-mc", userId: "u1", now: new Date("2026-11-11T00:00:00Z"),
+    });
+    expect(renewed).toMatchObject({ ok: true, reawarded: true });
+    expect(db.user_certifications[0]).toMatchObject({
+      status: "active",
+      expires_at: "2031-11-11T00:00:00.000Z",
+      expiry_reminders_sent: [],
+    });
   });
 });

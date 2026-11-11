@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
   renderCertificateToSVG,
@@ -5,17 +7,24 @@ import {
   type DesignData,
   type CertificateData,
 } from "@/lib/certificates/renderer";
-import { Award, CheckCircle2, XCircle, Clock, Download, ExternalLink, Shield } from "lucide-react";
+import { CERTIFICATE_COMPANY_NAME } from "@/lib/branding";
+import { Award, CheckCircle2, XCircle, Clock, Download, Shield } from "lucide-react";
 
 interface VerifyPageProps {
   params: Promise<{ code: string }>;
 }
 
-export default async function VerifyPage({ params }: VerifyPageProps) {
-  const { code } = await params;
+/**
+ * The public page a certificate's share link opens (/verify/<code>): anyone,
+ * signed in or not (src/middleware.ts lets /verify/ through), can check that a
+ * certificate is real and still current. The code is the unguessable
+ * `verification_code` every certificate gets when it is written.
+ *
+ * Not indexed by search engines: it names a person, and it's meant for
+ * whoever was handed the link.
+ */
+const loadCertificate = cache(async (code: string) => {
   const service = createServiceClient();
-
-  // Look up the user certification
   const { data: userCert, error } = await service
     .from("user_certifications")
     .select(`
@@ -30,28 +39,45 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
         id,
         name,
         description,
-        template_id
+        template_id,
+        capstone_key
       )
     `)
     .eq("verification_code", code)
-    .single();
-
-  if (error || !userCert) {
-    return <InvalidCertificate code={code} />;
-  }
-
-  // Fetch learner name
+    .maybeSingle();
+  if (error || !userCert) return null;
   const { data: certUser } = await service
     .from("users")
     .select("first_name, last_name")
     .eq("id", userCert.user_id)
-    .single();
-
+    .maybeSingle();
   const learnerName = certUser
     ? `${certUser.first_name || ""} ${certUser.last_name || ""}`.trim() || "Learner"
     : "Learner";
-
   const certification = userCert.certification as any;
+  // The Mosaic credentials are gothamCulture's, whatever this LMS is called.
+  const issuer = certification?.capstone_key ? "gothamCulture" : CERTIFICATE_COMPANY_NAME;
+  return { service, userCert, learnerName, certification, issuer };
+});
+
+export async function generateMetadata({ params }: VerifyPageProps): Promise<Metadata> {
+  const { code } = await params;
+  const found = await loadCertificate(code);
+  const robots = { index: false, follow: false };
+  if (!found) return { title: "Certificate not found", robots };
+  const name = found.certification?.name || "Certification";
+  const title = `${found.learnerName} · ${name}`;
+  const description = `Issued by ${found.issuer}. Check whether this certificate is current.`;
+  return { title, description, robots, openGraph: { title, description, type: "website" } };
+}
+
+export default async function VerifyPage({ params }: VerifyPageProps) {
+  const { code } = await params;
+  const found = await loadCertificate(code);
+  if (!found) {
+    return <InvalidCertificate code={code} />;
+  }
+  const { service, userCert, learnerName, certification, issuer } = found;
 
   // Determine validity
   let valid = userCert.status === "active";
@@ -102,7 +128,7 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
   const credentialId = userCert.metadata?.credential_id
     || `CERT-${(certification?.id || userCert.id).slice(0, 8).toUpperCase()}`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://lms.example.com";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
 
   const certData: CertificateData = {
     learner_name: learnerName,
@@ -112,7 +138,7 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
       : "",
     score: userCert.metadata?.score ? `${userCert.metadata.score}%` : "",
     certificate_id: code,
-    company_name: "LearnHub",
+    company_name: issuer,
     company_logo: "",
     verification_url: `${baseUrl}/verify/${code}`,
     issue_date: userCert.issued_at
@@ -142,10 +168,10 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Award className="h-6 w-6 text-primary-600" />
-            <span className="text-lg font-bold text-gray-900">LearnHub</span>
+            <span className="text-lg font-bold text-gray-900">{issuer}</span>
             <span className="text-sm text-gray-500 ml-2">Certificate Verification</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
             <Shield className="h-4 w-4 text-gray-400" />
             <span className="text-xs text-gray-500">Verified Document</span>
           </div>
@@ -230,11 +256,18 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
           </div>
         )}
 
-        {/* Certificate Visual */}
+        {/* Certificate Visual — only while it's current: an expired or
+            revoked certificate shouldn't be downloadable as if it weren't. */}
+        {valid && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Certificate</h3>
-            <DownloadButton svgString={svgString} designData={designData} certData={certData} />
+            <a
+              href={`/api/certificates/verify/${encodeURIComponent(code)}?format=pdf`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Download className="h-4 w-4" /> Download PDF
+            </a>
           </div>
           <div className="flex justify-center overflow-auto">
             <div
@@ -260,42 +293,15 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
             </div>
           </div>
         </div>
+        )}
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-400 py-8">
-          <p>This certificate was issued by LearnHub and can be verified at this URL.</p>
+          <p>This certificate was issued by {issuer} and can be verified at this URL.</p>
           <p className="mt-1 font-mono text-xs">{baseUrl}/verify/{code}</p>
         </div>
       </main>
     </div>
-  );
-}
-
-function DownloadButton({
-  svgString,
-  designData,
-  certData,
-}: {
-  svgString: string;
-  designData: DesignData;
-  certData: CertificateData;
-}) {
-  const printHtml = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"/><title>Certificate</title>
-<style>@page{size:${designData.dimensions.orientation};margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#fff}
-.w{width:${designData.dimensions.width}px;height:${designData.dimensions.height}px}.w svg{width:100%;height:100%}</style>
-</head><body><div class="w">${svgString.replace(/"/g, "&quot;")}</div>
-<script>window.onload=function(){window.print()}<\/script></body></html>`;
-
-  return (
-    <a
-      href={`data:text/html;charset=utf-8,${encodeURIComponent(printHtml)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-    >
-      <Download className="h-4 w-4" /> Download PDF
-    </a>
   );
 }
 
@@ -305,8 +311,7 @@ function InvalidCertificate({ code }: { code: string }) {
       <header className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center gap-2">
           <Award className="h-6 w-6 text-primary-600" />
-          <span className="text-lg font-bold text-gray-900">LearnHub</span>
-          <span className="text-sm text-gray-500 ml-2">Certificate Verification</span>
+          <span className="text-lg font-bold text-gray-900">Certificate Verification</span>
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-6 py-16 text-center">

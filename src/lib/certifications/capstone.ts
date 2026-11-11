@@ -2,16 +2,25 @@
  * Capstone hand-in for staff-awarded credentials.
  *
  * A credential with `certifications.capstone_key` asks the learner for work
- * the assessor marks by hand before Award (the `pieces` of its config): for
- * Mosaic Certified, the G3 memo and the G4 recorded briefing plus three
- * pushback questions drawn at random (MOS-100 M10); for each Specialist
- * credential (MOS-210 to MOS-240), its G3 practical task. Content comes from
- * surveycraft docs/training/<course>/modules/*-M6/M10 files.
+ * the assessor marks by hand before Award (the `pieces` of its config).
  *
+ * - **Mosaic Practitioner Certified** (operator decision 2026-11-11): ONE
+ *   certification for the $599 bundle, MOS-100 + MOS-230 + MOS-240, and ONE
+ *   capstone on the Northwind Health case that opens once all three courses
+ *   are finished. Its pieces are the MOS-100 interpretation memo, the Culture
+ *   Dig plan and synthesis (MOS-230's practical, folded in), the Mosaic
+ *   Signal analysis memo (MOS-240's, folded in) and the recorded executive
+ *   briefing with three pushback questions. The separate Culture Dig and
+ *   Mosaic Signal Specialist certifications are retired.
+ * - **Coaching Studio and SurveyCraft Specialist** (MOS-210, MOS-220) stay
+ *   stand-alone, each with its own practical.
+ *
+ * Content comes from surveycraft docs/training/<course>/modules/*-M6/M10.
  * Pure rules and content live here; database work is in capstone-service.ts.
  */
 
-export type CapstoneKind = "memo" | "briefing" | "practical";
+export const CAPSTONE_KINDS = ["memo", "dig", "signal", "briefing", "practical"] as const;
+export type CapstoneKind = (typeof CAPSTONE_KINDS)[number];
 export type SubmissionStatus = "submitted" | "passed" | "resubmit" | "not_passed";
 export type FileKind = "document" | "video";
 
@@ -53,16 +62,10 @@ export interface CapstoneConfig {
   pieces: PieceConfig[];
   pushback: { count: number; prepSeconds: number; answerSeconds: number; bank: PushbackPrompt[] } | null;
   turnaround: string;
-  /**
-   * Another credential (its capstone key) the learner must hold, active and
-   * unexpired, before this one can be awarded. Handing in and marking aren't
-   * blocked; Award is (operator decision 2026-11-11).
-   */
-  requiresCredential?: { key: string; name: string };
 }
 
 const ASSESSOR =
-  "Dr. Chris Cancialosi scores it, usually within 10 business days. If any criterion is below 3, you'll get written feedback and one resubmission.";
+  "Dr. Chris Cancialosi scores it, usually within 10 business days. If any criterion is below 3, you'll get written feedback and one resubmission; if the resubmission doesn't pass either, he'll set up a call with you.";
 
 const practical = (p: Omit<PieceConfig, "kind" | "label" | "noun" | "file" | "link"> & Partial<PieceConfig>): PieceConfig => ({
   kind: "practical",
@@ -75,16 +78,16 @@ const practical = (p: Omit<PieceConfig, "kind" | "label" | "noun" | "file" | "li
 
 export const CAPSTONES: Record<string, CapstoneConfig> = {
   "mosaic-practitioner": {
-    title: "Capstone: The Northwind Health Board Briefing",
+    title: "Capstone: Northwind Health",
     intro:
-      "Hand in your interpretation memo and your recorded executive briefing here. Dr. Chris Cancialosi scores both, usually within 10 business days. If a piece doesn't meet the bar yet, you'll get specific feedback and one resubmission.",
-    summary: "Hand in your interpretation memo and recorded briefing for marking. The course exam alone doesn't certify you.",
+      "One client, three tools. Hand in four pieces of work on Northwind Health: the Culture Mosaic memo, the Culture Dig plan and synthesis, the Mosaic Signal memo, and your recorded board briefing that brings them together. Dr. Chris Cancialosi scores each, usually within 10 business days. If a piece doesn't meet the bar yet, you'll get written feedback and one resubmission; if the resubmission doesn't either, he'll set up a call with you. Pass all four and you're Mosaic Practitioner Certified for five years.",
+    summary: "Hand in the four pieces of your Northwind capstone. It opens once you've finished MOS-100, MOS-230 and MOS-240.",
     pieces: [
       {
         kind: "memo",
-        label: "Memo (G3)",
+        label: "Culture Mosaic memo",
         noun: "interpretation memo",
-        title: "Task 1: Interpretation memo (Gate G3)",
+        title: "Task 1: Culture Mosaic interpretation memo",
         file: "document",
         link: "none",
         instructions: [
@@ -96,17 +99,46 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
           "Upload a PDF or Word document.",
         ],
       },
+      // MOS-230 · docs/training/culture-dig-certification/modules/CD-M6-practical-task.md
+      {
+        kind: "dig",
+        label: "Culture Dig",
+        noun: "Culture Dig plan and synthesis",
+        title: "Task 2: Culture Dig plan and synthesis memo",
+        file: "document",
+        link: "none",
+        instructions: [
+          "One Word or PDF document with Part A (program plan and fieldwork plan for Taylor Brooks's clinic dig), then Part B (the two-page synthesis memo for Alex Moreau). Use the MOS-230 templates.",
+          "Before you hand in: Part A has all eight sections and two domain fieldwork plans; Part B has a headline, three findings, limits and recommendations.",
+          "Nothing in either part names or points to an individual, and you haven't promised anything the dig can't deliver.",
+        ],
+      },
+      // MOS-240 · docs/training/mosaic-signal-certification/modules/MS-M6-practical.md
+      {
+        kind: "signal",
+        label: "Mosaic Signal",
+        noun: "Mosaic Signal analysis memo",
+        title: "Task 3: Mosaic Signal analysis memo",
+        file: "document",
+        link: "none",
+        instructions: [
+          "No more than two pages, to Alex Moreau.",
+          "Patterns (3 to 5), outlier stories (2 or 3), cautions, a recommended next wave, and a short confidentiality note.",
+          "Paraphrase stories and remove identifying details. Don't present any group under 10 stories, and don't try to work out who wrote anything.",
+          "Upload a PDF or Word file.",
+        ],
+      },
       {
         kind: "briefing",
-        label: "Briefing (G4)",
+        label: "Briefing",
         noun: "executive briefing",
-        title: "Task 2: Recorded executive briefing (Gate G4)",
+        title: "Task 4: Recorded board briefing",
         file: "video",
         link: "or-file",
         linkLabel: "…or paste a link to the recording",
         pushback: true,
         instructions: [
-          "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18.",
+          "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18. Bring the three tools together: what the Culture Mosaic shows, what the dig and the stories add, and what you recommend next.",
           "Use up to 5 slides or exhibits, with your camera on and your slides visible (a screen-share recording is fine).",
           "Paste a link to the recording (Loom, unlisted YouTube, Google Drive or OneDrive with view access), or upload a video file up to 50 MB.",
           "Then answer three pushback questions, shown one at a time only after you hand in the briefing. You get 60 seconds to think before each one and up to 2 minutes to answer, recorded here on your camera.",
@@ -170,49 +202,6 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
           "The survey's published link and its exact name in the Mosaic Practice Workspace.",
           "One PDF or Word file with your one-page design rationale and two screenshots from your test run, taken before you deleted the test responses: one chart showing the logic worked, and one Compare Two Questions table.",
           "Don't distribute the survey. Describe your roster and link plan in the rationale instead.",
-        ],
-      }),
-    ],
-    pushback: null,
-    turnaround: "about 10 business days",
-  },
-
-  // MOS-230 · docs/training/culture-dig-certification/modules/CD-M6-practical-task.md
-  "culture-dig-specialist": {
-    title: "Practical: plan a dig, then make sense of one",
-    intro: `Hand in your practical task here. ${ASSESSOR} This certification is awarded once you also hold Mosaic Certified (MOS-100).`,
-    requiresCredential: { key: "mosaic-practitioner", name: "Mosaic Certified (MOS-100)" },
-    summary: "Hand in your practical task for marking. The course exam alone doesn't certify you.",
-    pieces: [
-      practical({
-        title: "Practical task (Gate G3)",
-        instructions: [
-          "One Word or PDF document with Part A (program plan and fieldwork plan for Taylor Brooks's clinic dig), then Part B (the two-page synthesis memo for Alex Moreau). Use the course templates.",
-          "Before you hand in: Part A has all eight sections and two domain fieldwork plans; Part B has a headline, three findings, limits and recommendations.",
-          "Nothing in either part names or points to an individual, and you haven't promised anything the dig can't deliver.",
-        ],
-      }),
-    ],
-    pushback: null,
-    turnaround: "about 10 business days",
-  },
-
-  // MOS-240 · docs/training/mosaic-signal-certification/modules/MS-M6-practical.md
-  "mosaic-signal-specialist": {
-    title: "Practical: analysis memo for Alex Moreau",
-    intro: `Hand in your analysis memo here. ${ASSESSOR} This certification is awarded once you also hold Mosaic Certified (MOS-100).`,
-    requiresCredential: { key: "mosaic-practitioner", name: "Mosaic Certified (MOS-100)" },
-    summary: "Hand in your analysis memo for marking. The course exam alone doesn't certify you.",
-    pieces: [
-      practical({
-        label: "Memo (G3)",
-        noun: "analysis memo",
-        title: "Analysis memo (Gate G3)",
-        instructions: [
-          "No more than two pages, to Alex Moreau.",
-          "Patterns (3 to 5), outlier stories (2 or 3), cautions, a recommended next wave, and a short confidentiality note.",
-          "Paraphrase stories and remove identifying details. Don't present any group under 10 stories, and don't try to work out who wrote anything.",
-          "Upload a PDF or Word file.",
         ],
       }),
     ],

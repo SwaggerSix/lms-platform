@@ -7,6 +7,7 @@ import { awardCertification, revokeCertification } from "@/lib/certifications/is
 import { sendAwardedEmail, sendRevokedEmail } from "@/lib/certifications/notify";
 import { syncCertificationToPortal } from "@/lib/integrations/partner-portal/certification";
 import { submissionsFor, type PushbackRow, type SubmissionRow } from "@/lib/certifications/capstone-service";
+import { finishedAll, requiredCourseIds } from "@/lib/certifications/requirements";
 import { answeredLate, answerSeconds, capstoneFor, latestOf, passDates, type CapstoneConfig } from "@/lib/certifications/capstone";
 
 /**
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   const { data: cert } = await service
     .from("certifications")
-    .select("id, name, course_id, status, award_requires_course_id, capstone_key, notify_user_ids")
+    .select("id, name, course_id, status, award_requires_course_id, award_requires_course_ids, capstone_key, notify_user_ids")
     .eq("id", id)
     .maybeSingle();
   if (!cert) return NextResponse.json({ error: "Certification not found" }, { status: 404 });
@@ -90,30 +91,28 @@ export async function GET(request: NextRequest) {
     }));
   const activeHolders = new Set(holders.filter((h) => h.status === "active").map((h) => h.userId));
 
-  // Ready = completed the required course, not already an active holder.
+  // Ready = finished every required course, not already an active holder.
   let ready: { userId: string; name: string; email: string; completedAt: string | null }[] = [];
-  if (cert.award_requires_course_id) {
-    const { data: done, error: doneError } = await service
-      .from("enrollments")
-      .select("user_id, completed_at, user:users!enrollments_user_id_fkey(first_name, last_name, email, organization_id)")
-      .eq("course_id", cert.award_requires_course_id)
-      .eq("status", "completed")
-      .order("completed_at", { ascending: false })
-      .limit(500);
-    if (doneError) {
-      console.error("Award list error:", doneError.message);
+  const courseIds = requiredCourseIds(cert);
+  if (courseIds.length) {
+    let done: Map<string, string | null>;
+    try {
+      done = await finishedAll(service, courseIds);
+    } catch (e) {
+      console.error("Award list error:", (e as Error).message);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-    const seen = new Set<string>();
-    ready = (done ?? [])
-      .filter((r: any) => !scopeOrg || r.user?.organization_id === scopeOrg)
-      .filter((r: any) => !activeHolders.has(r.user_id) && !seen.has(r.user_id) && seen.add(r.user_id))
-      .map((r: any) => ({
-        userId: r.user_id,
-        name: fullName(r.user),
-        email: r.user?.email ?? "",
-        completedAt: r.completed_at,
-      }));
+    const candidates = [...done.keys()].filter((uid) => !activeHolders.has(uid)).slice(0, 500);
+    if (candidates.length) {
+      const { data: us } = await service
+        .from("users")
+        .select("id, first_name, last_name, email, organization_id")
+        .in("id", candidates);
+      ready = (us ?? [])
+        .filter((u: any) => !scopeOrg || u.organization_id === scopeOrg)
+        .map((u: any) => ({ userId: u.id, name: fullName(u), email: u.email ?? "", completedAt: done.get(u.id) ?? null }))
+        .sort((x, y) => (y.completedAt ?? "").localeCompare(x.completedAt ?? ""));
+    }
   }
 
   const cfg = capstoneFor(cert.capstone_key);

@@ -29,6 +29,10 @@ export interface CertificationItem {
   issuedCount: number;
   activeCount: number;
   expiredCount: number;
+  /** Active certificates expiring within 90 days. */
+  expiringSoonCount?: number;
+  /** Hand-ins not marked yet (staff-awarded certifications). */
+  unmarkedCount?: number;
   color: string;
   /** 'course': issued automatically on finishing a course. 'award': staff press Award. */
   kind: 'course' | 'award';
@@ -258,6 +262,17 @@ export default function CertificationsClient({ certifications: initialCerts }: C
                   <p className="mt-1 text-lg font-bold text-red-600">{formatNumber(cert.expiredCount)}</p>
                 </div>
               </div>
+
+              {((cert.unmarkedCount ?? 0) > 0 || (cert.expiringSoonCount ?? 0) > 0) && (
+                <div className="mt-4 space-y-1 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  {(cert.unmarkedCount ?? 0) > 0 && (
+                    <p>{cert.unmarkedCount} handed in, not marked yet</p>
+                  )}
+                  {(cert.expiringSoonCount ?? 0) > 0 && (
+                    <p>{cert.expiringSoonCount} expiring in the next 90 days</p>
+                  )}
+                </div>
+              )}
 
               {/* Active rate bar */}
               <div className="mt-4">

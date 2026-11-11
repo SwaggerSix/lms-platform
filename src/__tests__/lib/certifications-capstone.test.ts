@@ -17,15 +17,18 @@ import {
   reviewPiece,
   startUpload,
   submitPiece,
+  learnerBlockedReason,
   type CapstoneCert,
 } from "@/lib/certifications/capstone-service";
 import { awardCertification } from "@/lib/certifications/issue";
 import { sendEmail } from "@/lib/email/sender";
 
 /**
- * Mosaic Certified's capstone: the memo (G3) and the recorded briefing (G4)
- * plus three pushback questions drawn at random, marked by the assessor with
- * one resubmission. Award needs both passed.
+ * Mosaic Practitioner Certified's one capstone (MOS-100 + MOS-230 + MOS-240):
+ * the Culture Mosaic memo, the Culture Dig plan and synthesis, the Mosaic
+ * Signal memo, and the recorded briefing plus three pushback questions drawn
+ * at random, each marked by the assessor with one resubmission. It opens once
+ * all three courses are finished, and Award needs every piece passed.
  */
 
 type Row = Record<string, any>;
@@ -102,31 +105,35 @@ const service: any = {
 };
 
 const cfg = CAPSTONES["mosaic-practitioner"];
+const BUNDLE = ["mos100", "mos230", "mos240"];
 const cert: CapstoneCert = {
   id: "cert-mc",
-  name: "Mosaic Certified — Mosaic Practitioner",
+  name: "Mosaic Practitioner Certified",
   status: "active",
   course_id: null,
-  award_requires_course_id: "mos100",
+  award_requires_course_id: null,
+  award_requires_course_ids: BUNDLE,
   capstone_key: "mosaic-practitioner",
   notify_user_ids: ["chris"],
 };
 const U = "u1";
 const memoPath = `${U}/cert-mc/memo-a.pdf`;
+const digPath = `${U}/cert-mc/dig-a.pdf`;
+const signalPath = `${U}/cert-mc/signal-a.pdf`;
 const videoPath = `${U}/cert-mc/briefing-b.mp4`;
 const pbPath = (i: number) => `${U}/cert-mc/pushback-${i}.webm`;
 
 beforeEach(() => {
   n = 0;
   vi.mocked(sendEmail).mockClear();
-  files = new Set([memoPath, videoPath, pbPath(1), pbPath(2), pbPath(3)]);
+  files = new Set([memoPath, digPath, signalPath, videoPath, pbPath(1), pbPath(2), pbPath(3)]);
   db = {
-    certifications: [{ id: "cert-mc", name: cert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: "mos100", capstone_key: "mosaic-practitioner" }],
+    certifications: [{ id: "cert-mc", name: cert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: null, award_requires_course_ids: BUNDLE, capstone_key: "mosaic-practitioner" }],
     users: [
       { id: U, email: "learner@example.com", first_name: "Lee", last_name: "Learner" },
       { id: "chris", email: "assessor@example.com", first_name: "A", last_name: "Assessor" },
     ],
-    enrollments: [{ id: "e1", user_id: U, course_id: "mos100", status: "completed" }],
+    enrollments: BUNDLE.map((c, i) => ({ id: `e${i}`, user_id: U, course_id: c, status: "completed", completed_at: `2026-11-0${i + 1}T00:00:00Z` })),
     certification_submissions: [],
     certification_pushback_answers: [],
     user_certifications: [],
@@ -230,14 +237,26 @@ describe("hand in, pushback, marking, award", () => {
     expect(await reviewPiece(service, { submissionId: m2, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: false, status: 409 });
     expect(await reviewPiece(service, { submissionId: bid, reviewerId: "chris", decision: "passed", now: new Date("2026-11-21T09:00:00Z") })).toMatchObject({ ok: true });
 
+    // The Culture Dig and Mosaic Signal pieces are part of the same capstone.
+    expect(await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    for (const [kind, path] of [["dig", digPath], ["signal", signalPath]] as const) {
+      const sub = await submitPiece(service, { userId: U, cert, cfg, kind, filePath: path });
+      expect(sub).toMatchObject({ ok: true, attempt: 1 });
+      expect(await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed", now: new Date("2026-11-22T09:00:00Z") })).toMatchObject({ ok: true });
+    }
+
     // Now Award works and records the marked dates, whatever the form said.
     const aw = await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris", memoPassedOn: "1999-01-01", briefingPassedOn: "1999-01-01" });
     expect(aw).toMatchObject({ ok: true });
-    expect(db.user_certifications[0].metadata).toMatchObject({ memo_passed_on: "2026-11-20", briefing_passed_on: "2026-11-21" });
+    expect(db.user_certifications[0].metadata).toMatchObject({
+      memo_passed_on: "2026-11-20",
+      briefing_passed_on: "2026-11-21",
+      pieces_passed_on: { memo: "2026-11-20", dig: "2026-11-22", signal: "2026-11-22", briefing: "2026-11-21" },
+    });
   });
 });
 
-describe("Specialist practicals (MOS-210 to MOS-240)", () => {
+describe("Specialist practicals (MOS-210, MOS-220)", () => {
   const sc = CAPSTONES["surveycraft-specialist"];
   const scCert: CapstoneCert = { ...cert, id: "cert-sc", name: "Certified · SurveyCraft Specialist", award_requires_course_id: "mos220", capstone_key: "surveycraft-specialist" };
   const doc = `${U}/cert-sc/practical-a.pdf`;
@@ -249,7 +268,7 @@ describe("Specialist practicals (MOS-210 to MOS-240)", () => {
   });
 
   it("every Specialist credential has one practical piece and no pushback", () => {
-    for (const key of ["coaching-studio-specialist", "surveycraft-specialist", "culture-dig-specialist", "mosaic-signal-specialist"]) {
+    for (const key of ["coaching-studio-specialist", "surveycraft-specialist"]) {
       expect(CAPSTONES[key].pieces.map((p) => p.kind)).toEqual(["practical"]);
       expect(CAPSTONES[key].pushback).toBeNull();
     }
@@ -281,37 +300,47 @@ describe("Specialist practicals (MOS-210 to MOS-240)", () => {
   });
 });
 
-describe("Culture Dig and Mosaic Signal need Mosaic Certified first", () => {
-  const ms = CAPSTONES["mosaic-signal-specialist"];
-  const msCert: CapstoneCert = { ...cert, id: "cert-ms", name: "Certified · Mosaic Signal Specialist", award_requires_course_id: "mos240", capstone_key: "mosaic-signal-specialist" };
-  const doc = `${U}/cert-ms/practical-a.pdf`;
-
-  beforeEach(() => {
-    files.add(doc);
-    db.certifications.push({ id: "cert-ms", name: msCert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: "mos240", capstone_key: "mosaic-signal-specialist" });
-    db.enrollments.push({ id: "e3", user_id: U, course_id: "mos240", status: "completed" });
+describe("one Mosaic Practitioner capstone across MOS-100, MOS-230 and MOS-240", () => {
+  it("has four pieces, and the Culture Dig and Mosaic Signal Specialists are gone", () => {
+    expect(cfg.pieces.map((p) => p.kind)).toEqual(["memo", "dig", "signal", "briefing"]);
+    expect(CAPSTONES["culture-dig-specialist"]).toBeUndefined();
+    expect(CAPSTONES["mosaic-signal-specialist"]).toBeUndefined();
   });
 
-  it("only Culture Dig and Mosaic Signal carry the requirement", () => {
-    expect(CAPSTONES["culture-dig-specialist"].requiresCredential?.key).toBe("mosaic-practitioner");
-    expect(ms.requiresCredential?.key).toBe("mosaic-practitioner");
-    for (const k of ["mosaic-practitioner", "coaching-studio-specialist", "surveycraft-specialist"]) expect(CAPSTONES[k].requiresCredential).toBeUndefined();
+  it("opens only once all three courses are finished, and says which", async () => {
+    db.courses = [
+      { id: "mos100", title: "MOS-100 Mosaic Practitioner Certification" },
+      { id: "mos230", title: "MOS-230 Culture Dig Certification" },
+      { id: "mos240", title: "MOS-240 Mosaic Signal Certification" },
+    ];
+    db.enrollments.find((e) => e.course_id === "mos240")!.status = "in_progress";
+    expect(await learnerBlockedReason(service, U, cert)).toBe(
+      "Your capstone opens once you've finished MOS-100, MOS-230 and MOS-240, final exams included."
+    );
+    db.enrollments.find((e) => e.course_id === "mos240")!.status = "completed";
+    expect(await learnerBlockedReason(service, U, cert)).toBeNull();
   });
 
-  it("hands in and marks freely, but Award waits for an active, unexpired Mosaic Certified", async () => {
-    const sub = await submitPiece(service, { userId: U, cert: msCert, cfg: ms, kind: "practical", filePath: doc });
-    expect(sub).toMatchObject({ ok: true });
-    expect(await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: true });
-
-    const award = () => awardCertification(service, { certificationId: "cert-ms", userId: U, awardedBy: "chris", now: new Date("2026-11-20T00:00:00Z") });
-    const refused = await award();
+  it("refuses Award until every course is finished, even with every piece passed", async () => {
+    for (const [kind, path] of [["memo", memoPath], ["dig", digPath], ["signal", signalPath]] as const) {
+      const sub = await submitPiece(service, { userId: U, cert, cfg, kind, filePath: path });
+      await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed" });
+    }
+    db.certification_submissions.push({ id: "b", user_id: U, certification_id: "cert-mc", kind: "briefing", attempt: 1, status: "passed", reviewed_at: "2026-11-21T00:00:00Z" });
+    db.enrollments = db.enrollments.filter((e) => e.course_id !== "mos230");
+    const refused = await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" });
     expect(refused).toMatchObject({ ok: false, status: 409 });
-    expect((refused as any).error).toContain("Mosaic Certified (MOS-100)");
+    expect((refused as any).error).toContain("all the required courses");
+    db.enrollments.push({ id: "e9", user_id: U, course_id: "mos230", status: "completed" });
+    expect(await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" })).toMatchObject({ ok: true });
+  });
 
-    db.user_certifications.push({ id: "mc-old", user_id: U, certification_id: "cert-mc", status: "active", expires_at: "2026-11-01T00:00:00Z" });
-    expect(await award()).toMatchObject({ ok: false, status: 409 });
-
-    db.user_certifications.push({ id: "mc", user_id: U, certification_id: "cert-mc", status: "active", expires_at: "2031-11-11T00:00:00Z" });
-    expect(await award()).toMatchObject({ ok: true });
+  it("tells the learner about a call after a second fail", async () => {
+    const first = await submitPiece(service, { userId: U, cert, cfg, kind: "signal", filePath: signalPath });
+    await reviewPiece(service, { submissionId: (first as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "Cut the group of 6." });
+    const second = await submitPiece(service, { userId: U, cert, cfg, kind: "signal", filePath: signalPath });
+    await reviewPiece(service, { submissionId: (second as any).submissionId, reviewerId: "chris", decision: "not_passed", feedback: "Still there." });
+    expect(vi.mocked(sendEmail).mock.lastCall?.[0]).toMatchObject({ to: "learner@example.com" });
+    expect((vi.mocked(sendEmail).mock.lastCall?.[0] as any).text).toContain("set up a call");
   });
 });

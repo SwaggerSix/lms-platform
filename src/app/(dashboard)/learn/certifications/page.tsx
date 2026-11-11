@@ -6,6 +6,8 @@ import CertificationsClient from "./certifications-client";
 import type { Certificate } from "./certifications-client";
 import { deriveStatus } from "@/lib/certifications/status";
 import { capstoneFor } from "@/lib/certifications/capstone";
+import { CERTIFICATE_COMPANY_NAME } from "@/lib/branding";
+import { requiredCourseIds } from "@/lib/certifications/requirements";
 
 export const metadata: Metadata = {
   title: "Certifications | LMS Platform",
@@ -50,6 +52,7 @@ export default async function CertificationsPage() {
         description,
         recertification_course_id,
         course_id,
+        capstone_key,
         completion_course:courses!certifications_course_id_fkey ( title ),
         recertification_course:courses!certifications_recertification_course_id_fkey ( title )
       )
@@ -79,14 +82,16 @@ export default async function CertificationsPage() {
       status: deriveStatus(row.status, row.expires_at),
       credentialId,
       verificationCode: row.verification_code ?? null,
+      issuer: cert?.capstone_key ? "gothamCulture" : CERTIFICATE_COMPANY_NAME,
+      awarded: !cert?.course_id && !!cert?.capstone_key,
     };
   });
 
-  // Credentials with a capstone hand-in (Mosaic Certified) the learner is
-  // working towards: enrolled in the required course, not certified yet.
+  // Credentials with a capstone hand-in the learner is working towards:
+  // enrolled in any of its courses, not certified yet.
   const { data: capstoneCerts } = await service
     .from("certifications")
-    .select("id, name, award_requires_course_id, capstone_key")
+    .select("id, name, award_requires_course_id, award_requires_course_ids, capstone_key")
     .not("capstone_key", "is", null)
     .is("course_id", null)
     .eq("status", "active")
@@ -94,15 +99,16 @@ export default async function CertificationsPage() {
   const heldIds = new Set(
     (rows ?? []).filter((r: any) => r.status === "active").map((r: any) => r.certification?.id)
   );
-  const requiredCourseIds = (capstoneCerts ?? [])
-    .map((c: any) => c.award_requires_course_id)
-    .filter(Boolean);
-  const { data: myEnrollments } = requiredCourseIds.length
-    ? await service.from("enrollments").select("course_id").eq("user_id", profile.id).in("course_id", requiredCourseIds)
+  const allRequired = [...new Set((capstoneCerts ?? []).flatMap((c: any) => requiredCourseIds(c)))];
+  const { data: myEnrollments } = allRequired.length
+    ? await service.from("enrollments").select("course_id").eq("user_id", profile.id).in("course_id", allRequired)
     : { data: [] as { course_id: string }[] };
   const enrolledIn = new Set((myEnrollments ?? []).map((e: any) => e.course_id));
   const capstones = (capstoneCerts ?? [])
-    .filter((c: any) => !heldIds.has(c.id) && (!c.award_requires_course_id || enrolledIn.has(c.award_requires_course_id)))
+    .filter((c: any) => {
+      const ids = requiredCourseIds(c);
+      return !heldIds.has(c.id) && (!ids.length || ids.some((id) => enrolledIn.has(id)));
+    })
     .map((c: any) => ({ id: c.id as string, name: c.name as string, summary: capstoneFor(c.capstone_key)?.summary ?? null }));
 
   return <CertificationsClient certificates={certificates} userName={userName} capstones={capstones} />;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Clock, Loader2, Video, AlertTriangle, FileText } from "lucide-react";
 import { uploadCapstoneFile } from "@/lib/certifications/capstone-upload";
+import type { CapstoneKind } from "@/lib/certifications/capstone";
 
 type Status = "submitted" | "passed" | "resubmit" | "not_passed";
 
@@ -27,7 +28,7 @@ interface Question {
   prompt: { speaker: string; text: string } | null;
 }
 
-type Kind = "memo" | "briefing" | "practical";
+type Kind = CapstoneKind;
 
 interface Piece {
   kind: Kind;

@@ -46,17 +46,35 @@
     {
       "path": "/api/cron/qb-reconcile",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/certification-expiry",
+      "schedule": "10 14 * * *"
+    },
+    {
+      "path": "/api/cron/certification-digest",
+      "schedule": "5 13 * * 1"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/((?!learn/capstone/).*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/learn/capstone/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(self), microphone=(self), geolocation=()" }
       ]
     },
     {

@@ -81,7 +81,7 @@ export interface PlayerProps {
   backHref?: string;
   /** Learner identity passed to SCORM packages (cmi.core.student_name/id). */
   learner?: { id: string; name: string } | null;
-  /** Hand-in page for a credential this course leads to (Mosaic Certified's memo and briefing). */
+  /** Hand-in page for the credential this course leads to (the Mosaic Practitioner capstone, or a Specialist's practical). */
   capstoneHref?: string | null;
 }
 

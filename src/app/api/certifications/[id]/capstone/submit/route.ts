@@ -3,9 +3,10 @@ import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
 import { learnerContext } from "../_shared";
 import { submitPiece } from "@/lib/certifications/capstone-service";
+import { CAPSTONE_KINDS } from "@/lib/certifications/capstone";
 
 const Schema = z.object({
-  kind: z.enum(["memo", "briefing", "practical"]),
+  kind: z.enum(CAPSTONE_KINDS),
   path: z.string().min(1).max(500).optional(),
   file_name: z.string().max(300).optional(),
   link: z.string().max(2000).optional(),

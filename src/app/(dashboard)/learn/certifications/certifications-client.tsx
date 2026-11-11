@@ -43,6 +43,10 @@ export interface Certificate {
   status: CertStatus;
   credentialId: string;
   verificationCode?: string | null;
+  /** Who issued it, for LinkedIn's "Issuing organization". */
+  issuer?: string;
+  /** Awarded by staff (Mosaic Certified, a Specialist): renewed by the assessor, not a course. */
+  awarded?: boolean;
 }
 
 const TABS = [
@@ -190,6 +194,26 @@ export default function CertificationsClient({ certificates, userName, capstones
     } catch {
       toast.error("Failed to copy link.");
     }
+    setShareMenuId(null);
+  }
+
+  /** LinkedIn's own "Add licence or certification" form, filled in. */
+  function handleAddToLinkedIn(cert: Certificate) {
+    const params = new URLSearchParams({ startTask: "CERTIFICATION_NAME", name: cert.name });
+    if (cert.issuer) params.set("organizationName", cert.issuer);
+    if (cert.issueDate) {
+      const d = new Date(cert.issueDate);
+      params.set("issueYear", String(d.getUTCFullYear()));
+      params.set("issueMonth", String(d.getUTCMonth() + 1));
+    }
+    if (cert.expiryDate) {
+      const d = new Date(cert.expiryDate);
+      params.set("expirationYear", String(d.getUTCFullYear()));
+      params.set("expirationMonth", String(d.getUTCMonth() + 1));
+    }
+    params.set("certUrl", getVerifyUrl(cert));
+    if (cert.verificationCode) params.set("certId", cert.verificationCode);
+    window.open(`https://www.linkedin.com/profile/add?${params}`, "_blank", "noopener,noreferrer");
     setShareMenuId(null);
   }
 
@@ -425,10 +449,16 @@ export default function CertificationsClient({ certificates, userName, capstones
                           <Copy className="h-4 w-4 text-gray-400" /> Copy Verification URL
                         </button>
                         <button
+                          onClick={() => handleAddToLinkedIn(cert)}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <Linkedin className="h-4 w-4 text-blue-600" /> Add to LinkedIn profile
+                        </button>
+                        <button
                           onClick={() => handleShareLinkedIn(cert)}
                           className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <Linkedin className="h-4 w-4 text-blue-600" /> Share to LinkedIn
+                          <Linkedin className="h-4 w-4 text-blue-600" /> Post on LinkedIn
                         </button>
                         <button
                           onClick={() => { handleShare(cert); setShareMenuId(null); }}
@@ -439,7 +469,12 @@ export default function CertificationsClient({ certificates, userName, capstones
                       </div>
                     )}
                   </div>
-                  {(cert.status === "expiring_soon" || cert.status === "expired") && (
+                  {(cert.status === "expiring_soon" || cert.status === "expired") && !cert.courseId && cert.awarded && (
+                    <p className="self-center text-xs text-gray-500">
+                      Your assessor renews this certification: contact gothamCulture.
+                    </p>
+                  )}
+                  {(cert.status === "expiring_soon" || cert.status === "expired") && cert.courseId && (
                     <button
                       onClick={() => handleRenew(cert)}
                       disabled={renewingId === cert.id}

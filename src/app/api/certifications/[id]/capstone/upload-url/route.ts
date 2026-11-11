@@ -3,10 +3,10 @@ import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
 import { learnerContext } from "../_shared";
 import { startUpload } from "@/lib/certifications/capstone-service";
-import { pieceOf } from "@/lib/certifications/capstone";
+import { CAPSTONE_KINDS, pieceOf } from "@/lib/certifications/capstone";
 
 const Schema = z.object({
-  slot: z.enum(["memo", "briefing", "practical", "pushback"]),
+  slot: z.enum([...CAPSTONE_KINDS, "pushback"]),
   file_size: z.number().int().positive(),
   content_type: z.string().min(1).max(200),
 });
