@@ -44,6 +44,8 @@ export interface PathDetailData {
   thumbnailUrl: string | null;
   skills: string[];
   courses: PathCourse[];
+  /** A capstone-gated certification earned on this path, if any. */
+  capstone: { certificationId: string; name: string; open: boolean } | null;
 }
 
 export interface PathDetailClientProps {
@@ -304,6 +306,23 @@ export default function PathDetailClient({ path, initialEnrolled }: PathDetailCl
                   </>
                 )}
               </div>
+
+              {path.capstone && (
+                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <h3 className="font-semibold text-gray-900">Capstone</h3>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {path.capstone.open
+                      ? `You've finished every course. The capstone is the last step to the ${path.capstone.name}.`
+                      : `Finish every course to open the capstone, the last step to the ${path.capstone.name}.`}
+                  </p>
+                  <Link
+                    href={`/learn/capstone/${path.capstone.certificationId}`}
+                    className="mt-3 inline-block text-sm font-medium text-primary-600 hover:underline"
+                  >
+                    {path.capstone.open ? "Open the capstone" : "See what the capstone involves"}
+                  </Link>
+                </div>
+              )}
 
               {/* Skills Gained */}
               <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

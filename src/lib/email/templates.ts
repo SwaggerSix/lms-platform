@@ -529,3 +529,177 @@ export function mentorshipSessionScheduled(params: {
     text: `Hi ${params.recipientName}, your mentoring session with ${params.otherName} is scheduled for ${params.whenText} (${params.durationMinutes} min).${params.meetingUrl ? ` Meeting: ${params.meetingUrl}.` : ""} Add to calendar — Google: ${params.googleUrl} | Outlook: ${params.outlookUrl} | iCal: ${params.icsUrl}`,
   };
 }
+
+// ── Capstone-gated certifications (migration 20261111120000) ───────────
+
+function paragraph(html: string): string {
+  return `<p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">${html}</p>`;
+}
+
+/** Turns plain-text assessor feedback into escaped paragraphs. */
+function feedbackBlock(feedback: string): string {
+  const paras = feedback
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p style="margin:0 0 12px;color:#374151;font-size:14px;line-height:1.6;">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  return `<div style="border-left:4px solid #91C53C;background:#f9fafb;padding:12px 16px;margin:0 0 16px;">${paras}</div>`;
+}
+
+/** Every course on the path is done: the capstone is open. */
+export function capstoneOpen(params: {
+  learnerName: string;
+  certName: string;
+  capstoneUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const name = escapeHtml(params.learnerName);
+  const cert = escapeHtml(params.certName);
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Your capstone is open</h2>
+    ${paragraph(`Hi ${name},`)}
+    ${paragraph(`You've finished every course for the <strong>${cert}</strong>. The last step is the capstone. The brief, what to submit and how it's marked are on the capstone page.`)}
+    ${button("Open the capstone", params.capstoneUrl)}
+  `;
+  return {
+    subject: `Your ${params.certName} capstone is open`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, you've finished every course for the ${params.certName}. Your capstone is open: ${params.capstoneUrl}`,
+  };
+}
+
+/** To the assessor: a capstone is waiting to be marked. */
+export function capstoneSubmittedToAssessor(params: {
+  learnerName: string;
+  learnerEmail: string;
+  certName: string;
+  attempt: number;
+  markBy: string;
+  queueUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">A capstone is ready to mark</h2>
+    ${paragraph(`<strong>${escapeHtml(params.learnerName)}</strong> (${escapeHtml(params.learnerEmail)}) submitted attempt ${params.attempt} of the <strong>${escapeHtml(params.certName)}</strong> capstone.`)}
+    ${paragraph(`They've been told to expect your marking by <strong>${escapeHtml(params.markBy)}</strong>.`)}
+    ${button("Open the marking queue", params.queueUrl)}
+  `;
+  return {
+    subject: `Capstone to mark: ${params.learnerName} (attempt ${params.attempt})`,
+    html: baseLayout(content, params.portalName),
+    text: `${params.learnerName} (${params.learnerEmail}) submitted attempt ${params.attempt} of the ${params.certName} capstone. Mark by ${params.markBy}: ${params.queueUrl}`,
+  };
+}
+
+/** To the learner: we've got it. */
+export function capstoneReceived(params: {
+  learnerName: string;
+  certName: string;
+  attempt: number;
+  markBy: string;
+  capstoneUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">We've got your capstone</h2>
+    ${paragraph(`Hi ${escapeHtml(params.learnerName)},`)}
+    ${paragraph(`Your ${params.attempt > 1 ? "resubmitted " : ""}capstone for the <strong>${escapeHtml(params.certName)}</strong> is in. Expect your result by <strong>${escapeHtml(params.markBy)}</strong>. We'll email you as soon as it's marked.`)}
+    ${button("View your submission", params.capstoneUrl)}
+  `;
+  return {
+    subject: `Capstone received: ${params.certName}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, your capstone for the ${params.certName} is in. Expect your result by ${params.markBy}. ${params.capstoneUrl}`,
+  };
+}
+
+/** Passed: the certificate has been issued. */
+export function capstonePassed(params: {
+  learnerName: string;
+  certName: string;
+  expiresOn: string;
+  verifyUrl: string;
+  certificatesUrl: string;
+  feedback?: string | null;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You're certified</h2>
+    ${paragraph(`Hi ${escapeHtml(params.learnerName)},`)}
+    ${paragraph(`You passed the capstone. You're now <strong>${escapeHtml(params.certName)}</strong> certified, valid until <strong>${escapeHtml(params.expiresOn)}</strong>.`)}
+    ${params.feedback ? feedbackBlock(params.feedback) : ""}
+    ${paragraph(`Your certificate has a public verification link you can share with clients or add to LinkedIn: <a href="${escapeHtml(params.verifyUrl)}" style="color:#4d7c0f;">${escapeHtml(params.verifyUrl)}</a>`)}
+    ${button("Download your certificate", params.certificatesUrl)}
+  `;
+  return {
+    subject: `You're certified: ${params.certName}`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, you passed the capstone and are now ${params.certName} certified, valid until ${params.expiresOn}.${params.feedback ? `\n\n${params.feedback}\n` : ""}\nVerify: ${params.verifyUrl}\nDownload: ${params.certificatesUrl}`,
+  };
+}
+
+/** Not yet, with an attempt left: feedback and a resubmission. */
+export function capstoneResubmit(params: {
+  learnerName: string;
+  certName: string;
+  feedback: string;
+  capstoneUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Your capstone: not yet</h2>
+    ${paragraph(`Hi ${escapeHtml(params.learnerName)},`)}
+    ${paragraph(`Your <strong>${escapeHtml(params.certName)}</strong> capstone doesn't meet the bar yet. Here's what to work on:`)}
+    ${feedbackBlock(params.feedback)}
+    ${paragraph(`You have one resubmission. Revise what the feedback points to and submit again from the capstone page.`)}
+    ${button("Resubmit your capstone", params.capstoneUrl)}
+  `;
+  return {
+    subject: `Your ${params.certName} capstone: feedback and next steps`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, your ${params.certName} capstone doesn't meet the bar yet.\n\n${params.feedback}\n\nYou have one resubmission: ${params.capstoneUrl}`,
+  };
+}
+
+/** Not yet on the last allowed attempt: the assessor will set up a call. */
+export function capstoneNeedsCall(params: {
+  learnerName: string;
+  certName: string;
+  feedback: string;
+  assessorName: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">Your capstone: let's talk</h2>
+    ${paragraph(`Hi ${escapeHtml(params.learnerName)},`)}
+    ${paragraph(`Your resubmitted <strong>${escapeHtml(params.certName)}</strong> capstone doesn't meet the bar yet. Here's the feedback:`)}
+    ${feedbackBlock(params.feedback)}
+    ${paragraph(`Rather than another round in writing, the next step is a call to talk it through and agree what happens next. ${escapeHtml(params.assessorName)} will be in touch shortly to set it up.`)}
+  `;
+  return {
+    subject: `Your ${params.certName} capstone: let's set up a call`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, your resubmitted ${params.certName} capstone doesn't meet the bar yet.\n\n${params.feedback}\n\n${params.assessorName} will be in touch shortly to set up a call and agree next steps.`,
+  };
+}
+
+/** After the call: the assessor allowed another attempt. */
+export function capstoneAnotherAttempt(params: {
+  learnerName: string;
+  certName: string;
+  capstoneUrl: string;
+  portalName?: string;
+}): EmailTemplate {
+  const content = `
+    <h2 style="margin:0 0 16px;color:#111827;font-size:18px;">You can submit again</h2>
+    ${paragraph(`Hi ${escapeHtml(params.learnerName)},`)}
+    ${paragraph(`As we discussed, you can submit your <strong>${escapeHtml(params.certName)}</strong> capstone one more time.`)}
+    ${button("Open the capstone", params.capstoneUrl)}
+  `;
+  return {
+    subject: `${params.certName}: you can submit your capstone again`,
+    html: baseLayout(content, params.portalName),
+    text: `Hi ${params.learnerName}, you can submit your ${params.certName} capstone one more time: ${params.capstoneUrl}`,
+  };
+}

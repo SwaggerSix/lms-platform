@@ -200,6 +200,7 @@ const navSections: NavSection[] = [
       { label: "Exam Results", href: "/admin/assessments/results", icon: ClipboardCheck, featureKey: "assessments", permission: "courses.view" },
       { label: "Exam Grading", href: "/admin/assessments/grading", icon: CheckSquare, featureKey: "assessments", permission: "courses.edit" },
       { label: "Certifications", href: "/admin/certifications", icon: Medal, featureKey: "certifications", permission: "certifications.manage" },
+      { label: "Capstone Marking", href: "/admin/capstones", icon: CheckSquare, featureKey: "certifications", permission: "certifications.manage" },
       { label: "Instructor Certifications", href: "/admin/instructor-certifications", icon: ShieldCheck, permission: "certifications.manage" },
     ],
     roles: ["admin", "super_admin"],

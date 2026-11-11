@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { onCourseCompleted } from "@/lib/capstones/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { checkAndAwardBadges } from "@/lib/gamification/awards";
@@ -204,39 +205,12 @@ export async function PATCH(request: NextRequest) {
             })
             .eq("id", enrollment_id);
 
-          // Check if course has an associated certification and create user_certification
-          const { data: certification } = await service
-            .from("certifications")
-            .select("id")
-            .eq("course_id", enrollment.course_id)
-            .eq("status", "active")
-            .single();
-
-          if (certification) {
-            try {
-              // Record which course version was completed for provenance. The
-              // enrollment is the system of record; this stamps the same
-              // reference onto the certification so an issued cert can be
-              // traced to the exact version the learner finished.
-              const certMetadata = enrollment.course_version_id
-                ? {
-                    course_version_id: enrollment.course_version_id,
-                    course_version_number: versionSnapshot?.versionNumber ?? null,
-                  }
-                : {};
-              await service
-                .from("user_certifications")
-                .insert({
-                  user_id: profile.id,
-                  certification_id: certification.id,
-                  issued_at: new Date().toISOString(),
-                  expires_at: null,
-                  metadata: certMetadata,
-                });
-            } catch {
-              // Ignore duplicate certification
-            }
-          }
+          // Certifications are earned per learning path (migration
+          // 20261111120000): if this was the last course on a path, mark the
+          // path complete and either issue its certification or open its
+          // capstone. (The old per-course lookup read certifications.course_id
+          // and .status, which don't exist, so it never issued anything.)
+          await onCourseCompleted(service, profile.id, enrollment.course_id);
 
           // Award bonus points for course completion, per the configured rule.
           // Service client required — see the RLS note on the lesson award above.

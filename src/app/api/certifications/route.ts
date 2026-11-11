@@ -5,6 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateBody, createCertificationSchema } from "@/lib/validations";
 import { getTenantScope } from "@/lib/tenants/tenant-queries";
 
+// The certifications table's writable columns. (The old list named course_id,
+// validity_period_days, badge_image_url, issuing_authority and status, none of
+// which exist, so any of them made the write fail.)
+const CERTIFICATION_FIELDS = Object.keys(createCertificationSchema.shape);
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -63,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Mass assignment fix: whitelist allowed fields
-  const allowedPostFields = ["name", "description", "course_id", "validity_period_days", "badge_image_url", "issuing_authority", "status"];
+  const allowedPostFields = CERTIFICATION_FIELDS;
   const sanitized = Object.fromEntries(
     Object.entries(validation.data).filter(([key]) => allowedPostFields.includes(key))
   );
@@ -88,14 +93,19 @@ export async function PATCH(request: NextRequest) {
 
   const supabase = await createClient();
   const body = await request.json();
-  const { id, ...updates } = body;
+  const { id, ...rawUpdates } = body ?? {};
+  const patchValidation = createCertificationSchema.partial().safeParse(rawUpdates);
+  if (!patchValidation.success) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const updates = patchValidation.data;
 
   if (!id) {
     return NextResponse.json({ error: "Certification id is required" }, { status: 400 });
   }
 
   // Mass assignment fix: whitelist allowed fields
-  const allowedPatchFields = ["name", "description", "course_id", "validity_period_days", "badge_image_url", "issuing_authority", "status"];
+  const allowedPatchFields = CERTIFICATION_FIELDS;
   const sanitizedUpdates = Object.fromEntries(
     Object.entries(updates).filter(([key]) => allowedPatchFields.includes(key))
   );

@@ -41,6 +41,7 @@ export default async function CertificationsPage() {
       expires_at,
       status,
       certificate_url,
+      verification_code,
       metadata,
       certification:certifications (
         id,

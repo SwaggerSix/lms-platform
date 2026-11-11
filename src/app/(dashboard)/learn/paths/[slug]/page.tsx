@@ -172,6 +172,14 @@ export default async function PathDetailPage({
     };
   });
 
+  // A capstone-gated certification earned on this path (migration 20261111120000).
+  const { data: capstoneCert } = await service
+    .from("certifications")
+    .select("id, name")
+    .eq("learning_path_id", rawPath.id)
+    .eq("requires_capstone", true)
+    .maybeSingle();
+
   // Calculate overall progress
   const completedCount = courses.filter((c) => c.status === "completed").length;
   const overallProgress = courses.length > 0
@@ -203,6 +211,13 @@ export default async function PathDetailPage({
     gradient,
     skills: rawPath.tags ?? [],
     courses,
+    capstone: capstoneCert
+      ? {
+          certificationId: capstoneCert.id as string,
+          name: capstoneCert.name as string,
+          open: courses.length > 0 && completedCount === courses.length,
+        }
+      : null,
   };
 
   return <PathDetailClient path={pathData} initialEnrolled={isEnrolled} />;

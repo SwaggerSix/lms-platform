@@ -10,6 +10,9 @@ import Link from "next/link";
  *   - lines starting with "- " become a <ul> bullet list (consecutive ones grouped)
  *   - lines starting with "1. " become an <ol> numbered list (the actual number is ignored)
  *   - lines starting with "> " become a callout block
+ *   - "# ", "## ", "### " lines become headings
+ *   - "| a | b |" lines become a table (first row is the header; a
+ *     "|---|---|" separator row is skipped)
  *
  * This is deliberately minimal — no HTML passthrough — so editors can't
  * accidentally introduce XSS via content files.
@@ -72,7 +75,13 @@ type Block =
   | { kind: "p"; lines: string[] }
   | { kind: "ul"; items: string[] }
   | { kind: "ol"; items: string[] }
-  | { kind: "callout"; lines: string[] };
+  | { kind: "callout"; lines: string[] }
+  | { kind: "h"; level: 1 | 2 | 3; text: string }
+  | { kind: "table"; rows: string[][] };
+
+function tableCells(line: string): string[] {
+  return line.replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+}
 
 function parseBlocks(source: string): Block[] {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
@@ -87,6 +96,21 @@ function parseBlocks(source: string): Block[] {
     const line = raw.trimEnd();
     if (line.trim() === "") {
       flush();
+      continue;
+    }
+    const heading = /^(#{1,3})\s+(.*)$/.exec(line);
+    if (heading) {
+      flush();
+      blocks.push({ kind: "h", level: heading[1].length as 1 | 2 | 3, text: heading[2] });
+      continue;
+    }
+    if (line.startsWith("|") && line.endsWith("|")) {
+      if (/^\|[\s:|-]+\|$/.test(line)) continue; // separator row
+      if (current?.kind !== "table") {
+        flush();
+        current = { kind: "table", rows: [] };
+      }
+      (current as { kind: "table"; rows: string[][] }).rows.push(tableCells(line));
       continue;
     }
     if (line.startsWith("- ")) {
@@ -139,6 +163,49 @@ export function MarkdownLite({ source }: { source: string }) {
                 </React.Fragment>
               ))}
             </p>
+          );
+        }
+        if (block.kind === "h") {
+          const cls =
+            block.level === 1
+              ? "pt-2 text-xl font-bold text-gray-900"
+              : block.level === 2
+                ? "pt-2 text-lg font-semibold text-gray-900"
+                : "pt-1 text-base font-semibold text-gray-900";
+          const Tag = (`h${block.level + 1}`) as "h2" | "h3" | "h4";
+          return (
+            <Tag key={key} className={cls}>
+              {renderInline(block.text, key)}
+            </Tag>
+          );
+        }
+        if (block.kind === "table") {
+          const [head, ...body] = block.rows;
+          return (
+            <div key={key} className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr>
+                    {head.map((c, j) => (
+                      <th key={j} scope="col" className="border border-gray-200 bg-gray-50 px-3 py-2 font-semibold text-gray-900">
+                        {renderInline(c, `${key}-h${j}`)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {body.map((row, r) => (
+                    <tr key={r}>
+                      {row.map((c, j) => (
+                        <td key={j} className="border border-gray-200 px-3 py-2 align-top">
+                          {renderInline(c, `${key}-${r}-${j}`)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           );
         }
         if (block.kind === "ul") {

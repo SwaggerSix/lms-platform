@@ -349,12 +349,26 @@ describe("createCertificationSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects invalid badge_image_url", () => {
+  it("accepts a capstone-gated certification on a path", () => {
     const result = createCertificationSchema.safeParse({
-      name: "Cert",
-      badge_image_url: "not-a-url",
+      name: "Mosaic Practitioner",
+      validity_months: 60,
+      learning_path_id: "8b00c979-5deb-4ce8-ad33-dc0ba4f0dcd2",
+      requires_capstone: true,
+      max_capstone_attempts: 2,
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects attempts outside 1-5 and a non-uuid path", () => {
+    expect(createCertificationSchema.safeParse({ name: "C", max_capstone_attempts: 9 }).success).toBe(false);
+    expect(createCertificationSchema.safeParse({ name: "C", learning_path_id: "nope" }).success).toBe(false);
+  });
+
+  it("drops columns the table doesn't have", () => {
+    const result = createCertificationSchema.safeParse({ name: "C", course_id: "x", status: "active" });
+    expect(result.success).toBe(true);
+    expect(result.success && "course_id" in result.data).toBe(false);
   });
 });
 

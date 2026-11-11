@@ -199,12 +199,17 @@ export const createPathSchema = z.object({
 // Certifications
 export const createCertificationSchema = z.object({
   name: z.string().min(1).max(200),
-  description: z.string().max(5000).optional(),
-  course_id: z.string().uuid().optional().nullable(),
-  validity_period_days: z.number().int().positive().optional().nullable(),
-  badge_image_url: z.string().url().optional().nullable(),
-  issuing_authority: z.string().max(200).optional(),
-  status: z.enum(["active", "inactive"]).optional(),
+  description: z.string().max(5000).optional().nullable(),
+  validity_months: z.number().int().positive().max(600).optional().nullable(),
+  template_id: z.string().uuid().optional().nullable(),
+  recertification_course_id: z.string().uuid().optional().nullable(),
+  recertification_path_id: z.string().uuid().optional().nullable(),
+  // Capstone-gated certifications (migration 20261111120000)
+  learning_path_id: z.string().uuid().optional().nullable(),
+  requires_capstone: z.boolean().optional(),
+  capstone_instructions: z.string().max(100000).optional().nullable(),
+  max_capstone_attempts: z.number().int().min(1).max(5).optional(),
+  portal_certification: z.string().max(100).optional().nullable(),
 });
 
 // Organizations
