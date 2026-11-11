@@ -79,7 +79,8 @@ export async function syncCertificationToPortal(service: Service, userCertificat
           },
           body: JSON.stringify({
             email: user?.email,
-            first_name: user?.first_name ?? "",
+            // The portal needs a first name; an LMS account may not have one.
+            first_name: user?.first_name?.trim() || (user?.email ?? "").split("@")[0] || "Practitioner",
             last_name: user?.last_name ?? "",
             certification: key,
             issued_at: uc.issued_at,
