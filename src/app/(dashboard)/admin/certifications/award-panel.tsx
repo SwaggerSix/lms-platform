@@ -49,12 +49,19 @@ interface Piece {
 }
 
 interface Work {
-  memo: Piece | null;
-  briefing: Piece | null;
-  passDates: { memo: string; briefing: string } | null;
+  pieces: Record<string, Piece | null>;
+  passDates: Record<string, string> | null;
+}
+
+interface PieceInfo {
+  kind: string;
+  label: string;
+  pushback: boolean;
+  requiredNote: string | null;
 }
 
 interface Capstone {
+  pieces: PieceInfo[];
   work: Record<string, Work>;
   handedIn: Ready[];
   notifyMe: boolean;
@@ -88,12 +95,12 @@ function Chip({ label, piece }: { label: string; piece: Piece | null }) {
 
 function PieceReview({
   certificationId,
-  kind,
+  info,
   piece,
   onMarked,
 }: {
   certificationId: string;
-  kind: 'memo' | 'briefing';
+  info: PieceInfo;
   piece: Piece;
   onMarked: () => Promise<void>;
 }) {
@@ -128,7 +135,7 @@ function PieceReview({
     <div className="rounded-lg border border-gray-200 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-900">
-          {kind === 'memo' ? 'Memo (G3)' : 'Briefing (G4)'}
+          {info.label}
           {piece.attempt > 1 ? ' · resubmission' : ''}
         </p>
         <span className="text-xs text-gray-500">Handed in {fmt(piece.submittedAt)}</span>
@@ -141,13 +148,17 @@ function PieceReview({
         )}
         {piece.link && (
           <a href={piece.link} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 text-primary-700 underline">
-            <ExternalLink className="h-3.5 w-3.5" /> Open recording link
+            <ExternalLink className="h-3.5 w-3.5" /> Open link
           </a>
         )}
       </div>
-      {piece.note && <p className="mt-2 whitespace-pre-wrap text-xs text-gray-600">Learner&apos;s note: {piece.note}</p>}
+      {piece.note && (
+        <p className="mt-2 whitespace-pre-wrap text-xs text-gray-600">
+          {info.requiredNote ?? 'Learner’s note'}: {piece.note}
+        </p>
+      )}
 
-      {kind === 'briefing' && (
+      {info.pushback && (
         <ol className="mt-3 space-y-2">
           {piece.pushback.map((p) => (
             <li key={p.position} className="rounded-md bg-gray-50 p-2 text-xs text-gray-700">
@@ -193,8 +204,8 @@ function PieceReview({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={busy || (kind === 'briefing' && !allAnswered)}
-              title={kind === 'briefing' && !allAnswered ? 'Waiting for all three pushback answers' : undefined}
+              disabled={busy || (info.pushback && !allAnswered)}
+              title={info.pushback && !allAnswered ? 'Waiting for all three pushback answers' : undefined}
               onClick={() => mark('passed')}
               className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
             >
@@ -232,8 +243,8 @@ function PieceReview({
 
 /**
  * Award a staff-awarded credential (e.g. Mosaic Certified). For a credential
- * with a capstone, it is also where the assessor marks each learner's memo and
- * briefing; Award appears once both have passed and the course exam is passed.
+ * with a capstone, it is also where the assessor marks each piece of the learner's
+ * work; Award appears once every piece has passed and the course exam is passed.
  * Without a capstone, the assessor enters the dates the work passed.
  */
 export default function AwardPanel({
@@ -348,7 +359,7 @@ export default function AwardPanel({
   const learnerRow = (r: Ready, examPassed: boolean) => {
     const w = capstone?.work[r.userId] ?? null;
     const canAward = examPassed && (capstone ? !!w?.passDates : true);
-    const toMark = !!w && [w.memo, w.briefing].some((p) => p?.status === 'submitted');
+    const toMark = !!w && Object.values(w.pieces).some((p) => p?.status === 'submitted');
     return (
       <li key={r.userId} className="p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -359,8 +370,9 @@ export default function AwardPanel({
             </p>
             {capstone && (
               <div className="mt-1 flex flex-wrap gap-1">
-                <Chip label="Memo" piece={w?.memo ?? null} />
-                <Chip label="Briefing" piece={w?.briefing ?? null} />
+                {capstone.pieces.map((pc) => (
+                  <Chip key={pc.kind} label={pc.label} piece={w?.pieces[pc.kind] ?? null} />
+                ))}
               </div>
             )}
           </div>
@@ -378,17 +390,19 @@ export default function AwardPanel({
         </div>
         {open === r.userId && (
           <div className="mt-3 space-y-3 rounded-lg bg-gray-50 p-3">
-            {capstone && w?.memo && (
-              <PieceReview certificationId={certificationId} kind="memo" piece={w.memo} onMarked={load} />
-            )}
-            {capstone && w?.briefing && (
-              <PieceReview certificationId={certificationId} kind="briefing" piece={w.briefing} onMarked={load} />
-            )}
+            {capstone &&
+              w &&
+              capstone.pieces.map((pc) => {
+                const piece = w.pieces[pc.kind];
+                return piece ? (
+                  <PieceReview key={pc.kind} certificationId={certificationId} info={pc} piece={piece} onMarked={load} />
+                ) : null;
+              })}
             {canAward && (
               <div className="space-y-3 rounded-lg border border-green-200 bg-white p-3">
                 {capstone && w?.passDates ? (
                   <p className="text-sm text-gray-700">
-                    Memo passed {fmt(w.passDates.memo)} · briefing passed {fmt(w.passDates.briefing)}. Ready to award.
+                    {capstone.pieces.map((pc) => `${pc.label} passed ${fmt(w.passDates![pc.kind])}`).join(' · ')}. Ready to award.
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -431,7 +445,7 @@ export default function AwardPanel({
       <div className="space-y-6">
         <p className="text-sm text-gray-600">
           {capstone
-            ? 'Mark each learner’s memo and briefing here. Award appears once both have passed and the course exam is passed. Passing the exam alone does not certify anyone.'
+            ? `Mark each learner’s ${capstone.pieces.map((p) => p.label).join(' and ')} here. Award appears once ${capstone.pieces.length > 1 ? 'all have' : 'it has'} passed and the course exam is passed. Passing the exam alone does not certify anyone.`
             : 'Award this only after you have marked the learner’s work as passing. Passing the course exam alone does not certify anyone.'}
         </p>
 

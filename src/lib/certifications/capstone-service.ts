@@ -13,10 +13,12 @@ import {
   allowedDecisions,
   capstoneFor,
   drawPrompts,
+  pieceOf,
   isAcceptableLink,
   nextAttempt,
   type CapstoneConfig,
   type CapstoneKind,
+  type FileKind,
   type SubmissionStatus,
 } from "./capstone";
 
@@ -100,6 +102,8 @@ export async function submissionsFor(
   if (userIds) q = q.in("user_id", userIds);
   const { data: subs, error } = await q.order("submitted_at", { ascending: true }).limit(2000);
   if (error) throw new Error(error.message);
+  // Only a briefing carries pushback questions (PieceConfig.pushback), so
+  // only those are looked up — keeps the id list short.
   const briefingIds = (subs ?? []).filter((s: SubmissionRow) => s.kind === "briefing").map((s: SubmissionRow) => s.id);
   let pushback: PushbackRow[] = [];
   if (briefingIds.length) {
@@ -116,7 +120,7 @@ export async function submissionsFor(
 
 // ---------------------------------------------------------------- uploads
 
-export type UploadSlot = "memo" | "briefing" | "pushback";
+export type UploadSlot = CapstoneKind | "pushback";
 
 export function folderFor(userId: string, certificationId: string) {
   return `${userId}/${certificationId}`;
@@ -124,19 +128,28 @@ export function folderFor(userId: string, certificationId: string) {
 
 export async function startUpload(
   service: SupabaseClient,
-  args: { userId: string; certificationId: string; slot: UploadSlot; fileSize: number; contentType: string }
+  args: {
+    userId: string;
+    certificationId: string;
+    slot: UploadSlot;
+    fileKind: FileKind;
+    /** The piece also takes a link instead of a file (a big video). */
+    linkInstead?: boolean;
+    fileSize: number;
+    contentType: string;
+  }
 ): Promise<{ ok: true; path: string; signedUrl: string } | Fail> {
-  const ext = ALLOWED_TYPES[args.slot][args.contentType.split(";")[0].trim().toLowerCase()];
+  const ext = ALLOWED_TYPES[args.fileKind][args.contentType.split(";")[0].trim().toLowerCase()];
   if (!ext) {
     return fail(
       400,
-      args.slot === "memo" ? "Upload a PDF or Word (.docx) document." : "Upload an MP4, WebM or MOV video."
+      args.fileKind === "document" ? "Upload a PDF or Word (.docx) document." : "Upload an MP4, WebM or MOV video."
     );
   }
   if (!(args.fileSize > 0) || args.fileSize > MAX_FILE_BYTES) {
     return fail(
       400,
-      args.slot === "briefing"
+      args.linkInstead
         ? "That video is over 50 MB. Paste a link to the recording instead (Loom, unlisted YouTube, Drive or OneDrive)."
         : "That file is over 50 MB."
     );
@@ -201,9 +214,16 @@ export async function submitPiece(
     );
   }
 
-  if (args.kind === "memo" && !args.filePath) return fail(400, "Upload your memo as a PDF or Word document.");
-  if (args.link && !isAcceptableLink(args.link)) return fail(400, "That link doesn't look right. Paste the full https:// link.");
-  if (!args.filePath && !args.link) return fail(400, "Upload a file or paste a link.");
+  const piece = pieceOf(args.cfg, args.kind);
+  if (!piece) return fail(404, "Not found");
+  const link = piece.link === "none" ? undefined : args.link?.trim() || undefined;
+  if (link && !isAcceptableLink(link)) return fail(400, "That link doesn't look right. Paste the full https:// link.");
+  if (piece.link === "or-file" && !args.filePath && !link) return fail(400, "Upload a file or paste a link.");
+  if (piece.link !== "or-file" && !args.filePath) {
+    return fail(400, piece.file === "document" ? "Upload your work as a PDF or Word document." : "Upload your video.");
+  }
+  if (piece.link === "required" && !link) return fail(400, `Add ${piece.linkLabel ? piece.linkLabel.toLowerCase() : "the link"}.`);
+  if (piece.requiredNote && !args.note?.trim()) return fail(400, `Add ${piece.requiredNote.toLowerCase()}.`);
   if (args.filePath) {
     const there = await uploadedFileExists(service, { userId: args.userId, certificationId: args.cert.id, path: args.filePath });
     if (!there) return fail(400, "The upload didn't arrive. Please try again.");
@@ -219,7 +239,7 @@ export async function submitPiece(
       status: "submitted",
       file_path: args.filePath ?? null,
       file_name: args.fileName ? args.fileName.slice(0, 200) : null,
-      link_url: args.link?.trim() ?? null,
+      link_url: link ?? null,
       learner_note: args.note?.trim() ? args.note.trim().slice(0, 2000) : null,
     })
     .select("id")
@@ -231,7 +251,7 @@ export async function submitPiece(
     return fail(500, "Internal server error");
   }
 
-  if (args.kind === "briefing") {
+  if (piece.pushback && args.cfg.pushback) {
     const picks = drawPrompts(args.cfg.pushback.bank.length, args.cfg.pushback.count, args.rand);
     const { error: pe } = await service.from("certification_pushback_answers").insert(
       picks.map((prompt_index, i) => ({ submission_id: row.id, position: i + 1, prompt_index }))
@@ -243,7 +263,7 @@ export async function submitPiece(
     }
   }
 
-  await notifyStaff(service, args.cert, args.userId, args.kind, attempt).catch(() => {});
+  await notifyStaff(service, args.cert, piece, args.userId, attempt).catch(() => {});
   return { ok: true, submissionId: row.id, attempt };
 }
 
@@ -255,7 +275,7 @@ async function ownBriefing(service: SupabaseClient, userId: string, certificatio
     .select("id, user_id, certification_id, kind, status")
     .eq("id", submissionId)
     .maybeSingle();
-  if (!data || data.user_id !== userId || data.certification_id !== certificationId || data.kind !== "briefing") return null;
+  if (!data || data.user_id !== userId || data.certification_id !== certificationId) return null;
   return data;
 }
 
@@ -296,7 +316,8 @@ export async function revealPushback(
       revealedAt = again?.revealed_at ?? revealedAt;
     }
   }
-  const prompt = args.cfg.pushback.bank[target.prompt_index];
+  const prompt = args.cfg.pushback?.bank[target.prompt_index];
+  if (!prompt) return fail(404, "Not found");
   return { ok: true, prompt, revealedAt: revealedAt! };
 }
 
@@ -363,7 +384,13 @@ export async function reviewPiece(
   if (args.decision !== "passed" && !args.feedback?.trim()) {
     return fail(400, "Add feedback so the learner knows what to change.");
   }
-  if (sub.kind === "briefing" && args.decision === "passed") {
+  const { data: certRow } = await service
+    .from("certifications")
+    .select("name, capstone_key")
+    .eq("id", sub.certification_id)
+    .maybeSingle();
+  const piece = pieceOf(capstoneFor(certRow?.capstone_key) ?? { pieces: [] } as unknown as CapstoneConfig, sub.kind);
+  if (piece?.pushback && args.decision === "passed") {
     const { data: pb } = await service
       .from("certification_pushback_answers")
       .select("answered_at")
@@ -388,19 +415,17 @@ export async function reviewPiece(
     return fail(500, "Internal server error");
   }
   if (!upd || upd.length === 0) return fail(409, "This piece has already been marked.");
-  await notifyLearner(service, sub.user_id, sub.certification_id, sub.kind, args.decision, args.feedback).catch(() => {});
+  await notifyLearner(service, sub.user_id, sub.certification_id, certRow?.name ?? null, piece?.noun ?? "work", args.decision, args.feedback).catch(() => {});
   return { ok: true, userId: sub.user_id, certificationId: sub.certification_id };
 }
 
 // ---------------------------------------------------------------- email
 
-const PIECE: Record<CapstoneKind, string> = { memo: "interpretation memo", briefing: "executive briefing" };
-
 async function notifyStaff(
   service: SupabaseClient,
   cert: CapstoneCert,
+  piece: { noun: string; pushback?: boolean },
   learnerId: string,
-  kind: CapstoneKind,
   attempt: number
 ) {
   const ids = cert.notify_user_ids ?? [];
@@ -413,9 +438,9 @@ async function notifyStaff(
   if (to.length === 0) return;
   const who = `${learner?.first_name ?? ""} ${learner?.last_name ?? ""}`.trim() || "A learner";
   const tpl = customTemplate({
-    subject: `${cert.name}: ${PIECE[kind]} ready to mark`,
-    bodyText: `${who} handed in their ${PIECE[kind]}${attempt > 1 ? " (resubmission)" : ""} for ${cert.name}.${
-      kind === "briefing" ? "\n\nThey'll answer the three pushback questions next; the briefing can be passed once all three are in." : ""
+    subject: `${cert.name}: ${piece.noun} ready to mark`,
+    bodyText: `${who} handed in their ${piece.noun}${attempt > 1 ? " (resubmission)" : ""} for ${cert.name}.${
+      piece.pushback ? "\n\nThey'll answer the three pushback questions next; it can be passed once all three are in." : ""
     }`,
     ctaText: "Open the Award screen",
     ctaUrl: `${appUrl()}/admin/certifications`,
@@ -427,25 +452,23 @@ async function notifyLearner(
   service: SupabaseClient,
   userId: string,
   certificationId: string,
-  kind: CapstoneKind,
+  certName: string | null,
+  noun: string,
   decision: SubmissionStatus,
   feedback?: string
 ) {
-  const [{ data: u }, { data: c }] = await Promise.all([
-    service.from("users").select("email, first_name").eq("id", userId).maybeSingle(),
-    service.from("certifications").select("name").eq("id", certificationId).maybeSingle(),
-  ]);
+  const { data: u } = await service.from("users").select("email, first_name").eq("id", userId).maybeSingle();
   if (!u?.email) return;
-  const name = c?.name ?? "your certification";
+  const name = certName ?? "your certification";
   const lines: Record<string, string> = {
-    passed: `Your ${PIECE[kind]} for ${name} has passed.`,
-    resubmit: `Your ${PIECE[kind]} for ${name} doesn't meet the bar yet. You have one resubmission.`,
-    not_passed: `Your resubmitted ${PIECE[kind]} for ${name} didn't meet the bar.`,
+    passed: `Your ${noun} for ${name} has passed.`,
+    resubmit: `Your ${noun} for ${name} doesn't meet the bar yet. You have one resubmission.`,
+    not_passed: `Your resubmitted ${noun} for ${name} didn't meet the bar.`,
   };
   const tpl = customTemplate({
-    subject: `${name}: your ${PIECE[kind]}`,
+    subject: `${name}: your ${noun}`,
     bodyText: `Hi ${u.first_name || "there"},\n\n${lines[decision] ?? ""}${feedback?.trim() ? `\n\nFeedback from your assessor:\n${feedback.trim()}` : ""}`,
-    ctaText: "Open your capstone",
+    ctaText: "Open your hand-in page",
     ctaUrl: `${appUrl()}/learn/capstone/${certificationId}`,
   });
   await sendEmail({ to: u.email, subject: tpl.subject, html: tpl.html, text: tpl.text });

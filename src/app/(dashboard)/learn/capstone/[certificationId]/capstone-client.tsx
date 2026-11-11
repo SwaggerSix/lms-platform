@@ -9,7 +9,7 @@ type Status = "submitted" | "passed" | "resubmit" | "not_passed";
 
 interface Submission {
   id: string;
-  kind: "memo" | "briefing";
+  kind: Kind;
   attempt: number;
   status: Status;
   submittedAt: string;
@@ -27,21 +27,38 @@ interface Question {
   prompt: { speaker: string; text: string } | null;
 }
 
+type Kind = "memo" | "briefing" | "practical";
+
+interface Piece {
+  kind: Kind;
+  title: string;
+  instructions: string[];
+  file: "document" | "video";
+  link: "none" | "or-file" | "required";
+  linkLabel: string | null;
+  requiredNote: string | null;
+  warning: string | null;
+}
+
 interface View {
   certification: { id: string; name: string };
   config: {
     title: string;
     intro: string;
-    memo: { title: string; instructions: string[] };
-    briefing: { title: string; instructions: string[] };
+    pieces: Piece[];
     turnaround: string;
-    pushback: { count: number; prepSeconds: number; answerSeconds: number };
+    pushback: { count: number; prepSeconds: number; answerSeconds: number } | null;
   };
   certified: boolean;
   submissions: Submission[];
-  next: { memo: number | null; briefing: number | null };
+  next: Record<string, number | null>;
   pushback: { submissionId: string; open: boolean; questions: Question[] } | null;
 }
+
+const ACCEPT = {
+  document: ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  video: "video/mp4,video/webm,video/quicktime",
+};
 
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -69,19 +86,9 @@ function StatusLine({ s, turnaround }: { s: Submission; turnaround: string }) {
   );
 }
 
-function HandIn({
-  certificationId,
-  kind,
-  allowLink,
-  accept,
-  onDone,
-}: {
-  certificationId: string;
-  kind: "memo" | "briefing";
-  allowLink: boolean;
-  accept: string;
-  onDone: () => void;
-}) {
+function HandIn({ certificationId, piece, onDone }: { certificationId: string; piece: Piece; onDone: () => void }) {
+  const kind = piece.kind;
+  const orFile = piece.link === "or-file";
   const [file, setFile] = useState<File | null>(null);
   const [link, setLink] = useState("");
   const [note, setNote] = useState("");
@@ -101,7 +108,7 @@ function HandIn({
         body: JSON.stringify({
           kind,
           ...(path ? { path, file_name: file?.name } : {}),
-          ...(!path && link.trim() ? { link: link.trim() } : {}),
+          ...(link.trim() && (piece.link === "required" || (orFile && !path)) ? { link: link.trim() } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
         }),
       });
@@ -116,21 +123,38 @@ function HandIn({
     }
   };
 
-  const ready = !!file || (allowLink && link.trim().length > 0);
+  const hasLink = link.trim().length > 0;
+  const ready =
+    (orFile ? !!file || hasLink : !!file) &&
+    (piece.link !== "required" || hasLink) &&
+    (!piece.requiredNote || note.trim().length > 0);
   return (
     <div className="mt-4 space-y-3 rounded-lg bg-gray-50 p-4">
+      {piece.link === "required" && (
+        <label className="block text-sm font-medium text-gray-700">
+          {piece.linkLabel ?? "Link"}
+          <input
+            type="url"
+            inputMode="url"
+            placeholder="https://"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+        </label>
+      )}
       <label className="block text-sm font-medium text-gray-700">
-        {allowLink ? "Upload a video file (up to 50 MB)" : "Upload your memo"}
+        {piece.file === "video" ? "Upload a video file (up to 50 MB)" : "Upload your document (PDF or Word, up to 50 MB)"}
         <input
           type="file"
-          accept={accept}
+          accept={ACCEPT[piece.file]}
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-primary-700"
         />
       </label>
-      {allowLink && (
+      {orFile && (
         <label className="block text-sm font-medium text-gray-700">
-          …or paste a link to the recording
+          {piece.linkLabel ?? "…or paste a link"}
           <input
             type="url"
             inputMode="url"
@@ -146,11 +170,11 @@ function HandIn({
         </label>
       )}
       <label className="block text-sm font-medium text-gray-700">
-        Note for your assessor (optional)
+        {piece.requiredNote ?? "Note for your assessor (optional)"}
         <textarea
           value={note}
           maxLength={2000}
-          rows={2}
+          rows={piece.requiredNote ? 1 : 2}
           onChange={(e) => setNote(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
         />
@@ -472,43 +496,33 @@ export default function CapstoneClient({ certificationId }: { certificationId: s
     );
   }
 
-  const latest = (kind: "memo" | "briefing") =>
+  const latest = (kind: Kind) =>
     view.submissions.filter((s) => s.kind === kind).sort((a, b) => b.attempt - a.attempt)[0] ?? null;
-  const memo = latest("memo");
-  const briefing = latest("briefing");
 
-  const task = (
-    kind: "memo" | "briefing",
-    cfg: { title: string; instructions: string[] },
-    s: Submission | null,
-    next: number | null
-  ) => (
-    <section className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-        {kind === "memo" ? <FileText className="h-5 w-5 text-gray-400" /> : <Video className="h-5 w-5 text-gray-400" />}
-        {cfg.title}
-      </h2>
-      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-gray-700">
-        {cfg.instructions.map((i) => (
-          <li key={i}>{i}</li>
-        ))}
-      </ul>
-      {s && <StatusLine s={s} turnaround={view.config.turnaround} />}
-      {next != null && (
-        <HandIn
-          certificationId={certificationId}
-          kind={kind}
-          allowLink={kind === "briefing"}
-          accept={
-            kind === "memo"
-              ? ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              : "video/mp4,video/webm,video/quicktime"
-          }
-          onDone={load}
-        />
-      )}
-    </section>
-  );
+  const task = (piece: Piece) => {
+    const s = latest(piece.kind);
+    const next = view.next[piece.kind] ?? null;
+    return (
+      <section key={piece.kind} className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          {piece.file === "video" ? <Video className="h-5 w-5 text-gray-400" /> : <FileText className="h-5 w-5 text-gray-400" />}
+          {piece.title}
+        </h2>
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-gray-700">
+          {piece.instructions.map((i) => (
+            <li key={i}>{i}</li>
+          ))}
+        </ul>
+        {piece.warning && next != null && (
+          <p className="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {piece.warning}
+          </p>
+        )}
+        {s && <StatusLine s={s} turnaround={view.config.turnaround} />}
+        {next != null && <HandIn certificationId={certificationId} piece={piece} onDone={load} />}
+      </section>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -526,9 +540,8 @@ export default function CapstoneClient({ certificationId }: { certificationId: s
           <p className="mt-4 text-gray-700">{view.config.intro}</p>
         )}
 
-        {task("memo", view.config.memo, memo, view.next.memo)}
-        {task("briefing", view.config.briefing, briefing, view.next.briefing)}
-        {view.pushback && view.pushback.open && (
+        {view.config.pieces.map(task)}
+        {view.pushback && view.pushback.open && view.config.pushback && (
           <Pushback
             certificationId={certificationId}
             pb={view.pushback}

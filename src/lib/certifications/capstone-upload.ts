@@ -3,7 +3,7 @@
 /** Ask for a signed URL, then PUT the file straight to storage. Returns the stored path. */
 export async function uploadCapstoneFile(
   certificationId: string,
-  slot: "memo" | "briefing" | "pushback",
+  slot: "memo" | "briefing" | "practical" | "pushback",
   file: Blob,
   onProgress?: (pct: number) => void
 ): Promise<string> {

@@ -5,7 +5,7 @@ import { learnerContext } from "../_shared";
 import { submitPiece } from "@/lib/certifications/capstone-service";
 
 const Schema = z.object({
-  kind: z.enum(["memo", "briefing"]),
+  kind: z.enum(["memo", "briefing", "practical"]),
   path: z.string().min(1).max(500).optional(),
   file_name: z.string().max(300).optional(),
   link: z.string().max(2000).optional(),

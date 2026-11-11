@@ -57,7 +57,7 @@ interface CertificationsClientProps {
   certificates: Certificate[];
   userName: string;
   /** Credentials the learner is working towards that need a capstone hand-in. */
-  capstones?: { id: string; name: string }[];
+  capstones?: { id: string; name: string; summary: string | null }[];
 }
 
 function handleDownloadPDF(cert: Certificate, userName: string) {
@@ -287,7 +287,7 @@ export default function CertificationsClient({ certificates, userName, capstones
             <div>
               <p className="font-semibold text-gray-900">{c.name}</p>
               <p className="mt-0.5 text-sm text-gray-600">
-                Hand in your interpretation memo and recorded briefing for marking. The course exam alone doesn&apos;t certify you.
+                {c.summary ?? "Hand in your work for marking. The course exam alone doesn't certify you."}
               </p>
             </div>
             <a

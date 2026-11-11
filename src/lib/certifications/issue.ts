@@ -133,29 +133,33 @@ export async function awardCertification(
     }
   }
 
-  let memoPassedOn = args.memoPassedOn;
-  let briefingPassedOn = args.briefingPassedOn;
-  if (capstoneFor(cert.capstone_key)) {
+  // Dates each piece of work passed, by kind (memo / briefing / practical).
+  let piecesPassedOn: Record<string, string>;
+  const cfg = capstoneFor(cert.capstone_key);
+  if (cfg) {
     const { data: subs } = await service
       .from("certification_submissions")
       .select("kind, attempt, status, reviewed_at")
       .eq("user_id", args.userId)
       .eq("certification_id", cert.id);
-    const dates = passDates((subs ?? []) as SubmissionLike[]);
+    const dates = passDates((subs ?? []) as SubmissionLike[], cfg.pieces.map((p) => p.kind));
     if (!dates) {
-      return { ok: false, status: 409, error: "Mark this learner's memo and briefing as passed first." };
+      const what = cfg.pieces.map((p) => p.noun).join(" and ");
+      return { ok: false, status: 409, error: `Mark this learner's ${what} as passed first.` };
     }
-    memoPassedOn = dates.memo;
-    briefingPassedOn = dates.briefing;
-  } else if (!memoPassedOn || !briefingPassedOn) {
+    piecesPassedOn = dates;
+  } else if (args.memoPassedOn && args.briefingPassedOn) {
+    piecesPassedOn = { memo: args.memoPassedOn, briefing: args.briefingPassedOn };
+  } else {
     return { ok: false, status: 400, error: "Enter the dates the memo and briefing passed." };
   }
 
   const metadata = {
     issued_by: "staff_award",
     awarded_by: args.awardedBy,
-    memo_passed_on: memoPassedOn,
-    briefing_passed_on: briefingPassedOn,
+    pieces_passed_on: piecesPassedOn,
+    ...(piecesPassedOn.memo ? { memo_passed_on: piecesPassedOn.memo } : {}),
+    ...(piecesPassedOn.briefing ? { briefing_passed_on: piecesPassedOn.briefing } : {}),
     ...(args.note ? { note: args.note } : {}),
   };
 

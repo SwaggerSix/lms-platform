@@ -136,7 +136,7 @@ beforeEach(() => {
 describe("rules", () => {
   it("draws distinct prompts from the bank", () => {
     for (let i = 0; i < 50; i++) {
-      const p = drawPrompts(cfg.pushback.bank.length, 3);
+      const p = drawPrompts(cfg.pushback!.bank.length, 3);
       expect(new Set(p).size).toBe(3);
       expect(p.every((x) => x >= 0 && x < 8)).toBe(true);
     }
@@ -162,18 +162,18 @@ describe("rules", () => {
   it("gives pass dates only when both pieces passed", () => {
     const m = { kind: "memo" as const, attempt: 1, status: "passed" as const, reviewed_at: "2026-11-20T10:00:00Z" };
     const b = { kind: "briefing" as const, attempt: 2, status: "passed" as const, reviewed_at: "2026-11-25T10:00:00Z" };
-    expect(passDates([m])).toBeNull();
-    expect(passDates([m, b])).toEqual({ memo: "2026-11-20", briefing: "2026-11-25" });
+    expect(passDates([m], ["memo", "briefing"])).toBeNull();
+    expect(passDates([m, b], ["memo", "briefing"])).toEqual({ memo: "2026-11-20", briefing: "2026-11-25" });
   });
 });
 
 describe("uploads", () => {
   it("refuses the wrong type and anything over 50 MB, pointing a big briefing at a link", async () => {
-    expect(await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "memo", fileSize: 1000, contentType: "image/png" })).toMatchObject({ ok: false, status: 400 });
-    const big = await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "briefing", fileSize: 60 * 1024 * 1024, contentType: "video/mp4" });
+    expect(await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "memo", fileKind: "document", fileSize: 1000, contentType: "image/png" })).toMatchObject({ ok: false, status: 400 });
+    const big = await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "briefing", fileKind: "video", linkInstead: true, fileSize: 60 * 1024 * 1024, contentType: "video/mp4" });
     expect(big).toMatchObject({ ok: false, status: 400 });
     expect((big as any).error).toMatch(/link/);
-    const ok = await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "memo", fileSize: 1000, contentType: "application/pdf" });
+    const ok = await startUpload(service, { userId: U, certificationId: "cert-mc", slot: "memo", fileKind: "document", fileSize: 1000, contentType: "application/pdf" });
     expect(ok).toMatchObject({ ok: true });
     expect((ok as any).path.startsWith(`${U}/cert-mc/memo-`)).toBe(true);
   });
@@ -234,5 +234,47 @@ describe("hand in, pushback, marking, award", () => {
     const aw = await awardCertification(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris", memoPassedOn: "1999-01-01", briefingPassedOn: "1999-01-01" });
     expect(aw).toMatchObject({ ok: true });
     expect(db.user_certifications[0].metadata).toMatchObject({ memo_passed_on: "2026-11-20", briefing_passed_on: "2026-11-21" });
+  });
+});
+
+describe("Specialist practicals (MOS-210 to MOS-240)", () => {
+  const sc = CAPSTONES["surveycraft-specialist"];
+  const scCert: CapstoneCert = { ...cert, id: "cert-sc", name: "Certified · SurveyCraft Specialist", award_requires_course_id: "mos220", capstone_key: "surveycraft-specialist" };
+  const doc = `${U}/cert-sc/practical-a.pdf`;
+
+  beforeEach(() => {
+    files.add(doc);
+    db.certifications.push({ id: "cert-sc", name: scCert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: "mos220", capstone_key: "surveycraft-specialist" });
+    db.enrollments.push({ id: "e2", user_id: U, course_id: "mos220", status: "completed" });
+  });
+
+  it("every Specialist credential has one practical piece and no pushback", () => {
+    for (const key of ["coaching-studio-specialist", "surveycraft-specialist", "culture-dig-specialist", "mosaic-signal-specialist"]) {
+      expect(CAPSTONES[key].pieces.map((p) => p.kind)).toEqual(["practical"]);
+      expect(CAPSTONES[key].pushback).toBeNull();
+    }
+  });
+
+  it("SurveyCraft needs the survey link, its name and the document", async () => {
+    const base = { userId: U, cert: scCert, cfg: sc, kind: "practical" as const };
+    expect(await submitPiece(service, { ...base, filePath: doc, note: "Decision-rights pulse" })).toMatchObject({ ok: false, status: 400 });
+    expect(await submitPiece(service, { ...base, link: "https://www.mosaicsurvey.com/s/abc", note: "Decision-rights pulse" })).toMatchObject({ ok: false, status: 400 });
+    expect(await submitPiece(service, { ...base, filePath: doc, link: "https://www.mosaicsurvey.com/s/abc" })).toMatchObject({ ok: false, status: 400 });
+    const ok = await submitPiece(service, { ...base, filePath: doc, link: "https://www.mosaicsurvey.com/s/abc", note: "Decision-rights pulse" });
+    expect(ok).toMatchObject({ ok: true, attempt: 1 });
+    expect(db.certification_pushback_answers).toHaveLength(0);
+    const row = db.certification_submissions.find((r) => r.kind === "practical");
+    expect(row).toMatchObject({ link_url: "https://www.mosaicsurvey.com/s/abc", learner_note: "Decision-rights pulse" });
+
+    // Award waits for the practical, then records its date.
+    expect(await awardCertification(service, { certificationId: "cert-sc", userId: U, awardedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    expect(await reviewPiece(service, { submissionId: (ok as any).submissionId, reviewerId: "chris", decision: "passed", now: new Date("2026-11-30T09:00:00Z") })).toMatchObject({ ok: true });
+    expect(await awardCertification(service, { certificationId: "cert-sc", userId: U, awardedBy: "chris" })).toMatchObject({ ok: true });
+    const held = db.user_certifications.find((r) => r.certification_id === "cert-sc");
+    expect(held?.metadata.pieces_passed_on).toEqual({ practical: "2026-11-30" });
+  });
+
+  it("a practical can't be handed in for a credential that doesn't ask for one", async () => {
+    expect(await submitPiece(service, { userId: U, cert, cfg, kind: "practical", filePath: memoPath })).toMatchObject({ ok: false, status: 404 });
   });
 });
