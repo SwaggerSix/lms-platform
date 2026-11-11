@@ -41,6 +41,7 @@ interface Piece {
   status: Status;
   submittedAt: string;
   reviewedAt: string | null;
+  reopenedAt: string | null;
   feedback: string | null;
   fileName: string | null;
   hasFile: boolean;
@@ -85,11 +86,15 @@ const STATUS_LABEL: Record<Status, { text: string; cls: string }> = {
 };
 
 function Chip({ label, piece }: { label: string; piece: Piece | null }) {
-  const s = piece ? STATUS_LABEL[piece.status] : { text: 'Not handed in', cls: 'bg-gray-100 text-gray-600' };
+  const s = !piece
+    ? { text: 'Not handed in', cls: 'bg-gray-100 text-gray-600' }
+    : piece.status === 'not_passed' && piece.reopenedAt
+      ? { text: 'Reopened', cls: 'bg-amber-100 text-amber-800' }
+      : STATUS_LABEL[piece.status];
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${s.cls}`}>
       {label}: {s.text}
-      {piece && piece.attempt > 1 ? ' (2nd)' : ''}
+      {piece && piece.attempt > 1 ? ` (attempt ${piece.attempt})` : ''}
     </span>
   );
 }
@@ -111,6 +116,29 @@ function PieceReview({
   const fileHref = (position?: number) =>
     `/api/certifications/${certificationId}/capstone/file?submission_id=${piece.id}${position ? `&position=${position}` : ''}`;
   const allAnswered = piece.pushback.length > 0 && piece.pushback.every((p) => p.answeredAt);
+
+  const [reopenNote, setReopenNote] = useState('');
+  const [confirmReopen, setConfirmReopen] = useState(false);
+  const reopen = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/certifications/award/reopen', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submission_id: piece.id, ...(reopenNote.trim() ? { note: reopenNote.trim() } : {}) }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'Could not reopen it');
+      setReopenNote('');
+      setConfirmReopen(false);
+      await onMarked();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const mark = async (decision: Status) => {
     setBusy(true);
@@ -238,6 +266,44 @@ function PieceReview({
       ) : (
         piece.feedback && <p className="mt-2 whitespace-pre-wrap text-xs text-gray-600">Your feedback: {piece.feedback}</p>
       )}
+
+      {piece.status === 'not_passed' &&
+        (piece.reopenedAt ? (
+          <p className="mt-2 text-xs font-medium text-amber-700">
+            Reopened {fmt(piece.reopenedAt)}: waiting for the learner&rsquo;s next attempt.
+          </p>
+        ) : confirmReopen ? (
+          <div className="mt-3 space-y-2 rounded-md bg-amber-50 p-2">
+            <p className="text-xs text-amber-900">
+              After your call: let the learner hand this piece in once more. They&rsquo;ll be emailed.
+            </p>
+            <textarea
+              value={reopenNote}
+              onChange={(e) => setReopenNote(e.target.value)}
+              maxLength={2000}
+              rows={2}
+              placeholder="Optional note for the learner (e.g. what you agreed on the call)"
+              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            />
+            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+            <div className="flex gap-2">
+              <button type="button" disabled={busy} onClick={reopen} className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
+                Reopen
+              </button>
+              <button type="button" onClick={() => setConfirmReopen(false)} className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmReopen(true)}
+            className="mt-3 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-50"
+          >
+            Reopen for another attempt
+          </button>
+        ))}
     </div>
   );
 }

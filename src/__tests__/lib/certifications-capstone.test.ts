@@ -17,6 +17,7 @@ import {
   reviewPiece,
   startUpload,
   submitPiece,
+  reopenPiece,
   learnerBlockedReason,
   type CapstoneCert,
 } from "@/lib/certifications/capstone-service";
@@ -77,6 +78,7 @@ function table(name: string) {
     eq: (c: string, v: unknown) => (f.push((r) => r[c] === v), q),
     in: (c: string, v: unknown[]) => (f.push((r) => v.includes(r[c])), q),
     is: (c: string, v: unknown) => (f.push((r) => (r[c] ?? null) === v), q),
+    gt: (c: string, v: any) => (f.push((r) => r[c] > v), q),
     order: () => q,
     limit: (k: number) => ((lim = k), q),
     maybeSingle: async () => {
@@ -344,3 +346,44 @@ describe("one Mosaic Practitioner capstone across MOS-100, MOS-230 and MOS-240",
     expect((vi.mocked(sendEmail).mock.lastCall?.[0] as any).text).toContain("set up a call");
   });
 });
+
+describe("reopen after the call", () => {
+  async function failTwice() {
+    const first = await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath });
+    await reviewPiece(service, { submissionId: (first as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "Add limits." });
+    const second = await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath });
+    await reviewPiece(service, { submissionId: (second as any).submissionId, reviewerId: "chris", decision: "not_passed", feedback: "Still missing." });
+    return (second as any).submissionId as string;
+  }
+
+  it("blocks a third hand-in until the assessor reopens it, then allows exactly one more", async () => {
+    const failed = await failTwice();
+    expect(await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath })).toMatchObject({ ok: false, status: 409 });
+
+    vi.mocked(sendEmail).mockClear();
+    expect(await reopenPiece(service, { submissionId: failed, reopenedBy: "chris", note: "As agreed, focus on limits." })).toMatchObject({ ok: true });
+    const mail = vi.mocked(sendEmail).mock.lastCall?.[0] as any;
+    expect(mail.to).toBe("learner@example.com");
+    expect(mail.subject).toContain("open again");
+    expect(mail.text).toContain("As agreed, focus on limits.");
+
+    // Reopening twice is refused.
+    expect(await reopenPiece(service, { submissionId: failed, reopenedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+
+    const third = await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath });
+    expect(third).toMatchObject({ ok: true, attempt: 3 });
+    // The reopened hand-in can't be reopened again once a newer attempt exists,
+    // and attempt 3 is marked Pass or Not passed.
+    expect(await reviewPiece(service, { submissionId: (third as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "x" })).toMatchObject({ ok: false, status: 400 });
+    expect(await reviewPiece(service, { submissionId: (third as any).submissionId, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: true });
+    expect(await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath })).toMatchObject({ ok: false, status: 409 });
+  });
+
+  it("only reopens a piece marked Not passed", async () => {
+    const first = await submitPiece(service, { userId: U, cert, cfg, kind: "memo", filePath: memoPath });
+    expect(await reopenPiece(service, { submissionId: (first as any).submissionId, reopenedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    await reviewPiece(service, { submissionId: (first as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "x" });
+    expect(await reopenPiece(service, { submissionId: (first as any).submissionId, reopenedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+  });
+});
+

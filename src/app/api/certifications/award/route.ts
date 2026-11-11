@@ -174,6 +174,7 @@ function workFor(cfg: CapstoneConfig, mine: SubmissionRow[], pushback: PushbackR
           status: s.status,
           submittedAt: s.submitted_at,
           reviewedAt: s.reviewed_at,
+          reopenedAt: s.reopened_at ?? null,
           feedback: s.feedback,
           fileName: s.file_name,
           hasFile: !!s.file_path,

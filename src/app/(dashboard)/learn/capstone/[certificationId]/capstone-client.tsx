@@ -19,6 +19,7 @@ interface Submission {
   link: string | null;
   reviewedAt: string | null;
   feedback: string | null;
+  reopenedAt?: string | null;
 }
 
 interface Question {
@@ -68,9 +69,13 @@ function StatusLine({ s, turnaround }: { s: Submission; turnaround: string }) {
     submitted: { text: `Handed in ${fmtDate(s.submittedAt)}. Your assessor will reply in ${turnaround}.`, cls: "bg-blue-50 text-blue-800 border-blue-200" },
     passed: { text: `Passed${s.reviewedAt ? ` on ${fmtDate(s.reviewedAt)}` : ""}.`, cls: "bg-green-50 text-green-800 border-green-200" },
     resubmit: { text: "Not there yet. Read the feedback below and hand in your one resubmission.", cls: "bg-amber-50 text-amber-800 border-amber-200" },
-    not_passed: { text: "Your resubmission didn't meet the bar. Contact your assessor about next steps.", cls: "bg-red-50 text-red-800 border-red-200" },
+    not_passed: { text: "Your resubmission didn't meet the bar. Dr. Chris Cancialosi will be in touch to set up a call about next steps.", cls: "bg-red-50 text-red-800 border-red-200" },
   };
-  const l = label[s.status];
+  // Reopened after the call: the learner can hand this piece in once more.
+  const l =
+    s.status === "not_passed" && s.reopenedAt
+      ? { text: `Reopened on ${fmtDate(s.reopenedAt)} after your call. Hand in your next attempt below.`, cls: "bg-amber-50 text-amber-800 border-amber-200" }
+      : label[s.status];
   return (
     <div className={`mt-3 rounded-lg border px-3 py-2 text-sm ${l.cls}`}>
       <p>

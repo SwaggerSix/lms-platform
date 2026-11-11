@@ -53,6 +53,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     submissions: subs.map((s) => ({
       id: s.id, kind: s.kind, attempt: s.attempt, status: s.status, submittedAt: s.submitted_at,
       fileName: s.file_name, hasFile: !!s.file_path, link: s.link_url, reviewedAt: s.reviewed_at, feedback: s.feedback,
+      reopenedAt: s.reopened_at ?? null,
     })),
     next: Object.fromEntries(cfg.pieces.map((p) => [p.kind, nextAttempt(subs, p.kind)])),
     pushback:
