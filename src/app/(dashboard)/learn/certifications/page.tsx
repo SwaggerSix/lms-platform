@@ -41,17 +41,21 @@ export default async function CertificationsPage() {
       expires_at,
       status,
       certificate_url,
+      verification_code,
       metadata,
       certification:certifications (
         id,
         name,
         description,
         recertification_course_id,
+        course_id,
+        completion_course:courses!certifications_course_id_fkey ( title ),
         recertification_course:courses!certifications_recertification_course_id_fkey ( title )
       )
     `
     )
     .eq("user_id", profile.id)
+    .neq("status", "revoked")
     .order("issued_at", { ascending: false })
     .limit(100);
 
@@ -66,7 +70,8 @@ export default async function CertificationsPage() {
     return {
       id: row.id,
       name: cert?.name ?? "Certification",
-      issuingCourse: cert?.recertification_course?.title ?? cert?.name ?? "—",
+      issuingCourse:
+        cert?.completion_course?.title ?? cert?.recertification_course?.title ?? cert?.name ?? "—",
       courseId: cert?.recertification_course_id ?? null,
       issueDate: issuedAt,
       expiryDate: expiresAt,

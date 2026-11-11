@@ -7,6 +7,7 @@ import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
 import { trackLearningEvent } from "@/lib/ai/track-event";
 import { createEvaluationAssignments } from "@/lib/evaluations/create-assignments";
 import { getVersionSnapshotStructure } from "@/lib/courses/versioning";
+import { issueCourseCompletionCertificates } from "@/lib/certifications/issue";
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
@@ -204,38 +205,27 @@ export async function PATCH(request: NextRequest) {
             })
             .eq("id", enrollment_id);
 
-          // Check if course has an associated certification and create user_certification
-          const { data: certification } = await service
-            .from("certifications")
-            .select("id")
-            .eq("course_id", enrollment.course_id)
-            .eq("status", "active")
-            .single();
-
-          if (certification) {
-            try {
-              // Record which course version was completed for provenance. The
-              // enrollment is the system of record; this stamps the same
-              // reference onto the certification so an issued cert can be
-              // traced to the exact version the learner finished.
-              const certMetadata = enrollment.course_version_id
-                ? {
-                    course_version_id: enrollment.course_version_id,
-                    course_version_number: versionSnapshot?.versionNumber ?? null,
-                  }
-                : {};
-              await service
-                .from("user_certifications")
-                .insert({
-                  user_id: profile.id,
-                  certification_id: certification.id,
-                  issued_at: new Date().toISOString(),
-                  expires_at: null,
-                  metadata: certMetadata,
-                });
-            } catch {
-              // Ignore duplicate certification
-            }
+          // Issue the course's completion certificate(s). Staff-awarded
+          // credentials (e.g. Mosaic Certified) have no course link and are
+          // never issued here — see src/lib/certifications/issue.ts.
+          try {
+            // Record which course version was completed for provenance. The
+            // enrollment is the system of record; this stamps the same
+            // reference onto the certificate so it can be traced to the exact
+            // version the learner finished.
+            const certMetadata = enrollment.course_version_id
+              ? {
+                  course_version_id: enrollment.course_version_id,
+                  course_version_number: versionSnapshot?.versionNumber ?? null,
+                }
+              : {};
+            await issueCourseCompletionCertificates(service, {
+              userId: profile.id,
+              courseId: enrollment.course_id,
+              metadata: certMetadata,
+            });
+          } catch {
+            // A certificate failure must not block completion
           }
 
           // Award bonus points for course completion, per the configured rule.
