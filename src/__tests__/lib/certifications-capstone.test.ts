@@ -147,7 +147,7 @@ describe("rules", () => {
     for (let i = 0; i < 50; i++) {
       const p = drawPrompts(cfg.pushback!.bank.length, 3);
       expect(new Set(p).size).toBe(3);
-      expect(p.every((x) => x >= 0 && x < 8)).toBe(true);
+      expect(p.every((x) => x >= 0 && x < cfg.pushback!.bank.length)).toBe(true);
     }
   });
   it("allows one resubmission, then pass or not pass", () => {
@@ -306,6 +306,17 @@ describe("Specialist practicals (MOS-210, MOS-220)", () => {
 });
 
 describe("one Mosaic Practitioner capstone across MOS-100, MOS-230 and MOS-240", () => {
+  it("briefing: ten pushback prompts, the two newest on the change-readiness stories and the Culture Dig, and a brief limited to what Northwind has by November 18", () => {
+    const cfg = CAPSTONES["mosaic-practitioner"];
+    const b = cfg.pieces.find((p) => p.kind === "briefing")!;
+    expect(cfg.pushback!.bank).toHaveLength(10);
+    expect(cfg.pushback!.bank[8].text).toContain("142 stories");
+    expect(cfg.pushback!.bank[9].text).toContain("Culture Dig");
+    const text = JSON.stringify(b);
+    expect(text).toContain("Use only what Northwind has by then");
+    expect(text).not.toContain("three tools together");
+  });
+
   it("has four pieces, and the Culture Dig and Mosaic Signal Specialists are gone", () => {
     expect(cfg.pieces.map((p) => p.kind)).toEqual(["memo", "dig", "signal", "briefing"]);
     expect(CAPSTONES["culture-dig-specialist"]).toBeUndefined();

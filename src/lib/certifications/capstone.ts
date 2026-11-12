@@ -80,7 +80,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
   "mosaic-practitioner": {
     title: "Capstone: Northwind Health",
     intro:
-      "One client, three tools. Hand in four pieces of work on Northwind Health: the Culture Mosaic memo, the Culture Dig plan and synthesis, the Mosaic Signal memo, and your recorded board briefing that brings them together. Dr. Chris Cancialosi scores each, usually within 10 business days. If a piece doesn't meet the bar yet, you'll get written feedback and one resubmission; if the resubmission doesn't either, he'll set up a call with you. Pass all four and you're Mosaic Practitioner Certified for five years.",
+      "One client, three tools. Hand in four pieces of work on Northwind Health: the Culture Mosaic memo, the Culture Dig plan and synthesis, the Mosaic Signal memo, and your recorded board briefing on what Northwind knows by November 18. Dr. Chris Cancialosi scores each, usually within 10 business days. If a piece doesn't meet the bar yet, you'll get written feedback and one resubmission; if the resubmission doesn't either, he'll set up a call with you. Pass all four and you're Mosaic Practitioner Certified for five years.",
     summary: "Hand in the four pieces of your Northwind capstone. It opens once you've finished MOS-100, MOS-230 and MOS-240.",
     pieces: [
       {
@@ -138,7 +138,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         linkLabel: "…or paste a link to the recording",
         pushback: true,
         instructions: [
-          "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18. Bring the three tools together: what the Culture Mosaic shows, what the dig and the stories add, and what you recommend next.",
+          "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18. Use only what Northwind has by then: the Culture Mosaic, the October progress check, the change-readiness stories and the Team Report. Keep Jordan's 360 out. Tell one story: what you learned, whether the work since March made a difference, and what Northwind should do next, including whether a Culture Dig or another Mosaic Signal study should come next, and why.",
           "Use up to 5 slides or exhibits, with your camera on and your slides visible (a screen-share recording is fine).",
           "Paste a link to the recording (Loom, unlisted YouTube, Google Drive or OneDrive with view access), or upload a video file up to 50 MB.",
           "Then answer three pushback questions, shown one at a time only after you hand in the briefing. You get 60 seconds to think before each one and up to 2 minutes to answer, recorded here on your camera.",
@@ -158,6 +158,8 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         { speaker: "CEO", text: "Our Purpose score is 88th percentile. Can we tell the board our culture drives our patient satisfaction?" },
         { speaker: "Board member", text: "What's the benchmark? Are we above or below other health systems?" },
         { speaker: "VP Clinic Ops", text: "The Pharmacy team told me they're struggling. Why aren't they in your report?" },
+        { speaker: "CFO", text: "142 stories out of 640 people. Isn't 'willing but not able' just a few loud voices?" },
+        { speaker: "CEO", text: "You're recommending a Culture Dig. Why spend more? Don't we already know the answer?" },
       ],
     },
     turnaround: "about 10 business days",
