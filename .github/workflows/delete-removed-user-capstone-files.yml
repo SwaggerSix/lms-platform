@@ -1,0 +1,31 @@
+name: Delete removed user's capstone files
+
+# One click: deletes the capstone hand-in files (private bucket
+# certification-submissions) of an LMS user who has already been deleted,
+# e.g. a test learner. Refuses if the user still exists.
+# Uses the SUPABASE_SERVICE_ROLE_KEY repository secret.
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_id:
+        description: "The removed user's LMS id (a UUID)"
+        required: true
+        type: string
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Delete
+        env:
+          SUPABASE_URL: https://aexpaugbycnaxbiyidmo.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          USER_ID: ${{ inputs.user_id }}
+        run: node scripts/delete-removed-user-capstone-files.mjs
