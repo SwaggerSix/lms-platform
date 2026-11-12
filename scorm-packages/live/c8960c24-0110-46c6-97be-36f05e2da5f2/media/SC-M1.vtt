@@ -1,0 +1,306 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:04.230
+Module 1: SurveyCraft and
+the client's workspace.
+
+00:00:04.230 --> 00:00:07.251
+Before you write a single question,
+
+00:00:07.251 --> 00:00:12.775
+settle three things: where the
+survey will live, who can see it,
+
+00:00:12.775 --> 00:00:16.055
+and how it moves from draft to closed.
+
+00:00:16.055 --> 00:00:17.868
+About thirty minutes.
+
+00:00:18.367 --> 00:00:22.661
+SurveyCraft is the survey
+platform behind the Mosaic tools.
+
+00:00:22.661 --> 00:00:26.956
+It runs everyday surveys you
+design yourself, 360 feedback,
+
+00:00:26.956 --> 00:00:30.158
+and the Mosaic assessments,
+developed by Dr.
+
+00:00:30.158 --> 00:00:33.216
+Chris Cancialosi, like the Culture Mosaic.
+
+00:00:33.216 --> 00:00:37.219
+This course is about the
+first kind, the custom survey.
+
+00:00:37.219 --> 00:00:42.387
+Every survey belongs to one organization,
+which we'll call a workspace.
+
+00:00:42.387 --> 00:00:47.336
+People get in through a membership,
+and every membership has a role.
+
+00:00:47.833 --> 00:00:52.446
+Custom surveys and instruments are
+built and sent in the same place,
+
+00:00:52.446 --> 00:00:54.684
+but they behave very differently.
+
+00:00:54.684 --> 00:00:57.669
+In a custom survey, the
+questions are yours.
+
+00:00:57.669 --> 00:01:00.314
+You write them and you can change them.
+
+00:01:00.314 --> 00:01:05.198
+What you get back is charts, comparisons
+and exports inside SurveyCraft.
+
+00:01:05.198 --> 00:01:10.353
+There's no benchmark, and you can
+duplicate the survey as often as you like.
+
+00:01:10.353 --> 00:01:14.491
+An instrument's items are locked,
+so results stay comparable.
+
+00:01:14.491 --> 00:01:16.526
+It produces a designed report,
+
+00:01:16.526 --> 00:01:21.478
+the Culture Mosaic and Leadership
+Mosaic can add to the Mosaic benchmark,
+
+00:01:21.478 --> 00:01:24.327
+and each one is bought as a single launch.
+
+00:01:24.327 --> 00:01:28.261
+So if a Mosaic tool answers
+the client's question, use it.
+
+00:01:28.261 --> 00:01:32.738
+Write a custom survey for the
+questions the instruments don't ask.
+
+00:01:33.233 --> 00:01:38.862
+In the sidebar, the top group is the
+platform: Dashboard, Surveys, 360 Feedback,
+
+00:01:38.862 --> 00:01:42.310
+Projects, Question Library,
+Themes and Purchases.
+
+00:01:42.310 --> 00:01:48.150
+Below it, a shaded Instruments block lists
+the Mosaic tools, usually marked to buy.
+
+00:01:48.150 --> 00:01:50.824
+Bought ones are set up from Purchases.
+
+00:01:50.824 --> 00:01:52.583
+Two account types matter.
+
+00:01:52.583 --> 00:01:57.509
+A buyer account is created when a
+client claims something they bought.
+
+00:01:57.509 --> 00:02:02.716
+It shows only Purchases and the
+Instruments block, with no survey builder.
+
+00:02:02.716 --> 00:02:08.134
+A licensed workspace has a SurveyCraft
+platform license and the full builder.
+
+00:02:08.134 --> 00:02:11.230
+The license doesn't
+include the instruments,
+
+00:02:11.230 --> 00:02:15.029
+and licensing a buyer account
+switches its builder on.
+
+00:02:15.533 --> 00:02:18.838
+Alex wants the pulse in
+Northwind's own account.
+
+00:02:18.838 --> 00:02:21.385
+Choose where you'd build it, and why.
+
+00:02:21.900 --> 00:02:26.441
+There are four roles, and each
+includes everything below it.
+
+00:02:26.441 --> 00:02:29.847
+A Viewer reads surveys,
+responses and charts,
+
+00:02:29.847 --> 00:02:32.798
+but can't export the raw response file.
+
+00:02:32.798 --> 00:02:38.020
+An Editor builds, tests, publishes
+and sends surveys, and can export.
+
+00:02:38.020 --> 00:02:41.426
+An Admin also manages
+who's in the workspace.
+
+00:02:41.426 --> 00:02:43.772
+And an Owner can do everything.
+
+00:02:43.772 --> 00:02:46.194
+New invitations start as Viewer.
+
+00:02:46.194 --> 00:02:49.146
+Give people the least access they need.
+
+00:02:49.633 --> 00:02:52.450
+Here's the rule that catches people out.
+
+00:02:52.450 --> 00:02:54.563
+There's no per-survey sharing.
+
+00:02:54.563 --> 00:02:59.070
+Anyone in a workspace, at any
+role, can open every survey in it,
+
+00:02:59.070 --> 00:03:01.394
+read the answers and export them.
+
+00:03:01.394 --> 00:03:06.746
+So never invite a client into a workspace
+that holds other clients' surveys.
+
+00:03:06.746 --> 00:03:11.393
+The Mosaic team follows the same
+rule for its own partner surveys.
+
+00:03:11.900 --> 00:03:17.309
+Every survey has five numbered
+steps: Builder, Preview, Distribute,
+
+00:03:17.309 --> 00:03:19.246
+Responses and Analytics.
+
+00:03:19.246 --> 00:03:24.251
+Then come the optional tabs:
+Logic, Theme, Settings and Pulse.
+
+00:03:24.251 --> 00:03:29.014
+A 360 survey is sent and read
+from its 360 project instead.
+
+00:03:29.014 --> 00:03:35.634
+And if you get stuck, Request Assistance
+in the builder sends a note to the Mosaic
+
+00:03:35.634 --> 00:03:36.037
+team.
+
+00:03:36.533 --> 00:03:38.527
+A survey starts as a Draft.
+
+00:03:38.527 --> 00:03:40.078
+Nobody can answer it.
+
+00:03:40.078 --> 00:03:44.804
+Publish makes it Live and creates
+its link, but contacts nobody.
+
+00:03:44.804 --> 00:03:50.121
+Unpublish takes it back to Draft, but
+only while nobody has finished it.
+
+00:03:50.121 --> 00:03:54.994
+Close stops the link taking answers
+and shows your closed message,
+
+00:03:54.994 --> 00:03:57.431
+and everything collected is kept.
+
+00:03:57.431 --> 00:04:00.680
+Reopen makes it Live
+again on the same link.
+
+00:04:00.680 --> 00:04:04.077
+Archive puts a survey
+away with its responses,
+
+00:04:04.077 --> 00:04:06.883
+and Restore brings it back as a Draft.
+
+00:04:06.883 --> 00:04:12.643
+One detail worth knowing: a Close Date
+in Settings stops answers at that time,
+
+00:04:12.643 --> 00:04:17.000
+but the status still says Live
+until someone presses Close.
+
+00:04:17.000 --> 00:04:22.686
+You might also see Paused, or Expired
+for a bought instrument that missed its
+
+00:04:22.686 --> 00:04:23.867
+launch deadline.
+
+00:04:24.367 --> 00:04:26.692
+Match each action to what it does.
+
+00:04:27.200 --> 00:04:28.695
+Projects are folders.
+
+00:04:28.695 --> 00:04:30.903
+Use one per client or per year.
+
+00:04:30.903 --> 00:04:35.033
+Duplicate copies a survey with
+its questions and settings,
+
+00:04:35.033 --> 00:04:37.881
+which is handy for next quarter's pulse.
+
+00:04:37.881 --> 00:04:42.296
+But a survey that came from a
+purchase, like a Culture Mosaic,
+
+00:04:42.296 --> 00:04:44.860
+can't be duplicated into a free one.
+
+00:04:44.860 --> 00:04:47.210
+To run it again, you buy another.
+
+00:04:47.700 --> 00:04:50.286
+Time for a quick check before Module 2.
+
+00:04:50.800 --> 00:04:51.555
+To sum up.
+
+00:04:51.555 --> 00:04:55.936
+Custom surveys are yours to
+write; instruments are locked,
+
+00:04:55.936 --> 00:04:59.032
+reported and bought one launch at a time.
+
+00:04:59.032 --> 00:05:01.373
+A buyer account has no builder.
+
+00:05:01.373 --> 00:05:06.056
+Access is workspace-wide, and
+Viewers can read every response.
+
+00:05:06.056 --> 00:05:08.397
+And publishing contacts nobody.
+
+00:05:08.397 --> 00:05:13.004
+Next, Module 2: designing a
+survey that answers the question.
+

@@ -1,0 +1,805 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:02.418
+Module 8: interpreting Mosaic data.
+
+00:00:02.418 --> 00:00:06.287
+This is the module the rest
+of the course builds toward.
+
+00:00:06.287 --> 00:00:10.570
+You'll learn to read every number
+and chart the tools produce,
+
+00:00:10.570 --> 00:00:14.923
+say how confident you are and
+why, tell real change from noise,
+
+00:00:14.923 --> 00:00:19.966
+and turn a sixty-slide report into
+three to five findings you can defend.
+
+00:00:19.966 --> 00:00:23.144
+It takes about three
+hours, so take your time.
+
+00:00:23.633 --> 00:00:26.030
+Anyone can generate a Mosaic report.
+
+00:00:26.030 --> 00:00:27.628
+It takes a button press.
+
+00:00:27.628 --> 00:00:32.356
+What a client pays a practitioner
+for is knowing what the report means,
+
+00:00:32.356 --> 00:00:33.688
+and what it doesn't.
+
+00:00:33.688 --> 00:00:37.150
+Three questions sit under
+everything in this module.
+
+00:00:37.150 --> 00:00:39.747
+What does this number actually measure?
+
+00:00:39.747 --> 00:00:45.207
+A fifty-two on a tile, a fifty-second
+percentile and a slider average of fifty-two
+
+00:00:45.207 --> 00:00:47.737
+are three completely different things.
+
+00:00:47.737 --> 00:00:49.002
+How sure can we be?
+
+00:00:49.002 --> 00:00:53.863
+A score from four hundred people and
+a score from eight deserve different
+
+00:00:53.863 --> 00:00:54.596
+confidence.
+
+00:00:54.596 --> 00:00:55.395
+And so what?
+
+00:00:55.395 --> 00:00:59.656
+A finding earns its place when it
+helps someone make a decision.
+
+00:01:00.167 --> 00:01:04.290
+Open any Mosaic report and you'll
+meet four kinds of number.
+
+00:01:04.290 --> 00:01:08.276
+First, the item mean: the
+average answer to one statement.
+
+00:01:08.276 --> 00:01:11.849
+In the Culture Mosaic that's
+on a one-to-five scale,
+
+00:01:11.849 --> 00:01:15.079
+and in the Leadership
+Mosaic it's one to seven.
+
+00:01:15.079 --> 00:01:17.690
+Second, the zero-to-one-hundred score.
+
+00:01:17.690 --> 00:01:22.019
+It takes an average and places
+it on a common ruler, so a tile,
+
+00:01:22.019 --> 00:01:25.593
+a dimension or a domain can
+be compared at a glance.
+
+00:01:25.593 --> 00:01:27.105
+Third, the percentile.
+
+00:01:27.105 --> 00:01:31.365
+A percentile doesn't tell you
+how well people rated something.
+
+00:01:31.365 --> 00:01:36.176
+It tells you where that rating ranks
+against a comparison group: other
+
+00:01:36.176 --> 00:01:41.536
+organizations for the Culture Mosaic,
+other leaders for the Leadership Mosaic.
+
+00:01:41.536 --> 00:01:44.078
+And fourth, Typical Scores of Others,
+
+00:01:44.078 --> 00:01:47.514
+a reference point from that
+same comparison group.
+
+00:01:47.514 --> 00:01:51.706
+Most interpretation errors start
+with mixing up two of these.
+
+00:01:52.200 --> 00:01:57.464
+This table puts the measures for each
+tool side by side: the answer scale,
+
+00:01:57.464 --> 00:02:00.879
+how the zero-to-one-hundred
+score is calculated,
+
+00:02:00.879 --> 00:02:05.076
+what the percentile compares
+against, what "typical" means,
+
+00:02:05.076 --> 00:02:07.068
+and how confidence is shown.
+
+00:02:07.068 --> 00:02:10.198
+It's in your job aids
+too, so keep it handy.
+
+00:02:10.700 --> 00:02:13.725
+The Culture Mosaic uses
+a one-to-five scale,
+
+00:02:13.725 --> 00:02:16.750
+and the Leadership Mosaic
+uses one to seven.
+
+00:02:16.750 --> 00:02:21.562
+The words at each end are the same,
+but the numbers aren't comparable.
+
+00:02:21.562 --> 00:02:25.756
+A four on the Culture Mosaic is
+three-quarters of the way up.
+
+00:02:25.756 --> 00:02:29.606
+A four on the Leadership Mosaic
+is exactly the midpoint.
+
+00:02:29.606 --> 00:02:34.350
+So never compare a Culture Mosaic
+mean with a Leadership Mosaic mean.
+
+00:02:34.350 --> 00:02:39.437
+And in the Leadership Mosaic, a skipped
+answer is left out of the average,
+
+00:02:39.437 --> 00:02:40.950
+never counted as zero.
+
+00:02:41.467 --> 00:02:45.949
+The zero-to-one-hundred score is
+the mean placed on a common ruler,
+
+00:02:45.949 --> 00:02:50.097
+with the bottom of the scale at
+zero and the top at a hundred.
+
+00:02:50.097 --> 00:02:53.643
+On the Culture Mosaic, a
+mean of three becomes fifty.
+
+00:02:53.643 --> 00:02:57.322
+On the Leadership Mosaic, a
+mean of four becomes fifty.
+
+00:02:57.322 --> 00:03:02.608
+For example, others rated Jordan Reyes
+four point six on Adapt, which is sixty,
+
+00:03:02.608 --> 00:03:06.956
+and Jordan rated themselves five
+point nine, which is eighty-two.
+
+00:03:06.956 --> 00:03:08.897
+Two things this score is not.
+
+00:03:08.897 --> 00:03:13.379
+It's not the percentage of people
+who agreed, and it's not a grade.
+
+00:03:13.379 --> 00:03:14.784
+There's no pass mark.
+
+00:03:14.784 --> 00:03:20.337
+A sixty is simply sixty percent of the way
+from the bottom of the scale to the top.
+
+00:03:20.833 --> 00:03:23.473
+A tile pools the answers to its items,
+
+00:03:23.473 --> 00:03:26.946
+and the two instruments
+pool slightly differently.
+
+00:03:26.946 --> 00:03:30.628
+In the Culture Mosaic, every
+response counts equally,
+
+00:03:30.628 --> 00:03:34.796
+which keeps leader-only items
+from carrying outsized weight.
+
+00:03:34.796 --> 00:03:39.451
+Reverse-scored items are flipped
+first, so higher is always better.
+
+00:03:39.451 --> 00:03:43.063
+In the Leadership Mosaic,
+every item counts equally.
+
+00:03:43.063 --> 00:03:48.273
+On the Culture Mosaic, a dimension is
+the plain average of its three tiles.
+
+00:03:48.273 --> 00:03:50.565
+Northwind's Adapt is fifty-eight.
+
+00:03:50.565 --> 00:03:55.150
+You'll sometimes see an item that
+looks out of line with its tile.
+
+00:03:55.150 --> 00:03:58.554
+That's normal, and it's
+why the item pages exist.
+
+00:03:59.067 --> 00:04:03.090
+A percentile answers one question:
+out of the comparison group,
+
+00:04:03.090 --> 00:04:04.942
+what share scored below this?
+
+00:04:04.942 --> 00:04:09.986
+In the Culture Mosaic, your organization's
+average on an item is ranked against
+
+00:04:09.986 --> 00:04:12.732
+other organizations'
+averages on that item.
+
+00:04:12.732 --> 00:04:17.777
+In the Leadership Mosaic, a leader is
+ranked against other leaders in the pool,
+
+00:04:17.777 --> 00:04:19.884
+for the same item and rater type.
+
+00:04:19.884 --> 00:04:22.439
+Percentiles run from one to ninety-nine.
+
+00:04:22.439 --> 00:04:27.611
+Northwind's purpose item scored four point
+four, at the eighty-eighth percentile,
+
+00:04:27.611 --> 00:04:32.273
+so Northwind rated it higher than
+about eighty-eight percent of benchmark
+
+00:04:32.273 --> 00:04:33.167
+organizations.
+
+00:04:33.167 --> 00:04:33.997
+Two cautions.
+
+00:04:33.997 --> 00:04:36.743
+A low percentile can
+sit on a decent score,
+
+00:04:36.743 --> 00:04:41.405
+if most organizations rate that item
+highly, so always read both numbers.
+
+00:04:41.405 --> 00:04:44.981
+And the comparison group is
+the gothamCulture benchmark,
+
+00:04:44.981 --> 00:04:47.152
+not every organization everywhere.
+
+00:04:47.152 --> 00:04:51.303
+Say "compared with organizations
+in the gothamCulture benchmark",
+
+00:04:51.303 --> 00:04:55.517
+not "compared with the industry",
+and don't describe what's in it.
+
+00:04:56.033 --> 00:05:01.400
+Both reports show "Typical Scores of
+Others", but they mean different things.
+
+00:05:01.400 --> 00:05:07.184
+On the Culture Mosaic, it's a single marker:
+the median of benchmark organizations'
+
+00:05:07.184 --> 00:05:10.599
+averages, so half scored
+above it and half below.
+
+00:05:10.599 --> 00:05:14.989
+On the Leadership Mosaic, it's
+a grey band: the pool's average,
+
+00:05:14.989 --> 00:05:17.568
+plus or minus one standard deviation.
+
+00:05:17.568 --> 00:05:22.028
+Inside the band is unremarkable,
+and outside it is worth a look.
+
+00:05:22.028 --> 00:05:23.979
+And typical is not a target.
+
+00:05:23.979 --> 00:05:29.555
+An organization above typical on Customer
+may still have a Customer problem that
+
+00:05:29.555 --> 00:05:31.227
+matters to its strategy.
+
+00:05:31.227 --> 00:05:35.060
+One below typical may be
+making a deliberate trade-off.
+
+00:05:35.567 --> 00:05:40.261
+Reports turn numbers into tile sizes
+and shading so patterns jump out.
+
+00:05:40.261 --> 00:05:43.749
+Know what the shading is
+made of before you read it.
+
+00:05:43.749 --> 00:05:47.303
+On the Culture Mosaic diamond
+and comparison heatmap,
+
+00:05:47.303 --> 00:05:50.992
+size and shade come from the
+zero-to-one-hundred score.
+
+00:05:50.992 --> 00:05:55.150
+On item heatmaps and on Leadership
+Mosaic comparison diamonds,
+
+00:05:55.150 --> 00:05:56.961
+they come from percentiles.
+
+00:05:56.961 --> 00:06:01.924
+So watch out: a big tile on the Culture
+Mosaic diamond means a high score,
+
+00:06:01.924 --> 00:06:07.490
+while a big tile on a Leadership Mosaic
+comparison diamond means a high percentile.
+
+00:06:07.490 --> 00:06:10.910
+They look the same, but
+they're different measures.
+
+00:06:11.400 --> 00:06:14.040
+Quick check on the
+toolkit before we move on.
+
+00:06:14.040 --> 00:06:14.979
+It isn't scored.
+
+00:06:15.467 --> 00:06:18.877
+Every item row shows N,
+how many people answered.
+
+00:06:18.877 --> 00:06:21.105
+Look at it before anything else.
+
+00:06:21.105 --> 00:06:25.142
+Northwind's purpose item has
+four hundred and ten answers,
+
+00:06:25.142 --> 00:06:28.205
+so one person more or
+less wouldn't move it.
+
+00:06:28.205 --> 00:06:33.008
+Its leader-only items have fifty-eight,
+still solid, but less stable.
+
+00:06:33.008 --> 00:06:38.368
+And a group of eight can swing ten points
+between surveys just because of who
+
+00:06:38.368 --> 00:06:39.690
+happened to answer.
+
+00:06:39.690 --> 00:06:43.310
+Build a habit: when you
+quote a number, quote its N.
+
+00:06:43.310 --> 00:06:48.600
+"Collaboration is forty-four across all
+four hundred and twelve respondents"
+
+00:06:48.600 --> 00:06:50.549
+carries its own credibility.
+
+00:06:51.033 --> 00:06:55.303
+The methodology box shows invited,
+responded, and response rate.
+
+00:06:55.303 --> 00:07:00.374
+Northwind: six hundred and forty invited,
+four hundred and twelve responded,
+
+00:07:00.374 --> 00:07:01.642
+sixty-four percent.
+
+00:07:01.642 --> 00:07:06.712
+A high rate doesn't guarantee accuracy,
+and a low one doesn't ruin a survey.
+
+00:07:06.712 --> 00:07:11.916
+Ask instead whether the people who didn't
+answer would see things differently.
+
+00:07:11.916 --> 00:07:16.787
+If a whole site or shift barely
+responded, its view is under-represented.
+
+00:07:16.787 --> 00:07:22.391
+And if the report says "Not tracked",
+SurveyCraft didn't know how many were invited.
+
+00:07:22.391 --> 00:07:23.726
+Don't invent a rate.
+
+00:07:23.726 --> 00:07:26.194
+Say it's unknown, and lean more on N.
+
+00:07:26.700 --> 00:07:32.711
+Mosaic reports deliberately hide numbers
+that could expose individuals or mislead.
+
+00:07:32.711 --> 00:07:36.596
+A report that won't generate
+means too few responses.
+
+00:07:36.596 --> 00:07:42.461
+A group that's missing, or folded into
+"Other", is below the minimum group size.
+
+00:07:42.461 --> 00:07:46.639
+A dash in a heatmap cell means
+fewer than three answered.
+
+00:07:46.639 --> 00:07:51.037
+A dash in a 360 rater column
+means that category was folded.
+
+00:07:51.037 --> 00:07:54.922
+No percentile means the
+comparison pool is too small.
+
+00:07:54.922 --> 00:07:59.760
+And Culture Dig's "too few to score"
+means fewer than ten stories.
+
+00:07:59.760 --> 00:08:01.886
+These rules aren't obstacles.
+
+00:08:01.886 --> 00:08:05.258
+They're the promise every
+respondent was made.
+
+00:08:05.258 --> 00:08:10.536
+Never reconstruct a hidden number by
+subtracting one group from another,
+
+00:08:10.536 --> 00:08:13.982
+and never present a group
+the report rolled up.
+
+00:08:14.467 --> 00:08:18.663
+The report's own heatmap note
+says it: small groups vary more,
+
+00:08:18.663 --> 00:08:21.371
+so expect more very high and low values.
+
+00:08:21.371 --> 00:08:26.515
+A group of eight that moves ten points
+tells you much less than a group of a
+
+00:08:26.515 --> 00:08:28.884
+hundred and sixty that moves three.
+
+00:08:28.884 --> 00:08:34.163
+If a group is small, describe its result
+as worth exploring, not as a finding.
+
+00:08:34.667 --> 00:08:37.125
+Let's walk the Culture Mosaic deck.
+
+00:08:37.125 --> 00:08:39.793
+The framework pages orient executives,
+
+00:08:39.793 --> 00:08:45.060
+and on Links to Performance you can
+read the footnote aloud if you need to.
+
+00:08:45.060 --> 00:08:50.257
+The headline diamond shows all twelve
+tile scores and the methodology box.
+
+00:08:50.257 --> 00:08:54.541
+Look at the overall shape, and
+check the response rate first.
+
+00:08:54.541 --> 00:08:58.895
+The dimension and item pages show
+which items drive each tile,
+
+00:08:58.895 --> 00:09:01.002
+with leader-only items marked.
+
+00:09:01.002 --> 00:09:03.670
+The item heatmaps show items by group,
+
+00:09:03.670 --> 00:09:07.954
+so look for whole rows or columns
+that are darker or lighter.
+
+00:09:07.954 --> 00:09:11.325
+One odd cell in a small
+group is rarely a story.
+
+00:09:11.325 --> 00:09:17.014
+The comparison reports show a mini-mosaic
+per group for each breakdown the client
+
+00:09:17.014 --> 00:09:19.682
+set up, plus Leader versus Non-Leader.
+
+00:09:19.682 --> 00:09:24.317
+The free-response pages give themes
+tagged Many, Several or A few.
+
+00:09:24.317 --> 00:09:28.250
+Then the Psychological Safety
+Index, any subscales, and,
+
+00:09:28.250 --> 00:09:33.166
+if the client added their own questions,
+"Your Questions" at the back.
+
+00:09:33.166 --> 00:09:38.644
+Ask whether the client's own questions
+confirm or complicate what the standard
+
+00:09:38.644 --> 00:09:39.346
+items say.
+
+00:09:39.833 --> 00:09:44.077
+Read the Culture Mosaic from
+the top down, then back up.
+
+00:09:44.077 --> 00:09:49.835
+At dimension level, Northwind's Inspire
+is strongest at sixty-six and Enable
+
+00:09:49.835 --> 00:09:51.502
+weakest at fifty-four.
+
+00:09:51.502 --> 00:09:55.670
+That's a start, but dimensions
+average away the detail.
+
+00:09:55.670 --> 00:10:01.883
+At tile level, inside Inspire there's a
+thirty-one-point spread between Purpose at
+
+00:10:01.883 --> 00:10:04.687
+eighty-two and Strategy at fifty-one.
+
+00:10:04.687 --> 00:10:10.976
+"People know why we exist, but not how
+we're getting there" is far more useful than
+
+00:10:10.976 --> 00:10:12.719
+"Inspire is sixty-six".
+
+00:10:12.719 --> 00:10:15.446
+At item level, inside Collaboration,
+
+00:10:15.446 --> 00:10:21.508
+the item about openly exploring disagreements
+sits at the fourteenth percentile.
+
+00:10:21.508 --> 00:10:24.615
+That's a specific, discussable behaviour.
+
+00:10:24.615 --> 00:10:25.827
+Then go back up.
+
+00:10:25.827 --> 00:10:28.782
+Does the item story fit the tile story?
+
+00:10:28.782 --> 00:10:31.434
+Here it does: collaboration is low,
+
+00:10:31.434 --> 00:10:36.284
+and one reason is that disagreement
+isn't worked through openly.
+
+00:10:36.800 --> 00:10:40.507
+Most Culture Mosaics include
+a Leader Status comparison.
+
+00:10:40.507 --> 00:10:45.936
+At Northwind, leaders and non-leaders agree
+on Purpose: eighty-six and eighty-one,
+
+00:10:45.936 --> 00:10:47.062
+a five-point gap.
+
+00:10:47.062 --> 00:10:48.452
+That's a shared view.
+
+00:10:48.452 --> 00:10:53.550
+But on Strategy and Empowered Teams,
+leaders score twenty-five points higher.
+
+00:10:53.550 --> 00:10:56.926
+Leaders experience something
+the frontline doesn't.
+
+00:10:56.926 --> 00:11:00.567
+That's one of the most useful
+patterns in culture work,
+
+00:11:00.567 --> 00:11:05.135
+because leaders usually make decisions
+based on their own experience.
+
+00:11:05.135 --> 00:11:06.791
+Don't decide who's right.
+
+00:11:06.791 --> 00:11:10.498
+Both views are data, and the
+gap is a finding in itself.
+
+00:11:11.000 --> 00:11:13.162
+Read a heatmap in three passes.
+
+00:11:13.162 --> 00:11:18.323
+Rows first: which tiles are low
+everywhere, and which only in some groups?
+
+00:11:18.323 --> 00:11:22.159
+Purpose is high in every
+department, a shared strength.
+
+00:11:22.159 --> 00:11:25.995
+Collaboration is low in
+Nursing and the Clinic Network,
+
+00:11:25.995 --> 00:11:28.158
+but not in Admin and Corporate.
+
+00:11:28.158 --> 00:11:32.342
+Columns next: which group is
+consistently lighter or darker?
+
+00:11:32.342 --> 00:11:36.178
+The Clinic Network, mostly
+the merged Lakeside clinics,
+
+00:11:36.178 --> 00:11:39.247
+is lowest on Change
+Ready and Collaboration.
+
+00:11:39.247 --> 00:11:42.107
+That's the merger showing up in the data.
+
+00:11:42.107 --> 00:11:43.013
+Then check N.
+
+00:11:43.013 --> 00:11:47.477
+The "Other" column has twenty
+people, so treat it as indicative.
+
+00:11:47.477 --> 00:11:53.266
+And never name, guess at, or work out the
+scores of a department folded into Other.
+
+00:11:53.767 --> 00:11:59.158
+The Psychological Safety Index is
+calculated from four Culture Mosaic items,
+
+00:11:59.158 --> 00:12:03.131
+rounded to a whole number that
+picks one of five slides.
+
+00:12:03.131 --> 00:12:07.316
+Northwind scored two point nine
+six, which rounds to three.
+
+00:12:07.316 --> 00:12:13.062
+Its slide says the level of psychological
+safety is acceptable to attempt change,
+
+00:12:13.062 --> 00:12:15.261
+but presents a risk to success.
+
+00:12:15.261 --> 00:12:18.383
+Use it as a readiness
+signal, not a verdict.
+
+00:12:18.383 --> 00:12:21.717
+The slide shows the level,
+not the exact score.
+
+00:12:21.717 --> 00:12:25.477
+Northwind's two point nine
+six is just over the line,
+
+00:12:25.477 --> 00:12:30.939
+at the cautious end of acceptable, so
+don't read acceptable as a green light.
+
+00:12:30.939 --> 00:12:32.003
+And connect it.
+
+00:12:32.003 --> 00:12:34.131
+Northwind's low Collaboration,
+
+00:12:34.131 --> 00:12:38.246
+its low "speaking up" item at
+the twenty-first percentile,
+
+00:12:38.246 --> 00:12:41.367
+and its safety index
+all point the same way.
+
+00:12:41.367 --> 00:12:45.411
+That's convergent evidence,
+stronger than any one number.
+
+00:12:45.900 --> 00:12:51.489
+Each standard open question gets an
+AI-written summary page: how many responded,
+
+00:12:51.489 --> 00:12:56.589
+a short headline, and three or four
+themes tagged Many, Several or A few.
+
+00:12:56.589 --> 00:12:59.524
+Group summaries follow, never with quotes.
+
+00:12:59.524 --> 00:13:00.502
+Use them well.
+
+00:13:00.502 --> 00:13:06.301
+Prevalence words are deliberately vague,
+so don't convert "Many" into a percentage.
+
+00:13:06.301 --> 00:13:11.680
+Use themes to explain numbers: Northwind's
+"cross-site coordination after the
+
+00:13:11.680 --> 00:13:16.152
+merger" explains why Collaboration
+is low in the Clinic Network.
+
+00:13:16.152 --> 00:13:21.042
+Look for themes the numbers don't
+cover, like "staffing and workload".
+
+00:13:21.042 --> 00:13:25.164
+And if you ever see something
+identifying, don't repeat it.
+
+00:13:25.164 --> 00:13:27.330
+Flag it to your Mosaic contact.
+

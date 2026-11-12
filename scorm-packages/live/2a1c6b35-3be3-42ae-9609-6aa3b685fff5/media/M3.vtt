@@ -1,0 +1,1035 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:01.990
+Module 3: the Culture Mosaic.
+
+00:00:01.990 --> 00:00:04.665
+It's the flagship of the Mosaic family,
+
+00:00:04.665 --> 00:00:09.948
+an organization-wide survey that turns
+the framework into a designed report a
+
+00:00:09.948 --> 00:00:11.183
+client can act on.
+
+00:00:11.183 --> 00:00:16.604
+In this module you'll take a Culture
+Mosaic from first conversation to finished
+
+00:00:16.604 --> 00:00:21.063
+report, and you'll set one up for
+Northwind Health along the way.
+
+00:00:21.063 --> 00:00:23.327
+It takes about a hundred minutes.
+
+00:00:23.833 --> 00:00:29.468
+The Culture Mosaic asks every employee how
+they experience the organization across
+
+00:00:29.468 --> 00:00:30.636
+the twelve tiles.
+
+00:00:30.636 --> 00:00:32.835
+There are fifty-four statements,
+
+00:00:32.835 --> 00:00:37.920
+each rated from Strongly Disagree to
+Strongly Agree on a five-point scale,
+
+00:00:37.920 --> 00:00:40.050
+and it takes about ten minutes.
+
+00:00:40.050 --> 00:00:45.204
+There are two standard open questions:
+what will continue to serve us well,
+
+00:00:45.204 --> 00:00:48.708
+and where are our biggest
+opportunities to improve.
+
+00:00:48.708 --> 00:00:54.205
+It also produces a Psychological Safety
+Index from four of the fifty-four items,
+
+00:00:54.205 --> 00:00:55.855
+with no extra questions.
+
+00:00:55.855 --> 00:00:58.672
+It's anonymous by default, with no names,
+
+00:00:58.672 --> 00:01:02.657
+email addresses or device
+details stored with the answers.
+
+00:01:02.657 --> 00:01:05.887
+And the items are written
+about "we" and "our",
+
+00:01:05.887 --> 00:01:10.697
+so people rate the organization as
+they experience it, not themselves.
+
+00:01:11.200 --> 00:01:14.085
+Each tile is measured
+by four or five items.
+
+00:01:14.085 --> 00:01:16.511
+Two kinds of item behave differently,
+
+00:01:16.511 --> 00:01:19.854
+and you need to know both
+before you read a report.
+
+00:01:19.854 --> 00:01:21.756
+Two items are reverse-scored.
+
+00:01:21.756 --> 00:01:25.624
+They're worded so that agreeing
+is the less healthy answer,
+
+00:01:25.624 --> 00:01:28.771
+like "Disagreements are
+rarely openly explored".
+
+00:01:28.771 --> 00:01:34.278
+The engine flips them before scoring, so in
+the report a higher bar is still better.
+
+00:01:34.278 --> 00:01:36.376
+Don't un-flip them in your head.
+
+00:01:36.376 --> 00:01:38.212
+Three items are leader-only.
+
+00:01:38.212 --> 00:01:43.326
+Everyone sees them, but only respondents
+tagged as leaders are scored on them.
+
+00:01:43.326 --> 00:01:46.211
+They sit in Change Ready
+and Future Focused,
+
+00:01:46.211 --> 00:01:49.817
+and their count is the number
+of leaders, not everyone.
+
+00:01:49.817 --> 00:01:54.407
+They depend on a working leader
+question, which you'll set up shortly.
+
+00:01:54.900 --> 00:01:55.924
+Here's a rule.
+
+00:01:55.924 --> 00:01:58.921
+The fifty-four standard items are locked.
+
+00:01:58.921 --> 00:02:01.918
+You can't reword, reorder or delete them,
+
+00:02:01.918 --> 00:02:07.986
+because the benchmark only works if every
+organization answers exactly those words.
+
+00:02:07.986 --> 00:02:11.349
+If a client wants to ask
+about something else,
+
+00:02:11.349 --> 00:02:16.686
+there are two routes: add custom
+open-ended questions, or add a subscale.
+
+00:02:17.200 --> 00:02:20.841
+The Psychological Safety
+Index is a readiness signal.
+
+00:02:20.841 --> 00:02:24.414
+It asks whether people feel
+safe enough to speak up,
+
+00:02:24.414 --> 00:02:26.887
+take smart risks and admit mistakes.
+
+00:02:26.887 --> 00:02:31.353
+It reuses four items: about
+exploring disagreements, speaking up,
+
+00:02:31.353 --> 00:02:35.750
+treating mistakes as learning,
+and seeking diverse perspectives.
+
+00:02:35.750 --> 00:02:39.941
+Each respondent's index is the
+average of those four answers,
+
+00:02:39.941 --> 00:02:43.033
+and it only counts if
+they answered all four.
+
+00:02:43.033 --> 00:02:46.881
+The organization's index is
+the average of those scores,
+
+00:02:46.881 --> 00:02:49.835
+rounded to a whole
+number from one to five,
+
+00:02:49.835 --> 00:02:53.751
+and the report shows one of
+five index pages based on it.
+
+00:02:53.751 --> 00:02:59.179
+Because it's built from items that already
+exist, every Culture Mosaic has one.
+
+00:02:59.667 --> 00:03:03.959
+Good scoping prevents most of
+the problems you'll ever have.
+
+00:03:03.959 --> 00:03:06.677
+Settle four things before anyone buys.
+
+00:03:06.677 --> 00:03:07.321
+Who's in?
+
+00:03:07.321 --> 00:03:12.900
+The Culture Mosaic is designed as a
+census, so everyone in scope gets invited.
+
+00:03:12.900 --> 00:03:13.974
+How big a tier?
+
+00:03:13.974 --> 00:03:17.479
+Tiers count completed
+responses, not invitations,
+
+00:03:17.479 --> 00:03:21.342
+and the survey stops taking
+answers at the tier's cap.
+
+00:03:21.342 --> 00:03:26.063
+Estimate responses as invitations
+times a realistic response rate,
+
+00:03:26.063 --> 00:03:27.493
+then leave headroom.
+
+00:03:27.493 --> 00:03:33.359
+Online checkout covers the smaller tiers,
+and the Mosaic team sets up larger ones.
+
+00:03:33.359 --> 00:03:34.361
+Which add-ons?
+
+00:03:34.361 --> 00:03:35.863
+You'll see them next.
+
+00:03:35.863 --> 00:03:36.507
+And when?
+
+00:03:36.507 --> 00:03:40.799
+The survey must launch within
+about two months of the order,
+
+00:03:40.799 --> 00:03:45.019
+and most organizations run
+fieldwork for two to four weeks.
+
+00:03:45.019 --> 00:03:49.669
+Ask the sponsor what decision this
+will help them make, and when.
+
+00:03:49.669 --> 00:03:52.173
+Then work backwards from that date.
+
+00:03:52.667 --> 00:03:54.655
+Let's size Northwind's order.
+
+00:03:54.655 --> 00:03:58.563
+Alex plans to invite all six
+hundred and forty employees,
+
+00:03:58.563 --> 00:04:02.470
+and their last survey got
+about two-thirds participation.
+
+00:04:02.470 --> 00:04:04.527
+Which tier should they choose?
+
+00:04:04.527 --> 00:04:09.463
+Do the arithmetic, remember what the
+tier counts, then pick your answer.
+
+00:04:09.967 --> 00:04:12.223
+There are four kinds of add-on.
+
+00:04:12.223 --> 00:04:17.027
+First, subscales: Employee Engagement,
+DEI Climate, Accessibility,
+
+00:04:17.027 --> 00:04:18.846
+and Workplace Resilience.
+
+00:04:18.846 --> 00:04:22.340
+Each has its own benchmark,
+and each adds items,
+
+00:04:22.340 --> 00:04:25.033
+so it adds time for every respondent.
+
+00:04:25.033 --> 00:04:29.691
+Choose them because the client
+has a real question in that area.
+
+00:04:29.691 --> 00:04:35.150
+Second, custom open-ended questions:
+up to five, in the client's own words.
+
+00:04:35.150 --> 00:04:37.843
+The text stays editable until launch.
+
+00:04:37.843 --> 00:04:41.773
+Third, demographic breakdowns,
+also called subreports.
+
+00:04:41.773 --> 00:04:46.577
+A breakdown compares results across
+the groups of one demographic,
+
+00:04:46.577 --> 00:04:51.162
+like department or tenure, and
+it can combine two into one cut,
+
+00:04:51.162 --> 00:04:53.055
+like Department by Tenure.
+
+00:04:53.055 --> 00:04:58.222
+Each breakdown is bought, and the
+report compares only the ones set up.
+
+00:04:58.222 --> 00:05:02.517
+With none, the only comparison
+is Leader versus Non-Leader.
+
+00:05:02.517 --> 00:05:05.064
+A Mosaic team account has no limit,
+
+00:05:05.064 --> 00:05:08.630
+and a partner's own code
+applies to the purchase.
+
+00:05:08.630 --> 00:05:14.599
+Fourth, an executive readout: a ninety-minute
+session in which a Mosaic consultant
+
+00:05:14.599 --> 00:05:17.728
+walks the client's team
+through the report.
+
+00:05:18.233 --> 00:05:22.623
+Set expectations to match the report
+the client will actually open.
+
+00:05:22.623 --> 00:05:24.851
+Three add-ons can surprise people.
+
+00:05:24.851 --> 00:05:30.224
+The client's own questions appear in a
+"Your Questions" section at the back of the
+
+00:05:30.224 --> 00:05:30.551
+deck.
+
+00:05:30.551 --> 00:05:34.941
+Each open-ended question gets its
+own slide with summarised themes.
+
+00:05:34.941 --> 00:05:40.248
+Choice and rating questions are drawn as
+charts, for the whole organization only.
+
+00:05:40.248 --> 00:05:45.228
+And a question fewer than five people
+answered shows only how many answered,
+
+00:05:45.228 --> 00:05:47.325
+so no one's words can be traced.
+
+00:05:47.325 --> 00:05:51.321
+Comparison slides cover only
+the breakdowns that were set up.
+
+00:05:51.321 --> 00:05:54.335
+With none, it's Leader
+versus Non-Leader only.
+
+00:05:54.335 --> 00:05:57.153
+Combined cuts are drawn
+as combined groups,
+
+00:05:57.153 --> 00:06:01.018
+and combinations too small to
+show are pooled into "Other".
+
+00:06:01.018 --> 00:06:06.064
+And subscale sections appear only when
+the subscale was bought and turned on.
+
+00:06:06.567 --> 00:06:10.725
+Here's what the buyer sees between
+paying and having a survey.
+
+00:06:10.725 --> 00:06:13.743
+At checkout they choose
+the tier and add-ons,
+
+00:06:13.743 --> 00:06:17.097
+and answer the research-database
+consent question,
+
+00:06:17.097 --> 00:06:21.657
+which decides whether the organization
+may join the benchmark later.
+
+00:06:21.657 --> 00:06:26.956
+After payment, they get a claim link
+that's single-use and lasts fourteen days.
+
+00:06:26.956 --> 00:06:31.919
+The setup wizard asks them to name the
+engagement and press Create survey.
+
+00:06:31.919 --> 00:06:37.419
+That copies the Culture Mosaic master into
+their organization with its protections
+
+00:06:37.419 --> 00:06:38.156
+already on.
+
+00:06:38.156 --> 00:06:41.845
+Then a confirmation screen
+says the first step is done,
+
+00:06:41.845 --> 00:06:46.741
+and lists what happens next: open the
+survey, work through the checklist,
+
+00:06:46.741 --> 00:06:48.351
+then publish and invite.
+
+00:06:48.351 --> 00:06:51.637
+One tip: agree in advance
+who buys and claims it,
+
+00:06:51.637 --> 00:06:56.869
+because the person who claims it becomes
+the owner of the client's SurveyCraft
+
+00:06:56.869 --> 00:06:57.741
+organization.
+
+00:06:58.233 --> 00:07:03.183
+The pre-launch checklist on the survey's
+Settings page is your backbone,
+
+00:07:03.183 --> 00:07:04.695
+and the order matters.
+
+00:07:04.695 --> 00:07:06.964
+Review the demographic questions,
+
+00:07:06.964 --> 00:07:11.363
+so the answer choices match the
+organization's real departments,
+
+00:07:11.363 --> 00:07:13.288
+locations and tenure ranges.
+
+00:07:13.288 --> 00:07:16.107
+Add text for custom questions, if bought.
+
+00:07:16.107 --> 00:07:18.306
+Configure the result breakdowns.
+
+00:07:18.306 --> 00:07:19.819
+Turn on any subscales.
+
+00:07:19.819 --> 00:07:22.912
+Customise the welcome
+and thank-you messages.
+
+00:07:22.912 --> 00:07:25.731
+And take the survey yourself, end to end.
+
+00:07:25.731 --> 00:07:30.268
+Then publish, which turns the survey
+on without contacting anyone.
+
+00:07:30.268 --> 00:07:31.780
+Then invite your team.
+
+00:07:31.780 --> 00:07:35.630
+Everything up to the test run
+shapes what people answer,
+
+00:07:35.630 --> 00:07:37.829
+so finish it before you publish.
+
+00:07:37.829 --> 00:07:43.398
+Taking the survey yourself catches typos
+in department names, a missing location,
+
+00:07:43.398 --> 00:07:46.697
+and a welcome message that
+still says "Company".
+
+00:07:46.697 --> 00:07:49.172
+Five minutes here saves a re-launch.
+
+00:07:49.667 --> 00:07:55.052
+Every comparison page in the report comes
+from the demographic questions and the
+
+00:07:55.052 --> 00:07:56.803
+breakdowns set up on them.
+
+00:07:56.803 --> 00:08:01.246
+Get them right and the report
+answers the client's real questions.
+
+00:08:01.246 --> 00:08:04.343
+Get them wrong and no
+analysis will rescue it.
+
+00:08:04.343 --> 00:08:07.372
+Design the demographic
+block with the client.
+
+00:08:07.372 --> 00:08:09.122
+Use their real categories.
+
+00:08:09.122 --> 00:08:11.209
+Keep groups big enough to show,
+
+00:08:11.209 --> 00:08:16.460
+by combining small units up front rather
+than leaving them to land in "Other".
+
+00:08:16.460 --> 00:08:21.913
+Ask only what you'll use, because every
+demographic question is one more reason a
+
+00:08:21.913 --> 00:08:25.751
+cautious respondent might
+think they could be identified.
+
+00:08:25.751 --> 00:08:31.271
+And if you use a roster, keep its columns
+consistent with the survey's categories.
+
+00:08:31.271 --> 00:08:34.974
+Ask the sponsor which groups
+they most need to compare,
+
+00:08:34.974 --> 00:08:38.542
+and which comparisons would
+be too sensitive to show.
+
+00:08:39.033 --> 00:08:43.063
+The Culture Mosaic needs to
+know who counts as a leader,
+
+00:08:43.063 --> 00:08:46.300
+for two reasons: the
+three leader-only items,
+
+00:08:46.300 --> 00:08:49.466
+and the Leader versus
+Non-Leader comparison.
+
+00:08:49.466 --> 00:08:54.215
+In Settings, pick one demographic
+question, usually level or role,
+
+00:08:54.215 --> 00:08:57.237
+and tick the answers that count as leader.
+
+00:08:57.237 --> 00:08:59.971
+Agree the definition with the sponsor.
+
+00:08:59.971 --> 00:09:04.432
+In one organization, "leader"
+means anyone who manages people.
+
+00:09:04.432 --> 00:09:07.022
+In another, it's director and above.
+
+00:09:07.022 --> 00:09:12.778
+And watch out: if no leader question is
+set, or the chosen answers match nobody,
+
+00:09:12.778 --> 00:09:16.232
+the leader-only items have
+no one to score them.
+
+00:09:16.733 --> 00:09:21.999
+People tell the truth when they trust
+that nobody can pick out their answers.
+
+00:09:21.999 --> 00:09:26.444
+Know every protection, because
+clients will ask you to bend them.
+
+00:09:26.444 --> 00:09:29.726
+Bought Culture Mosaics
+are anonymous by default.
+
+00:09:29.726 --> 00:09:35.060
+A roster tracks who has completed, but
+answers can't be joined back to people.
+
+00:09:35.060 --> 00:09:37.864
+The minimum group size defaults to three.
+
+00:09:37.864 --> 00:09:40.257
+A smaller group rolls into "Other",
+
+00:09:40.257 --> 00:09:43.608
+and you can raise the
+minimum for sensitive cuts.
+
+00:09:43.608 --> 00:09:47.096
+Any report needs at least
+five completed responses.
+
+00:09:47.096 --> 00:09:50.788
+A subteam report needs at
+least ten, with no override.
+
+00:09:50.788 --> 00:09:52.293
+Why ten for a subteam?
+
+00:09:52.293 --> 00:09:56.601
+A subteam report puts a small
+group's results on its own pages,
+
+00:09:56.601 --> 00:10:00.294
+with no wider organization
+around them, and below ten,
+
+00:10:00.294 --> 00:10:02.824
+individuals become too easy to infer.
+
+00:10:02.824 --> 00:10:06.038
+When a leader asks for
+"just my team of seven",
+
+00:10:06.038 --> 00:10:10.414
+the honest answer is that seven
+isn't enough for its own report,
+
+00:10:10.414 --> 00:10:14.107
+though their results still
+count in the whole picture.
+
+00:10:14.107 --> 00:10:17.595
+And never lower the minimum
+group size below three.
+
+00:10:17.595 --> 00:10:19.715
+Leave it at three, or raise it.
+
+00:10:20.200 --> 00:10:23.041
+Now drag the launch steps
+into the right order.
+
+00:10:23.041 --> 00:10:26.546
+Everything that shapes the
+questions comes before Publish,
+
+00:10:26.546 --> 00:10:29.447
+and the report waits until
+the survey is closed.
+
+00:10:29.933 --> 00:10:35.229
+Distribution happens in two moves:
+publish, then choose how people get it.
+
+00:10:35.229 --> 00:10:39.451
+The recommended way is to upload
+a contact list, or roster,
+
+00:10:39.451 --> 00:10:42.099
+of up to twenty-five thousand people.
+
+00:10:42.099 --> 00:10:46.966
+Each person gets a personal link,
+demographics attach automatically,
+
+00:10:46.966 --> 00:10:52.190
+you can track each person's status,
+and you can send automatic reminders.
+
+00:10:52.190 --> 00:10:54.838
+You can also share a link or QR code,
+
+00:10:54.838 --> 00:10:58.416
+which suits frontline staff
+without company email.
+
+00:10:58.416 --> 00:11:03.211
+Or send email invitations, for
+smaller groups without a clean list.
+
+00:11:03.211 --> 00:11:08.149
+Many organizations combine methods:
+a roster for everyone with email,
+
+00:11:08.149 --> 00:11:11.655
+and a QR code in break
+rooms for frontline teams.
+
+00:11:11.655 --> 00:11:13.588
+Northwind did exactly that.
+
+00:11:13.588 --> 00:11:18.168
+And rosters protect anonymity:
+they show that someone completed,
+
+00:11:18.168 --> 00:11:19.670
+never what they said.
+
+00:11:20.167 --> 00:11:21.817
+Here's the roster flow.
+
+00:11:21.817 --> 00:11:26.122
+On the Distribute tab, download
+the template, fill in names,
+
+00:11:26.122 --> 00:11:29.710
+emails and any demographic
+columns, and upload it.
+
+00:11:29.710 --> 00:11:31.934
+Fix any rows the preview flags.
+
+00:11:31.934 --> 00:11:37.460
+Send invitations, and each person's
+status moves from Not invited to Invited.
+
+00:11:37.460 --> 00:11:39.827
+Then turn on automatic reminders.
+
+00:11:39.827 --> 00:11:45.496
+Choose an interval of every three, five
+or seven days, and one to three rounds.
+
+00:11:45.496 --> 00:11:50.304
+Reminders go only to people who
+were invited and haven't completed,
+
+00:11:50.304 --> 00:11:54.178
+and none starts within twelve
+hours of the close date.
+
+00:11:54.178 --> 00:11:58.771
+A reminder about a week in typically
+lifts responses noticeably.
+
+00:11:58.771 --> 00:12:04.726
+Pair it with a note from a senior leader
+explaining why the survey matters and that
+
+00:12:04.726 --> 00:12:05.803
+it's anonymous.
+
+00:12:06.300 --> 00:12:09.280
+While the survey is
+live, watch three things.
+
+00:12:09.280 --> 00:12:10.936
+First, the response rate.
+
+00:12:10.936 --> 00:12:15.506
+Track completions against invitations,
+and if you distribute by link,
+
+00:12:15.506 --> 00:12:17.758
+set the invited count in Settings.
+
+00:12:17.758 --> 00:12:20.672
+Otherwise the report
+will say "Not tracked".
+
+00:12:20.672 --> 00:12:22.461
+Second, the respondent cap.
+
+00:12:22.461 --> 00:12:27.031
+The owner gets an email at eighty
+percent and at one hundred percent,
+
+00:12:27.031 --> 00:12:30.408
+and at one hundred the
+survey stops taking answers.
+
+00:12:30.408 --> 00:12:31.998
+Third, the upgrade path.
+
+00:12:31.998 --> 00:12:37.495
+If a survey is filling up, the owner can
+buy the next tier from the Responses page.
+
+00:12:37.495 --> 00:12:41.734
+At Northwind, the eighty percent
+email arrived on day seventeen.
+
+00:12:41.734 --> 00:12:45.046
+The team checked the pace,
+didn't need to upgrade,
+
+00:12:45.046 --> 00:12:48.357
+and finished on four hundred
+and twelve responses.
+
+00:12:48.867 --> 00:12:50.787
+Remember the launch deadline.
+
+00:12:50.787 --> 00:12:55.950
+A bought Culture Mosaic must leave Draft
+within about two months of the order.
+
+00:12:55.950 --> 00:13:00.518
+SurveyCraft sends warning emails
+fourteen days and three days before.
+
+00:13:00.518 --> 00:13:04.093
+An unlaunched survey that
+misses the deadline expires,
+
+00:13:04.093 --> 00:13:07.801
+and staff then decide with
+the client whether to extend.
+
+00:13:07.801 --> 00:13:11.045
+Plan the launch date before
+the order, not after.
+
+00:13:11.533 --> 00:13:16.253
+You end data collection in one of
+two ways: close the survey by hand,
+
+00:13:16.253 --> 00:13:18.373
+or set an automatic close date.
+
+00:13:18.373 --> 00:13:21.315
+You can reopen if you
+need a few more days.
+
+00:13:21.315 --> 00:13:23.846
+Before you close, check three things.
+
+00:13:23.846 --> 00:13:26.240
+Has the response rate levelled off?
+
+00:13:26.240 --> 00:13:30.138
+A last reminder two or three
+days before close is common.
+
+00:13:30.138 --> 00:13:33.490
+Are the groups you care
+about big enough to show?
+
+00:13:33.490 --> 00:13:36.226
+And have you deleted any test responses?
+
+00:13:36.226 --> 00:13:40.399
+They're excluded anyway, but
+clean data is easier to explain.
+
+00:13:40.900 --> 00:13:44.973
+On the Responses tab, choose
+Generate Culture Mosaic Report.
+
+00:13:44.973 --> 00:13:47.891
+You need at least five
+completed responses.
+
+00:13:47.891 --> 00:13:53.593
+It runs in the background for a minute or
+three, and you're emailed when it's ready.
+
+00:13:53.593 --> 00:13:54.814
+Download the deck.
+
+00:13:54.814 --> 00:13:58.751
+It's an editable PowerPoint,
+and it's kept for seven days,
+
+00:13:58.751 --> 00:14:01.195
+so store it with the client's files.
+
+00:14:01.195 --> 00:14:06.150
+The Responses tab also offers a subteam
+report for groups of ten or more,
+
+00:14:06.150 --> 00:14:09.951
+a comparison with an earlier
+survey, and an action plan.
+
+00:14:09.951 --> 00:14:14.023
+The deck includes the framework
+pages, the headline diamond,
+
+00:14:14.023 --> 00:14:16.670
+item detail with percentiles, heatmaps,
+
+00:14:16.670 --> 00:14:20.743
+comparisons for each breakdown
+and Leader versus Non-Leader,
+
+00:14:20.743 --> 00:14:25.630
+themes from the open questions, the
+safety index, any subscale sections,
+
+00:14:25.630 --> 00:14:27.870
+and "Your Questions" at the back.
+
+00:14:27.870 --> 00:14:30.585
+You'll learn to read it all in Module 8.
+
+00:14:31.100 --> 00:14:33.347
+Here's a rule worth remembering.
+
+00:14:33.347 --> 00:14:38.612
+A report generated before the survey
+is closed does not join the benchmark.
+
+00:14:38.612 --> 00:14:42.613
+Joining happens when the report
+is generated after close.
+
+00:14:42.613 --> 00:14:46.756
+Even then, a survey stays out
+if the owner switched it off,
+
+00:14:46.756 --> 00:14:52.512
+the buyer declined consent, it's an internal
+account, a subteam report, test data,
+
+00:14:52.512 --> 00:14:54.267
+or under ten respondents.
+
+00:14:54.267 --> 00:14:57.918
+If a client needs an early
+look, generate a preview,
+
+00:14:57.918 --> 00:15:01.428
+then close and generate
+again when fieldwork ends.
+
+00:15:01.933 --> 00:15:07.005
+The executive readout is a ninety-minute
+session with a Mosaic consultant,
+
+00:15:07.005 --> 00:15:12.008
+who walks the client's team through
+the report and helps plan next steps.
+
+00:15:12.008 --> 00:15:16.531
+If you're delivering the debrief
+yourself, Module 9 shows you how.
+
+00:15:16.531 --> 00:15:20.849
+Either way, never send a sixty-slide
+deck to an executive cold.
+
+00:15:20.849 --> 00:15:24.550
+A report without a conversation
+gets skimmed, misread,
+
+00:15:24.550 --> 00:15:26.880
+or used to hunt for who said what.
+
+00:15:27.367 --> 00:15:28.767
+Now it's your turn.
+
+00:15:28.767 --> 00:15:31.126
+You're Northwind's practitioner,
+
+00:15:31.126 --> 00:15:36.950
+and Alex has claimed the order: a census
+of six hundred and forty people with a
+
+00:15:36.950 --> 00:15:38.867
+five-hundred-response cap.
+
+00:15:38.867 --> 00:15:44.543
+Work through eight decisions, from the
+first move after setup to wrapping up.
+
+00:15:44.543 --> 00:15:48.524
+Some choices are critical
+errors that end the attempt,
+
+00:15:48.524 --> 00:15:51.399
+and you can retry as often as you like.
+
+00:15:51.900 --> 00:15:57.114
+Time for the module check: twelve questions,
+and you need ten right to move on.
+
+00:15:57.114 --> 00:16:01.800
+You can retake it as often as you
+like, with fresh questions each time.
+
+00:16:02.300 --> 00:16:07.475
+Here's your Culture Mosaic Setup Checklist,
+from scoping through close and report.
+
+00:16:07.475 --> 00:16:10.189
+Download it and use it
+on every engagement.
+
+00:16:10.700 --> 00:16:11.347
+To recap.
+
+00:16:11.347 --> 00:16:15.086
+Scope first: tiers count
+responses, not invitations,
+
+00:16:15.086 --> 00:16:18.752
+and the survey must launch
+within about two months.
+
+00:16:18.752 --> 00:16:22.994
+Do everything that shapes the
+questions before you publish.
+
+00:16:22.994 --> 00:16:28.817
+Protect anonymity: a minimum group of
+three, which you can raise but never lower,
+
+00:16:28.817 --> 00:16:33.131
+five responses for any report,
+and ten for a subteam report.
+
+00:16:33.131 --> 00:16:38.092
+Roster where you can, add a link or
+QR code for people without email,
+
+00:16:38.092 --> 00:16:39.673
+and turn on reminders.
+
+00:16:39.673 --> 00:16:43.699
+Close, then generate, so the
+client joins the benchmark.
+
+00:16:43.699 --> 00:16:48.660
+And set expectations to match the
+deck the client will actually open.
+
+00:16:48.660 --> 00:16:51.895
+Next: Module 4, the
+Culture Progress Monitor.
+
