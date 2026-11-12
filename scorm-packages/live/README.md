@@ -6,8 +6,9 @@ Supabase storage (`course-content/scorm/<package id>/`) by the
 `.github/workflows/upload-mosaic-course-files.yml`).
 
 - `scorm-packages/mosaic-player/player.js` goes to all five packages.
-- `live/<package id>/<file>` goes to that package only, e.g. an edited
-  `course-data.js`.
+- `live/<package id>/<path>` goes to that package only, at the same path,
+  e.g. an edited `course-data.js` or a re-recorded `media/M10.mp4` with its
+  `media/M10.vtt` captions.
 
 | Package id | Course |
 |---|---|

@@ -30,6 +30,9 @@ type_of() {
     *.css) echo "text/css" ;;
     *.html) echo "text/html" ;;
     *.json) echo "application/json" ;;
+    *.mp4) echo "video/mp4" ;;
+    *.vtt) echo "text/vtt" ;;
+    *.mp3) echo "audio/mpeg" ;;
     *) echo "application/octet-stream" ;;
   esac
 }
@@ -37,7 +40,7 @@ type_of() {
 # pkg, name, local file
 upload() {
   local pkg="$1" name="$2" src="$3"
-  mkdir -p "previous/$pkg"
+  mkdir -p "$(dirname "previous/$pkg/$name")"
   # Keep what's live now (a failure just means it's new).
   curl -sSf -o "previous/$pkg/$name" "${AUTH[@]}" "$BASE/$pkg/$name" 2>/dev/null || rm -f "previous/$pkg/$name"
   local code
@@ -58,10 +61,10 @@ status=0
 for pkg in "${PACKAGES[@]}"; do
   upload "$pkg" player.js scorm-packages/mosaic-player/player.js || status=1
   if [ -d "scorm-packages/live/$pkg" ]; then
-    for f in scorm-packages/live/"$pkg"/*; do
-      [ -f "$f" ] || continue
-      upload "$pkg" "$(basename "$f")" "$f" || status=1
-    done
+    # Every file, subfolders included (media/M10.mp4 goes to <pkg>/media/M10.mp4).
+    while IFS= read -r -d '' f; do
+      upload "$pkg" "${f#scorm-packages/live/$pkg/}" "$f" || status=1
+    done < <(find "scorm-packages/live/$pkg" -type f -print0 | sort -z)
   fi
 done
 exit $status
