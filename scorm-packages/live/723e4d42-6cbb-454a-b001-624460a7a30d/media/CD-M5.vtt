@@ -1,0 +1,628 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:02.424
+Module 5: from evidence to findings.
+
+00:00:02.424 --> 00:00:08.081
+Northwind now has seven submitted syntheses
+and three hundred and fifty-six stories.
+
+00:00:08.081 --> 00:00:13.333
+In about fifty minutes, you'll do the
+program lead's real work: check what the
+
+00:00:13.333 --> 00:00:17.306
+figures can carry, read the
+two streams against each other,
+
+00:00:17.306 --> 00:00:21.211
+and turn an AI draft into a
+report you'd put your name to.
+
+00:00:21.700 --> 00:00:26.010
+The steps run in a set order,
+because each one feeds the next.
+
+00:00:26.010 --> 00:00:28.930
+Close collection on the day you announced.
+
+00:00:28.930 --> 00:00:32.128
+Move to Phase 4 once
+every team has submitted.
+
+00:00:32.128 --> 00:00:36.021
+Then save the story patterns,
+which computes the scores.
+
+00:00:36.021 --> 00:00:37.968
+Approve the story summaries.
+
+00:00:37.968 --> 00:00:39.637
+Only then press Analyze.
+
+00:00:39.637 --> 00:00:43.669
+Edit every section, curate the
+quotes, and save as you go,
+
+00:00:43.669 --> 00:00:47.423
+because the report builder
+doesn't save automatically.
+
+00:00:47.423 --> 00:00:50.760
+Move to In review, then
+Final, and save the PDF.
+
+00:00:50.760 --> 00:00:52.568
+Why does the order matter?
+
+00:00:52.568 --> 00:00:56.669
+Analyze reads the saved figures
+and the approved summaries.
+
+00:00:56.669 --> 00:01:01.119
+Run it before they exist, and the
+draft is written without them.
+
+00:01:01.633 --> 00:01:07.229
+Before anything is saved, leads and
+facilitators can already see the figures
+
+00:01:07.229 --> 00:01:10.837
+derived from the stories,
+marked "not saved yet".
+
+00:01:10.837 --> 00:01:15.917
+Press Fill from stories, and the
+form fills itself, domain by domain.
+
+00:01:15.917 --> 00:01:17.095
+It doesn't save.
+
+00:01:17.095 --> 00:01:21.880
+A domain is only ticked if all
+three question types have answers.
+
+00:01:21.880 --> 00:01:25.709
+Review the figures, each
+with the stories behind it.
+
+00:01:25.709 --> 00:01:31.746
+Avoid typing over a figure: a typed-in
+number loses its story count and its margin
+
+00:01:31.746 --> 00:01:35.354
+of error, and the report
+can't place that domain.
+
+00:01:35.354 --> 00:01:36.532
+Then press Save.
+
+00:01:36.532 --> 00:01:42.275
+Saving computes the composites, and every
+change is recorded with who made it.
+
+00:01:42.275 --> 00:01:44.631
+Only a Program Lead can do this.
+
+00:01:45.133 --> 00:01:48.049
+Here are Northwind's wave one patterns.
+
+00:01:48.049 --> 00:01:53.806
+Stakeholder Relations is highest, at
+sixty-six, plus or minus five point two.
+
+00:01:53.806 --> 00:01:59.190
+HR Systems is lowest, at forty point
+six, plus or minus five point four.
+
+00:01:59.190 --> 00:02:01.732
+And Artifacts isn't scored at all.
+
+00:02:01.732 --> 00:02:03.451
+Keep this exhibit open.
+
+00:02:03.451 --> 00:02:06.293
+We'll use it for the next few screens.
+
+00:02:06.800 --> 00:02:09.637
+Eleven people told an Artifacts story.
+
+00:02:09.637 --> 00:02:11.801
+So why does it say only nine?
+
+00:02:11.801 --> 00:02:15.459
+Because a domain is judged
+by its thinnest input.
+
+00:02:15.459 --> 00:02:21.580
+All eleven answered the sliders and the
+triangle, but only nine placed any stones.
+
+00:02:21.580 --> 00:02:25.910
+A composite is only as
+well-evidenced as its weakest part,
+
+00:02:25.910 --> 00:02:30.314
+so Artifacts counts as nine,
+and below ten it isn't scored.
+
+00:02:30.314 --> 00:02:35.241
+The same floor stops quotes, dots
+and percentages for that domain.
+
+00:02:35.241 --> 00:02:38.227
+Six dots can be a picture of six people.
+
+00:02:38.227 --> 00:02:41.885
+The report lists Artifacts
+under "Not yet heard",
+
+00:02:41.885 --> 00:02:44.721
+and says the action is more listening.
+
+00:02:44.721 --> 00:02:49.275
+So the Artifacts finding rests
+on the team's fieldwork alone.
+
+00:02:49.275 --> 00:02:49.798
+Say so.
+
+00:02:50.300 --> 00:02:52.531
+When you glance at a score table,
+
+00:02:52.531 --> 00:02:57.398
+the overlap rule keeps you safe: if
+two ranges overlap, don't rank them.
+
+00:02:57.398 --> 00:03:01.589
+But the report's "Where to start"
+section uses a sharper test.
+
+00:03:01.589 --> 00:03:05.982
+It takes the two margins and
+combines them: square each one, add,
+
+00:03:05.982 --> 00:03:07.402
+take the square root.
+
+00:03:07.402 --> 00:03:11.999
+Then it asks whether the gap between
+the scores is bigger than that.
+
+00:03:11.999 --> 00:03:16.595
+Because that combined bar is smaller
+than simply adding the margins,
+
+00:03:16.595 --> 00:03:20.583
+two domains can be told apart
+even when their ranges touch.
+
+00:03:20.583 --> 00:03:22.949
+Then the report groups the domains.
+
+00:03:22.949 --> 00:03:28.222
+Everything it can't tell apart from the
+lowest goes in Start here, as a group,
+
+00:03:28.222 --> 00:03:29.236
+never in order.
+
+00:03:29.236 --> 00:03:33.562
+Everything it can't tell apart
+from the highest goes in Protect.
+
+00:03:33.562 --> 00:03:37.347
+And domains without enough
+stories are named separately,
+
+00:03:37.347 --> 00:03:41.944
+because not hearing about something
+isn't the same as it being fine.
+
+00:03:42.433 --> 00:03:43.283
+Now try it.
+
+00:03:43.283 --> 00:03:47.529
+Using Northwind's scores,
+work out three combined bars,
+
+00:03:47.529 --> 00:03:52.547
+then sort the domains into Start
+here, Protect and Not yet heard.
+
+00:03:52.547 --> 00:03:54.554
+A calculator is on screen.
+
+00:03:55.067 --> 00:03:58.278
+You know a composite is
+a pattern, not a grade.
+
+00:03:58.278 --> 00:04:03.880
+Even two domains in the middle of the table
+can be telling very different stories.
+
+00:04:03.880 --> 00:04:09.141
+Values' stones lean healthy, and where
+they drain, it's the predictable kind.
+
+00:04:09.141 --> 00:04:12.899
+Where History's aren't healthy,
+they're mostly chaotic,
+
+00:04:12.899 --> 00:04:16.179
+its triangle leans towards
+getting the job done,
+
+00:04:16.179 --> 00:04:19.322
+and fewer people say they
+knew what to expect.
+
+00:04:19.322 --> 00:04:21.235
+Values reads as predictable.
+
+00:04:21.235 --> 00:04:25.676
+History reads as change landing
+in ways people didn't see coming.
+
+00:04:25.676 --> 00:04:31.142
+Before you write any finding, read the
+quadrants, the triangle and both sliders,
+
+00:04:31.142 --> 00:04:32.918
+then the team's synthesis.
+
+00:04:33.433 --> 00:04:37.918
+For each prompt, an AI summary
+sorts the stories into a few kinds,
+
+00:04:37.918 --> 00:04:39.549
+with a count and a tone.
+
+00:04:39.549 --> 00:04:42.539
+Three things to know
+before you approve one.
+
+00:04:42.539 --> 00:04:46.956
+The AI sorts, but the code counts,
+and you can't edit the counts.
+
+00:04:46.956 --> 00:04:51.102
+Tone is the AI's reading of the
+words, not the storyteller's.
+
+00:04:51.102 --> 00:04:54.499
+And the product checks the
+two against each other.
+
+00:04:54.499 --> 00:04:56.878
+Look at Northwind's Rituals prompt.
+
+00:04:56.878 --> 00:05:02.586
+Nine stories were about huddles squeezed by
+short staffing, mostly read as negative.
+
+00:05:02.586 --> 00:05:05.780
+But of twenty-three
+stories with stones placed,
+
+00:05:05.780 --> 00:05:11.216
+six that read as negative were placed as
+energising by the people who told them.
+
+00:05:11.216 --> 00:05:14.410
+That's over a quarter,
+so the summary flags it.
+
+00:05:14.410 --> 00:05:18.284
+People were frustrated about
+losing something they value.
+
+00:05:18.284 --> 00:05:21.681
+Never settle that kind of
+gap in favour of the AI.
+
+00:05:22.167 --> 00:05:24.020
+Here's the heart of the method.
+
+00:05:24.020 --> 00:05:28.682
+Northwind's History team concluded that
+the merger is settled history for most
+
+00:05:28.682 --> 00:05:29.041
+staff.
+
+00:05:29.041 --> 00:05:33.883
+But over half the stories answering the
+change prompt describe change through the
+
+00:05:33.883 --> 00:05:35.018
+lens of the merger.
+
+00:05:35.018 --> 00:05:39.980
+Write two or three sentences for the History
+finding, and what you'd tell the team.
+
+00:05:39.980 --> 00:05:42.072
+Then compare with the model answer.
+
+00:05:42.567 --> 00:05:46.595
+Analyze drafts the executive
+summary, and for each domain,
+
+00:05:46.595 --> 00:05:49.443
+findings and two to four recommendations.
+
+00:05:49.443 --> 00:05:54.236
+It reads every team's work, marking
+unsubmitted teams as provisional.
+
+00:05:54.236 --> 00:05:59.863
+It reads the saved figures, the approved
+summaries and any linked Culture Mosaic.
+
+00:05:59.863 --> 00:06:02.988
+And for each domain, it
+reads twelve stories,
+
+00:06:02.988 --> 00:06:05.975
+spread evenly across
+the collection window.
+
+00:06:05.975 --> 00:06:10.907
+The scores use every story, but the
+draft's prose rests on that sample,
+
+00:06:10.907 --> 00:06:13.199
+and the methodology page says so.
+
+00:06:13.199 --> 00:06:18.270
+It's told never to name anyone, never
+to quote, never to invent evidence,
+
+00:06:18.270 --> 00:06:22.229
+and never to compare the
+survey's numbers with the dig's.
+
+00:06:22.229 --> 00:06:25.286
+It never overwrites a
+section you've edited.
+
+00:06:25.286 --> 00:06:28.273
+The draft replaces the
+labour of synthesis,
+
+00:06:28.273 --> 00:06:31.468
+not your judgment about
+what to tell a client.
+
+00:06:31.967 --> 00:06:34.525
+Read every section as the client will.
+
+00:06:34.525 --> 00:06:37.286
+The first sentence should be the finding.
+
+00:06:37.286 --> 00:06:39.238
+Every claim names its source.
+
+00:06:39.238 --> 00:06:41.999
+Disagreement is named, not smoothed over.
+
+00:06:41.999 --> 00:06:45.971
+And with a linked Culture
+Mosaic, compare words with words.
+
+00:06:45.971 --> 00:06:50.617
+Northwind's patient stories bear
+out the survey's Customer statement,
+
+00:06:50.617 --> 00:06:55.936
+while stories about referring doctors
+and ambulance crews hearing about changes
+
+00:06:55.936 --> 00:06:57.686
+late partly contradict it.
+
+00:06:57.686 --> 00:07:03.342
+Both belong in the finding, and neither
+involves setting one number against another.
+
+00:07:03.342 --> 00:07:04.958
+No causes you can't see.
+
+00:07:04.958 --> 00:07:10.277
+Describe what the culture does and what
+it costs, not whether it's good or bad.
+
+00:07:10.277 --> 00:07:13.441
+Make recommendations
+specific to this evidence.
+
+00:07:13.441 --> 00:07:18.491
+Then add sections that cross domains,
+and write the executive summary last.
+
+00:07:19.000 --> 00:07:23.427
+Nothing the AI suggests as a
+quote prints until you approve it.
+
+00:07:23.427 --> 00:07:25.745
+Before you do, check four things.
+
+00:07:25.745 --> 00:07:27.151
+Is it word for word?
+
+00:07:27.151 --> 00:07:29.259
+You may cut, but never reword.
+
+00:07:29.259 --> 00:07:32.913
+Does the domain have at
+least ten stories this wave?
+
+00:07:32.913 --> 00:07:38.393
+Could it identify anyone, through a unit,
+a shift, a rare role or an incident?
+
+00:07:38.393 --> 00:07:43.242
+And is it typical of the pattern,
+rather than the most vivid outlier?
+
+00:07:43.733 --> 00:07:47.376
+Draft while you work, In
+review while colleagues read,
+
+00:07:47.376 --> 00:07:49.400
+and Final when it's delivered.
+
+00:07:49.400 --> 00:07:52.705
+Every move into Final
+stores a delivered version,
+
+00:07:52.705 --> 00:07:55.470
+with the scores and margins as they were,
+
+00:07:55.470 --> 00:07:59.248
+so you can always show exactly
+what the client received.
+
+00:07:59.248 --> 00:08:02.688
+Before you send the PDF,
+read the methodology page.
+
+00:08:02.688 --> 00:08:07.208
+It says the stories are self-selected,
+not a representative sample.
+
+00:08:07.208 --> 00:08:11.862
+The scores compare within this
+program, not with other organizations,
+
+00:08:11.862 --> 00:08:14.965
+and there's no external
+benchmark behind them.
+
+00:08:14.965 --> 00:08:18.000
+And the margin of error
+covers sampling only.
+
+00:08:18.000 --> 00:08:20.226
+Your readout should say the same.
+
+00:08:20.733 --> 00:08:25.391
+Story patterns has two downloads:
+a scores file and a stories file.
+
+00:08:25.391 --> 00:08:28.311
+The stories file warns, in its own header,
+
+00:08:28.311 --> 00:08:31.856
+that unattributed isn't
+the same as unidentifiable.
+
+00:08:31.856 --> 00:08:37.001
+Keep it off shared drives, delete
+working copies when the report is final,
+
+00:08:37.001 --> 00:08:42.075
+and don't paste stories into another
+tool without the client's agreement.
+
+00:08:42.567 --> 00:08:46.573
+A second wave answers one
+question: did anything move?
+
+00:08:46.573 --> 00:08:49.393
+The report uses the same combined bar.
+
+00:08:49.393 --> 00:08:53.993
+In a hypothetical wave two, if
+Rituals rose by nine point one,
+
+00:08:53.993 --> 00:08:58.667
+against a bar of seven point
+seven, that's an established rise,
+
+00:08:58.667 --> 00:09:00.967
+even though the ranges overlap.
+
+00:09:00.967 --> 00:09:05.493
+If HR Systems rose by three
+point four, against the same bar,
+
+00:09:05.493 --> 00:09:07.793
+it's not an established change.
+
+00:09:07.793 --> 00:09:12.839
+It's the same organization measured
+twice, not a slight improvement.
+
+00:09:12.839 --> 00:09:16.771
+And a domain typed in by
+hand can't be tested at all.
+
+00:09:16.771 --> 00:09:22.929
+In the app, the Mosaic Signal tab's change
+across waves chart draws a line for each
+
+00:09:22.929 --> 00:09:23.448
+domain.
+
+00:09:23.448 --> 00:09:26.045
+A line that climbs isn't a verdict.
+
+00:09:26.045 --> 00:09:30.052
+The verdict is in the report's
+"what changed" section.
+
+00:09:30.052 --> 00:09:33.910
+To keep waves comparable,
+reuse last wave's prompts,
+
+00:09:33.910 --> 00:09:37.620
+pair any reworded prompt
+with its earlier version,
+
+00:09:37.620 --> 00:09:41.107
+and keep the follow-up
+questions word for word.
+
+00:09:41.600 --> 00:09:46.198
+Time for the module check: eight
+questions, and you need seven right.
+
+00:09:46.700 --> 00:09:50.135
+Here's your Synthesis
+and Report QA Checklist,
+
+00:09:50.135 --> 00:09:54.242
+from saving the figures to
+the last check before Final.
+
+00:09:54.242 --> 00:09:55.138
+Download it.
+
+00:09:55.633 --> 00:09:56.346
+To sum up.
+
+00:09:56.346 --> 00:10:00.762
+Save the figures and approve the
+summaries before you analyze.
+
+00:10:00.762 --> 00:10:03.683
+A domain is judged by its thinnest input.
+
+00:10:03.683 --> 00:10:08.741
+"Where to start" uses the combined
+bar, and names groups, never orders.
+
+00:10:08.741 --> 00:10:10.593
+Disagreement is a finding.
+
+00:10:10.593 --> 00:10:14.938
+Analyze drafts from a sample
+and never overwrites your edits.
+
+00:10:14.938 --> 00:10:17.859
+And Final keeps what the client received.
+
+00:10:17.859 --> 00:10:19.640
+Next: the practical task.
