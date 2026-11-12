@@ -5,25 +5,45 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { validateBody, createUserSchema } from "@/lib/validations";
 import { createUserAccount } from "@/lib/users/create-user";
 import { resolveTenantForUser, isFeatureEnabled } from "@/lib/tenants/tenant-queries";
+import { sendAccountInvite } from "@/lib/users/invite-email";
+import { appBaseUrl } from "@/lib/users/set-password-link";
+import { IMPORT_MAX_ROWS as MAX_ROWS, IMPORT_MAX_ROWS_WITH_INVITES as MAX_ROWS_WITH_INVITES } from "@/lib/users/import-limits";
 
-const MAX_ROWS = 500;
+// Rows are created one at a time, and emailing an invitation adds a link and
+// a send per row, so allow a 5-minute run (as other long routes here do) and
+// keep emailed batches smaller.
+export const maxDuration = 300;
+
+// Minimum gap between invitation emails, to stay well inside the email
+// provider's per-second rate limit.
+const INVITE_SPACING_MS = 500;
+const INVITE_RETRY_DELAY_MS = 1500;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface RowResult {
   row: number;
   email: string;
   status: "created" | "failed";
   error?: string;
+  /** An invitation with a set-password link was emailed. */
+  emailed?: boolean;
+  /** Set when an invitation was wanted but the email failed: share it by hand. */
+  invite_link?: string;
+  /** Only returned when no invitation was emailed (opted out, user-ID account, or the email failed). */
   temporary_password?: string;
 }
 
 /**
  * POST /api/users/import — bulk-create users from parsed CSV rows.
  * Body: { users: Array<{ first_name, last_name, email, role?, job_title?,
- *         organization_id?, manager_id? }> }
+ *         organization_id?, manager_id? }>, send_invite?: boolean }
  *
  * Each row is validated and created independently; one bad row never aborts the
- * batch. Returns a per-row summary including the temporary password for each
- * created user so the admin can distribute credentials.
+ * batch. Like Admin → Users → Add user, each email account is emailed an
+ * invitation with a set-password link unless send_invite is false. Rows that
+ * weren't emailed (opted out, user-ID accounts, or a failed send) come back
+ * with their temporary password so the admin can distribute credentials.
  */
 export async function POST(request: NextRequest) {
   const auth = await authorize("admin");
@@ -46,9 +66,43 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+  const sendInvites = body?.send_invite !== false;
+  if (sendInvites && rows.length > MAX_ROWS_WITH_INVITES) {
+    return NextResponse.json(
+      {
+        error: `Too many rows to email at once: ${rows.length}. Import at most ${MAX_ROWS_WITH_INVITES} at a time with invitations, or untick the invitation box.`,
+      },
+      { status: 400 }
+    );
+  }
 
   const service = createServiceClient();
   const results: RowResult[] = [];
+  const base = appBaseUrl(request.url);
+
+  let inviterName: string | undefined;
+  if (sendInvites) {
+    const { data: me } = await service
+      .from("users")
+      .select("first_name, last_name")
+      .eq("id", auth.user.id)
+      .maybeSingle();
+    inviterName = [me?.first_name, me?.last_name].filter(Boolean).join(" ").trim() || undefined;
+  }
+  let lastSendAt = 0;
+  const invite = async (user: { email: string; first_name?: string | null }) => {
+    const wait = lastSendAt + INVITE_SPACING_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    let result = await sendAccountInvite(service, user, base, inviterName);
+    if (!result.emailed) {
+      // Most often a momentary rate limit: one retry after a pause. A retry
+      // makes a fresh link, which replaces the first one.
+      await sleep(INVITE_RETRY_DELAY_MS);
+      result = await sendAccountInvite(service, user, base, inviterName);
+    }
+    lastSendAt = Date.now();
+    return result;
+  };
 
   // Pseudonymous (login ID) rows are a per-tenant opt-in; resolve the flag
   // once for the whole batch.
@@ -113,20 +167,42 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
+    // For pseudonymous accounts the login ID is the credential the admin
+    // hands out, not the synthetic email behind it.
+    const shownAs = created.user.login_id || created.user.email;
+
+    if (sendInvites && !created.user.login_id) {
+      const sent = await invite(created.user as { email: string; first_name?: string | null });
+      results.push(
+        sent.emailed
+          ? { row: rowNum, email: shownAs, status: "created", emailed: true }
+          : {
+              row: rowNum,
+              email: shownAs,
+              status: "created",
+              emailed: false,
+              ...(sent.link ? { invite_link: sent.link } : {}),
+              temporary_password: created.temporaryPassword,
+            }
+      );
+      continue;
+    }
+
     results.push({
       row: rowNum,
-      // For pseudonymous accounts the login ID is the credential the admin
-      // hands out, not the synthetic email behind it.
-      email: created.user.login_id || created.user.email,
+      email: shownAs,
       status: "created",
+      emailed: false,
       temporary_password: created.temporaryPassword,
     });
   }
 
   const createdCount = results.filter((r) => r.status === "created").length;
+  const emailedCount = results.filter((r) => r.emailed).length;
   return NextResponse.json({
     total: rows.length,
     created: createdCount,
+    emailed: emailedCount,
     failed: rows.length - createdCount,
     results,
   });
