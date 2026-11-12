@@ -91,7 +91,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         file: "document",
         link: "none",
         instructions: [
-          "No more than two pages, to Dana Okafor (CEO) and Alex Moreau (CPO).",
+          "No more than two pages, to Dana Okafor (CEO) and Alex Moreau (CPO). The case evidence is in MOS-100's Capstone section: Exhibits A to E, with a PDF to download.",
           "3 to 5 findings, each with the claim, the evidence (exhibits and numbers), your confidence and why, and the so-what for Northwind.",
           "At least two things the data can't tell us yet.",
           "Recommendations: what Northwind should do next, and which Mosaic tool, if any, should measure it and when.",
@@ -110,7 +110,8 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         instructions: [
           "One Word or PDF document with Part A (program plan and fieldwork plan for Taylor Brooks's clinic dig), then Part B (the two-page synthesis memo for Alex Moreau). Use the MOS-230 templates.",
           "Before you hand in: Part A has all eight sections and two domain fieldwork plans; Part B has a headline, three findings, limits and recommendations.",
-          "Nothing in either part names or points to an individual, and you haven't promised anything the dig can't deliver.",
+          "Nothing in either part names or points to an individual, and you haven't promised anything the dig can't deliver. Don't promise Taylor results for individual clinics, and don't report any site or group under 10 stories.",
+          "Your evidence is the Northwind dig file in MOS-230's practical, with a PDF to download.",
         ],
       },
       // MOS-240 · docs/training/mosaic-signal-certification/modules/MS-M6-practical.md
@@ -122,7 +123,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         file: "document",
         link: "none",
         instructions: [
-          "No more than two pages, to Alex Moreau.",
+          "No more than two pages, to Alex Moreau. Your data is in MOS-240's practical: Exhibits S3, S3.8 and S4-final, with a PDF to download.",
           "Patterns (3 to 5), outlier stories (2 or 3), cautions, a recommended next wave, and a short confidentiality note.",
           "Paraphrase stories and remove identifying details. Don't present any group under 10 stories, and don't try to work out who wrote anything.",
           "Upload a PDF or Word file.",
