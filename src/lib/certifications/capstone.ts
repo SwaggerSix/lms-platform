@@ -178,7 +178,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         instructions: [
           "One PDF or Word file with Part 1 and Part 2.",
           "Part 1: the completed Engagement Set-up Record, with screenshots of Sam's engagement as you built it on the practice site, and your reason for each choice.",
-          "Part 2: your first-session plan (no more than one page) and your privacy reflection.",
+          "Part 2: your first-session plan (no more than one page) and your privacy reflection (300–500 words).",
           "Don't include anything about a real coachee. Everything you need is in the brief.",
         ],
       }),
@@ -190,7 +190,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
   // MOS-220 · docs/training/surveycraft-certification/modules/SC-M6-practical.md
   "surveycraft-specialist": {
     title: "Practical: Northwind's decision-rights pulse",
-    intro: `Hand in your practical task here. The assessor opens your survey in the Mosaic Practice Workspace to check its settings and logic, and takes it from your link. ${ASSESSOR}`,
+    intro: `Hand in your practical task here. The assessor marks the file you upload, your rationale and screenshots, and takes the survey from your link if it's still live. ${ASSESSOR}`,
     summary: "Hand in your practical survey build for marking. The course exam alone doesn't certify you.",
     pieces: [
       practical({
@@ -199,10 +199,13 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         linkLabel: "The survey's published link",
         requiredNote: "The survey's exact name in the Mosaic Practice Workspace",
         warning:
-          "The practice workspace is wiped on the 1st of every month, your survey with it. Hand in before the month ends and keep your own copy of the rationale and screenshots. If you resubmit in a new month, rebuild the survey first.",
+          "The practice workspace is wiped on the 1st of every month, your survey with it, so your file is the evidence the assessor marks. Take your screenshots and hand in before the month ends, and keep your own copy of the file. If you resubmit in a new month, rebuild the survey first.",
         instructions: [
           "The survey's published link and its exact name in the Mosaic Practice Workspace.",
-          "One PDF or Word file with your one-page design rationale and two screenshots from your test run, taken before you deleted the test responses: one chart showing the logic worked, and one Compare Two Questions table.",
+          "One PDF or Word file with your one-page design rationale, followed by your screenshots (they don't count toward the page).",
+          "Screenshots: the test rows on the Responses page, taken before you delete them; Preview of each logic path (someone who knows the charter, and someone who doesn't); and the survey's settings page showing Anonymous Responses, minimum group size, close date and response limit.",
+          "Don't screenshot Analytics charts or a Compare Two Questions table from your test run: they leave test responses out, so they'll be empty.",
+          "The client's plan closes the survey on September 18, 2026, which has passed. Set any future close date in the workspace, and give September 18 as the client's close date in your rationale.",
           "Don't distribute the survey. Describe your roster and link plan in the rationale instead.",
         ],
       }),

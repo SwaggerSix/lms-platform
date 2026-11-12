@@ -279,6 +279,31 @@ describe("Specialist practicals (MOS-210, MOS-220)", () => {
     }
   });
 
+  it("SurveyCraft asks for one file with the rationale and screenshots that still show test data, and a future close date", () => {
+    const piece = sc.pieces[0];
+    expect(piece).toMatchObject({ link: "required", file: "document" });
+    expect(piece.requiredNote).toBe("The survey's exact name in the Mosaic Practice Workspace");
+    const text = [sc.intro, piece.warning, ...piece.instructions].join("\n");
+    expect(text).toContain("One PDF or Word file with your one-page design rationale");
+    expect(text).toContain("don't count toward the page");
+    expect(text).toContain("test rows on the Responses page");
+    expect(text).toContain("Preview of each logic path");
+    expect(text).toContain("Anonymous Responses, minimum group size, close date and response limit");
+    expect(text).toContain("Set any future close date");
+    expect(text).toContain("September 18");
+    expect(text).toContain("your file is the evidence");
+    // Analytics leaves test responses out (since 2026-11-08), so these would be empty.
+    expect(text).not.toMatch(/one chart showing the logic worked|two screenshots/i);
+    expect(text).not.toContain("opens your survey in the Mosaic Practice Workspace to check");
+  });
+
+  it("Coaching Studio asks for one PDF or Word file with Part 1 and Part 2", () => {
+    const piece = CAPSTONES["coaching-studio-specialist"].pieces[0];
+    expect(piece).toMatchObject({ link: "none", file: "document" });
+    expect(piece.instructions[0]).toBe("One PDF or Word file with Part 1 and Part 2.");
+    expect(piece.instructions.join("\n")).toContain("privacy reflection (300–500 words)");
+  });
+
   it("SurveyCraft needs the survey link, its name and the document", async () => {
     const base = { userId: U, cert: scCert, cfg: sc, kind: "practical" as const };
     expect(await submitPiece(service, { ...base, filePath: doc, note: "Decision-rights pulse" })).toMatchObject({ ok: false, status: 400 });
