@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/service";
 import {
@@ -128,7 +129,12 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
   const credentialId = userCert.metadata?.credential_id
     || `CERT-${(certification?.id || userCert.id).slice(0, 8).toUpperCase()}`;
 
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
+  // The address the visitor used: the LMS serves several (learn.gothamculture.com,
+  // learn.gothamgovernment.com), so one configured URL is wrong for some of them.
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const baseUrl = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
 
   const certData: CertificateData = {
     learner_name: learnerName,
