@@ -730,7 +730,7 @@
    {
     "k": "open",
     "s": "<p>Which differences between domains can you state with confidence, and which can't you?</p>",
-    "model": "<ul><li><em>Confident:</em> Stakeholder Relations (60.6–72.4) and Artifacts (57.4–69.0) sit clearly above HR Systems (36.1–47.3). Their ranges don't overlap.</li><li><em>Not confident:</em> HR Systems, Stories (42.9–53.5) and History (44.8–55.0) overlap, so don't rank those three against each other.</li></ul><p><strong>Meets:</strong> uses the margins to separate firm from unfirm differences.</p>"
+    "model": "<ul><li><em>Confident:</em> Stakeholder Relations (60.6–72.4) and Artifacts (57.4–69.0) sit clearly above HR Systems (36.1–47.3). Their ranges don't overlap.</li><li><em>Not confident by eye:</em> HR Systems, Stories (42.9–53.5) and History (44.8–55.0) overlap, so the quick overlap check says don't rank them.</li><li><em>The report's own test is sharper:</em> HR Systems and History are told apart (gap 8.2, more than √(5.6² + 5.1²) = 7.6), but HR Systems and Stories are not (gap 6.5, less than 7.7). So \"Start here\" names HR Systems and Stories together, never in order.</li></ul><p><strong>Meets:</strong> uses the margins to separate firm from unfirm differences.</p>"
    },
    {
     "k": "open",

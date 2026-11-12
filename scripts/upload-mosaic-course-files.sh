@@ -33,6 +33,7 @@ type_of() {
     *.mp4) echo "video/mp4" ;;
     *.vtt) echo "text/vtt" ;;
     *.mp3) echo "audio/mpeg" ;;
+    *.pdf) echo "application/pdf" ;;
     *) echo "application/octet-stream" ;;
   esac
 }
