@@ -575,424 +575,427 @@ It has more than one problem.
 00:09:50.539 --> 00:09:52.624
 Choose the most important fix.
 
-00:09:53.133 --> 00:09:57.924
+00:09:53.133 --> 00:09:57.847
 A story collection asks a pool of
 prompts, at least one per domain.
 
-00:09:57.924 --> 00:10:01.929
+00:09:57.847 --> 00:10:01.787
 Each respondent is served one
 approved prompt at random,
 
-00:10:01.929 --> 00:10:04.574
+00:10:01.787 --> 00:10:04.391
 and offered another when they finish.
 
-00:10:04.574 --> 00:10:09.723
+00:10:04.391 --> 00:10:09.456
 Prompts can be AI drafts, which a
 person always reviews before approval,
 
-00:10:09.723 --> 00:10:14.299
+00:10:09.456 --> 00:10:13.959
 hand-written, or chosen from a
 library of thirty-two per domain.
 
-00:10:14.299 --> 00:10:19.448
+00:10:13.959 --> 00:10:19.025
 If a Culture Mosaic is linked, its
 three lowest subcomponents are named,
 
-00:10:19.448 --> 00:10:21.736
+00:10:19.025 --> 00:10:21.277
 and prompts on those come first.
 
-00:10:21.736 --> 00:10:24.167
+00:10:21.277 --> 00:10:23.669
 Respondents don't need an account.
 
-00:10:24.167 --> 00:10:29.244
-The page promises one story and a
-few questions in about three minutes,
+00:10:23.669 --> 00:10:27.046
+The page asks for one
+story and a few questions,
 
-00:10:29.244 --> 00:10:32.820
+00:10:27.046 --> 00:10:30.001
+says most people take five to ten minutes,
+
+00:10:30.001 --> 00:10:33.519
 says that stories are read
 by AI to find patterns,
 
-00:10:32.820 --> 00:10:37.182
+00:10:33.519 --> 00:10:37.811
 and asks people to write about
 what happened rather than who.
 
-00:10:37.182 --> 00:10:41.043
+00:10:37.811 --> 00:10:41.610
 Afterwards, they get a link
 to delete their own story.
 
-00:10:41.043 --> 00:10:43.331
+00:10:41.610 --> 00:10:43.862
 And know the three stop buttons.
 
-00:10:43.331 --> 00:10:47.550
+00:10:43.862 --> 00:10:48.013
 Close collection stops new
 stories, and you can reverse it.
 
-00:10:47.550 --> 00:10:50.625
+00:10:48.013 --> 00:10:51.038
 Unlink breaks the link
 to the story survey.
 
-00:10:50.625 --> 00:10:53.628
+00:10:51.038 --> 00:10:53.993
 And Mark program complete closes the link,
 
-00:10:53.628 --> 00:10:56.846
+00:10:53.993 --> 00:10:57.159
 and reopening the program
 does not reopen it.
 
-00:10:57.333 --> 00:11:01.533
+00:10:57.667 --> 00:11:01.866
 Culture Dig uses the same
 question types as Mosaic Signal,
 
-00:11:01.533 --> 00:11:07.252
+00:11:01.866 --> 00:11:07.586
 with one big difference: its questions
 have a direction, so they can be scored.
 
-00:11:07.252 --> 00:11:11.741
+00:11:07.586 --> 00:11:12.074
 The triad asks what was really
 driving people: shared purpose,
 
-00:11:11.741 --> 00:11:14.637
+00:11:12.074 --> 00:11:14.970
 getting the job done, or avoiding blame.
 
-00:11:14.637 --> 00:11:17.533
+00:11:14.970 --> 00:11:17.866
 Avoiding blame is the concerning corner.
 
-00:11:17.533 --> 00:11:23.542
+00:11:17.866 --> 00:11:23.876
 One slider asks whether it felt made up as
 we went, or like we knew what to expect.
 
-00:11:23.542 --> 00:11:28.755
+00:11:23.876 --> 00:11:29.089
 Another asks whether the story left
 people less or more connected to the
 
-00:11:28.755 --> 00:11:29.696
+00:11:29.089 --> 00:11:30.030
 organization.
 
-00:11:29.696 --> 00:11:34.258
+00:11:30.030 --> 00:11:34.591
 The stones sit on two fixed axes:
 unpredictable to predictable,
 
-00:11:34.258 --> 00:11:36.212
+00:11:34.591 --> 00:11:36.546
 and draining to energising.
 
-00:11:36.212 --> 00:11:38.095
+00:11:36.546 --> 00:11:38.428
 That makes four quadrants.
 
-00:11:38.095 --> 00:11:40.846
+00:11:38.428 --> 00:11:41.179
 Predictable and energising is Healthy.
 
-00:11:40.846 --> 00:11:44.032
+00:11:41.179 --> 00:11:44.365
 Unpredictable and
 energising is Complicated.
 
-00:11:44.032 --> 00:11:46.493
+00:11:44.365 --> 00:11:46.827
 Predictable and draining is Rigid.
 
-00:11:46.493 --> 00:11:49.534
+00:11:46.827 --> 00:11:49.867
 And unpredictable and draining is Chaotic.
 
-00:11:49.534 --> 00:11:54.457
+00:11:49.867 --> 00:11:54.791
 Standalone Mosaic Signal questions
 are written for open exploration,
 
-00:11:54.457 --> 00:11:58.222
+00:11:54.791 --> 00:11:58.556
 which is right for sense-making
 but can't be scored.
 
-00:11:58.222 --> 00:12:03.580
+00:11:58.556 --> 00:12:03.913
 Culture Dig fixes the direction so it
 can compute a score for each domain.
 
-00:12:04.067 --> 00:12:09.585
+00:12:04.400 --> 00:12:09.918
 Here's how one domain gets its number,
 a composite from zero to one hundred.
 
-00:12:09.585 --> 00:12:15.393
+00:12:09.918 --> 00:12:15.726
 Take the sliders: on average, how far
 toward the healthier end did stories land?
 
-00:12:15.393 --> 00:12:16.700
+00:12:15.726 --> 00:12:17.033
 Say sixty percent.
 
-00:12:16.700 --> 00:12:20.621
+00:12:17.033 --> 00:12:20.954
 Take the stones: of all the
 placements in this domain,
 
-00:12:20.621 --> 00:12:23.525
+00:12:20.954 --> 00:12:23.858
 what share landed in the Healthy corner?
 
-00:12:23.525 --> 00:12:24.614
+00:12:23.858 --> 00:12:24.947
 Say forty-five.
 
-00:12:24.614 --> 00:12:29.551
+00:12:24.947 --> 00:12:29.884
 Take the triad: how much of the
 weight sat away from avoiding blame?
 
-00:12:29.551 --> 00:12:30.422
+00:12:29.884 --> 00:12:30.756
 Say seventy.
 
-00:12:30.422 --> 00:12:35.650
+00:12:30.756 --> 00:12:35.983
 Weight them thirty-five percent,
 thirty-five percent and thirty percent,
 
-00:12:35.650 --> 00:12:38.627
+00:12:35.983 --> 00:12:38.960
 and add them up: fifty-seven point eight.
 
-00:12:38.627 --> 00:12:44.508
+00:12:38.960 --> 00:12:44.841
 That formula is locked by the Mosaic team,
 and scores are computed by the server,
 
-00:12:44.508 --> 00:12:46.105
+00:12:44.841 --> 00:12:46.438
 never entered by hand.
 
-00:12:46.105 --> 00:12:47.920
+00:12:46.438 --> 00:12:48.253
 There are two safeguards.
 
-00:12:47.920 --> 00:12:53.220
+00:12:48.253 --> 00:12:53.554
 No domain gets a score until its
 thinnest input has at least ten stories.
 
-00:12:53.220 --> 00:12:56.197
+00:12:53.554 --> 00:12:56.530
 Until then you'll see "too few to score".
 
-00:12:56.197 --> 00:13:00.699
+00:12:56.530 --> 00:13:01.032
 And every score carries a
 ninety-five percent margin of error,
 
-00:13:00.699 --> 00:13:03.385
+00:13:01.032 --> 00:13:03.718
 so fewer stories means a wider range.
 
-00:13:03.385 --> 00:13:08.250
+00:13:03.718 --> 00:13:08.583
 Before you compare two domains,
 check whether their ranges overlap.
 
-00:13:08.733 --> 00:13:13.611
+00:13:09.067 --> 00:13:13.945
 A high composite isn't a good culture,
 and a low one isn't a bad culture.
 
-00:13:13.611 --> 00:13:18.824
+00:13:13.945 --> 00:13:19.157
 It tells you how the stories in a domain
 read: how predictable and energising,
 
-00:13:18.824 --> 00:13:23.902
+00:13:19.157 --> 00:13:24.236
 how far toward the healthier end, and
 how little blame-avoidance drove them.
 
-00:13:23.902 --> 00:13:25.773
+00:13:24.236 --> 00:13:26.107
 It's a pattern, not a grade.
 
-00:13:25.773 --> 00:13:30.585
+00:13:26.107 --> 00:13:30.918
 If two domains' ranges overlap, don't
 claim one is lower than the other.
 
-00:13:30.585 --> 00:13:32.656
+00:13:30.918 --> 00:13:32.989
 And look underneath the number.
 
-00:13:32.656 --> 00:13:36.532
+00:13:32.989 --> 00:13:36.865
 A low composite could come from
 stones landing in Chaotic,
 
-00:13:36.532 --> 00:13:41.143
+00:13:36.865 --> 00:13:41.476
 from stones landing in Rigid, or
 from heavy weight on avoiding blame,
 
-00:13:41.143 --> 00:13:44.417
+00:13:41.476 --> 00:13:44.750
 and each points to a very
 different conversation.
 
-00:13:44.417 --> 00:13:49.830
+00:13:44.750 --> 00:13:50.163
 The Mosaic team's own testing on a simulated
 wave found the ranking stayed stable
 
-00:13:49.830 --> 00:13:55.175
+00:13:50.163 --> 00:13:55.509
 under different weightings, and that in
 practice the composite moves mostly with
 
-00:13:55.175 --> 00:13:55.910
+00:13:55.509 --> 00:13:56.244
 the stones.
 
-00:13:56.400 --> 00:13:58.968
+00:13:56.733 --> 00:13:59.301
 Here's how the report comes together.
 
-00:13:58.968 --> 00:14:03.617
+00:13:59.301 --> 00:14:03.951
 On Story patterns, fill from stories,
 review the figures, and save,
 
-00:14:03.617 --> 00:14:06.324
+00:14:03.951 --> 00:14:06.657
 which computes each domain's composite.
 
-00:14:06.324 --> 00:14:11.737
+00:14:06.657 --> 00:14:12.070
 You can also link a Culture Mosaic there
 to see which of its items each domain
 
-00:14:11.737 --> 00:14:13.402
+00:14:12.070 --> 00:14:13.736
 confirms or contradicts.
 
-00:14:13.402 --> 00:14:17.289
+00:14:13.736 --> 00:14:17.622
 Approve the AI summaries of
 what the stories were about.
 
-00:14:17.289 --> 00:14:21.036
+00:14:17.622 --> 00:14:21.370
 Then press Analyze, which
 drafts an executive summary,
 
-00:14:21.036 --> 00:14:24.992
+00:14:21.370 --> 00:14:25.325
 plus findings and two to four
 recommendations per domain,
 
-00:14:24.992 --> 00:14:29.364
+00:14:25.325 --> 00:14:29.697
 and treats disagreement between
 teams and stories as a finding.
 
-00:14:29.364 --> 00:14:32.903
+00:14:29.697 --> 00:14:33.237
 Then edit every section
 yourself, saving as you go.
 
-00:14:32.903 --> 00:14:36.165
+00:14:33.237 --> 00:14:36.498
 Approve up to three
 verbatim quotes per domain,
 
-00:14:36.165 --> 00:14:39.357
+00:14:36.498 --> 00:14:39.691
 and nothing prints until
 a person approves it.
 
-00:14:39.357 --> 00:14:44.354
+00:14:39.691 --> 00:14:44.687
 There are no quotes from a domain with
 fewer than ten stories that wave.
 
-00:14:44.354 --> 00:14:49.142
+00:14:44.687 --> 00:14:49.476
 Move the report from Draft, to In
 review, to Final, which freezes it.
 
-00:14:49.142 --> 00:14:51.294
+00:14:49.476 --> 00:14:51.627
 Then print or save it as a PDF.
 
-00:14:51.294 --> 00:14:57.054
+00:14:51.627 --> 00:14:57.387
 The report includes a "Where to start" page
 that groups domains rather than ranking
 
-00:14:57.054 --> 00:15:01.912
+00:14:57.387 --> 00:15:02.245
 them, a score table with story counts
 and ranges, one page per domain,
 
-00:15:01.912 --> 00:15:03.300
+00:15:02.245 --> 00:15:03.633
 and the methodology.
 
-00:15:03.800 --> 00:15:09.099
+00:15:04.133 --> 00:15:09.432
 Culture changes slowly, and a second
 wave tells you whether it's moving.
 
-00:15:09.099 --> 00:15:11.969
+00:15:09.432 --> 00:15:12.303
 Space waves six to twelve months apart.
 
-00:15:11.969 --> 00:15:17.636
+00:15:12.303 --> 00:15:17.970
 Keep the follow-up question wording
 identical, and reuse last wave's prompts.
 
-00:15:17.636 --> 00:15:23.524
+00:15:17.970 --> 00:15:23.858
 Read change with the ranges: if the ranges
 overlap a lot, the change isn't firm.
 
-00:15:23.524 --> 00:15:29.486
+00:15:23.858 --> 00:15:29.819
 Story summaries only flag a theme as
 growing or shrinking when a statistical test
 
-00:15:29.486 --> 00:15:30.001
+00:15:29.819 --> 00:15:30.334
 passes.
 
-00:15:30.500 --> 00:15:31.545
+00:15:30.833 --> 00:15:31.879
 Now plan one.
 
-00:15:31.545 --> 00:15:33.073
+00:15:31.879 --> 00:15:33.406
 It's November 2026.
 
-00:15:33.073 --> 00:15:38.541
+00:15:33.406 --> 00:15:38.874
 Northwind's Collaboration is improving,
 but Empowered Teams is flat,
 
-00:15:38.541 --> 00:15:44.250
+00:15:38.874 --> 00:15:44.583
 and "decisions made without frontline
 input" is a steady comment theme.
 
-00:15:44.250 --> 00:15:48.351
+00:15:44.583 --> 00:15:48.684
 Alex wants to understand
 why decisions feel closed,
 
-00:15:48.351 --> 00:15:54.703
+00:15:48.684 --> 00:15:55.036
 and is considering a Culture Dig that
 Northwind runs itself, with you advising.
 
-00:15:54.703 --> 00:16:00.573
+00:15:55.036 --> 00:16:00.906
 Draft a one-page plan covering the
 license, roles, teams, dates, prompts,
 
-00:16:00.573 --> 00:16:02.583
+00:16:00.906 --> 00:16:02.917
 communications and waves.
 
-00:16:02.583 --> 00:16:05.478
+00:16:02.917 --> 00:16:05.811
 Then compare it with the model plan.
 
-00:16:05.967 --> 00:16:11.158
+00:16:06.300 --> 00:16:11.492
 Time for the module check: ten
 questions, and you need eight right.
 
-00:16:11.158 --> 00:16:12.863
+00:16:11.492 --> 00:16:13.196
 Retakes are unlimited.
 
-00:16:13.367 --> 00:16:18.277
+00:16:13.700 --> 00:16:18.611
 Here's your Culture Dig Program
 Planner, with roles, teams, dates,
 
-00:16:18.277 --> 00:16:20.807
+00:16:18.611 --> 00:16:21.140
 story collection and report steps.
 
-00:16:20.807 --> 00:16:21.700
+00:16:21.140 --> 00:16:22.033
 Download it.
 
-00:16:22.200 --> 00:16:27.650
+00:16:22.533 --> 00:16:27.983
 And here's the Field Card for your researchers:
 the three parts of an observation,
 
-00:16:27.650 --> 00:16:32.701
+00:16:27.983 --> 00:16:33.035
 good interview questions, and what to
 do before, during and after fieldwork.
 
-00:16:33.200 --> 00:16:33.901
+00:16:33.533 --> 00:16:34.235
 To recap.
 
-00:16:33.901 --> 00:16:40.212
+00:16:34.235 --> 00:16:40.546
 Culture Dig is an eight to twelve week
 research program on Schein's three layers,
 
-00:16:40.212 --> 00:16:44.186
+00:16:40.546 --> 00:16:44.519
 with seven domains, seven
 teams and one story link.
 
-00:16:44.186 --> 00:16:50.497
+00:16:44.519 --> 00:16:50.831
 Teams bring depth, stories bring breadth,
 and the gaps between them are findings.
 
-00:16:50.497 --> 00:16:56.575
+00:16:50.831 --> 00:16:56.908
 Roles run from Program Lead, to Facilitator,
 who is read-only, to Team Member,
 
-00:16:56.575 --> 00:16:57.743
+00:16:56.908 --> 00:16:58.077
 to Participant.
 
-00:16:57.743 --> 00:17:03.353
+00:16:58.077 --> 00:17:03.687
 Observations are source, quote and
 theme, and source never holds a name.
 
-00:17:03.353 --> 00:17:08.574
+00:17:03.687 --> 00:17:08.907
 The composite needs ten or more
 stories and always carries a range.
 
-00:17:08.574 --> 00:17:10.755
+00:17:08.907 --> 00:17:11.089
 It's a pattern, not a grade.
 
-00:17:10.755 --> 00:17:15.041
+00:17:11.089 --> 00:17:15.374
 And a website purchase buys
 software, not facilitation.
 
-00:17:15.041 --> 00:17:18.235
+00:17:15.374 --> 00:17:18.568
 Next: Module 8, interpreting Mosaic data.
 
