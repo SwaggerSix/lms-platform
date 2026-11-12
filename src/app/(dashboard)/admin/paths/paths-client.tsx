@@ -34,18 +34,19 @@ import { PathThumbnail } from '@/components/paths/path-thumbnail';
 
 interface InviteRowResult {
   email: string;
-  status: 'invited' | 'added' | 'already' | 'failed';
+  status: 'invited' | 'added' | 'resent' | 'already' | 'failed';
   reason?: string;
 }
 
 interface InviteResponse {
-  summary: { invited: number; added: number; already: number; failed: number };
+  summary: { invited: number; added: number; resent?: number; already: number; failed: number };
   results: InviteRowResult[];
 }
 
 const inviteStatusLabel: Record<InviteRowResult['status'], string> = {
   invited: 'Invited (new account)',
   added: 'Given access',
+  resent: 'Re-sent sign-in link',
   already: 'Already had access',
   failed: 'Failed',
 };
@@ -53,6 +54,7 @@ const inviteStatusLabel: Record<InviteRowResult['status'], string> = {
 const inviteStatusClass: Record<InviteRowResult['status'], string> = {
   invited: 'bg-green-50 text-green-700',
   added: 'bg-green-50 text-green-700',
+  resent: 'bg-blue-50 text-blue-700',
   already: 'bg-gray-100 text-gray-600',
   failed: 'bg-red-50 text-red-700',
 };
@@ -1169,10 +1171,14 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
       >
         {inviteResult ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className={cn('grid grid-cols-2 gap-3', inviteResult.summary.resent ? 'sm:grid-cols-5' : 'sm:grid-cols-4')}>
               {[
                 { label: 'Invited (new)', value: inviteResult.summary.invited },
                 { label: 'Given access', value: inviteResult.summary.added },
+                // Only shown when it happened, to keep the usual four tiles.
+                ...(inviteResult.summary.resent
+                  ? [{ label: 'Re-sent sign-in link', value: inviteResult.summary.resent }]
+                  : []),
                 { label: 'Already had access', value: inviteResult.summary.already },
                 { label: 'Failed', value: inviteResult.summary.failed },
               ].map((s) => (

@@ -146,7 +146,7 @@ describe("POST /api/paths/[id]/invite", () => {
     const res = await invite("existing@example.com\nNew Person <new@example.com>");
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.summary).toEqual({ invited: 1, added: 1, already: 0, failed: 0 });
+    expect(body.summary).toEqual({ invited: 1, added: 1, resent: 0, already: 0, failed: 0 });
 
     // Path plus every course on it, for both people.
     for (const id of ["u-existing", "u-new@example.com"]) {
@@ -176,7 +176,7 @@ describe("POST /api/paths/[id]/invite", () => {
     createUserAccount.mockClear();
     const res = await invite("existing@example.com, new@example.com");
     const body = await res.json();
-    expect(body.summary).toEqual({ invited: 0, added: 0, already: 2, failed: 0 });
+    expect(body.summary).toEqual({ invited: 0, added: 0, resent: 0, already: 2, failed: 0 });
     expect(createUserAccount).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -186,17 +186,25 @@ describe("POST /api/paths/[id]/invite", () => {
     sendEmail.mockClear();
     generateLink.mockClear();
     const body = await (await invite("new@example.com")).json();
-    expect(body.summary).toEqual({ invited: 0, added: 0, already: 1, failed: 0 });
-    expect(body.results[0].reason).toMatch(/sent a new set-password link/);
+    expect(body.summary).toEqual({ invited: 0, added: 0, resent: 1, already: 0, failed: 0 });
+    expect(body.results[0].status).toBe("resent");
     expect(generateLink).toHaveBeenCalledWith(expect.objectContaining({ type: "recovery", email: "new@example.com" }));
     expect(sendEmail).toHaveBeenCalledTimes(1);
     expect(sendEmail.mock.calls[0][0].html).toContain("https://auth.test/recover");
   });
 
+  it("reports a failed re-send as failed, not as already-had-access", async () => {
+    await invite("new@example.com");
+    sendEmail.mockResolvedValueOnce({ success: false } as never);
+    const body = await (await invite("new@example.com")).json();
+    expect(body.summary).toEqual({ invited: 0, added: 0, resent: 0, already: 0, failed: 1 });
+    expect(body.results[0].reason).toMatch(/Resend invite/);
+  });
+
   it("sends an existing account that never signed in a set-password link, not just the path", async () => {
     signedIn.delete("a-u-existing");
     const body = await (await invite("existing@example.com")).json();
-    expect(body.summary).toEqual({ invited: 0, added: 1, already: 0, failed: 0 });
+    expect(body.summary).toEqual({ invited: 0, added: 1, resent: 0, already: 0, failed: 0 });
     const mail = sendEmail.mock.calls.find(([m]) => m.to === "Existing@Example.com")![0];
     expect(mail.html).toContain("https://auth.test/recover");
     expect(mail.html).toContain("Set your password");
@@ -220,7 +228,7 @@ describe("POST /api/paths/[id]/invite", () => {
   it("lets a manager invite only their own team, and never create accounts", async () => {
     actor = { id: MANAGER, role: "manager" };
     const body = await (await invite("report@example.com, existing@example.com, brand-new@example.com")).json();
-    expect(body.summary).toEqual({ invited: 0, added: 1, already: 0, failed: 2 });
+    expect(body.summary).toEqual({ invited: 0, added: 1, resent: 0, already: 0, failed: 2 });
     expect(pathEnrollments.has(`u-report:${PATH}`)).toBe(true);
     expect(pathEnrollments.has(`u-existing:${PATH}`)).toBe(false);
     expect(createUserAccount).not.toHaveBeenCalled();

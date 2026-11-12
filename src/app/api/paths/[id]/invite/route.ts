@@ -36,7 +36,9 @@ import { generateSetPasswordLink, hasNeverSignedIn } from "@/lib/users/set-passw
 
 const bodySchema = z.object({ text: z.string().min(1).max(50_000) });
 
-type RowStatus = "invited" | "added" | "already" | "failed";
+// "resent": already had the path but had never signed in, so they were sent
+// a fresh set-password link.
+type RowStatus = "invited" | "added" | "resent" | "already" | "failed";
 interface RowResult {
   email: string;
   status: RowStatus;
@@ -144,6 +146,7 @@ export async function POST(
   const summary = {
     invited: results.filter((r) => r.status === "invited").length,
     added: results.filter((r) => r.status === "added").length,
+    resent: results.filter((r) => r.status === "resent").length,
     already: results.filter((r) => r.status === "already").length,
     failed: results.filter((r) => r.status === "failed").length,
   };
@@ -210,14 +213,17 @@ async function inviteOne(
         base: ctx.base,
         inviterName: ctx.inviterName,
       });
-      return {
-        email,
-        status: "already",
-        reason:
-          sent === "failed"
-            ? "Already had the path and hasn't signed in yet — the new set-password email didn't send; use Resend invite under Users"
-            : "Already had the path but hadn't signed in — sent a new set-password link",
-      };
+      return sent === "failed"
+        ? {
+            email,
+            status: "failed",
+            reason: "Already had the path but hasn't signed in, and the new sign-in email didn't send — use Resend invite under Users",
+          }
+        : {
+            email,
+            status: "resent",
+            reason: "Already had the path but hadn't signed in yet. Any earlier link no longer works.",
+          };
     }
 
     const sent = await emailPathAccess(service, {
