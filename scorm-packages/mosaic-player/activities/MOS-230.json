@@ -1,451 +1,451 @@
 [
- {
-  "id": "CD-M1-05",
-  "title": "Per engagement or annual?",
-  "intro": "<p>Coastline Advisory is a Mosaic partner and a SurveyCraft platform licensee. They run culture work for clients inside their own SurveyCraft organization. Their director expects to run <strong>five</strong> Culture Digs in the next twelve months, and asks you which add-on to buy.</p>",
-  "items": [
-   {
-    "k": "mcq",
-    "s": "<p>What do you recommend?</p>",
-    "o": [
-     "<p>Five website purchases, one per dig.</p>",
-     "<p>Compare the annual add-on with five per-engagement add-ons on the current price sheet. The annual is designed to pay off at about four programs a year, so at five it's likely the better buy. Remind them it runs 365 days and doesn't renew on its own.</p>",
-     "<p>One per-engagement add-on. It covers every dig they run that year.</p>",
-     "<p>The annual add-on, because it's the only one that includes facilitation.</p>"
-    ],
-    "c": 1,
-    "f": {
-     "0": "<p>That works, but the website route is priced for organizations without a platform license. A licensee should look at the add-on first.</p>",
-     "1": "<p>Right. The two add-on shapes are built so the annual crosses over at about four programs a year. Check today's figures, and diarize the expiry: when it lapses, every program goes read-only and the story links close.</p>",
-     "2": "<p>A per-engagement add-on is one program and its first wave.</p>",
-     "3": "<p>No license includes facilitation. Facilitation is always a separate, sales-led engagement with the Mosaic team.</p>"
-    }
-   }
-  ]
- },
- {
-  "id": "CD-M1-10",
-  "title": "The program made by mistake",
-  "intro": "<p><em>Suppose</em> that on the day Northwind's license arrived, Alex clicked around the hub and created a program called \"test\". Nobody added anyone, and no story collection was set up. When Alex then tries to create \"Northwind Culture Dig 2027\", it's refused: the license covers one program, and it has been used.</p>",
-  "items": [
-   {
-    "k": "mcq",
-    "s": "<p>What should Alex do?</p>",
-    "o": [
-     "<p>Archive \"test\". Archived programs don't count.</p>",
-     "<p>Delete \"test\". It collected nothing, so deleting it frees the slot, and they can create the real program.</p>",
-     "<p>Rename \"test\" and use it as the real program, after checking nothing was collected in it.</p>",
-     "<p>Buy a second program. A slot, once used, can never be freed.</p>"
-    ],
-    "c": 1,
-    "f": {
-     "0": "<p>Archived programs still count against the license.</p>",
-     "1": "<p>Right. Deleting a program that collected nothing frees its slot. (Renaming it would also work, but only an org owner or admin can rename, and a fresh program avoids any doubt.)</p>",
-     "2": "<p>That works too, and an org admin can rename it. But B is cleaner: a fresh program starts with nothing in it, and you're sure of that.</p>",
-     "3": "<p>A slot used by a program that collected nothing comes back when that program is deleted. Only a program that collected stories, figures or a report keeps its slot used after deletion.</p>"
-    }
-   }
-  ]
- },
- {
-  "id": "CD-M2-05",
-  "title": "Northwind's organization before the dig",
-  "intro": "<p>Before Northwind's dig started, five people already had roles in Northwind's SurveyCraft organization (Exhibit 2):</p><table><tr><th>Person</th><th>Org role</th></tr><tr><td>Alex Moreau, CPO</td><td>Owner</td></tr><tr><td>Jamie Ortiz, Organizational Development Lead</td><td>Editor</td></tr><tr><td>Jordan Reyes, COO</td><td>Admin (added to read the October CPM)</td></tr><tr><td>Rowan Patel, clinic manager</td><td>Editor</td></tr><tr><td>Sam Whitfield, CNO</td><td>Viewer</td></tr></table><p>The dig asks why decisions feel closed. Many of those decisions are operational ones that Jordan's office makes.</p>",
-  "items": [
-   {
-    "k": "mcq",
-    "s": "<p>If nothing changes, what will Jordan be able to see, and what should Alex do?</p>",
-    "o": [
-     "<p>Nothing. Jordan has no program role, so Jordan sees nothing.</p>",
-     "<p>Jordan would act as Program Lead and could read every team's raw fieldwork. Alex should add Jordan as a Participant in this program, or ask Jordan to step down to Editor for the duration, and tell Jordan why.</p>",
-     "<p>Make Jordan a Facilitator, so Jordan can read but not edit.</p>",
-     "<p>Remove Jordan from the organization until the report is final.</p>"
-    ],
-    "c": 1,
-    "f": {
-     "0": "<p>Org admins are elevated to Program Lead without any program role. Jordan would see everything.</p>",
-     "1": "<p>Right. That's what Alex did (Exhibit 2). The Participant row is the in-product way to say \"not this one\". Telling Jordan in person keeps it a governance decision, not a secret. The executive team gets the findings at the readout.</p>",
-     "2": "<p>A Facilitator reads everything, which is the problem. And an admin given a Facilitator row is still elevated to Program Lead anyway.</p>",
-     "3": "<p>That works, but it's heavy-handed and would cut Jordan off from the CPM results and anything else they need. B does the job with less disruption.</p>"
-    }
-   }
-  ]
- },
- {
-  "id": "CD-M2-08",
-  "title": "Read the roster",
-  "intro": "<p>It's Tuesday March 23, 2027. Fieldwork starts April 12. Jamie Ortiz, the second lead, shows you the roster (Exhibit 3). The roster flags only people who need chasing: a short line of amber text under their name. Everyone else has no line at all. For each person below, say what's going on and what Jamie should do.</p><ol><li><strong>You</strong> (Facilitator): <em>\"Hasn't accepted the invitation yet.\"</em> You already have a SurveyCraft account from another client.</li><li><strong>Two researchers:</strong> <em>\"Hasn't set up their account yet\"</em>, invited March 16.</li><li><strong>Noor Haddad</strong> (Stories team): <em>\"Hasn't accepted the invitation yet.\"</em> Noor has an account from a previous employer's Culture Mosaic.</li><li><strong>Devon Ward</strong> (HR Systems team): <em>\"Invitation didn't send.\"</em> The address reads \"devon.ward@northwindhealth.og\".</li><li><strong>Rowan Patel</strong> (HR Systems team): no line under the name. Rowan is an Editor in Northwind's organization.</li></ol>",
-  "items": [
-   {
-    "k": "open",
-    "s": "<p>1. <strong>You</strong> (Facilitator): <em>\"Hasn't accepted the invitation yet.\"</em> You already have a SurveyCraft account from another client.</p><p>What's going on, and what should Jamie do?</p>",
-    "model": "<p>Expected: your account existed and isn't on Northwind's staff. Sign in as that account and press Accept within 14 days.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>2. <strong>Two researchers:</strong> <em>\"Hasn't set up their account yet\"</em>, invited March 16.</p><p>What's going on, and what should Jamie do?</p>",
-    "model": "<p>Their 7-day setup links expire on March 23. Jamie presses <strong>Resend</strong> to send fresh setup links, and checks in with them by phone or in person.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>3. <strong>Noor Haddad</strong> (Stories team): <em>\"Hasn't accepted the invitation yet.\"</em> Noor has an account from a previous employer's Culture Mosaic.</p><p>What's going on, and what should Jamie do?</p>",
-    "model": "<p>Same rule as you. Noor must sign in to the existing account and accept. If Noor has forgotten that password, they reset it on that account; a new account under a different address would need a new invitation.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>4. <strong>Devon Ward</strong> (HR Systems team): <em>\"Invitation didn't send.\"</em> The address reads \"devon.ward@northwindhealth.og\".</p><p>What's going on, and what should Jamie do?</p>",
-    "model": "<p>The address is mistyped, and Resend would go to the same wrong address. Jamie removes the row and adds the correct address.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>5. <strong>Rowan Patel</strong> (HR Systems team): no line under the name. Rowan is an Editor in Northwind's organization.</p><p>What's going on, and what should Jamie do?</p>",
-    "model": "<p>Nothing to fix. Note that Rowan keeps Editor access to Northwind's other surveys. That comes from Rowan's org role, not from the dig.</p><p>Self-check: did you spot the typo, the two acceptance cases and the expired setup links?</p>"
-   }
-  ]
- },
- {
-  "id": "CD-M2-10",
-  "title": "Who can see what?",
-  "intro": "<p>For each item, tick <strong>every</strong> role that can see or do it. (Assume nobody is an org admin.)</p>",
-  "items": [
-   {
-    "k": "multi",
-    "s": "<p><strong>Read every team's raw observations</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0,
-     1
-    ],
-    "f": {},
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Only the Program Lead and the Facilitator read every team's raw observations.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>Work in their own domain team's workspace</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     2
-    ],
-    "f": {},
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Team Members work in their own domain team's workspace. The Program Lead and the Facilitator can read it.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>Open the Stories tab and approve prompts</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0
-    ],
-    "f": {
-     "1": "<p>A Facilitator can open Stories but not approve.</p>",
-     "2": "<p>Researchers don't see the Stories or Report tabs.</p>"
-    },
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Only the Program Lead approves prompts. A Facilitator can open Stories but not approve.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>Open the Report tab</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0,
-     1
-    ],
-    "f": {
-     "2": "<p>Researchers don't see the Stories or Report tabs.</p>"
-    },
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Researchers don't see the Stories or Report tabs.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>See a wave's story patterns once they're saved</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0,
-     1,
-     2
-    ],
-    "f": {},
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Once they're saved, a wave's story patterns are seen by the Program Lead, the Facilitator and Team Members.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>Download the Stories CSV for all seven domains</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0,
-     1
-    ],
-    "f": {},
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Only the Program Lead and the Facilitator download the Stories CSV for all seven domains.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>Download the Stories CSV for their own domain only</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     2
-    ],
-    "f": {},
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>A researcher can download their own domain's stories.</p>"
-   },
-   {
-    "k": "multi",
-    "s": "<p><strong>See anything at all from the dig</strong></p><p>Tick every role that can see or do it.</p>",
-    "o": [
-     "<p>Program Lead</p>",
-     "<p>Facilitator</p>",
-     "<p>Team Member</p>",
-     "<p>Participant</p>"
-    ],
-    "c": [
-     0,
-     1,
-     2
-    ],
-    "f": {
-     "3": "<p>Participants see nothing from the dig.</p>"
-    },
-    "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
-    "fw": "<p>Everyone except a Participant sees something from the dig. Anyone still awaiting acceptance sees nothing.</p>"
-   }
-  ]
- },
- {
-  "id": "CD-M3-06",
-  "title": "Grade six observations",
-  "intro": "<p>Here are six entries from Northwind's HR Systems workspace (Exhibit 5). Mark each <strong>Good</strong>, <strong>Fix</strong> or <strong>Move</strong> (it belongs somewhere else), and say why.</p><table><tr><th>#</th><th>Source</th><th>Quote</th><th>Theme</th></tr><tr><td>a</td><td>Night-shift RN, hospital, interview</td><td>\"The schedule comes out of the staffing office. My manager finds out when I do.\"</td><td>Schedules decided centrally</td></tr><tr><td>b</td><td>Clinic manager, former Lakeside clinic, interview</td><td>\"I spend Monday mornings explaining decisions I wasn't in the room for.\"</td><td>Managers translating decisions</td></tr><tr><td>c</td><td>Medical assistant, legacy Northwind clinic, interview</td><td>\"Swaps used to be a conversation with my lead. Now it's a form and a wait.\"</td><td>Schedules decided centrally</td></tr><tr><td>d</td><td>\"Bea in pharmacy, told me at lunch\"</td><td>\"Everyone knows Dr. M's unit gets first pick of float staff.\"</td><td>float pool unfair??</td></tr><tr><td>e</td><td>HR analyst, corporate, document review</td><td>\"Policy SCH-04 says swap requests are answered in 48 hours.\"</td><td>Policy vs practice</td></tr><tr><td>f</td><td>Several nurses, two interviews</td><td>\"They feel nobody listens and decisions are top-down and it's demoralising and the pay is low too.\"</td><td>communication</td></tr></table>",
-  "items": [
-   {
-    "k": "match",
-    "s": "<p>Mark each entry <strong>Good</strong>, <strong>Fix</strong> or <strong>Move</strong> (it belongs somewhere else).</p>",
-    "p": [
-     "<p><strong>a.</strong> Source: Night-shift RN, hospital, interview. Quote: \"The schedule comes out of the staffing office. My manager finds out when I do.\" Theme: Schedules decided centrally</p>",
-     "<p><strong>b.</strong> Source: Clinic manager, former Lakeside clinic, interview. Quote: \"I spend Monday mornings explaining decisions I wasn't in the room for.\" Theme: Managers translating decisions</p>",
-     "<p><strong>c.</strong> Source: Medical assistant, legacy Northwind clinic, interview. Quote: \"Swaps used to be a conversation with my lead. Now it's a form and a wait.\" Theme: Schedules decided centrally</p>",
-     "<p><strong>d.</strong> Source: \"Bea in pharmacy, told me at lunch\". Quote: \"Everyone knows Dr. M's unit gets first pick of float staff.\" Theme: float pool unfair??</p>",
-     "<p><strong>e.</strong> Source: HR analyst, corporate, document review. Quote: \"Policy SCH-04 says swap requests are answered in 48 hours.\" Theme: Policy vs practice</p>",
-     "<p><strong>f.</strong> Source: Several nurses, two interviews. Quote: \"They feel nobody listens and decisions are top-down and it's demoralising and the pay is low too.\" Theme: communication</p>"
-    ],
-    "o": [
-     "<p>Good</p>",
-     "<p>Fix</p>",
-     "<p>Move</p>"
-    ],
-    "c": [
-     0,
-     0,
-     0,
-     1,
-     2,
-     1
-    ],
-    "fr": "<p>Right. a, b and c are Good; d and f need fixing; e is a document and belongs as an artifact.</p>",
-    "fw": "<p>Check each entry against the four rules: never a name; near-verbatim; one entry per piece of evidence; reusable themes. An entry that isn't something someone said belongs somewhere else.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>For each entry, say why you marked it Good, Fix or Move.</p>",
-    "model": "<ul><li><strong>a, b, c: Good.</strong> Role and context, a near-verbatim quote, a clear theme. In <strong>c</strong> the theme is reused from <strong>a</strong>, which is what lets the pattern's weight show at synthesis. (The entry form offers the themes already used in the workspace for exactly this.)</li><li><strong>d: Fix.</strong> A name in Source (\"Bea\") and an identifiable third person in the Quote (\"Dr. M\"). Rewrite: Source \"Pharmacy staff member, informal conversation\"; Quote \"Everyone knows one unit gets first pick of float staff.\"; Theme \"Float-pool allocation seen as unequal\". It's hearsay about what people believe, and that's valid evidence for this domain.</li><li><strong>e: Move.</strong> This is a document, not something someone said. Upload the policy as an <strong>artifact</strong> with a description (\"Written policy promises swap answers in 48 hours; three interviewees describe waiting a week\"). The description does the work.</li><li><strong>f: Fix.</strong> Two interviews in one entry, a paraphrase, three themes, and a vague label. Split it into separate entries, one per piece of evidence, each with the person's own words.</li></ul><p>Self-check against the four rules: never a name; near-verbatim; one entry per piece of evidence; reusable themes.</p>"
-   }
-  ]
- },
- {
-  "id": "CD-M3-10",
-  "title": "The Stories team is late",
-  "intro": "<p>Monday May 3, 9 a.m. (Exhibit 7a). Five of seven teams have submitted. Artifacts and Stories are due today and still in progress. Story collection opened a week ago. Kai Johnson, on the Stories team, messages you: \"We've got two good patterns but we're not sure about the second one. Can we have until Wednesday?\"</p>",
-  "items": [
-   {
-    "k": "mcq",
-    "s": "<p>What do you advise Alex, the Program Lead?</p>",
-    "o": [
-     "<p>Refuse. Analysis must start on time, so ask them to submit what they have today.</p>",
-     "<p>Agree. Move the Stories team's deadline to Wednesday (which re-arms its reminders), and ask them to say plainly in the synthesis how sure they are about the second pattern. Analysis is three weeks away, so two days costs nothing.</p>",
-     "<p>Submit the workspace for them, so the analysis isn't held up.</p>",
-     "<p>Agree, and let them submit any time before the report is due on June 7.</p>"
-    ],
-    "c": 1,
-    "f": {
-     "0": "<p>Analysis isn't until May 24. A rushed synthesis produces a vague report section; two days doesn't threaten the plan.</p>",
-     "1": "<p>Right. That's close to what happened: Stories submitted on Wednesday May 5, and their synthesis says they're \"less sure how widely the second is told\". Honest uncertainty is exactly what the synthesis guidance asks for.</p>",
-     "2": "<p>Submitting locks a team's work in whatever state it's in, and takes the decision away from the people who did the research.</p>",
-     "3": "<p>An open-ended deadline leaves the domain provisional when the analysis runs and gives the team nothing to plan to.</p>"
-    }
-   }
-  ]
- },
- {
-  "id": "CD-M4-04",
-  "title": "Approve, edit or delete?",
-  "intro": "<p>On April 23 the AI drafted prompts for every domain. Alex approved most of them, some after edits. Here are five prompts from the review page. Each draft card has <strong>Edit</strong>, <strong>Approve</strong> and a bin icon that deletes it. There's no Reject button: a draft you don't approve is deleted, or edited until it passes. (The bin shows only while no stories answer the prompt. Once a prompt has stories, use <strong>Stop asking</strong> instead.)</p><ol><li>\"Given that decisions are made without frontline input, tell us about a time you weren't consulted.\"</li><li>\"What do you think of the new shared scheduling system?\"</li><li>\"Tell us about the time the Harbor Street rota was changed over a weekend without asking anyone.\"</li><li>\"Think of a recent decision about your schedule, role or development. What happened, and how was it made?\"</li><li>\"Tell us about a moment you were trusted to make a call on your own. How did it come about, and what happened?\"</li></ol>",
-  "items": [
-   {
-    "k": "match",
-    "s": "<p>For each, choose <strong>Approve</strong>, <strong>Edit then approve</strong>, or <strong>Delete</strong>.</p>",
-    "p": [
-     "<p>1. \"Given that decisions are made without frontline input, tell us about a time you weren't consulted.\"</p>",
-     "<p>2. \"What do you think of the new shared scheduling system?\"</p>",
-     "<p>3. \"Tell us about the time the Harbor Street rota was changed over a weekend without asking anyone.\"</p>",
-     "<p>4. \"Think of a recent decision about your schedule, role or development. What happened, and how was it made?\"</p>",
-     "<p>5. \"Tell us about a moment you were trusted to make a call on your own. How did it come about, and what happened?\"</p>"
-    ],
-    "o": [
-     "<p>Approve</p>",
-     "<p>Edit then approve</p>",
-     "<p>Delete</p>"
-    ],
-    "c": [
-     2,
-     [
-      2,
-      1
-     ],
-     2,
-     0,
-     0
-    ],
-    "fr": "<p>Right. Delete 1 and 3; delete 2, or edit it into a story; approve 4 and 5.</p>",
-    "fw": "<p>There's no Reject button: a draft you don't approve is deleted, or edited until it passes. Check each prompt against the tests before you approve it.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>For each prompt you didn't approve as it stands, name the test it fails. For the ones you approved, say why they pass.</p>",
-    "model": "<ol><li><strong>Delete.</strong> States a finding as fact (test 4) and collects only one kind of story (test 3).</li><li><strong>Delete</strong>, or edit it into a story: asks for an opinion (test 1).</li><li><strong>Delete.</strong> Points at a specific incident from the fieldwork (test 5). Anyone at Harbor Street can work out who told the team.</li><li><strong>Approve.</strong> One thing that happened, open, answerable from any role. (Northwind's H1.)</li><li><strong>Approve.</strong> It's library prompt hr-10. (Northwind's H2.)</li></ol>"
-   }
-  ]
- },
- {
-  "id": "CD-M4-09",
-  "title": "Watching coverage: the Artifacts gap",
-  "intro": "<p>Monday May 3, one week into story collection (Exhibit 7a). 103 stories so far:</p><table><tr><th>Values</th><th>HR Systems</th><th>Artifacts</th><th>History</th><th>Stories</th><th>Rituals</th><th>Stakeholders</th></tr><tr><td>22</td><td>19</td><td><strong>2</strong></td><td>17</td><td>14</td><td>12</td><td>17</td></tr></table><p>Every other domain has two approved prompts. Artifacts has only one, and it's abstract: \"Tell us about something you see at work that says how things really are here.\" Stories close in two weeks. A domain needs at least 10 stories behind its thinnest input to be scored.</p>",
-  "items": [
-   {
-    "k": "mcq",
-    "s": "<p>What should Alex do?</p>",
-    "o": [
-     "<p>Nothing. Artifacts will catch up.</p>",
-     "<p>Approve a second, concrete Artifacts prompt now, for example library prompt artifacts-08 (\"Tell us about a time information you needed was easy — or hard — to find…\"), and mention Artifacts-type stories in the next reminder.</p>",
-     "<p>Archive the other domains' prompts so everyone gets the Artifacts prompt.</p>",
-     "<p>Ask the Artifacts researchers to write stories themselves.</p>"
-    ],
-    "c": 1,
-    "f": {
-     "0": "<p>At this rate Artifacts will finish below 10 and won't be scored. It has half the exposure of the other domains (one prompt of thirteen), and its abstract prompt is likely being swapped away.</p>",
-     "1": "<p>Right. That's what Alex did on May 4. A concrete prompt gets stories; an abstract one gets swaps. Note it came late: Artifacts finished with 11 stories, but only 9 placed stones, so it still wasn't scored. Earlier action would have saved it.</p>",
-     "2": "<p>Starving the other domains to feed one damages the whole wave, and archived prompts can't collect again.</p>",
-     "3": "<p>That would contaminate the evidence. Researchers' views go in their fieldwork, not in the story stream.</p>"
-    }
-   }
-  ]
- },
- {
-  "id": "CD-M5-07",
-  "title": "Work out the groups",
-  "intro": "<p>Use Exhibit 8. The lowest scored domain is <strong>HR Systems (40.6 ± 5.4)</strong>; the highest is <strong>Stakeholders (66.0 ± 5.2)</strong>. Round each combined bar to one decimal.</p><p><strong>Exhibit 8: Story patterns, Wave 1 (saved Wed May 19, 2027)</strong></p><p>Composite = 0.35 × Dyad positive % + 0.35 × Stones Healthy % + 0.30 × Triad non-concerning %. \"Rests on\" = stories behind the thinnest of the three inputs.</p><table><tr><th>Domain</th><th>Stories</th><th>Rests on</th><th>Dyad + %</th><th>Stones Healthy %</th><th>Triad non-concerning %</th><th>Composite</th><th>95% margin</th><th>Range</th></tr><tr><td>Espoused Beliefs and Values</td><td>69</td><td>66</td><td>58</td><td>42</td><td>67</td><td><strong>55.1</strong></td><td>±5.0</td><td>50.1–60.1</td></tr><tr><td>HR Management Systems and Processes</td><td>61</td><td>58</td><td>42</td><td>26</td><td>56</td><td><strong>40.6</strong></td><td>±5.4</td><td>35.2–46.0</td></tr><tr><td>Organizational Artifacts</td><td>11</td><td><strong>9</strong></td><td>—</td><td>—</td><td>—</td><td><strong>Only 9 stories — too few to score</strong></td><td>—</td><td>—</td></tr><tr><td>Organizational History</td><td>55</td><td>52</td><td>50</td><td>36</td><td>64</td><td><strong>49.3</strong></td><td>±5.6</td><td>43.7–54.9</td></tr><tr><td>Organizational Stories</td><td>50</td><td>47</td><td>47</td><td>31</td><td>58</td><td><strong>44.7</strong></td><td>±5.9</td><td>38.8–50.6</td></tr><tr><td>Rituals and Rites of Passage</td><td>46</td><td>44</td><td>63</td><td>51</td><td>70</td><td><strong>60.9</strong></td><td>±5.8</td><td>55.1–66.7</td></tr><tr><td>Stakeholder Relations</td><td>64</td><td>61</td><td>69</td><td>57</td><td>73</td><td><strong>66.0</strong></td><td>±5.2</td><td>60.8–71.2</td></tr></table>",
-  "items": [
-   {
-    "k": "open",
-    "s": "<p>1. Is <strong>Stories (44.7 ± 5.9)</strong> told apart from HR Systems?</p>",
-    "model": "<p>Difference 4.1; bar √(5.4² + 5.9²) = 8.0. <strong>Not told apart</strong> → Start here.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>2. Is <strong>History (49.3 ± 5.6)</strong> told apart from HR Systems? Do their ranges overlap?</p>",
-    "model": "<p>Difference 8.7; bar √(5.4² + 5.6²) = 7.8. <strong>Told apart</strong>, even though the ranges overlap (43.7–46.0). History is not in Start here.</p>"
-   },
-   {
-    "k": "open",
-    "s": "<p>3. Is <strong>Rituals (60.9 ± 5.8)</strong> told apart from Stakeholders?</p>",
-    "model": "<p>Difference 5.1; bar √(5.8² + 5.2²) = 7.8. <strong>Not told apart</strong> → Protect.</p>"
-   },
-   {
-    "k": "match",
-    "s": "<p>4. Which domains go in <strong>Start here</strong>, <strong>Protect</strong> and <strong>Not yet heard</strong>? Which sit in no group?</p>",
-    "p": [
-     "<p>Espoused Beliefs and Values</p>",
-     "<p>HR Management Systems and Processes</p>",
-     "<p>Organizational Artifacts</p>",
-     "<p>Organizational History</p>",
-     "<p>Organizational Stories</p>",
-     "<p>Rituals and Rites of Passage</p>",
-     "<p>Stakeholder Relations</p>"
-    ],
-    "o": [
-     "<p>Start here</p>",
-     "<p>Protect</p>",
-     "<p>Not yet heard</p>",
-     "<p>No group</p>"
-    ],
-    "c": [
-     3,
-     0,
-     2,
-     3,
-     0,
-     1,
-     1
-    ],
-    "fr": "<p>Right. <strong>Start here:</strong> Organizational Stories and HR Systems, as a group. <strong>Protect:</strong> Stakeholder Relations and Rituals. <strong>Not yet heard:</strong> Artifacts. <strong>No group:</strong> Values (told apart from both ends) and History.</p><p>What to say to Alex: \"Start with HR systems and the stories people pass on. The data can't say which of the two is lower, so don't pick one on the numbers. History is a real step up from HR, though the two ranges touch.\"</p>",
-    "fw": "<p>Compare each domain with the lowest (HR Systems, 40.6 ± 5.4) and the highest (Stakeholders, 66.0 ± 5.2), using the combined bar from questions 1 to 3. Overlapping ranges don't decide it, and a domain too thin to score goes in none of the scored groups.</p>"
-   }
-  ]
- },
- {
-  "id": "CD-M5-10",
-  "title": "When the team and the stories disagree",
-  "intro": "<p><strong>The History team's conclusion</strong> (Exhibit 11): <em>\"The merger itself is now settled history for most staff; it is the scheduling change that still stings.\"</em></p><p><strong>The stories</strong> (Exhibit 12a, prompt Y1, 29 stories): \"The merger as the lens for every change\" 16 · \"The shared-scheduling go-live\" 8 · \"Leaders who came to explain a change\" 5.</p><p><strong>The patterns</strong> (Exhibits 8–9): History 49.3 ± 5.6; stones lean Chaotic (29); \"Knew what to expect\" 44.</p><p><strong>The Culture Mosaic on the same ground</strong> (Exhibit 13): Change Ready 48, Future Focused 55.</p>",
-  "items": [
-   {
-    "k": "open",
-    "s": "<p>Write two or three sentences for the History finding.</p>",
-    "model": "<p>\"The team found that long-tenured and merged-in staff now date Northwind's history differently: before and after the merger, or around the scheduling go-live. The stories don't support the team's view that the merger is settled. Over half of the stories answering the change prompt describe changes through the lens of the merger, and History's stories read as less predictable than most domains'. The survey's Change Ready statement, 'We are flexible and make change happen', is one the stories don't bear out: they describe change arriving unpredictably, read through an event many staff still feel. (The survey is about thirteen months older than these stories, so some of the difference may be time.)\"</p><p><strong>What the model answer does right</strong></p><ul><li>Treats the divergence as the finding.</li><li>Uses \"over half\" (16 of 29), not a false precision, and doesn't add counts across prompts.</li><li>Compares the survey <strong>statement</strong> with the stories, never the survey number with the composite, and flags the time gap (a year or more).</li><li>Describes what the culture does; doesn't call it good or bad.</li></ul>"
-   },
-   {
-    "k": "open",
-    "s": "<p>Then say what you'd tell the History team.</p>",
-    "model": "<p>\"Your fieldwork and the stories disagree on whether the merger is settled. That's a finding, not a mistake. It may be that people you interviewed have moved on while the wider organization hasn't. Can you add what you heard that led you there?\"</p>"
-   }
-  ]
- }
+  {
+    "id": "CD-M1-05",
+    "title": "Per engagement or annual?",
+    "intro": "<p>Coastline Advisory is a Mosaic partner and a SurveyCraft platform licensee. They run culture work for clients inside their own SurveyCraft organization. Their director expects to run <strong>five</strong> Culture Digs in the next twelve months, and asks you which add-on to buy.</p>",
+    "items": [
+      {
+        "k": "mcq",
+        "s": "<p>What do you recommend?</p>",
+        "o": [
+          "<p>Five website purchases, one per dig.</p>",
+          "<p>Compare the annual add-on with five per-engagement add-ons on the current price sheet. The annual is designed to pay off at about four programs a year, so at five it's likely the better buy. Remind them it runs 365 days and doesn't renew on its own.</p>",
+          "<p>One per-engagement add-on. It covers every dig they run that year.</p>",
+          "<p>The annual add-on, because it's the only one that includes facilitation.</p>"
+        ],
+        "c": 1,
+        "f": {
+          "0": "<p>That works, but the website route is priced for organizations without a platform license. A licensee should look at the add-on first.</p>",
+          "1": "<p>Right. The two add-on shapes are built so the annual crosses over at about four programs a year. Check today's figures, and diarize the expiry: when it lapses, every program goes read-only and the story links close.</p>",
+          "2": "<p>A per-engagement add-on is one program and its first wave.</p>",
+          "3": "<p>No license includes facilitation. Facilitation is always a separate, sales-led engagement with the Mosaic team.</p>"
+        }
+      }
+    ]
+  },
+  {
+    "id": "CD-M1-10",
+    "title": "The program made by mistake",
+    "intro": "<p><em>Suppose</em> that on the day Northwind's license arrived, Alex clicked around the hub and created a program called \"test\". Nobody added anyone, and no story collection was set up. When Alex then tries to create \"Northwind Culture Dig 2027\", it's refused: the license covers one program, and it has been used.</p>",
+    "items": [
+      {
+        "k": "mcq",
+        "s": "<p>What should Alex do?</p>",
+        "o": [
+          "<p>Archive \"test\". Archived programs don't count.</p>",
+          "<p>Delete \"test\". It collected nothing, so deleting it frees the slot, and they can create the real program.</p>",
+          "<p>Rename \"test\" and use it as the real program, after checking nothing was collected in it.</p>",
+          "<p>Buy a second program. A slot, once used, can never be freed.</p>"
+        ],
+        "c": 1,
+        "f": {
+          "0": "<p>Archived programs still count against the license.</p>",
+          "1": "<p>Right. Deleting a program that collected nothing frees its slot. (Renaming it would also work, but only an org owner or admin can rename, and a fresh program avoids any doubt.)</p>",
+          "2": "<p>This also works, and it isn't wrong: an org owner or admin can rename \"test\" once they've checked nothing was collected in it. B is still preferred, because a fresh program is known to be empty, with nothing to check.</p>",
+          "3": "<p>A slot used by a program that collected nothing comes back when that program is deleted. Only a program that collected stories, figures or a report keeps its slot used after deletion.</p>"
+        }
+      }
+    ]
+  },
+  {
+    "id": "CD-M2-05",
+    "title": "Northwind's organization before the dig",
+    "intro": "<p>Before Northwind's dig started, five people already had roles in Northwind's SurveyCraft organization (Exhibit 2):</p><table><tr><th>Person</th><th>Org role</th></tr><tr><td>Alex Moreau, CPO</td><td>Owner</td></tr><tr><td>Jamie Ortiz, Organizational Development Lead</td><td>Editor</td></tr><tr><td>Jordan Reyes, COO</td><td>Admin (added to read the October CPM)</td></tr><tr><td>Rowan Patel, clinic manager</td><td>Editor</td></tr><tr><td>Sam Whitfield, CNO</td><td>Viewer</td></tr></table><p>The dig asks why decisions feel closed. Many of those decisions are operational ones that Jordan's office makes.</p>",
+    "items": [
+      {
+        "k": "mcq",
+        "s": "<p>If nothing changes, what will Jordan be able to see, and what should Alex do?</p>",
+        "o": [
+          "<p>Nothing. Jordan has no program role, so Jordan sees nothing.</p>",
+          "<p>Jordan would act as Program Lead and could read every team's raw fieldwork. Alex should add Jordan as a Participant in this program, or ask Jordan to step down to Editor for the duration, and tell Jordan why.</p>",
+          "<p>Make Jordan a Facilitator, so Jordan can read but not edit.</p>",
+          "<p>Remove Jordan from the organization until the report is final.</p>"
+        ],
+        "c": 1,
+        "f": {
+          "0": "<p>Org admins are elevated to Program Lead without any program role. Jordan would see everything.</p>",
+          "1": "<p>Right. That's what Alex did (Exhibit 2). The Participant row is the in-product way to say \"not this one\". Telling Jordan in person keeps it a governance decision, not a secret. The executive team gets the findings at the readout.</p>",
+          "2": "<p>A Facilitator reads everything, which is the problem. And an admin given a Facilitator row is still elevated to Program Lead anyway.</p>",
+          "3": "<p>That works, but it's heavy-handed and would cut Jordan off from the CPM results and anything else they need. B does the job with less disruption.</p>"
+        }
+      }
+    ]
+  },
+  {
+    "id": "CD-M2-08",
+    "title": "Read the roster",
+    "intro": "<p>It's Tuesday March 23, 2027. Fieldwork starts April 12. Jamie Ortiz, the second lead, shows you the roster (Exhibit 3). The roster flags only people who need chasing: a short line of amber text under their name. Everyone else has no line at all. For each person below, say what's going on and what Jamie should do.</p><ol><li><strong>You</strong> (Facilitator): <em>\"Hasn't accepted the invitation yet.\"</em> You already have a SurveyCraft account from another client.</li><li><strong>Two researchers:</strong> <em>\"Hasn't set up their account yet\"</em>, invited March 16.</li><li><strong>Noor Haddad</strong> (Stories team): <em>\"Hasn't accepted the invitation yet.\"</em> Noor has an account from a previous employer's Culture Mosaic.</li><li><strong>Devon Ward</strong> (HR Systems team): <em>\"Invitation didn't send.\"</em> The address reads \"devon.ward@northwindhealth.og\".</li><li><strong>Rowan Patel</strong> (HR Systems team): no line under the name. Rowan is an Editor in Northwind's organization.</li></ol>",
+    "items": [
+      {
+        "k": "open",
+        "s": "<p>1. <strong>You</strong> (Facilitator): <em>\"Hasn't accepted the invitation yet.\"</em> You already have a SurveyCraft account from another client.</p><p>What's going on, and what should Jamie do?</p>",
+        "model": "<p>Expected: your account existed and isn't on Northwind's staff. Sign in as that account and press Accept within 14 days.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>2. <strong>Two researchers:</strong> <em>\"Hasn't set up their account yet\"</em>, invited March 16.</p><p>What's going on, and what should Jamie do?</p>",
+        "model": "<p>Their 7-day setup links expire on March 23. Jamie presses <strong>Resend</strong> to send fresh setup links, and checks in with them by phone or in person.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>3. <strong>Noor Haddad</strong> (Stories team): <em>\"Hasn't accepted the invitation yet.\"</em> Noor has an account from a previous employer's Culture Mosaic.</p><p>What's going on, and what should Jamie do?</p>",
+        "model": "<p>Same rule as you. Noor must sign in to the existing account and accept. If Noor has forgotten that password, they reset it on that account; a new account under a different address would need a new invitation.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>4. <strong>Devon Ward</strong> (HR Systems team): <em>\"Invitation didn't send.\"</em> The address reads \"devon.ward@northwindhealth.og\".</p><p>What's going on, and what should Jamie do?</p>",
+        "model": "<p>The address is mistyped, and Resend would go to the same wrong address. Jamie removes the row and adds the correct address.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>5. <strong>Rowan Patel</strong> (HR Systems team): no line under the name. Rowan is an Editor in Northwind's organization.</p><p>What's going on, and what should Jamie do?</p>",
+        "model": "<p>Nothing to fix. Note that Rowan keeps Editor access to Northwind's other surveys. That comes from Rowan's org role, not from the dig.</p><p>Self-check: did you spot the typo, the two acceptance cases and the expired setup links?</p>"
+      }
+    ]
+  },
+  {
+    "id": "CD-M2-10",
+    "title": "Who can see what?",
+    "intro": "<p>For each item, tick <strong>every</strong> role that can see or do it. (Assume nobody is an org admin.)</p>",
+    "items": [
+      {
+        "k": "multi",
+        "s": "<p><strong>Read every team's raw observations</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0,
+          1
+        ],
+        "f": {},
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Only the Program Lead and the Facilitator read every team's raw observations.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>Work in their own domain team's workspace</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          2
+        ],
+        "f": {},
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Team Members work in their own domain team's workspace. The Program Lead and the Facilitator can read it.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>Open the Stories tab and approve prompts</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0
+        ],
+        "f": {
+          "1": "<p>A Facilitator can open Stories but not approve.</p>",
+          "2": "<p>Researchers don't see the Stories or Report tabs.</p>"
+        },
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Only the Program Lead approves prompts. A Facilitator can open Stories but not approve.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>Open the Report tab</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0,
+          1
+        ],
+        "f": {
+          "2": "<p>Researchers don't see the Stories or Report tabs.</p>"
+        },
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Researchers don't see the Stories or Report tabs.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>See a wave's story patterns once they're saved</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0,
+          1,
+          2
+        ],
+        "f": {},
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Once they're saved, a wave's story patterns are seen by the Program Lead, the Facilitator and Team Members.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>Download the Stories CSV for all seven domains</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0,
+          1
+        ],
+        "f": {},
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Only the Program Lead and the Facilitator download the Stories CSV for all seven domains.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>Download the Stories CSV for their own domain only</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          2
+        ],
+        "f": {},
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>A researcher can download their own domain's stories.</p>"
+      },
+      {
+        "k": "multi",
+        "s": "<p><strong>See anything at all from the dig</strong></p><p>Tick every role that can see or do it.</p>",
+        "o": [
+          "<p>Program Lead</p>",
+          "<p>Facilitator</p>",
+          "<p>Team Member</p>",
+          "<p>Participant</p>"
+        ],
+        "c": [
+          0,
+          1,
+          2
+        ],
+        "f": {
+          "3": "<p>Participants see nothing from the dig.</p>"
+        },
+        "fr": "<p>Right. Researchers see their own domain; leads and facilitators see everything; participants see nothing.</p>",
+        "fw": "<p>Everyone except a Participant sees something from the dig. Anyone still awaiting acceptance sees nothing.</p>"
+      }
+    ]
+  },
+  {
+    "id": "CD-M3-06",
+    "title": "Grade six observations",
+    "intro": "<p>Here are six entries from Northwind's HR Systems workspace (Exhibit 5). Mark each <strong>Good</strong>, <strong>Fix</strong> or <strong>Move</strong> (it belongs somewhere else), and say why.</p><table><tr><th>#</th><th>Source</th><th>Quote</th><th>Theme</th></tr><tr><td>a</td><td>Night-shift RN, hospital, interview</td><td>\"The schedule comes out of the staffing office. My manager finds out when I do.\"</td><td>Schedules decided centrally</td></tr><tr><td>b</td><td>Clinic manager, former Lakeside clinic, interview</td><td>\"I spend Monday mornings explaining decisions I wasn't in the room for.\"</td><td>Managers translating decisions</td></tr><tr><td>c</td><td>Medical assistant, legacy Northwind clinic, interview</td><td>\"Swaps used to be a conversation with my lead. Now it's a form and a wait.\"</td><td>Schedules decided centrally</td></tr><tr><td>d</td><td>\"Bea in pharmacy, told me at lunch\"</td><td>\"Everyone knows Dr. M's unit gets first pick of float staff.\"</td><td>float pool unfair??</td></tr><tr><td>e</td><td>HR analyst, corporate, document review</td><td>\"Policy SCH-04 says swap requests are answered in 48 hours.\"</td><td>Policy vs practice</td></tr><tr><td>f</td><td>Several nurses, two interviews</td><td>\"They feel nobody listens and decisions are top-down and it's demoralising and the pay is low too.\"</td><td>communication</td></tr></table>",
+    "items": [
+      {
+        "k": "match",
+        "s": "<p>Mark each entry <strong>Good</strong>, <strong>Fix</strong> or <strong>Move</strong> (it belongs somewhere else).</p>",
+        "p": [
+          "<p><strong>a.</strong> Source: Night-shift RN, hospital, interview. Quote: \"The schedule comes out of the staffing office. My manager finds out when I do.\" Theme: Schedules decided centrally</p>",
+          "<p><strong>b.</strong> Source: Clinic manager, former Lakeside clinic, interview. Quote: \"I spend Monday mornings explaining decisions I wasn't in the room for.\" Theme: Managers translating decisions</p>",
+          "<p><strong>c.</strong> Source: Medical assistant, legacy Northwind clinic, interview. Quote: \"Swaps used to be a conversation with my lead. Now it's a form and a wait.\" Theme: Schedules decided centrally</p>",
+          "<p><strong>d.</strong> Source: \"Bea in pharmacy, told me at lunch\". Quote: \"Everyone knows Dr. M's unit gets first pick of float staff.\" Theme: float pool unfair??</p>",
+          "<p><strong>e.</strong> Source: HR analyst, corporate, document review. Quote: \"Policy SCH-04 says swap requests are answered in 48 hours.\" Theme: Policy vs practice</p>",
+          "<p><strong>f.</strong> Source: Several nurses, two interviews. Quote: \"They feel nobody listens and decisions are top-down and it's demoralising and the pay is low too.\" Theme: communication</p>"
+        ],
+        "o": [
+          "<p>Good</p>",
+          "<p>Fix</p>",
+          "<p>Move</p>"
+        ],
+        "c": [
+          0,
+          0,
+          0,
+          1,
+          2,
+          1
+        ],
+        "fr": "<p>Right. a, b and c are Good; d and f need fixing; e is a document and belongs as an artifact.</p>",
+        "fw": "<p>Check each entry against the four rules: never a name; near-verbatim; one entry per piece of evidence; reusable themes. An entry that isn't something someone said belongs somewhere else.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>For each entry, say why you marked it Good, Fix or Move.</p>",
+        "model": "<ul><li><strong>a, b, c: Good.</strong> Role and context, a near-verbatim quote, a clear theme. In <strong>c</strong> the theme is reused from <strong>a</strong>, which is what lets the pattern's weight show at synthesis. (The entry form offers the themes already used in the workspace for exactly this.)</li><li><strong>d: Fix.</strong> A name in Source (\"Bea\") and an identifiable third person in the Quote (\"Dr. M\"). Rewrite: Source \"Pharmacy staff member, informal conversation\"; Quote \"Everyone knows one unit gets first pick of float staff.\"; Theme \"Float-pool allocation seen as unequal\". It's hearsay about what people believe, and that's valid evidence for this domain.</li><li><strong>e: Move.</strong> This is a document, not something someone said. Upload the policy as an <strong>artifact</strong> with a description (\"Written policy promises swap answers in 48 hours; three interviewees describe waiting a week\"). The description does the work.</li><li><strong>f: Fix.</strong> Two interviews in one entry, a paraphrase, three themes, and a vague label. Split it into separate entries, one per piece of evidence, each with the person's own words.</li></ul><p>Self-check against the four rules: never a name; near-verbatim; one entry per piece of evidence; reusable themes.</p>"
+      }
+    ]
+  },
+  {
+    "id": "CD-M3-10",
+    "title": "The Stories team is late",
+    "intro": "<p>Monday May 3, 9 a.m. (Exhibit 7a). Five of seven teams have submitted. Artifacts and Stories are due today and still in progress. Story collection opened a week ago. Kai Johnson, on the Stories team, messages you: \"We've got two good patterns but we're not sure about the second one. Can we have until Wednesday?\"</p>",
+    "items": [
+      {
+        "k": "mcq",
+        "s": "<p>What do you advise Alex, the Program Lead?</p>",
+        "o": [
+          "<p>Refuse. Analysis must start on time, so ask them to submit what they have today.</p>",
+          "<p>Agree. Move the Stories team's deadline to Wednesday (which re-arms its reminders), and ask them to say plainly in the synthesis how sure they are about the second pattern. Analysis is three weeks away, so two days costs nothing.</p>",
+          "<p>Submit the workspace for them, so the analysis isn't held up.</p>",
+          "<p>Agree, and let them submit any time before the report is due on June 7.</p>"
+        ],
+        "c": 1,
+        "f": {
+          "0": "<p>Analysis isn't until May 24. A rushed synthesis produces a vague report section; two days doesn't threaten the plan.</p>",
+          "1": "<p>Right. That's close to what happened: Stories submitted on Wednesday May 5, and their synthesis says they're \"less sure how widely the second is told\". Honest uncertainty is exactly what the synthesis guidance asks for.</p>",
+          "2": "<p>Submitting locks a team's work in whatever state it's in, and takes the decision away from the people who did the research.</p>",
+          "3": "<p>An open-ended deadline leaves the domain provisional when the analysis runs and gives the team nothing to plan to.</p>"
+        }
+      }
+    ]
+  },
+  {
+    "id": "CD-M4-04",
+    "title": "Approve, edit or delete?",
+    "intro": "<p>On April 23 the AI drafted prompts for every domain. Alex approved most of them, some after edits. Here are five prompts from the review page. Each draft card has <strong>Edit</strong>, <strong>Approve</strong> and a bin icon that deletes it. There's no Reject button: a draft you don't approve is deleted, or edited until it passes. (The bin shows only while no stories answer the prompt. Once a prompt has stories, use <strong>Stop asking</strong> instead.)</p><ol><li>\"Given that decisions are made without frontline input, tell us about a time you weren't consulted.\"</li><li>\"What do you think of the new shared scheduling system?\"</li><li>\"Tell us about the time the Harbor Street rota was changed over a weekend without asking anyone.\"</li><li>\"Think of a recent decision about your schedule, role or development. What happened, and how was it made?\"</li><li>\"Tell us about a moment you were trusted to make a call on your own. How did it come about, and what happened?\"</li></ol>",
+    "items": [
+      {
+        "k": "match",
+        "s": "<p>For each, choose <strong>Approve</strong>, <strong>Edit then approve</strong>, or <strong>Delete</strong>.</p>",
+        "p": [
+          "<p>1. \"Given that decisions are made without frontline input, tell us about a time you weren't consulted.\"</p>",
+          "<p>2. \"What do you think of the new shared scheduling system?\"</p>",
+          "<p>3. \"Tell us about the time the Harbor Street rota was changed over a weekend without asking anyone.\"</p>",
+          "<p>4. \"Think of a recent decision about your schedule, role or development. What happened, and how was it made?\"</p>",
+          "<p>5. \"Tell us about a moment you were trusted to make a call on your own. How did it come about, and what happened?\"</p>"
+        ],
+        "o": [
+          "<p>Approve</p>",
+          "<p>Edit then approve</p>",
+          "<p>Delete</p>"
+        ],
+        "c": [
+          2,
+          [
+            2,
+            1
+          ],
+          2,
+          0,
+          0
+        ],
+        "fr": "<p>Right. Delete 1 and 3; delete 2, or edit it into a story; approve 4 and 5.</p>",
+        "fw": "<p>There's no Reject button: a draft you don't approve is deleted, or edited until it passes. Check each prompt against the tests before you approve it.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>For each prompt you didn't approve as it stands, name the test it fails. For the ones you approved, say why they pass.</p>",
+        "model": "<ol><li><strong>Delete.</strong> States a finding as fact (test 4) and collects only one kind of story (test 3).</li><li><strong>Delete</strong>, or edit it into a story: asks for an opinion (test 1).</li><li><strong>Delete.</strong> Points at a specific incident from the fieldwork (test 5). Anyone at Harbor Street can work out who told the team.</li><li><strong>Approve.</strong> One thing that happened, open, answerable from any role. (Northwind's H1.)</li><li><strong>Approve.</strong> It's library prompt hr-10. (Northwind's H2.)</li></ol>"
+      }
+    ]
+  },
+  {
+    "id": "CD-M4-09",
+    "title": "Watching coverage: the Artifacts gap",
+    "intro": "<p>Monday May 3, one week into story collection (Exhibit 7a). 103 stories so far:</p><table><tr><th>Values</th><th>HR Systems</th><th>Artifacts</th><th>History</th><th>Stories</th><th>Rituals</th><th>Stakeholders</th></tr><tr><td>22</td><td>19</td><td><strong>2</strong></td><td>17</td><td>14</td><td>12</td><td>17</td></tr></table><p>Every other domain has two approved prompts. Artifacts has only one, and it's abstract: \"Tell us about something you see at work that says how things really are here.\" Stories close in two weeks. A domain needs at least 10 stories behind its thinnest input to be scored.</p>",
+    "items": [
+      {
+        "k": "mcq",
+        "s": "<p>What should Alex do?</p>",
+        "o": [
+          "<p>Nothing. Artifacts will catch up.</p>",
+          "<p>Approve a second, concrete Artifacts prompt now, for example library prompt artifacts-08 (\"Tell us about a time information you needed was easy — or hard — to find…\"), and mention Artifacts-type stories in the next reminder.</p>",
+          "<p>Archive the other domains' prompts so everyone gets the Artifacts prompt.</p>",
+          "<p>Ask the Artifacts researchers to write stories themselves.</p>"
+        ],
+        "c": 1,
+        "f": {
+          "0": "<p>At this rate Artifacts will finish below 10 and won't be scored. It has half the exposure of the other domains (one prompt of thirteen), and its abstract prompt is likely being swapped away.</p>",
+          "1": "<p>Right. That's what Alex did on May 4. A concrete prompt gets stories; an abstract one gets swaps. Note it came late: Artifacts finished with 11 stories, but only 9 placed stones, so it still wasn't scored. Earlier action would have saved it.</p>",
+          "2": "<p>Starving the other domains to feed one damages the whole wave, and archived prompts can't collect again.</p>",
+          "3": "<p>That would contaminate the evidence. Researchers' views go in their fieldwork, not in the story stream.</p>"
+        }
+      }
+    ]
+  },
+  {
+    "id": "CD-M5-07",
+    "title": "Work out the groups",
+    "intro": "<p>Use Exhibit 8. The lowest scored domain is <strong>HR Systems (40.6 ± 5.4)</strong>; the highest is <strong>Stakeholders (66.0 ± 5.2)</strong>. Round each combined bar to one decimal.</p><p><strong>Exhibit 8: Story patterns, Wave 1 (saved Wed May 19, 2027)</strong></p><p>Composite = 0.35 × Dyad positive % + 0.35 × Stones Healthy % + 0.30 × Triad non-concerning %. \"Rests on\" = stories behind the thinnest of the three inputs.</p><table><tr><th>Domain</th><th>Stories</th><th>Rests on</th><th>Dyad + %</th><th>Stones Healthy %</th><th>Triad non-concerning %</th><th>Composite</th><th>95% margin</th><th>Range</th></tr><tr><td>Espoused Beliefs and Values</td><td>69</td><td>66</td><td>58</td><td>42</td><td>67</td><td><strong>55.1</strong></td><td>±5.0</td><td>50.1–60.1</td></tr><tr><td>HR Management Systems and Processes</td><td>61</td><td>58</td><td>42</td><td>26</td><td>56</td><td><strong>40.6</strong></td><td>±5.4</td><td>35.2–46.0</td></tr><tr><td>Organizational Artifacts</td><td>11</td><td><strong>9</strong></td><td>—</td><td>—</td><td>—</td><td><strong>Only 9 stories — too few to score</strong></td><td>—</td><td>—</td></tr><tr><td>Organizational History</td><td>55</td><td>52</td><td>50</td><td>36</td><td>64</td><td><strong>49.3</strong></td><td>±5.6</td><td>43.7–54.9</td></tr><tr><td>Organizational Stories</td><td>50</td><td>47</td><td>47</td><td>31</td><td>58</td><td><strong>44.7</strong></td><td>±5.9</td><td>38.8–50.6</td></tr><tr><td>Rituals and Rites of Passage</td><td>46</td><td>44</td><td>63</td><td>51</td><td>70</td><td><strong>60.9</strong></td><td>±5.8</td><td>55.1–66.7</td></tr><tr><td>Stakeholder Relations</td><td>64</td><td>61</td><td>69</td><td>57</td><td>73</td><td><strong>66.0</strong></td><td>±5.2</td><td>60.8–71.2</td></tr></table>",
+    "items": [
+      {
+        "k": "open",
+        "s": "<p>1. Is <strong>Stories (44.7 ± 5.9)</strong> told apart from HR Systems?</p>",
+        "model": "<p>Difference 4.1; bar √(5.4² + 5.9²) = 8.0. <strong>Not told apart</strong> → Start here.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>2. Is <strong>History (49.3 ± 5.6)</strong> told apart from HR Systems? Do their ranges overlap?</p>",
+        "model": "<p>Difference 8.7; bar √(5.4² + 5.6²) = 7.8. <strong>Told apart</strong>, even though the ranges overlap (43.7–46.0). History is not in Start here.</p>"
+      },
+      {
+        "k": "open",
+        "s": "<p>3. Is <strong>Rituals (60.9 ± 5.8)</strong> told apart from Stakeholders?</p>",
+        "model": "<p>Difference 5.1; bar √(5.8² + 5.2²) = 7.8. <strong>Not told apart</strong> → Protect.</p>"
+      },
+      {
+        "k": "match",
+        "s": "<p>4. Which domains go in <strong>Start here</strong>, <strong>Protect</strong> and <strong>Not yet heard</strong>? Which sit in no group?</p>",
+        "p": [
+          "<p>Espoused Beliefs and Values</p>",
+          "<p>HR Management Systems and Processes</p>",
+          "<p>Organizational Artifacts</p>",
+          "<p>Organizational History</p>",
+          "<p>Organizational Stories</p>",
+          "<p>Rituals and Rites of Passage</p>",
+          "<p>Stakeholder Relations</p>"
+        ],
+        "o": [
+          "<p>Start here</p>",
+          "<p>Protect</p>",
+          "<p>Not yet heard</p>",
+          "<p>No group</p>"
+        ],
+        "c": [
+          3,
+          0,
+          2,
+          3,
+          0,
+          1,
+          1
+        ],
+        "fr": "<p>Right. <strong>Start here:</strong> Organizational Stories and HR Systems, as a group. <strong>Protect:</strong> Stakeholder Relations and Rituals. <strong>Not yet heard:</strong> Artifacts. <strong>No group:</strong> Values (told apart from both ends) and History.</p><p>What to say to Alex: \"Start with HR systems and the stories people pass on. The data can't say which of the two is lower, so don't pick one on the numbers. History is a real step up from HR, though the two ranges touch.\"</p>",
+        "fw": "<p>Compare each domain with the lowest (HR Systems, 40.6 ± 5.4) and the highest (Stakeholders, 66.0 ± 5.2), using the combined bar from questions 1 to 3. Overlapping ranges don't decide it, and a domain too thin to score goes in none of the scored groups.</p>"
+      }
+    ]
+  },
+  {
+    "id": "CD-M5-10",
+    "title": "When the team and the stories disagree",
+    "intro": "<p><strong>The History team's conclusion</strong> (Exhibit 11): <em>\"The merger itself is now settled history for most staff; it is the scheduling change that still stings.\"</em></p><p><strong>The stories</strong> (Exhibit 12a, prompt Y1, 29 stories): \"The merger as the lens for every change\" 16 · \"The shared-scheduling go-live\" 8 · \"Leaders who came to explain a change\" 5.</p><p><strong>The patterns</strong> (Exhibits 8–9): History 49.3 ± 5.6; stones lean Chaotic (29); \"Knew what to expect\" 44.</p><p><strong>The Culture Mosaic on the same ground</strong> (Exhibit 13): Change Ready 48, Future Focused 55.</p>",
+    "items": [
+      {
+        "k": "open",
+        "s": "<p>Write two or three sentences for the History finding.</p>",
+        "model": "<p>\"The team found that long-tenured and merged-in staff now date Northwind's history differently: before and after the merger, or around the scheduling go-live. The stories don't support the team's view that the merger is settled. Over half of the stories answering the change prompt describe changes through the lens of the merger, and History's stories read as less predictable than most domains'. The survey's Change Ready statement, 'We are flexible and make change happen', is one the stories don't bear out: they describe change arriving unpredictably, read through an event many staff still feel. (The survey is about thirteen months older than these stories, so some of the difference may be time.)\"</p><p><strong>What the model answer does right</strong></p><ul><li>Treats the divergence as the finding.</li><li>Uses \"over half\" (16 of 29), not a false precision, and doesn't add counts across prompts.</li><li>Compares the survey <strong>statement</strong> with the stories, never the survey number with the composite, and flags the time gap (a year or more).</li><li>Describes what the culture does; doesn't call it good or bad.</li></ul>"
+      },
+      {
+        "k": "open",
+        "s": "<p>Then say what you'd tell the History team.</p>",
+        "model": "<p>\"Your fieldwork and the stories disagree on whether the merger is settled. That's a finding, not a mistake. It may be that people you interviewed have moved on while the wider organization hasn't. Can you add what you heard that led you there?\"</p>"
+      }
+    ]
+  }
 ]
