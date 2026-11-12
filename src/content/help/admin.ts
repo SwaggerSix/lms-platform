@@ -58,7 +58,7 @@ export const adminManual: HelpManual = {
                 helpContent["admin.users"].details +
                 "\n\nThree ways to add users:\n\n" +
                 "1. **Add user** — type an email; the user is emailed a link to set their password (untick the box to share a temporary password yourself instead).\n" +
-                "2. **Bulk import** — upload a CSV with columns for name, email, role, organization, manager, department. Imports send no email: share the downloaded credentials, or use **Resend invite** on each person.\n" +
+                "2. **Bulk import** — upload a CSV with columns for name, email, role, organization, manager, department. Like Add user, each person is emailed a link to set their password (up to 200 per import); untick the box to download temporary passwords and share them yourself instead.\n" +
                 "3. **HRIS / SCIM provisioning** — if your org connects an identity provider, users sync automatically.\n\n" +
                 "Pick the approach that fits the scale: invites for ones, CSV for tens to hundreds, provisioning for ongoing flow.\n\n" +
                 "Assigning a learning path emails each person. Anyone who has never signed in gets a link to set their password in that email, so they can get in even if they missed their invitation.",

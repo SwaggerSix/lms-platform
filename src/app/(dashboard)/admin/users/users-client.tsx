@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/format';
 import { useToast } from '@/components/ui/toast';
+import { IMPORT_MAX_ROWS_WITH_INVITES } from '@/lib/users/import-limits';
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import DataTable, { type DataTableColumn } from "@/components/ui/data-table";
@@ -161,8 +162,24 @@ export default function UsersClient({
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  // Email each imported person an invitation (set-password link), as Add user does.
+  const [importSendInvite, setImportSendInvite] = useState(true);
   const [importResults, setImportResults] = useState<
-    { total: number; created: number; failed: number; results: { row: number; email: string; status: string; error?: string; temporary_password?: string }[] } | null
+    {
+      total: number;
+      created: number;
+      emailed?: number;
+      failed: number;
+      results: {
+        row: number;
+        email: string;
+        status: string;
+        error?: string;
+        emailed?: boolean;
+        invite_link?: string;
+        temporary_password?: string;
+      }[];
+    } | null
   >(null);
 
   // Edit User modal state
@@ -268,7 +285,7 @@ export default function UsersClient({
       const res = await fetch('/api/users/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ users: rows }),
+        body: JSON.stringify({ users: rows, send_invite: importSendInvite }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -277,7 +294,10 @@ export default function UsersClient({
       }
       setImportResults(data);
       if (data.created > 0) {
-        toast.success(`Imported ${data.created} user${data.created === 1 ? '' : 's'}`);
+        toast.success(
+          `Imported ${data.created} user${data.created === 1 ? '' : 's'}` +
+            (data.emailed ? ` · emailed ${data.emailed} invitation${data.emailed === 1 ? '' : 's'}` : '')
+        );
         router.refresh();
       }
     } catch {
@@ -287,10 +307,17 @@ export default function UsersClient({
     }
   };
 
+  const importRowCount = showImport && importText.trim() ? parseCsv(importText).length : 0;
+  const importNeedsCredentials = !!importResults?.results.some((r) => r.status === 'created' && r.temporary_password);
+
   const downloadCredentials = () => {
     if (!importResults) return;
-    const created = importResults.results.filter((r) => r.status === 'created');
-    const csv = ['email,temporary_password', ...created.map((r) => `${r.email},${r.temporary_password ?? ''}`)].join('\n');
+    // Only people who weren't emailed an invitation need credentials handed out.
+    const needCredentials = importResults.results.filter((r) => r.status === 'created' && r.temporary_password);
+    const csv = [
+      'email,temporary_password,set_password_link',
+      ...needCredentials.map((r) => `${r.email},${r.temporary_password ?? ''},${r.invite_link ?? ''}`),
+    ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -622,7 +649,7 @@ export default function UsersClient({
           <p className="mt-1 text-sm text-gray-500">{totalCount} total users</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setShowImport(true); setImportResults(null); setImportError(null); }}>
+          <Button variant="outline" onClick={() => { setShowImport(true); setImportResults(null); setImportError(null); setImportSendInvite(true); }}>
             <Upload className="h-4 w-4" />
             Import CSV
           </Button>
@@ -1083,15 +1110,26 @@ export default function UsersClient({
               <Button variant="outline" onClick={() => setShowImport(false)}>
                 {importResults ? 'Close' : 'Cancel'}
               </Button>
-              {importResults && importResults.created > 0 && (
+              {importResults && importNeedsCredentials && (
                 <Button variant="outline" onClick={downloadCredentials}>
                   <Download className="h-4 w-4" />
                   Download credentials
                 </Button>
               )}
               {!importResults && (
-                <Button onClick={handleImport} disabled={importing || !importText.trim()}>
-                  {importing ? 'Importing...' : 'Import'}
+                <Button
+                  onClick={handleImport}
+                  disabled={
+                    importing ||
+                    !importText.trim() ||
+                    (importSendInvite && importRowCount > IMPORT_MAX_ROWS_WITH_INVITES)
+                  }
+                >
+                  {importing
+                    ? importSendInvite ? 'Importing and emailing…' : 'Importing...'
+                    : importSendInvite && importRowCount > 0
+                      ? `Import & email ${importRowCount}`
+                      : 'Import'}
                 </Button>
               )}
             </>
@@ -1103,7 +1141,7 @@ export default function UsersClient({
                 Paste CSV with a header row. Required columns: <code className="text-gray-800">email</code>,{' '}
                 <code className="text-gray-800">first_name</code>, <code className="text-gray-800">last_name</code>.
                 Optional: <code className="text-gray-800">role</code> (learner, instructor, manager, admin),{' '}
-                <code className="text-gray-800">job_title</code>. Each user gets a temporary password to change on first sign-in.
+                <code className="text-gray-800">job_title</code>.
               </div>
               <div>
                 <label htmlFor="import-file" className="block text-sm font-medium text-gray-700 mb-1.5">Upload a .csv file</label>
@@ -1132,18 +1170,43 @@ export default function UsersClient({
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-xs focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
+              <label className="flex items-start gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={importSendInvite}
+                  onChange={(e) => setImportSendInvite(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span>
+                  Email each person an invitation to set their password
+                  <span className="block text-xs text-gray-500">
+                    {importSendInvite
+                      ? `Recommended. Up to ${IMPORT_MAX_ROWS_WITH_INVITES} people per import; larger lists take a few minutes. Anyone whose email fails is listed with their temporary password.`
+                      : 'No emails are sent. You’ll download a file of temporary passwords to share with them yourself.'}
+                  </span>
+                </span>
+              </label>
+              {importSendInvite && importRowCount > IMPORT_MAX_ROWS_WITH_INVITES && (
+                <p className="text-sm text-amber-700">
+                  This list has {importRowCount} rows. Split it into batches of {IMPORT_MAX_ROWS_WITH_INVITES} or fewer to email invitations, or untick the box.
+                </p>
+              )}
               {importError && <p className="text-sm text-red-600">{importError}</p>}
             </div>
           ) : (
             <div className="space-y-4">
               <div className="flex gap-4 text-sm">
                 <span className="font-medium text-green-700">{importResults.created} created</span>
+                {!!importResults.emailed && (
+                  <span className="font-medium text-blue-700">{importResults.emailed} emailed</span>
+                )}
                 {importResults.failed > 0 && <span className="font-medium text-red-700">{importResults.failed} failed</span>}
                 <span className="text-gray-500">of {importResults.total}</span>
               </div>
-              {importResults.created > 0 && (
+              {importNeedsCredentials && (
                 <p className="text-xs text-gray-500">
-                  Download the credentials CSV to distribute temporary passwords — they are only shown here once.
+                  Some people weren&apos;t emailed an invitation. Download the credentials CSV to share their temporary
+                  password (or set-password link) with them — it is only shown here once.
                 </p>
               )}
               <div className="max-h-72 overflow-auto rounded-lg border border-gray-200">
@@ -1162,7 +1225,13 @@ export default function UsersClient({
                         <TableCell className="text-gray-800">{r.email || '—'}</TableCell>
                         <TableCell>
                           {r.status === 'created' ? (
-                            <span className="text-green-700">Created</span>
+                            r.emailed ? (
+                              <span className="text-green-700">Created · invitation emailed</span>
+                            ) : r.invite_link ? (
+                              <span className="text-amber-700">Created · email didn&apos;t send (link in credentials file)</span>
+                            ) : (
+                              <span className="text-green-700">Created · not emailed</span>
+                            )
                           ) : (
                             <span className="text-red-700">{r.error || 'Failed'}</span>
                           )}
