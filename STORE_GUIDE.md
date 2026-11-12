@@ -90,6 +90,9 @@ product, hide it on the Products tab: edit it → Visibility → "Hidden".
 ### Good to know
 - **Discount codes work on bundles** just like on a single course. That
   includes the 50% partner code and any code under Admin → eCommerce → Coupons.
+- **The partner code doesn't apply to MOS-210 Coaching Studio or MOS-220
+  SurveyCraft** (operator decision, 12 Nov 2026). Partners pay full price for
+  those two; checkout leaves them out of the discount.
 - **A buyer who already has some of the courses can still buy the bundle.**
   They keep those courses (and their progress) and get the rest. The price is
   the same (no partial refund or reduced price).
