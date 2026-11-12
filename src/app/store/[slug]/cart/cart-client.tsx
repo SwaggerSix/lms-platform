@@ -235,7 +235,8 @@ export function CartClient({ slug }: { slug: string }) {
               />
               <p id="cart-code-help" className="mt-1 text-xs text-slate-500">
                 Gotham partner codes are for the partner&apos;s own purchases only: use yours with the email your
-                partner account uses.
+                partner account uses. They don&apos;t apply to the Coaching Studio (MOS-210) or SurveyCraft (MOS-220)
+                courses, which are full price.
               </p>
             </div>
           </div>

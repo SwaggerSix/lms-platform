@@ -23,6 +23,9 @@ import {
   reportPartnerRedemption,
   PartnerPortalUnavailableError,
   PARTNER_CODE_UNAVAILABLE_MESSAGE,
+  partnerIneligibleLines,
+  partnerCodeExcludedMessage,
+  type PartnerPathItem as PathItem,
 } from "@/lib/storefront/partner-code";
 
 // Public guest checkout for storefronts. Clients (organizations) order seats
@@ -35,7 +38,11 @@ import {
 // local coupon, the partner portal prices it for course seats and it is
 // applied like a percentage coupon (lib/storefront/partner-code.ts). The
 // order's id is minted up front so it can be the ref the portal records the
-// use under; the webhook reports it paid.
+// use under; the webhook reports it paid. Courses marked
+// courses.partner_code_eligible = false (MOS-210 Coaching Studio, MOS-220
+// SurveyCraft: full price for partners, operator decision 2026-11-12) are left
+// out of it, alone or in a bundle: only the other lines are discounted and
+// priced by the portal, and a cart with nothing else refuses the code.
 //
 // A local coupon can be limited to one product (coupons.product_id): it then
 // only works with that product in the cart and is taken from that product's
@@ -141,12 +148,16 @@ export async function POST(request: NextRequest) {
   const bundlePathIds = [
     ...new Set((products || []).map((p) => p.learning_path_id).filter((id): id is string => Boolean(id))),
   ];
+  // Kept for the partner-code check below: a bundle is only as eligible as
+  // the courses on its path.
+  let bundlePathItems: PathItem[] = [];
   if (bundlePathIds.length > 0) {
     const { data: pathItems } = await service
       .from("learning_path_items")
-      .select("path_id")
+      .select("path_id, course_id")
       .in("path_id", bundlePathIds);
-    const stocked = new Set(((pathItems as { path_id: string }[] | null) || []).map((i) => i.path_id));
+    bundlePathItems = (pathItems as PathItem[] | null) || [];
+    const stocked = new Set(bundlePathItems.map((i) => i.path_id));
     if (bundlePathIds.some((id) => !stocked.has(id))) {
       return NextResponse.json(
         { error: "An item in your cart is no longer available. Please refresh and try again." },
@@ -195,7 +206,7 @@ export async function POST(request: NextRequest) {
     current_uses?: number;
     lineIndexes?: number[];
   } | null = null;
-  let partner: { code: string; percentOff: number } | null = null;
+  let partner: { code: string; percentOff: number; excludedProductIds: string[] } | null = null;
   if (body.coupon_code) {
     const code = body.coupon_code.toUpperCase().trim();
     const { data: c } = await service
@@ -205,8 +216,24 @@ export async function POST(request: NextRequest) {
       .eq("is_active", true)
       .single();
     if (!c && isPartnerPortalConfigured() && looksLikePartnerCode(code)) {
-      // Priced on what's left after volume discounts — the amount the
-      // percentage will actually be taken from.
+      // Some courses are full price for partners (courses.partner_code_eligible
+      // = false: MOS-210, MOS-220). Their lines — and a bundle whose path
+      // includes one — are left out of the discount, as the other lines are
+      // for a coupon limited to one product. Nothing eligible: refuse the code
+      // before the portal records a use.
+      const ineligible = await partnerIneligibleLines(service, lineItems, bundlePathItems);
+      if (ineligible === null) {
+        return NextResponse.json({ error: PARTNER_CODE_UNAVAILABLE_MESSAGE }, { status: 503 });
+      }
+      const eligibleIndexes = lineItems.map((_, i) => i).filter((i) => !ineligible.has(i));
+      if (eligibleIndexes.length === 0) {
+        return NextResponse.json(
+          { error: partnerCodeExcludedMessage(lineItems.map((li) => li.product.name)) },
+          { status: 400 }
+        );
+      }
+      // Priced on what's left of the eligible lines after volume discounts —
+      // the amount the percentage will actually be taken from.
       const beforeCode = calculateStorefrontPricing(
         lineItems.map((li) => ({ unitPrice: li.unitPrice, quantity: li.quantity })),
         {
@@ -216,19 +243,33 @@ export async function POST(request: NextRequest) {
           taxRate: 0,
         }
       );
+      const eligibleAmount = eligibleIndexes.reduce(
+        (s, i) => s + beforeCode.lines[i].lineSubtotal - beforeCode.lines[i].volumeDiscount,
+        0
+      );
       try {
         const result = await evaluatePartnerCode({
           code,
           buyerEmail: body.customer_email.toLowerCase().trim(),
           buyerOrg: body.company_name?.trim() || null,
-          listPriceCents: Math.round((beforeCode.subtotal - beforeCode.volumeDiscount) * 100),
+          listPriceCents: Math.round(eligibleAmount * 100),
           orderRef: orderId,
         });
         if (!result.valid) {
           return NextResponse.json({ error: result.message }, { status: 400 });
         }
-        partner = { code: result.code, percentOff: result.percentOff };
-        coupon = { discount_type: "percentage", discount_value: result.percentOff };
+        partner = {
+          code: result.code,
+          percentOff: result.percentOff,
+          excludedProductIds: [...ineligible].map((i) => lineItems[i].product.id),
+        };
+        coupon = {
+          discount_type: "percentage",
+          discount_value: result.percentOff,
+          // Whole order unless something is excluded: then only the eligible
+          // lines, exactly like a coupon limited to one product.
+          ...(ineligible.size > 0 && { lineIndexes: eligibleIndexes }),
+        };
       } catch (err) {
         if (!(err instanceof PartnerPortalUnavailableError)) throw err;
         console.error("Storefront checkout:", err.message);
@@ -321,6 +362,10 @@ export async function POST(request: NextRequest) {
       partner_code: partner.code,
       partner_discount_percent: partner.percentOff,
       partner_portal_ref: orderId,
+      // Lines the partner code did not discount (full price for partners).
+      ...(partner.excludedProductIds.length > 0 && {
+        partner_excluded_product_ids: partner.excludedProductIds,
+      }),
     }),
     ...(testMode && { test_mode: true }),
     ...(freeByCoupon && { free_order: true }),

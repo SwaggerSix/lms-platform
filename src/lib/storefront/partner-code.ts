@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Partner codes on the storefronts, priced by the gC partner portal
 // (gc-partner-portal docs/PARTNER_CODE_API.md).
@@ -18,6 +19,12 @@ import crypto from "crypto";
 //
 // Every request is signed: HMAC-SHA256(secret, `${ts}.${requestId}.${body}`)
 // in X-Partner-Code-Signature, with X-Partner-Code-Platform: lms.
+//
+// Not every course takes the code: courses.partner_code_eligible = false
+// (MOS-210 Coaching Studio and MOS-220 SurveyCraft, operator decision
+// 2026-11-12) are full price for partners, alone or in a bundle. Checkout
+// discounts only the other lines and asks the portal to price only them
+// (partnerIneligibleLines below).
 
 // A refusal carries the portal's own message, shown to the buyer as is
 // whatever the reason ("invalid", "no_discount", "buyer_limit", or
@@ -167,4 +174,65 @@ export async function voidPartnerRedemptionForOrder(metadata: unknown): Promise<
   const orderRef = partnerPortalRef(metadata);
   if (!orderRef) return false;
   return reportPartnerRedemption({ orderRef, status: "void" });
+}
+
+/** A course on a bundle's learning path (learning_path_items). */
+export interface PartnerPathItem {
+  path_id: string;
+  course_id?: string | null;
+}
+
+/**
+ * Indexes of the cart lines a partner code may not discount: a product
+ * selling a course marked partner_code_eligible = false, or a bundle whose
+ * learning path includes one. null when the lookup failed — the caller
+ * refuses the code rather than guess which lines it covers.
+ */
+export async function partnerIneligibleLines(
+  service: Pick<SupabaseClient, "from">,
+  lines: { product: { course_id: string | null; learning_path_id?: string | null } }[],
+  pathItems: PartnerPathItem[]
+): Promise<Set<number> | null> {
+  const courseIds = new Set<string>();
+  for (const li of lines) if (li.product.course_id) courseIds.add(li.product.course_id);
+  for (const item of pathItems) if (item.course_id) courseIds.add(item.course_id);
+  if (courseIds.size === 0) return new Set();
+
+  const { data, error } = await service
+    .from("courses")
+    .select("id")
+    .in("id", [...courseIds])
+    .eq("partner_code_eligible", false);
+  if (error) {
+    console.error("[partner-code] course eligibility lookup failed:", error.message);
+    return null;
+  }
+  const excluded = new Set(((data as { id: string }[] | null) || []).map((c) => c.id));
+  const indexes = new Set<number>();
+  if (excluded.size === 0) return indexes;
+  lines.forEach((li, i) => {
+    const { course_id, learning_path_id } = li.product;
+    const courseExcluded = Boolean(course_id && excluded.has(course_id));
+    const bundleExcluded = Boolean(
+      learning_path_id &&
+        pathItems.some(
+          (item) => item.path_id === learning_path_id && item.course_id && excluded.has(item.course_id)
+        )
+    );
+    if (courseExcluded || bundleExcluded) indexes.add(i);
+  });
+  return indexes;
+}
+
+/** Refusal shown when every line in the cart is full price for partners. */
+export function partnerCodeExcludedMessage(productNames: (string | null | undefined)[]): string {
+  const names = [...new Set(productNames.map((n) => n?.trim()).filter((n): n is string => Boolean(n)))];
+  const list =
+    names.length === 0
+      ? "these courses"
+      : names.length === 1
+        ? names[0]
+        : `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+  const pronoun = names.length === 1 ? "it" : "them";
+  return `Partner codes don't apply to ${list} — partners pay full price for ${pronoun}. Remove the code to continue.`;
 }
