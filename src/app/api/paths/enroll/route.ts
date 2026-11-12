@@ -5,6 +5,8 @@ import { rateLimit } from "@/lib/rate-limit";
 import { logAudit } from "@/lib/audit";
 import { provisionCourseMaterials } from "@/lib/services/course-materials";
 import { grantPathAccess, MAX_PATH_INVITES } from "@/lib/paths/invite";
+import { emailPathAccess, type PathEmailOutcome } from "@/lib/paths/notify";
+import { appBaseUrl } from "@/lib/users/set-password-link";
 
 /**
  * POST /api/paths/enroll
@@ -18,6 +20,11 @@ import { grantPathAccess, MAX_PATH_INVITES } from "@/lib/paths/invite";
  *   only assign to their own direct reports; admins/super admins to anyone.
  *
  * Enrolling in a path also enrolls the target user in each of its courses.
+ *
+ * Someone assigned a path by another person is emailed about it. If they have
+ * never signed in, the email carries a set-password link (see emailPathAccess):
+ * Admin → Users → Add user sends nothing on its own if the admin unticks the
+ * invite, and without this an assigned person had no way to sign in.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -57,7 +64,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (body.user_ids !== undefined) {
-    return assignMany(service, profile, path_id, body.user_ids, due_date ?? null);
+    return assignMany(service, profile, path_id, body.user_ids, due_date ?? null, appBaseUrl(request.url));
   }
 
   // Resolve the target learner and authorize assignment-on-behalf-of.
@@ -94,7 +101,7 @@ export async function POST(request: NextRequest) {
   // Verify the path exists and is published
   const { data: path, error: pathError } = await service
     .from("learning_paths")
-    .select("id, title")
+    .select("id, title, slug")
     .eq("id", path_id)
     .eq("status", "published")
     .single();
@@ -221,8 +228,26 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  let email: PathEmailOutcome | undefined;
+  if (!isSelf) {
+    const { data: target } = await service
+      .from("users")
+      .select("email, first_name, auth_id, login_id")
+      .eq("id", targetUserId)
+      .maybeSingle();
+    if (target) {
+      email = await emailPathAccess(service, {
+        user: target,
+        path,
+        courseCount: pathItems?.length ?? 0,
+        base: appBaseUrl(request.url),
+        inviterName: await displayName(service, profile.id),
+      });
+    }
+  }
+
   return NextResponse.json(
-    { data: enrollment, enrolled_count: 1 },
+    { data: enrollment, enrolled_count: 1, ...(email ? { email } : {}) },
     { status: 201 }
   );
 }
@@ -237,7 +262,8 @@ async function assignMany(
   profile: { id: string; role: string },
   pathId: string,
   rawIds: unknown,
-  dueDate: string | null
+  dueDate: string | null,
+  base: string
 ) {
   const isPrivileged = ["admin", "super_admin"].includes(profile.role);
   if (profile.role !== "manager" && !isPrivileged) {
@@ -254,7 +280,7 @@ async function assignMany(
 
   const { data: path } = await service
     .from("learning_paths")
-    .select("id, title")
+    .select("id, title, slug")
     .eq("id", pathId)
     .eq("status", "published")
     .maybeSingle();
@@ -262,10 +288,22 @@ async function assignMany(
     return NextResponse.json({ error: "Learning path not found" }, { status: 404 });
   }
 
-  const { data: targets } = await service.from("users").select("id, manager_id").in("id", ids);
-  const allowed = ((targets as { id: string; manager_id: string | null }[] | null) || [])
-    .filter((t) => isPrivileged || t.manager_id === profile.id)
-    .map((t) => t.id);
+  type Target = {
+    id: string;
+    manager_id: string | null;
+    email: string;
+    first_name: string | null;
+    auth_id: string | null;
+    login_id: string | null;
+  };
+  const { data: targets } = await service
+    .from("users")
+    .select("id, manager_id, email, first_name, auth_id, login_id")
+    .in("id", ids);
+  const allowedTargets = ((targets as Target[] | null) || []).filter(
+    (t) => isPrivileged || t.manager_id === profile.id
+  );
+  const allowed = allowedTargets.map((t) => t.id);
   if (allowed.length === 0) {
     return NextResponse.json(
       { error: isPrivileged ? "User not found" : "You can only assign paths to your own team members" },
@@ -282,11 +320,30 @@ async function assignMany(
     .map((i) => i.course_id)
     .filter((c): c is string => Boolean(c));
 
+  const inviterName = await displayName(service, profile.id);
+  const emails = { emailed: 0, setup: 0, failed: 0, no_inbox: 0 };
+  const notEmailed: string[] = [];
+
   let enrolled = 0;
-  for (const userId of allowed) {
+  for (const target of allowedTargets) {
+    const userId = target.id;
     const outcome = await grantPathAccess(service, { userId, pathId, courseIds, assignedBy: profile.id });
     if (outcome === "enrolled") {
       enrolled++;
+      const sent = await emailPathAccess(service, {
+        user: target,
+        path,
+        courseCount: courseIds.length,
+        base,
+        inviterName,
+      });
+      if (sent === "emailed") emails.emailed++;
+      else if (sent === "emailed_setup") emails.setup++;
+      else if (sent === "no_inbox") emails.no_inbox++;
+      else {
+        emails.failed++;
+        notEmailed.push(target.email);
+      }
       if (dueDate) {
         await service
           .from("learning_path_enrollments")
@@ -302,11 +359,27 @@ async function assignMany(
     action: "created",
     entityType: "learning_path_enrollment",
     entityId: path.id,
-    newValues: { path_id: pathId, path_title: path.title, assigned_count: enrolled, requested: ids.length },
+    newValues: {
+      path_id: pathId,
+      path_title: path.title,
+      assigned_count: enrolled,
+      requested: ids.length,
+      emailed: emails.emailed,
+      emailed_setup: emails.setup,
+      email_failed: emails.failed,
+    },
   });
 
   return NextResponse.json(
-    { enrolled_count: enrolled, skipped: ids.length - enrolled },
+    { enrolled_count: enrolled, skipped: ids.length - enrolled, emails, not_emailed: notEmailed },
     { status: 201 }
   );
+}
+
+async function displayName(
+  service: ReturnType<typeof createServiceClient>,
+  userId: string
+): Promise<string | undefined> {
+  const { data } = await service.from("users").select("first_name, last_name").eq("id", userId).maybeSingle();
+  return [data?.first_name, data?.last_name].filter(Boolean).join(" ").trim() || undefined;
 }

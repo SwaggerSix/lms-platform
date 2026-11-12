@@ -13,7 +13,9 @@ const ADMIN = "admin-1";
 const MANAGER = "manager-1";
 
 let actor: { id: string; role: string } | null;
-let users: { id: string; email: string; first_name: string; status: string; manager_id: string | null; login_id: null }[];
+let users: { id: string; email: string; first_name: string; status: string; manager_id: string | null; login_id: null; auth_id: string }[];
+// Auth ids of accounts that have signed in at least once.
+let signedIn: Set<string>;
 let pathEnrollments: Set<string>;
 let courseEnrollments: Set<string>;
 let pathStatus = "published";
@@ -71,8 +73,12 @@ function query(table: string) {
 }
 
 const generateLink = vi.fn(async () => ({ data: { properties: { action_link: "https://auth.test/recover" } }, error: null }));
+const getUserById = vi.fn(async (authId: string) => ({
+  data: { user: { id: authId, last_sign_in_at: signedIn.has(authId) ? "2026-11-01T00:00:00Z" : null } },
+  error: null,
+}));
 vi.mock("@/lib/supabase/service", () => ({
-  createServiceClient: () => ({ from: (t: string) => query(t), auth: { admin: { generateLink } } }),
+  createServiceClient: () => ({ from: (t: string) => query(t), auth: { admin: { generateLink, getUserById } } }),
 }));
 vi.mock("@/lib/auth/authorize", () => ({
   authorize: async (...roles: string[]) => {
@@ -92,7 +98,8 @@ vi.mock("@/lib/services/course-materials", () => ({ provisionCourseMaterials: vi
 const sendEmail = vi.fn(async (_m: { to: string; subject: string; html: string }) => ({ success: true }));
 vi.mock("@/lib/email/sender", () => ({ sendEmail: (m: { to: string; subject: string; html: string }) => sendEmail(m) }));
 const createUserAccount = vi.fn(async (_s: unknown, data: Record<string, unknown>) => {
-  const user = { id: `u-${String(data.email)}`, email: String(data.email), first_name: String(data.first_name), status: "active", manager_id: null, login_id: null };
+  const id = `u-${String(data.email)}`;
+  const user = { id, email: String(data.email), first_name: String(data.first_name), status: "active", manager_id: null, login_id: null, auth_id: `a-${id}` };
   users.push(user);
   return { ok: true as const, user, temporaryPassword: "x" };
 });
@@ -116,9 +123,10 @@ function invite(text: string) {
 beforeEach(() => {
   actor = { id: ADMIN, role: "admin" };
   users = [
-    { id: "u-existing", email: "Existing@Example.com", first_name: "Eve", status: "active", manager_id: null, login_id: null },
-    { id: "u-report", email: "report@example.com", first_name: "Rae", status: "active", manager_id: MANAGER, login_id: null },
+    { id: "u-existing", email: "Existing@Example.com", first_name: "Eve", status: "active", manager_id: null, login_id: null, auth_id: "a-u-existing" },
+    { id: "u-report", email: "report@example.com", first_name: "Rae", status: "active", manager_id: MANAGER, login_id: null, auth_id: "a-u-report" },
   ];
+  signedIn = new Set(["a-u-existing", "a-u-report"]);
   pathEnrollments = new Set();
   courseEnrollments = new Set();
   pathStatus = "published";
@@ -161,8 +169,9 @@ describe("POST /api/paths/[id]/invite", () => {
     expect(toExisting.html).toContain("/learn/paths/mosaic-certification");
   });
 
-  it("is idempotent: a second run reports already-had-access and sends nothing", async () => {
+  it("is idempotent: a second run reports already-had-access and emails no one who has signed in", async () => {
     await invite("existing@example.com, new@example.com");
+    signedIn.add("a-u-new@example.com");
     sendEmail.mockClear();
     createUserAccount.mockClear();
     const res = await invite("existing@example.com, new@example.com");
@@ -170,6 +179,27 @@ describe("POST /api/paths/[id]/invite", () => {
     expect(body.summary).toEqual({ invited: 0, added: 0, already: 2, failed: 0 });
     expect(createUserAccount).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("re-sends a set-password link to someone who already had the path but never signed in", async () => {
+    await invite("new@example.com");
+    sendEmail.mockClear();
+    generateLink.mockClear();
+    const body = await (await invite("new@example.com")).json();
+    expect(body.summary).toEqual({ invited: 0, added: 0, already: 1, failed: 0 });
+    expect(body.results[0].reason).toMatch(/sent a new set-password link/);
+    expect(generateLink).toHaveBeenCalledWith(expect.objectContaining({ type: "recovery", email: "new@example.com" }));
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(sendEmail.mock.calls[0][0].html).toContain("https://auth.test/recover");
+  });
+
+  it("sends an existing account that never signed in a set-password link, not just the path", async () => {
+    signedIn.delete("a-u-existing");
+    const body = await (await invite("existing@example.com")).json();
+    expect(body.summary).toEqual({ invited: 0, added: 1, already: 0, failed: 0 });
+    const mail = sendEmail.mock.calls.find(([m]) => m.to === "Existing@Example.com")![0];
+    expect(mail.html).toContain("https://auth.test/recover");
+    expect(mail.html).toContain("Set your password");
   });
 
   it("reports lines without an address as failed", async () => {

@@ -6,6 +6,8 @@ import { validateBody, createUserSchema } from "@/lib/validations";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getTenantScope, resolveTenantForUser, isFeatureEnabled } from "@/lib/tenants/tenant-queries";
 import { createUserAccount } from "@/lib/users/create-user";
+import { sendAccountInvite } from "@/lib/users/invite-email";
+import { appBaseUrl } from "@/lib/users/set-password-link";
 
 export async function GET(request: NextRequest) {
   const auth = await authorizePermission("users.view", "admin", "manager");
@@ -94,8 +96,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
+  // Email accounts get an invitation with a set-password link unless the
+  // admin opts out (send_invite: false) to hand out the temporary password
+  // themselves. Before this, Add user sent nothing, and people who were then
+  // assigned a path had no idea how to sign in. User-ID accounts have no inbox.
+  const wantsInvite = (body as { send_invite?: unknown }).send_invite !== false;
+  if (!result.user.login_id && wantsInvite) {
+    const { data: me } = await service
+      .from("users")
+      .select("first_name, last_name")
+      .eq("id", auth.user.id)
+      .maybeSingle();
+    const inviterName = [me?.first_name, me?.last_name].filter(Boolean).join(" ").trim() || undefined;
+    const invite = await sendAccountInvite(service, result.user as { email: string; first_name?: string | null }, appBaseUrl(request.url), inviterName);
+    return NextResponse.json(
+      {
+        ...result.user,
+        invite_emailed: invite.emailed,
+        // The link is the fallback if the email didn't go; when it did, the
+        // temporary password is pointless (they set their own), so omit it.
+        ...(invite.emailed ? {} : { invite_link: invite.link, temporary_password: result.temporaryPassword }),
+      },
+      { status: 201 }
+    );
+  }
+
   return NextResponse.json(
-    { ...result.user, temporary_password: result.temporaryPassword },
+    { ...result.user, invite_emailed: false, temporary_password: result.temporaryPassword },
     { status: 201 }
   );
 }

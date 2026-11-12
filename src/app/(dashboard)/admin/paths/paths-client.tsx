@@ -528,11 +528,24 @@ export default function PathsClient({ paths: initialPaths }: { paths: LearningPa
           p.id === assignPath.id ? { ...p, enrolled: p.enrolled + count } : p
         )
       );
-      toast.success(
-        skipped > 0
-          ? `Assigned ${count} learner${count === 1 ? '' : 's'} (${skipped} already enrolled)`
-          : `Assigned ${count} learner${count === 1 ? '' : 's'}`
-      );
+      const plural = (n: number) => (n === 1 ? '' : 's');
+      const emails = result.emails as { emailed: number; setup: number; failed: number } | undefined;
+      const sentCount = (emails?.emailed ?? 0) + (emails?.setup ?? 0);
+      const parts = [`Assigned ${count} learner${plural(count)}`];
+      if (skipped > 0) parts.push(`${skipped} already enrolled`);
+      if (sentCount > 0) {
+        parts.push(
+          emails?.setup
+            ? `emailed ${sentCount} (${emails.setup} with a link to set their password)`
+            : `emailed ${sentCount}`
+        );
+      }
+      toast.success(parts.join(' · '));
+      if (emails && emails.failed > 0) {
+        toast.error(
+          `${emails.failed} email${plural(emails.failed)} didn't send (${(result.not_emailed as string[] | undefined)?.join(', ') ?? ''}). Use Resend invite under Users.`
+        );
+      }
       closeAssignModal();
     } catch {
       toast.error('An unexpected error occurred');

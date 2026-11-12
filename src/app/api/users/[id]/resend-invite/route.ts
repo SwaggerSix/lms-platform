@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
-import { sendEmail } from "@/lib/email/sender";
-import { accountInvitation } from "@/lib/email/templates";
 import { generateTemporaryPassword } from "@/lib/users/create-user";
+import { sendAccountInvite } from "@/lib/users/invite-email";
+import { appBaseUrl } from "@/lib/users/set-password-link";
 
 /**
  * POST /api/users/[id]/resend-invite
@@ -51,17 +51,10 @@ export async function POST(
     });
   }
 
-  const base = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
-  const { data: link, error: linkErr } = await service.auth.admin.generateLink({
-    type: "recovery",
-    email: user.email,
-    options: { redirectTo: `${base}/reset-password` },
-  });
-  if (linkErr || !link?.properties?.action_link) {
-    console.error("Resend invite link error:", linkErr?.message);
+  const invite = await sendAccountInvite(service, user, appBaseUrl(_request.url));
+  if (!invite.link) {
     return NextResponse.json({ error: "Could not generate an invitation link" }, { status: 500 });
   }
-  const actionUrl = link.properties.action_link;
 
   // Flag that they still need to set their password.
   await service
@@ -69,14 +62,11 @@ export async function POST(
     .update({ preferences: { ...(user.preferences as Record<string, unknown> ?? {}), must_change_password: true } })
     .eq("id", id);
 
-  const template = accountInvitation({ name: user.first_name || "there", actionUrl });
-  const emailed = await sendEmail({ to: user.email, subject: template.subject, html: template.html, text: template.text });
-
   return NextResponse.json({
     success: true,
-    emailed: emailed.success,
+    emailed: invite.emailed,
     email: user.email,
     // Always returned so the admin can copy/share the invite link directly.
-    action_link: actionUrl,
+    action_link: invite.link,
   });
 }

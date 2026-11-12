@@ -153,6 +153,8 @@ export default function UsersClient({
   // password (pseudonymous, no PII — only offered when the tenant enables it).
   const [formMode, setFormMode] = useState<'email' | 'login_id'>('email');
   const [formLoginId, setFormLoginId] = useState('');
+  // Email an invitation (set-password link) when adding an email account.
+  const [formSendInvite, setFormSendInvite] = useState(true);
 
   // Bulk CSV import modal state
   const [showImport, setShowImport] = useState(false);
@@ -208,6 +210,7 @@ export default function UsersClient({
     setFormManagerId('');
     setFormMode('email');
     setFormLoginId('');
+    setFormSendInvite(true);
     setError(null);
   };
 
@@ -314,6 +317,7 @@ export default function UsersClient({
           role: formRole,
           organization_id: formDepartment || undefined,
           manager_id: formManagerId || undefined,
+          send_invite: isLoginId ? undefined : formSendInvite,
         }),
       });
       if (!res.ok) {
@@ -321,7 +325,12 @@ export default function UsersClient({
         throw new Error(body.error || 'Failed to create user');
       }
       const created = await res.json();
-      if (created.temporary_password) {
+      if (created.invite_emailed) {
+        toast.success(`Invitation emailed to ${created.email}`);
+      } else if (created.invite_link) {
+        // Invite was wanted but the email didn't go: show the link to share.
+        setInviteResult({ email: created.email, link: created.invite_link, emailed: false });
+      } else if (created.temporary_password) {
         setCredentials({
           email: created.login_id || created.email || formEmail,
           password: created.temporary_password,
@@ -768,7 +777,7 @@ export default function UsersClient({
               {inviteResult.emailed ? (
                 <><Mail className="h-4 w-4 text-green-600" /> Emailed to {inviteResult.email}. You can also copy the link below to share directly.</>
               ) : (
-                <><AlertTriangle className="h-4 w-4 text-amber-500" /> Email wasn&apos;t sent (email delivery isn&apos;t configured). Copy this link and share it with the user.</>
+                <><AlertTriangle className="h-4 w-4 text-amber-500" /> The email didn&apos;t send. Copy this link and share it with the user — until they use it, they have no way to sign in.</>
               )}
             </p>
             <div className="flex items-center gap-2">
@@ -1038,6 +1047,24 @@ export default function UsersClient({
                 </select>
               </div>
             </div>
+            {formMode === 'email' && (
+              <label className="mt-4 flex items-start gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={formSendInvite}
+                  onChange={(e) => setFormSendInvite(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span>
+                  Email them an invitation to set their password
+                  <span className="block text-xs text-gray-500">
+                    {formSendInvite
+                      ? 'Recommended. Without it they get no email and can’t sign in until you share their temporary password.'
+                      : 'You’ll be shown a temporary password to share with them yourself.'}
+                  </span>
+                </span>
+              </label>
+            )}
             {error && showModal && (
               <p className="mt-3 text-sm text-red-600">{error}</p>
             )}

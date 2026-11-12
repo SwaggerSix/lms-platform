@@ -9,6 +9,8 @@ import { sendEmail } from "@/lib/email/sender";
 import { learningPathAccess } from "@/lib/email/templates";
 import { createUserAccount } from "@/lib/users/create-user";
 import { grantPathAccess, MAX_PATH_INVITES, parseInviteList, type Invitee } from "@/lib/paths/invite";
+import { emailPathAccess } from "@/lib/paths/notify";
+import { generateSetPasswordLink, hasNeverSignedIn } from "@/lib/users/set-password-link";
 
 /**
  * POST /api/paths/[id]/invite
@@ -16,12 +18,15 @@ import { grantPathAccess, MAX_PATH_INVITES, parseInviteList, type Invitee } from
  *
  * Admin → Learning Paths → "Invite people". For each address:
  *  - an existing account is enrolled in the path and every course on it and
- *    emailed a link to the path;
+ *    emailed a link to the path — or a set-password link if they have never
+ *    signed in (e.g. added under Admin → Users without an invite);
  *  - a new address gets an account the way Admin → Users does
  *    (createUserAccount: auth user + users row, must set a password), is
  *    enrolled, and is emailed the set-password (recovery) link — the same
  *    mechanism as "Resend invite".
- * Someone who already had the path is left as they are (no email).
+ * Someone who already had the path is left as they are (no email), unless
+ * they have never signed in: then they are sent a fresh set-password link, so
+ * re-inviting someone who is stuck actually helps.
  *
  * Permissions follow the path "Assign" feature (/api/paths/enroll): admins
  * and super admins can invite anyone; managers only their own direct reports,
@@ -111,7 +116,6 @@ export async function POST(
   const inviterName = [me?.first_name, me?.last_name].filter(Boolean).join(" ").trim() || undefined;
 
   const base = (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, "");
-  const pathUrl = path.slug ? `${base}/learn/paths/${path.slug}` : `${base}/learn/paths`;
 
   const results: RowResult[] = [];
   for (const invitee of invitees) {
@@ -122,9 +126,8 @@ export async function POST(
           actorId: actor.id,
           isPrivileged,
           canCreateAccounts,
-          path: { id: path.id, title: path.title },
+          path: { id: path.id, title: path.title, slug: path.slug },
           courseIds,
-          pathUrl,
           base,
           inviterName,
         })
@@ -163,9 +166,8 @@ async function inviteOne(
     actorId: string;
     isPrivileged: boolean;
     canCreateAccounts: boolean;
-    path: { id: string; title: string };
+    path: { id: string; title: string; slug?: string | null };
     courseIds: string[];
-    pathUrl: string;
     base: string;
     inviterName?: string;
   }
@@ -175,7 +177,7 @@ async function inviteOne(
 
   const { data: existing } = await service
     .from("users")
-    .select("id, email, first_name, status, manager_id, login_id")
+    .select("id, email, first_name, status, manager_id, login_id, auth_id")
     .ilike("email", escapeLike(email))
     .limit(1)
     .maybeSingle();
@@ -194,19 +196,42 @@ async function inviteOne(
       assignedBy: ctx.actorId,
     });
     if (outcome === "error") return { email, status: "failed", reason: "Could not enroll" };
-    if (outcome === "already") return { email, status: "already" };
 
-    const tpl = learningPathAccess({
-      name: existing.first_name || invitee.firstName || "there",
-      pathTitle: ctx.path.title,
+    const user = { ...existing, first_name: existing.first_name || invitee.firstName || null };
+    if (outcome === "already") {
+      // Already on the path. If they never got in, re-send the way in.
+      if (existing.login_id || !(await hasNeverSignedIn(service, existing.auth_id))) {
+        return { email, status: "already" };
+      }
+      const sent = await emailPathAccess(service, {
+        user,
+        path: ctx.path,
+        courseCount: ctx.courseIds.length,
+        base: ctx.base,
+        inviterName: ctx.inviterName,
+      });
+      return {
+        email,
+        status: "already",
+        reason:
+          sent === "failed"
+            ? "Already had the path and hasn't signed in yet — the new set-password email didn't send; use Resend invite under Users"
+            : "Already had the path but hadn't signed in — sent a new set-password link",
+      };
+    }
+
+    const sent = await emailPathAccess(service, {
+      user,
+      path: ctx.path,
       courseCount: ctx.courseIds.length,
-      actionUrl: ctx.pathUrl,
-      isNewAccount: false,
+      base: ctx.base,
       inviterName: ctx.inviterName,
     });
-    const sent = await sendEmail({ to: existing.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
-    if (!sent.success) console.error("Path access email failed:", sent.error);
-    return { email, status: "added", ...(sent.success ? {} : { reason: "Enrolled, but the email didn't send" }) };
+    return {
+      email,
+      status: "added",
+      ...(sent === "failed" ? { reason: "Enrolled, but the email didn't send" } : {}),
+    };
   }
 
   if (!ctx.canCreateAccounts) {
@@ -242,14 +267,8 @@ async function inviteOne(
   }
 
   // Same set-password link as Admin → Users → Resend invite.
-  const { data: link, error: linkErr } = await service.auth.admin.generateLink({
-    type: "recovery",
-    email,
-    options: { redirectTo: `${ctx.base}/reset-password` },
-  });
-  const actionUrl = link?.properties?.action_link;
-  if (linkErr || !actionUrl) {
-    console.error("Path invite link error:", linkErr?.message);
+  const actionUrl = await generateSetPasswordLink(service, email, ctx.base);
+  if (!actionUrl) {
     return { email, status: "invited", reason: "Enrolled, but no email was sent — use Resend invite under Users" };
   }
   const tpl = learningPathAccess({
