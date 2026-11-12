@@ -1,0 +1,382 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:02.757
+Module 3: building it in SurveyCraft.
+
+00:00:02.757 --> 00:00:05.886
+You've designed the huddle pulse on paper.
+
+00:00:05.886 --> 00:00:11.101
+Now you'll build it: questions,
+blocks, logic, messages and languages.
+
+00:00:11.101 --> 00:00:12.591
+About forty minutes.
+
+00:00:13.100 --> 00:00:16.094
+Click New Survey at the top of any page.
+
+00:00:16.094 --> 00:00:18.414
+Most people start from scratch.
+
+00:00:18.414 --> 00:00:24.625
+If the client already has the survey in
+Qualtrics, you can import its file instead.
+
+00:00:24.625 --> 00:00:30.463
+Give the survey a clear name, file it in
+a project if you like, and create it.
+
+00:00:30.463 --> 00:00:34.279
+It opens in the builder
+with one block, in English.
+
+00:00:34.279 --> 00:00:40.192
+One warning about imports: questions and
+blocks come across, but logic doesn't.
+
+00:00:40.192 --> 00:00:41.913
+Rebuild it and test it.
+
+00:00:42.400 --> 00:00:44.416
+The builder has four parts.
+
+00:00:44.416 --> 00:00:50.092
+On the left, the question types: click
+one to add it, or drag it into place.
+
+00:00:50.092 --> 00:00:52.556
+Next to that, the blocks outline.
+
+00:00:52.556 --> 00:00:57.559
+In the middle, the canvas, where
+your questions sit block by block.
+
+00:00:57.559 --> 00:01:03.234
+And on the right, question properties,
+which open when you click a question.
+
+00:01:03.234 --> 00:01:08.760
+SurveyCraft saves automatically a couple
+of seconds after you stop typing.
+
+00:01:08.760 --> 00:01:14.212
+The toolbar has undo and redo, test
+responses, add from library, preview,
+
+00:01:14.212 --> 00:01:17.273
+request assistance, and Next: Distribute.
+
+00:01:17.767 --> 00:01:20.738
+The question types come in five groups.
+
+00:01:20.738 --> 00:01:26.606
+Basic: multiple choice, checkboxes,
+short and long text, dropdowns and dates.
+
+00:01:26.606 --> 00:01:31.864
+Rating and scales: sliders, Net
+Promoter Score and the Likert matrix.
+
+00:01:31.864 --> 00:01:37.426
+Advanced: ranking, constant sum, side
+by side, heat maps and drill-downs.
+
+00:01:37.426 --> 00:01:42.379
+Content: file uploads, and text
+or image blocks for instructions.
+
+00:01:42.379 --> 00:01:48.399
+And the narrative group, which powers
+Mosaic Signal and is taught in the Mosaic
+
+00:01:48.399 --> 00:01:52.590
+Signal course of the Mosaic
+Practitioner certification.
+
+00:01:52.590 --> 00:01:55.409
+Most pulses need only a few of these.
+
+00:01:55.900 --> 00:01:58.568
+A few properties do most of the work.
+
+00:01:58.568 --> 00:02:02.463
+Required, for the questions
+you can't analyse without,
+
+00:02:02.463 --> 00:02:05.203
+like department or a routing question.
+
+00:02:05.203 --> 00:02:08.305
+Keep sensitive and open
+questions optional.
+
+00:02:08.305 --> 00:02:10.540
+"Other" adds a write-in option.
+
+00:02:10.540 --> 00:02:15.156
+Randomize options shuffles an
+unordered list, but never a scale.
+
+00:02:15.156 --> 00:02:19.483
+Reverse scored flips a negatively
+worded item in the export.
+
+00:02:19.483 --> 00:02:20.276
+And piping.
+
+00:02:20.276 --> 00:02:23.378
+Give a question a short
+alias, like "dept",
+
+00:02:23.378 --> 00:02:27.128
+then write it in curly
+brackets in a later question,
+
+00:02:27.128 --> 00:02:29.868
+and each person sees their own answer.
+
+00:02:29.868 --> 00:02:34.196
+Add a fallback, like "your team",
+for anyone who skipped it.
+
+00:02:34.700 --> 00:02:36.018
+Blocks are sections.
+
+00:02:36.018 --> 00:02:39.181
+Use them to group questions,
+move them together,
+
+00:02:39.181 --> 00:02:41.883
+and give skip logic somewhere to jump to.
+
+00:02:41.883 --> 00:02:44.651
+You can also show a block only to leaders.
+
+00:02:44.651 --> 00:02:50.120
+In Settings, under Leader Configuration,
+pick the question that identifies leaders,
+
+00:02:50.120 --> 00:02:53.481
+like a role question, and
+tick which answers count.
+
+00:02:53.481 --> 00:02:55.985
+Put that question in an earlier block.
+
+00:02:55.985 --> 00:02:58.094
+Then mark the block leader-only.
+
+00:02:58.094 --> 00:02:59.412
+Nobody else sees it.
+
+00:02:59.900 --> 00:03:01.748
+Logic lives on its own tab.
+
+00:03:01.748 --> 00:03:05.649
+Pick a question, then choose
+display logic or skip logic.
+
+00:03:05.649 --> 00:03:11.123
+Display logic sits on the question that
+might be hidden: show this question when
+
+00:03:11.123 --> 00:03:12.971
+certain answers were given.
+
+00:03:12.971 --> 00:03:18.446
+Skip logic sits on the question people
+answer before jumping: when this happens,
+
+00:03:18.446 --> 00:03:22.689
+skip to another question, another
+block, the end of the block,
+
+00:03:22.689 --> 00:03:24.400
+or the end of the survey.
+
+00:03:24.400 --> 00:03:28.574
+Skip rules run in order, and
+the first one that matches wins.
+
+00:03:28.574 --> 00:03:33.775
+And don't worry about required questions
+that someone never saw; SurveyCraft
+
+00:03:33.775 --> 00:03:35.897
+doesn't hold them up for those.
+
+00:03:36.400 --> 00:03:38.288
+Here's the huddle branch.
+
+00:03:38.288 --> 00:03:44.330
+The routing question asks whether people
+took part in a cross-site huddle in the
+
+00:03:44.330 --> 00:03:45.160
+last month.
+
+00:03:45.160 --> 00:03:51.353
+On the two follow-ups about whether huddles
+help and whether problems get followed
+
+00:03:51.353 --> 00:03:55.506
+up, add display logic: show
+when the answer equals yes.
+
+00:03:55.506 --> 00:03:59.207
+On the barriers question,
+show when it equals no.
+
+00:03:59.207 --> 00:04:00.566
+Then open Preview.
+
+00:04:00.566 --> 00:04:04.720
+Answer yes, and you should
+see the two follow-ups only.
+
+00:04:04.720 --> 00:04:09.704
+Go back, answer no, and you should
+see the barriers question only.
+
+00:04:09.704 --> 00:04:12.423
+You'll test it at scale in Module 4.
+
+00:04:12.933 --> 00:04:14.394
+Four traps to avoid.
+
+00:04:14.394 --> 00:04:18.118
+SurveyCraft lets a condition
+point at any question,
+
+00:04:18.118 --> 00:04:20.967
+even one the person hasn't reached yet,
+
+00:04:20.967 --> 00:04:24.399
+so base every condition
+on an earlier question.
+
+00:04:24.399 --> 00:04:26.590
+Put specific skip rules first.
+
+00:04:26.590 --> 00:04:31.848
+If you rename or delete an answer
+option, check every rule that used it.
+
+00:04:31.848 --> 00:04:33.309
+And test every path.
+
+00:04:33.800 --> 00:04:36.155
+In Settings, write your messages.
+
+00:04:36.155 --> 00:04:41.651
+The welcome message carries your promise:
+purpose, time, that it's voluntary,
+
+00:04:41.651 --> 00:04:45.362
+what's confidential, and
+when people will hear back.
+
+00:04:45.362 --> 00:04:48.573
+The thank-you message
+says what happens next.
+
+00:04:48.573 --> 00:04:53.641
+The closed message greets anyone who
+opens the link after you close it.
+
+00:04:53.641 --> 00:04:59.493
+Respondents also see a short privacy line
+and a private link that lets them delete
+
+00:04:59.493 --> 00:05:00.706
+their own answer.
+
+00:05:01.200 --> 00:05:07.012
+To offer more languages, set your primary
+language, add the ones you need, save,
+
+00:05:07.012 --> 00:05:08.029
+and translate.
+
+00:05:08.029 --> 00:05:12.533
+An AI translator fills in the
+questions, options and messages.
+
+00:05:12.533 --> 00:05:17.764
+Then have a fluent speaker check every
+one, especially the scale labels.
+
+00:05:17.764 --> 00:05:19.144
+Two things to know.
+
+00:05:19.144 --> 00:05:24.811
+The first time you publish, SurveyCraft
+translates into every offered language
+
+00:05:24.811 --> 00:05:29.025
+before the survey goes live,
+which can take a few minutes,
+
+00:05:29.025 --> 00:05:31.059
+so only offer what you need.
+
+00:05:31.059 --> 00:05:35.418
+And the survey's text goes to
+an AI service for translation.
+
+00:05:35.418 --> 00:05:37.380
+Respondents' answers don't.
+
+00:05:37.867 --> 00:05:41.900
+Themes hold the colours, font
+and logo respondents see.
+
+00:05:41.900 --> 00:05:47.401
+On a survey's Theme tab, pick a theme
+or make one, upload a logo, and save.
+
+00:05:47.401 --> 00:05:49.968
+Then check how it looks in Preview.
+
+00:05:49.968 --> 00:05:55.395
+The Question Library is a searchable
+bank of questions for your workspace.
+
+00:05:55.395 --> 00:06:00.089
+In the builder, choose Save to
+library on a question to keep it,
+
+00:06:00.089 --> 00:06:02.583
+and Add from library to reuse one.
+
+00:06:02.583 --> 00:06:04.930
+Instrument items stay out of it.
+
+00:06:05.433 --> 00:06:07.471
+Quick check before Module 4.
+
+00:06:07.967 --> 00:06:08.784
+To sum up.
+
+00:06:08.784 --> 00:06:11.236
+Rebuild logic after an import.
+
+00:06:11.236 --> 00:06:16.876
+Use the simplest question types,
+and Required only where you need it.
+
+00:06:16.876 --> 00:06:22.271
+Display logic shows a question;
+skip logic sends people elsewhere.
+
+00:06:22.271 --> 00:06:23.579
+Test every path.
+
+00:06:23.579 --> 00:06:26.358
+And get every translation checked.
+
+00:06:26.358 --> 00:06:30.119
+Next, Module 4: settings,
+privacy and testing.
+
