@@ -81,6 +81,41 @@ const CASE_FILES = {
     href: "/scorm-content/0a9c7164-14a5-45bb-bea0-520096b716d6/media/signal-case-file.pdf",
     detail: "PDF, 3 pages: Exhibits S3, S3.8 and S4-final",
   },
+  task1Template: {
+    label: "Task 1 memo template (Word)",
+    href: "/scorm-content/2a1c6b35-3be3-42ae-9609-6aa3b685fff5/media/mos100-task1-memo-template.docx",
+    detail: "ready to fill in",
+  },
+  findingCard: {
+    label: "Finding Card (MOS-100 job aid)",
+    href: "/scorm-content/2a1c6b35-3be3-42ae-9609-6aa3b685fff5/media/job-aids/M8-47-the-finding-card.pdf",
+    detail: "PDF, 1 page",
+  },
+  briefingTemplate: {
+    label: "1-3-1 Briefing Template (MOS-100 job aid)",
+    href: "/scorm-content/2a1c6b35-3be3-42ae-9609-6aa3b685fff5/media/job-aids/M9-29-the-1-3-1-briefing-template.pdf",
+    detail: "PDF, 1 page",
+  },
+  pushbackPlaybook: {
+    label: "Pushback Playbook (MOS-100 job aid)",
+    href: "/scorm-content/2a1c6b35-3be3-42ae-9609-6aa3b685fff5/media/job-aids/M9-30-the-pushback-playbook.pdf",
+    detail: "PDF, 1 page",
+  },
+  task3Template: {
+    label: "Task 3 memo template (Word)",
+    href: "/scorm-content/0a9c7164-14a5-45bb-bea0-520096b716d6/media/mos240-task3-memo-template.docx",
+    detail: "ready to fill in",
+  },
+  coachingTemplate: {
+    label: "practical template (Word)",
+    href: "/scorm-content/488f5096-04d6-4501-bfce-76a70aabf4ba/media/mos210-practical-template.docx",
+    detail: "Parts 1 and 2, ready to fill in",
+  },
+  rationaleTemplate: {
+    label: "design rationale template (Word)",
+    href: "/scorm-content/c8960c24-0110-46c6-97be-36f05e2da5f2/media/mos220-design-rationale-template.docx",
+    detail: "ready to fill in",
+  },
   digTemplate: {
     label: "Culture Dig Word template (MOS-230)",
     href: "/scorm-content/723e4d42-6cbb-454a-b001-624460a7a30d/media/culture-dig-template.docx",
@@ -124,7 +159,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         title: "Task 1: Culture Mosaic interpretation memo",
         file: "document",
         link: "none",
-        downloads: [CASE_FILES.northwind],
+        downloads: [CASE_FILES.northwind, CASE_FILES.task1Template, CASE_FILES.findingCard],
         instructions: [
           "No more than two pages, to Dana Okafor (CEO) and Alex Moreau (CPO). The case evidence is the Northwind file (download it above): Exhibits A to E.",
           "3 to 5 findings, each with the claim, the evidence (exhibits and numbers), your confidence and why, and the so-what for Northwind.",
@@ -158,7 +193,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         title: "Task 3: Mosaic Signal analysis memo",
         file: "document",
         link: "none",
-        downloads: [CASE_FILES.signal],
+        downloads: [CASE_FILES.signal, CASE_FILES.task3Template],
         instructions: [
           "No more than two pages, to Alex Moreau. Your data is the Mosaic Signal case file (download it above): Exhibits S3, S3.8 and S4-final.",
           "Patterns (3 to 5), outlier stories (2 or 3), cautions, a recommended next wave, and a short confidentiality note.",
@@ -175,7 +210,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         link: "or-file",
         linkLabel: "…or paste a link to the recording",
         pushback: true,
-        downloads: [CASE_FILES.northwind],
+        downloads: [CASE_FILES.northwind, CASE_FILES.briefingTemplate, CASE_FILES.pushbackPlaybook],
         instructions: [
           "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18. Use only what Northwind has by then: the Culture Mosaic, the October progress check, the change-readiness stories and the Team Report. Keep Jordan's 360 out. Tell one story: what you learned, whether the work since March made a difference, and what Northwind should do next, including whether a Culture Dig or another Mosaic Signal study should come next, and why.",
           "Use up to 5 slides or exhibits, with your camera on and your slides visible (a screen-share recording is fine).",
@@ -211,6 +246,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
     summary: "Hand in your practical task for marking. The course exam alone doesn't certify you.",
     pieces: [
       practical({
+        downloads: [CASE_FILES.coachingTemplate],
         title: "Practical task (Gate G3)",
         warning:
           "The practice site (practice.mosaiccoachingstudio.com) is wiped on the 1st of each month. Take your screenshots and hand in during the same month.",
@@ -233,6 +269,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
     summary: "Hand in your practical survey build for marking. The course exam alone doesn't certify you.",
     pieces: [
       practical({
+        downloads: [CASE_FILES.rationaleTemplate],
         title: "Practical task (Gate G3)",
         link: "required",
         linkLabel: "The survey's published link",

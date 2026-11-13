@@ -17,6 +17,19 @@ copy of the player's source.
 
 ## Change log
 
+**13 Nov 2026 — job aids and Word templates.** Every job aid shown in the
+videos (39 across the five courses) is now a one-page PDF in
+`media/job-aids/<screen id>-<name>.pdf`, plus one PDF of all of a course's job
+aids (`media/<course>-job-aids.pdf`). A module lists its own in `m.downloads`;
+the player shows them in a "Job aid for this module" box above the video. The
+PDFs are made from the same screen sources as the videos
+(surveycraft `docs/training/production/screen-engine`,
+`node render.js <yaml> --only <ids> --out <dir> --pdf <dir>`), so they read
+exactly as the video shows them. Word templates for every hand-in document:
+MOS-100 Task 1 memo, MOS-210 practical, MOS-220 design rationale, MOS-240
+Task 3 memo (`tools/templates/make_practical_templates.py`) and MOS-230 Parts A
+and B (`tools/templates/make_culture_dig_template.py`).
+
 **13 Nov 2026 — downloads up front.** A course may list files the learner
 needs (`C.downloads: [{href, label, detail}]`, heading `C.downloadsHeading`).
 The player shows them as big buttons in a green "Your capstone files" panel at
