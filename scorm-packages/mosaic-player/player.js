@@ -249,6 +249,9 @@
     stat.innerHTML = modDone(mi) ? '<span class="status ok">✓ Module complete</span>' : '<span class="status wait">In progress</span>';
     main.appendChild(stat);
 
+    // This module's job aids (m.downloads), above the video so they're easy to find.
+    if (m.downloads && m.downloads.length) main.insertAdjacentHTML("beforeend",
+      downloadsCard(m.downloads, m.downloads.length > 1 ? "Job aids for this module" : "Job aid for this module", true));
     // A note from the course data above the video (e.g. where what the
     // narration describes has since changed).
     if (m.note) main.appendChild(el("div", { "class": "notice" }, m.note));
@@ -1272,13 +1275,14 @@
   // Files the learner needs for the practical (C.downloads: [{href, label,
   // detail}]), as big buttons at the top of the practical page and on the
   // home page, so nobody has to find a link inside an exhibit.
-  function downloadsCard() {
-    var D = C.downloads || [];
+  function downloadsCard(list, heading, small) {
+    var D = list || C.downloads || [];
     if (!D.length) return "";
-    var h = '<div class="dlcard"><h2>' + esc(C.downloadsHeading || (D.length > 1 ? "Files to download" : "File to download")) + "</h2>";
-    if (C.downloadsNote) h += "<p>" + C.downloadsNote + "</p>";
+    var h = '<div class="dlcard' + (small ? " dlmod" : "") + '"><h2>' +
+      esc(heading || C.downloadsHeading || (D.length > 1 ? "Files to download" : "File to download")) + "</h2>";
+    if (!list && C.downloadsNote) h += "<p>" + C.downloadsNote + "</p>";
     D.forEach(function (d) {
-      h += '<a class="dlbtn" href="' + esc(d.href) + '" target="_blank" rel="noopener">' +
+      h += '<a class="dlbtn' + (small ? " sm" : "") + '" href="' + esc(d.href) + '" target="_blank" rel="noopener">' +
         '<span class="dlicon" aria-hidden="true">⬇</span><span>' + esc(d.label) +
         (d.detail ? '<span class="dlmeta">' + esc(d.detail) + "</span>" : "") + "</span></a>";
     });

@@ -203,3 +203,5 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dlbtn .dlmeta { display: block; font-weight: 400; font-size: .88rem; opacity: .9; }
 .dlbtn.sm { padding: 8px 14px; font-size: .98rem; gap: 8px; }
 .dlbtn.sm .dlicon { font-size: 1.15rem; }
+.dlcard.dlmod { padding: 12px 16px; border-width: 2px; margin: 12px 0; }
+.dlcard.dlmod h2 { font-size: 1.05rem; }
