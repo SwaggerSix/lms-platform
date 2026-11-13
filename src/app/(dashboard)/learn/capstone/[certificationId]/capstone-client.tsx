@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Clock, Loader2, Video, AlertTriangle, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Loader2, Video, AlertTriangle, FileText, Download } from "lucide-react";
 import { uploadCapstoneFile } from "@/lib/certifications/capstone-upload";
 import type { CapstoneKind } from "@/lib/certifications/capstone";
 
@@ -40,6 +40,7 @@ interface Piece {
   linkLabel: string | null;
   requiredNote: string | null;
   warning: string | null;
+  downloads: { label: string; href: string; detail: string }[];
 }
 
 interface View {
@@ -514,6 +515,25 @@ export default function CapstoneClient({ certificationId }: { certificationId: s
           {piece.file === "video" ? <Video className="h-5 w-5 text-gray-400" /> : <FileText className="h-5 w-5 text-gray-400" />}
           {piece.title}
         </h2>
+        {piece.downloads.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {piece.downloads.map((d) => (
+              <a
+                key={d.href}
+                href={d.href}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+              >
+                <Download className="h-4 w-4" />
+                <span>
+                  Download the {d.label}
+                  <span className="ml-1 font-normal opacity-80">({d.detail})</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-gray-700">
           {piece.instructions.map((i) => (
             <li key={i}>{i}</li>

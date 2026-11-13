@@ -44,6 +44,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         linkLabel: p.linkLabel ?? null,
         requiredNote: p.requiredNote ?? null,
         warning: p.warning ?? null,
+        downloads: p.downloads ?? [],
       })),
       pushback: cfg.pushback
         ? { count: cfg.pushback.count, prepSeconds: cfg.pushback.prepSeconds, answerSeconds: cfg.pushback.answerSeconds }
