@@ -228,6 +228,7 @@
     h += '<div class="card"><h2>Your progress</h2><p>' + done + " of " + req.length + " modules complete. " +
       (S.e.p ? '<span class="status ok">Final exam passed</span>' : (S.e.n ? "Final exam attempts used: " + S.e.n + " of " + EX.attempts + "." : "Final exam not yet taken.")) +
       '</p><button type="button" class="btn" id="cont">' + (done || S.e.n ? "Continue" : "Start the course") + "</button></div>";
+    h += downloadsCard();
     main.innerHTML = h;
     document.getElementById("cont").addEventListener("click", function () { go(nextKey()); });
   }
@@ -1267,10 +1268,29 @@
     return box;
   }
 
+  // ------------------------------------------------------------ downloads
+  // Files the learner needs for the practical (C.downloads: [{href, label,
+  // detail}]), as big buttons at the top of the practical page and on the
+  // home page, so nobody has to find a link inside an exhibit.
+  function downloadsCard() {
+    var D = C.downloads || [];
+    if (!D.length) return "";
+    var h = '<div class="dlcard"><h2>' + esc(C.downloadsHeading || (D.length > 1 ? "Files to download" : "File to download")) + "</h2>";
+    if (C.downloadsNote) h += "<p>" + C.downloadsNote + "</p>";
+    D.forEach(function (d) {
+      h += '<a class="dlbtn" href="' + esc(d.href) + '" target="_blank" rel="noopener">' +
+        '<span class="dlicon" aria-hidden="true">⬇</span><span>' + esc(d.label) +
+        (d.detail ? '<span class="dlmeta">' + esc(d.detail) + "</span>" : "") + "</span></a>";
+    });
+    return h + "</div>";
+  }
+
   // ------------------------------------------------------------ practical
   function renderPractical(main) {
     main.appendChild(el("p", { "class": "kicker" }, esc(C.code)));
     main.appendChild(el("h1", null, esc(HAND.heading)));
+    var dl = downloadsCard();
+    if (dl) main.insertAdjacentHTML("beforeend", dl);
     main.appendChild(el("div", { "class": "notice" }, HAND.notice));
     var c = el("div", { "class": "card" }, C.practical || "<p>See your course instructions.</p>");
     main.appendChild(c);

@@ -17,6 +17,15 @@ copy of the player's source.
 
 ## Change log
 
+**13 Nov 2026 — downloads up front.** A course may list files the learner
+needs (`C.downloads: [{href, label, detail}]`, heading `C.downloadsHeading`).
+The player shows them as big buttons in a green "Your capstone files" panel at
+the top of the hand-in page and on the home page. In the practical itself each
+case-file link is now a button, repeated on every task screen. MOS-230 also
+gets a Word template for Parts A and B (`media/culture-dig-template.docx`).
+`player.css` is now uploaded by the "Upload Mosaic course files" button too
+(before, only `player.js` was).
+
 **11 Nov 2026 — one capstone for the bundle.** MOS-100, MOS-230 and MOS-240
 now lead to one certification, Mosaic Practitioner Certified, through one
 capstone handed in on the LMS (`/learn/capstone/<id>`) once all three

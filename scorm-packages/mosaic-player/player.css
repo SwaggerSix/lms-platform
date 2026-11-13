@@ -190,3 +190,16 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dndrow.no .dndtxt::after { content: " ✗"; color: var(--danger); font-weight: 700; }
 .fb .tk { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 8px; }
 @media (max-width: 600px) { .dndzones { grid-template-columns: 1fr 1fr; gap: 8px; } .dndzone { min-height: 84px; } .dndzhead { padding: 6px 8px; } .dndchip { padding: 5px 8px; } }
+
+/* downloads: case files and templates for the practical (C.downloads) */
+.dlcard { border: 3px solid var(--enable-deep); background: var(--enable-tint); border-radius: 12px; padding: 16px 20px; margin: 18px 0; }
+.dlcard h2 { margin: 0 0 6px; color: var(--enable-deep); font-size: 1.25rem; }
+.dlcard p { margin: 0 0 8px; }
+.dlbtn { display: inline-flex; align-items: center; gap: 12px; background: var(--mosaic-dark); color: #fff; text-decoration: none; border-radius: 10px;
+  padding: 12px 20px; margin: 6px 10px 6px 0; font-family: var(--head); font-weight: 700; font-size: 1.08rem; line-height: 1.25; max-width: 100%; }
+.dlbtn:hover { background: #2a2770; color: #fff; }
+.dlbtn:focus-visible { outline: 3px solid var(--deliver); outline-offset: 2px; }
+.dlbtn .dlicon { font-size: 1.5rem; line-height: 1; }
+.dlbtn .dlmeta { display: block; font-weight: 400; font-size: .88rem; opacity: .9; }
+.dlbtn.sm { padding: 8px 14px; font-size: .98rem; gap: 8px; }
+.dlbtn.sm .dlicon { font-size: 1.15rem; }

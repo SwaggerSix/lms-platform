@@ -52,7 +52,41 @@ export interface PieceConfig {
   warning?: string;
   /** Three pushback questions follow this piece (Mosaic briefing). */
   pushback?: boolean;
+  /** Files the learner needs for this piece, shown as buttons above the instructions. */
+  downloads?: CapstoneDownload[];
 }
+
+export interface CapstoneDownload {
+  label: string;
+  href: string;
+  /** e.g. "PDF, 8 pages" */
+  detail: string;
+}
+
+// The case files inside the Mosaic certification packages (served by
+// /scorm-content to any signed-in user; scorm-packages/live/<package>/media/).
+const CASE_FILES = {
+  northwind: {
+    label: "Northwind file (MOS-100)",
+    href: "/scorm-content/2a1c6b35-3be3-42ae-9609-6aa3b685fff5/media/northwind-file.pdf",
+    detail: "PDF, 8 pages: Exhibits A to E",
+  },
+  dig: {
+    label: "Northwind dig file (MOS-230)",
+    href: "/scorm-content/723e4d42-6cbb-454a-b001-624460a7a30d/media/dig-case-file.pdf",
+    detail: "PDF, 8 pages",
+  },
+  signal: {
+    label: "Mosaic Signal case file (MOS-240)",
+    href: "/scorm-content/0a9c7164-14a5-45bb-bea0-520096b716d6/media/signal-case-file.pdf",
+    detail: "PDF, 3 pages: Exhibits S3, S3.8 and S4-final",
+  },
+  digTemplate: {
+    label: "Culture Dig Word template (MOS-230)",
+    href: "/scorm-content/723e4d42-6cbb-454a-b001-624460a7a30d/media/culture-dig-template.docx",
+    detail: "Parts A and B, ready to fill in",
+  },
+} satisfies Record<string, CapstoneDownload>;
 
 export interface CapstoneConfig {
   title: string;
@@ -90,8 +124,9 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         title: "Task 1: Culture Mosaic interpretation memo",
         file: "document",
         link: "none",
+        downloads: [CASE_FILES.northwind],
         instructions: [
-          "No more than two pages, to Dana Okafor (CEO) and Alex Moreau (CPO). The case evidence is in MOS-100's Capstone section: Exhibits A to E, with a PDF to download.",
+          "No more than two pages, to Dana Okafor (CEO) and Alex Moreau (CPO). The case evidence is the Northwind file (download it above): Exhibits A to E.",
           "3 to 5 findings, each with the claim, the evidence (exhibits and numbers), your confidence and why, and the so-what for Northwind.",
           "At least two things the data can't tell us yet.",
           "Recommendations: what Northwind should do next, and which Mosaic tool, if any, should measure it and when.",
@@ -107,11 +142,12 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         title: "Task 2: Culture Dig plan and synthesis memo",
         file: "document",
         link: "none",
+        downloads: [CASE_FILES.dig, CASE_FILES.digTemplate],
         instructions: [
-          "One Word or PDF document with Part A (program plan and fieldwork plan for Taylor Brooks's clinic dig), then Part B (the two-page synthesis memo for Alex Moreau). Use the MOS-230 templates.",
+          "One Word or PDF document with Part A (program plan and fieldwork plan for Taylor Brooks's clinic dig), then Part B (the two-page synthesis memo for Alex Moreau). Start from the Word template (download it above).",
           "Before you hand in: Part A has all eight sections and two domain fieldwork plans; Part B has a headline, three findings, limits and recommendations.",
           "Nothing in either part names or points to an individual, and you haven't promised anything the dig can't deliver. Don't promise Taylor results for individual clinics, and don't report any site or group under 10 stories.",
-          "Your evidence is the Northwind dig file in MOS-230's practical, with a PDF to download.",
+          "Your evidence is the Northwind dig file (download it above).",
         ],
       },
       // MOS-240 · docs/training/mosaic-signal-certification/modules/MS-M6-practical.md
@@ -122,8 +158,9 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         title: "Task 3: Mosaic Signal analysis memo",
         file: "document",
         link: "none",
+        downloads: [CASE_FILES.signal],
         instructions: [
-          "No more than two pages, to Alex Moreau. Your data is in MOS-240's practical: Exhibits S3, S3.8 and S4-final, with a PDF to download.",
+          "No more than two pages, to Alex Moreau. Your data is the Mosaic Signal case file (download it above): Exhibits S3, S3.8 and S4-final.",
           "Patterns (3 to 5), outlier stories (2 or 3), cautions, a recommended next wave, and a short confidentiality note.",
           "Paraphrase stories and remove identifying details. Don't present any group under 10 stories, and don't try to work out who wrote anything.",
           "Upload a PDF or Word file.",
@@ -138,6 +175,7 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
         link: "or-file",
         linkLabel: "…or paste a link to the recording",
         pushback: true,
+        downloads: [CASE_FILES.northwind],
         instructions: [
           "Record a 10–12 minute briefing for Northwind's board and executive team, as you'd deliver it on November 18. Use only what Northwind has by then: the Culture Mosaic, the October progress check, the change-readiness stories and the Team Report. Keep Jordan's 360 out. Tell one story: what you learned, whether the work since March made a difference, and what Northwind should do next, including whether a Culture Dig or another Mosaic Signal study should come next, and why.",
           "Use up to 5 slides or exhibits, with your camera on and your slides visible (a screen-share recording is fine).",

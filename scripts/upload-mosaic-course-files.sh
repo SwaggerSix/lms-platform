@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Upload the Mosaic course player and edited course files to Supabase storage.
+# Upload the Mosaic course player (player.js, player.css) and edited course files to Supabase storage.
 # See scorm-packages/live/README.md. Needs SUPABASE_URL and
 # SUPABASE_SERVICE_ROLE_KEY. Saves the files it replaces under ./previous/.
 set -euo pipefail
@@ -34,6 +34,7 @@ type_of() {
     *.vtt) echo "text/vtt" ;;
     *.mp3) echo "audio/mpeg" ;;
     *.pdf) echo "application/pdf" ;;
+    *.docx) echo "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ;;
     *) echo "application/octet-stream" ;;
   esac
 }
@@ -61,6 +62,7 @@ upload() {
 status=0
 for pkg in "${PACKAGES[@]}"; do
   upload "$pkg" player.js scorm-packages/mosaic-player/player.js || status=1
+  upload "$pkg" player.css scorm-packages/mosaic-player/player.css || status=1
   if [ -d "scorm-packages/live/$pkg" ]; then
     # Every file, subfolders included (media/M10.mp4 goes to <pkg>/media/M10.mp4).
     while IFS= read -r -d '' f; do
