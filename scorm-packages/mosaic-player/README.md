@@ -24,8 +24,9 @@ aids (`media/<course>-job-aids.pdf`). A module lists its own in `m.downloads`;
 the player shows them in a "Job aid for this module" box above the video. The
 PDFs are made from the same screen sources as the videos
 (surveycraft `docs/training/production/screen-engine`,
-`node render.js <yaml> --only <ids> --out <dir> --pdf <dir>`), so they read
-exactly as the video shows them. Word templates for every hand-in document:
+`node handout.js <yaml> --only <ids> --out <dir>`): portrait Letter pages
+without the video's top bar and footer, each laid out at the size that fills
+one page, so they say exactly what the video screen says. Word templates for every hand-in document:
 MOS-100 Task 1 memo, MOS-210 practical, MOS-220 design rationale, MOS-240
 Task 3 memo (`tools/templates/make_practical_templates.py`) and MOS-230 Parts A
 and B (`tools/templates/make_culture_dig_template.py`).
