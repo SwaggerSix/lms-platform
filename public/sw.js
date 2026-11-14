@@ -1,4 +1,6 @@
-const CACHE_NAME = 'lms-v2';
+// v3: course package files (/scorm-content/) are no longer served cache-first.
+// Bumping the name makes activate delete v2, which held stale course players.
+const CACHE_NAME = 'lms-v3';
 const OFFLINE_URL = '/offline';
 
 // Assets to precache
@@ -33,8 +35,14 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET and API routes
   if (request.method !== 'GET' || url.pathname.startsWith('/api/')) return;
 
-  // Cache-first for static assets
-  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2?)$/)) {
+  // Cache-first only for files whose URL changes when their content does
+  // (Next.js build output, icons, images, fonts). Everything else, including
+  // course package files under /scorm-content/ (player.js, course-data.js,
+  // which are replaced in place), goes network-first below: a cache-first
+  // copy kept learners on an old course player indefinitely.
+  const immutable = url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/') ||
+    url.pathname.startsWith('/images/') || /\.(woff2?|ico)$/.test(url.pathname);
+  if (immutable && url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2?)$/)) {
     event.respondWith(
       caches.match(request).then((cached) =>
         cached || fetch(request).then((response) => {
