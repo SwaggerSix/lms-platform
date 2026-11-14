@@ -17,6 +17,15 @@ copy of the player's source.
 
 ## Change log
 
+**14 Nov 2026 — the paused video no longer swallows the activity.** When the
+video paused for a practice activity, its frame still showed that activity
+(e.g. M1 "Build the diamond": tiles and boxes), while the real one sat below
+the video, often out of view. Learners clicked the tiles on the video, which
+restarted it and closed the activity. Now a cover sits over the paused video
+("Paused for a practice activity · The activity is just below the video. Click
+here to go to it ↓"); clicking it scrolls to the activity. Only "Continue the
+video ▶" resumes. Applies to every activity in all five courses.
+
 **13 Nov 2026 — job aids and Word templates.** Every job aid shown in the
 videos (39 across the five courses) is now a one-page PDF in
 `media/job-aids/<screen id>-<name>.pdf`, plus one PDF of all of a course's job

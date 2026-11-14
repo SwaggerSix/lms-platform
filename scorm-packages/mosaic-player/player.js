@@ -804,19 +804,37 @@
     if (!pts.length) return;
     var panel = el("div", { "class": "actpanel", hidden: "" });
     wrap.appendChild(panel);
+    // While an activity is open, cover the paused video. Its frame shows the
+    // same activity (tiles, boxes), so learners clicked it to try it, which
+    // restarted the video and closed the real activity below. The cover
+    // takes them to the activity instead.
+    var stage = el("div", { "class": "vstage" });
+    video.parentNode.insertBefore(stage, video);
+    stage.appendChild(video);
+    var cover = el("button", { type: "button", "class": "vcover", hidden: "" },
+      '<span class="vcover-in"><span class="vcover-t">⏸ Paused for a practice activity</span>' +
+      '<span class="vcover-s">The activity is just below the video. Click here to go to it ↓</span></span>');
+    stage.appendChild(cover);
+    function toPanel() {
+      try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { panel.scrollIntoView(); }
+      var f = panel.querySelector("h3, button, select, input, textarea");
+      if (f) setTimeout(function () { try { f.focus({ preventScroll: true }); } catch (e) {} }, 400);
+    }
+    cover.addEventListener("click", toPanel);
+    function closePanel() { panel.hidden = true; panel.innerHTML = ""; cover.hidden = true; }
     var fired = {}, last = 0;
     function show(a) {
       try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
       panel.innerHTML = "";
       panel.hidden = false;
+      cover.hidden = false;
       panel.appendChild(el("p", { "class": "actnote" }, "⏸ The video is paused so you can try this. Then press <strong>Continue the video</strong>."));
       panel.appendChild(activityCard(a, "vp"));
       var go = el("button", { type: "button", "class": "btn big" }, "Continue the video ▶");
-      go.addEventListener("click", function () { panel.hidden = true; panel.innerHTML = ""; try { video.play(); } catch (e) {} video.focus(); });
+      go.addEventListener("click", function () { closePanel(); try { video.play(); } catch (e) {} video.focus(); });
       panel.appendChild(go);
       announce("Video paused for a practice activity: " + a.title);
-      try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { panel.scrollIntoView(); }
-      var h = panel.querySelector("h3"); if (h) setTimeout(function () { try { h.focus({ preventScroll: true }); } catch (e) {} }, 400);
+      toPanel();
     }
     video.addEventListener("timeupdate", function () {
       var t = video.currentTime;
@@ -833,7 +851,7 @@
       pts.forEach(function (a) { if (a.t > t + 0.5) delete fired[a.id]; });
       last = t;
     });
-    video.addEventListener("play", function () { if (!panel.hidden) { panel.hidden = true; panel.innerHTML = ""; } });
+    video.addEventListener("play", function () { if (!panel.hidden) closePanel(); });
   }
 
   // ------------------------------------------------------------ questions
