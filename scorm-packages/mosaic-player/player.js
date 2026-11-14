@@ -823,8 +823,15 @@
     cover.addEventListener("click", toPanel);
     function closePanel() { panel.hidden = true; panel.innerHTML = ""; cover.hidden = true; }
     var fired = {}, last = 0;
+    // Full screen hides the activity, which sits under the video. Leave it
+    // (standard, then Safari's own video full screen).
+    function leaveFullscreen() {
+      try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
+      try { if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch (e) {}
+      try { if (video.webkitDisplayingFullscreen && video.webkitExitFullscreen) video.webkitExitFullscreen(); } catch (e) {}
+    }
     function show(a) {
-      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+      leaveFullscreen();
       panel.innerHTML = "";
       panel.hidden = false;
       cover.hidden = false;
@@ -851,7 +858,26 @@
       pts.forEach(function (a) { if (a.t > t + 0.5) delete fired[a.id]; });
       last = t;
     });
-    video.addEventListener("play", function () { if (!panel.hidden) closePanel(); });
+    // The narration asks learners to answer "on screen" a few seconds before
+    // the activity opens, so they click the frame, which pauses the video.
+    // Pausing during an activity's screen opens that activity at once.
+    var EARLY = 25;
+    video.addEventListener("pause", function () {
+      if (!panel.hidden || video.seeking || video.ended) return;
+      var t = video.currentTime, next = null;
+      for (var i = 0; i < pts.length; i++) {
+        var a = pts[i];
+        if (!fired[a.id] && t < a.t && a.t - t <= EARLY && (!next || a.t < next.t)) next = a;
+      }
+      if (next) { fired[next.id] = 1; show(next); }
+    });
+    // While an activity is open only "Continue the video" resumes. Playing it
+    // any other way (the video's own play button, full-screen controls, the
+    // space bar) pauses it again and takes the learner to the activity.
+    video.addEventListener("play", function () {
+      if (panel.hidden) return;
+      video.pause(); leaveFullscreen(); toPanel();
+    });
   }
 
   // ------------------------------------------------------------ questions
