@@ -559,6 +559,14 @@
   // (it.o). It drives the question's own <select>s, so reading and grading the
   // answer don't change. Pointer events, so mouse, touch and pen all drag.
   // Keyboard / tap: choose a chip (it lifts), then choose a zone or the tray.
+  // Safety net for drags: a press anywhere ends any drag still hanging and
+  // removes a lifted copy left on the page.
+  document.addEventListener("pointerdown", function (e) {
+    var cs = document.querySelectorAll(".dndchip.dragging");
+    for (var i = 0; i < cs.length; i++) if (cs[i] !== e.target && cs[i]._endDrag) cs[i]._endDrag();
+    var gs = document.querySelectorAll(".dndchip.ghost");
+    for (var j = 0; j < gs.length; j++) if (gs[j].parentNode) gs[j].parentNode.removeChild(gs[j]);
+  }, true);
   function dragSort(fs, it) {
     var sels = fs.querySelectorAll("select");
     if (sels.length !== it.p.length) return;
@@ -619,12 +627,14 @@
         if (d) { window.scrollBy(0, d); hit(last.x, last.y); }
         scroller = requestAnimationFrame(edgeScroll);
       }
-      c.addEventListener("pointerdown", function (e) {
-        if (e.button !== undefined && e.button !== 0) return;
-        start = { x: e.clientX, y: e.clientY }; try { c.setPointerCapture(e.pointerId); } catch (er) {}
-      });
-      c.addEventListener("pointermove", function (e) {
-        if (!start) return;
+      // A drag is tracked on the window, not only on the card: with a Mac
+      // trackpad in Chrome the card sometimes never got its pointerup, so the
+      // lifted copy stayed stuck over the boxes and the card never landed.
+      // The drag now also ends when a move arrives with no button held, when
+      // capture is lost, or on the next press anywhere.
+      function onMove(e) {
+        if (!start || (dragId !== null && e.pointerId !== dragId)) return;
+        if (ghost && e.pointerType !== "touch" && e.buttons === 0) { finish(true); return; }
         if (!ghost) {
           if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) < 6) return;
           ghost = c.cloneNode(true); ghost.className = "dndchip ghost";
@@ -637,17 +647,36 @@
         hit(e.clientX, e.clientY);
         if (!scroller) scroller = requestAnimationFrame(edgeScroll);
         e.preventDefault();
-      });
-      function end() {
-        if (ghost) {
-          ghost.parentNode.removeChild(ghost); ghost = null; c.classList.remove("dragging");
-          if (over) { over.classList.remove("over"); place(pi, over === tray ? -1 : parseInt(over.getAttribute("data-z"), 10)); }
-          over = null; start = null; c._dragged = true; return;
-        }
-        start = null;
       }
-      c.addEventListener("pointerup", end);
-      c.addEventListener("pointercancel", function () { if (ghost) { ghost.parentNode.removeChild(ghost); ghost = null; c.classList.remove("dragging"); } if (over) over.classList.remove("over"); over = null; start = null; });
+      function onUp(e) { if (dragId === null || e.pointerId === dragId) finish(true); }
+      function onCancel(e) { if (dragId === null || e.pointerId === dragId) finish(false); }
+      function finish(drop) {
+        window.removeEventListener("pointermove", onMove, true);
+        window.removeEventListener("pointerup", onUp, true);
+        window.removeEventListener("pointercancel", onCancel, true);
+        var wasDrag = !!ghost;
+        if (ghost) { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); ghost = null; }
+        c.classList.remove("dragging");
+        var target = over;
+        if (over) over.classList.remove("over");
+        over = null; start = null; dragId = null; last = null;
+        if (wasDrag) {
+          c._dragged = true;
+          if (drop && target) place(pi, target === tray ? -1 : parseInt(target.getAttribute("data-z"), 10));
+        }
+      }
+      c._endDrag = function () { if (start) finish(false); };
+      var dragId = null;
+      c.addEventListener("pointerdown", function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        if (start) finish(false);
+        start = { x: e.clientX, y: e.clientY }; dragId = e.pointerId;
+        try { c.setPointerCapture(e.pointerId); } catch (er) {}
+        window.addEventListener("pointermove", onMove, true);
+        window.addEventListener("pointerup", onUp, true);
+        window.addEventListener("pointercancel", onCancel, true);
+      });
+      c.addEventListener("lostpointercapture", function () { if (ghost) finish(true); });
       c.addEventListener("click", function () {
         if (c._dragged) { c._dragged = false; return; }
         setPicked(picked === pi ? null : pi);
@@ -753,6 +782,8 @@
       });
       function onMove(e) {
         if (!start) return;
+        // No button held: the drag's end was missed (seen with a Mac trackpad). Drop here.
+        if (dragging && e.pointerType !== "touch" && e.buttons === 0) { end(); return; }
         if (!dragging) {
           if (Math.abs(e.clientY - start.y) + Math.abs(e.clientX - start.x) < 6) return;
           dragging = true; li.classList.add("lifted");

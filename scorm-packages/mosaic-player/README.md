@@ -17,6 +17,14 @@ copy of the player's source.
 
 ## Change log
 
+**14 Nov 2026 — drags always land.** With a Mac trackpad in Chrome, a card's
+drag sometimes never received its end (pointerup): the lifted copy stayed
+stuck over the boxes, the card stayed greyed out in the tray, and "Check my
+answer" said cards were left. A drag is now tracked on the window and also
+ends on a move with no button held, on lost pointer capture, or on the next
+press anywhere (which also clears any copy left behind). Same fallback for
+the drag-to-reorder lists.
+
 **14 Nov 2026 — activities can't be skipped by accident.** Two more ways a
 learner lost an activity: (1) the narration says "make your choice on screen"
 a few seconds before the pause, so learners clicked the frame, which paused
