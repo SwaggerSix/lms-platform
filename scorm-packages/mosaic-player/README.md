@@ -17,6 +17,15 @@ copy of the player's source.
 
 ## Change log
 
+**14 Nov 2026 — activities can't be skipped by accident.** Two more ways a
+learner lost an activity: (1) the narration says "make your choice on screen"
+a few seconds before the pause, so learners clicked the frame, which paused
+the video before the activity opened; (2) in full screen the activity (under
+the video) can't be seen, and pressing play closed it. Now pausing within 25 s
+before an activity opens it at once; while an activity is open, any play
+other than "Continue the video" is paused again and the learner is taken to
+the activity; full screen is left (including Safari's video full screen).
+
 **14 Nov 2026 — the paused video no longer swallows the activity.** When the
 video paused for a practice activity, its frame still showed that activity
 (e.g. M1 "Build the diamond": tiles and boxes), while the real one sat below
