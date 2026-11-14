@@ -205,3 +205,13 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .dlbtn.sm .dlicon { font-size: 1.15rem; }
 .dlcard.dlmod { padding: 12px 16px; border-width: 2px; margin: 12px 0; }
 .dlcard.dlmod h2 { font-size: 1.05rem; }
+
+/* the paused video is covered while its activity is open (see wireVideoActivities) */
+.vstage { position: relative; }
+.vcover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; border: 0; border-radius: 10px;
+  background: rgba(19, 17, 61, .9); color: #fff; cursor: pointer; font: inherit; text-align: center; }
+.vcover[hidden] { display: none; }
+.vcover:hover, .vcover:focus-visible { background: rgba(19, 17, 61, .95); outline: 3px solid var(--deliver); outline-offset: -3px; }
+.vcover-in { display: flex; flex-direction: column; gap: 8px; max-width: 34em; }
+.vcover-t { font-family: var(--head); font-weight: 700; font-size: 1.35rem; }
+.vcover-s { font-size: 1.05rem; }
