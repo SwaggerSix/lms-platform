@@ -215,3 +215,13 @@ th { background: var(--panel); font-family: var(--head); font-size: .88rem; colo
 .vcover-in { display: flex; flex-direction: column; gap: 8px; max-width: 34em; }
 .vcover-t { font-family: var(--head); font-weight: 700; font-size: 1.35rem; }
 .vcover-s { font-size: 1.05rem; }
+
+/* the activity opens in the video's place (wireVideoActivities) */
+.vstage.inact video { display: none; }
+.vstage.inact .vcover { display: none; }
+.vstage.inact .actpanel { margin: 0; box-sizing: border-box; display: flex; flex-direction: column; }
+.vstage.inact .actpanel > .btn.big { align-self: flex-start; margin-top: auto; }
+.vstage.vfull { background: #000; display: flex; flex-direction: column; justify-content: center; overflow: auto; }
+.vstage.vfull video { max-height: none; height: 100%; border-radius: 0; }
+.vstage.vfull.inact { background: var(--adapt-tint); justify-content: flex-start; }
+.vstage.vfull .actpanel { min-height: 100%; border-radius: 0; border: 0; padding: 24px 32px; max-width: 1100px; width: 100%; margin: 0 auto; }
