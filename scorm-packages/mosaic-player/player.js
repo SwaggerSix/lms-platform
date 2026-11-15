@@ -639,7 +639,7 @@
           if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) < 6) return;
           ghost = c.cloneNode(true); ghost.className = "dndchip ghost";
           ghost.style.width = c.offsetWidth + "px";
-          document.body.appendChild(ghost); c.classList.add("dragging"); setPicked(null);
+          (document.fullscreenElement || document.webkitFullscreenElement || document.body).appendChild(ghost); c.classList.add("dragging"); setPicked(null);
         }
         ghost.style.left = (e.clientX - c.offsetWidth / 2) + "px";
         ghost.style.top = (e.clientY - 18) + "px";
@@ -833,40 +833,78 @@
   function wireVideoActivities(video, wrap, mi, label) {
     var pts = actsFor(mi, label);
     if (!pts.length) return;
-    var panel = el("div", { "class": "actpanel", hidden: "" });
-    wrap.appendChild(panel);
-    // While an activity is open, cover the paused video. Its frame shows the
-    // same activity (tiles, boxes), so learners clicked it to try it, which
-    // restarted the video and closed the real activity below. The cover
-    // takes them to the activity instead.
+    // The activity opens in the video's own place: the video is hidden and the
+    // activity takes its space (growing taller when it needs to), so there is
+    // no frozen frame to click and nothing to scroll to. On a narrow screen
+    // (a phone) that space is too small, so the activity opens under the
+    // video and a cover over the paused video points to it.
     var stage = el("div", { "class": "vstage" });
     video.parentNode.insertBefore(stage, video);
     stage.appendChild(video);
+    var panel = el("div", { "class": "actpanel", hidden: "" });
     var cover = el("button", { type: "button", "class": "vcover", hidden: "" },
       '<span class="vcover-in"><span class="vcover-t">⏸ Paused for a practice activity</span>' +
       '<span class="vcover-s">The activity is just below the video. Click here to go to it ↓</span></span>');
     stage.appendChild(cover);
+    stage.parentNode.insertBefore(panel, stage.nextSibling);
+    var INLINE_MIN = 640;
+    // Full screen: the player's own button puts the whole stage (video and
+    // activity) in full screen, so an activity opens there too. The video's
+    // built-in full-screen button is turned off where the browser allows it.
+    video.setAttribute("controlsList", "nofullscreen");
+    var fsBtn = el("button", { type: "button", "class": "btn secondary" }, "⛶ Full screen");
+    var bar = wrap.querySelector(".vbar");
+    if (bar && (stage.requestFullscreen || stage.webkitRequestFullscreen)) bar.insertBefore(fsBtn, bar.children[1] || null);
+    function stageFull() { return (document.fullscreenElement || document.webkitFullscreenElement) === stage; }
+    fsBtn.addEventListener("click", function () {
+      try {
+        if (stageFull()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+        else { (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage); }
+      } catch (e) {}
+    });
+    function syncFs() { var on = stageFull(); stage.classList.toggle("vfull", on); fsBtn.textContent = on ? "Exit full screen" : "⛶ Full screen"; }
+    document.addEventListener("fullscreenchange", syncFs);
+    document.addEventListener("webkitfullscreenchange", syncFs);
+    var inline = false;
     function toPanel() {
-      try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { panel.scrollIntoView(); }
+      if (!inline) { try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { panel.scrollIntoView(); } }
+      else if (!stageFull()) {
+        var r = stage.getBoundingClientRect();
+        if (r.top < 0 || r.top > window.innerHeight * 0.5) { try { stage.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) { stage.scrollIntoView(); } }
+      }
       var f = panel.querySelector("h3, button, select, input, textarea");
       if (f) setTimeout(function () { try { f.focus({ preventScroll: true }); } catch (e) {} }, 400);
     }
     cover.addEventListener("click", toPanel);
-    function closePanel() { panel.hidden = true; panel.innerHTML = ""; cover.hidden = true; }
+    function closePanel() {
+      panel.hidden = true; panel.innerHTML = ""; cover.hidden = true;
+      if (inline) { stage.classList.remove("inact"); panel.style.minHeight = ""; stage.parentNode.insertBefore(panel, stage.nextSibling); inline = false; }
+    }
     var fired = {}, last = 0;
-    // Full screen hides the activity, which sits under the video. Leave it
-    // (standard, then Safari's own video full screen).
+    // Leave the browser's own video full screen (Safari's, or where the
+    // built-in button couldn't be turned off): an activity can't show there.
     function leaveFullscreen() {
-      try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
-      try { if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch (e) {}
+      try { if (document.fullscreenElement === video && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
+      try { if (document.webkitFullscreenElement === video && document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch (e) {}
       try { if (video.webkitDisplayingFullscreen && video.webkitExitFullscreen) video.webkitExitFullscreen(); } catch (e) {}
     }
     function show(a) {
       leaveFullscreen();
+      inline = stageFull() || stage.clientWidth >= INLINE_MIN;
       panel.innerHTML = "";
+      if (inline) {
+        var h = video.getBoundingClientRect().height;
+        panel.style.minHeight = stageFull() ? "" : Math.round(h) + "px";
+        stage.appendChild(panel);
+        stage.classList.add("inact");
+        cover.hidden = true;
+      } else {
+        cover.hidden = false;
+      }
       panel.hidden = false;
-      cover.hidden = false;
-      panel.appendChild(el("p", { "class": "actnote" }, "⏸ The video is paused so you can try this. Then press <strong>Continue the video</strong>."));
+      panel.appendChild(el("p", { "class": "actnote" }, inline
+        ? "⏸ The video is paused for a practice activity. When you're done, press <strong>Continue the video</strong>."
+        : "⏸ The video is paused so you can try this. Then press <strong>Continue the video</strong>."));
       panel.appendChild(activityCard(a, "vp"));
       var go = el("button", { type: "button", "class": "btn big" }, "Continue the video ▶");
       go.addEventListener("click", function () { closePanel(); try { video.play(); } catch (e) {} video.focus(); });

@@ -17,6 +17,15 @@ copy of the player's source.
 
 ## Change log
 
+**15 Nov 2026 — activities open in the video's place.** When the video pauses
+for an activity, the video is hidden and the activity takes its space
+(growing taller when it needs to); "Continue the video" brings the video back
+in the same spot. Below 640px wide (phones) the activity still opens under the
+video, with the cover over the paused video. A "Full screen" button under the
+video puts the whole video area in full screen, so activities open there too;
+the video's own full-screen button is turned off where the browser allows it,
+and a dragged card is drawn inside the full-screen area.
+
 **14 Nov 2026 — drags always land.** With a Mac trackpad in Chrome, a card's
 drag sometimes never received its end (pointerup): the lifted copy stayed
 stuck over the boxes, the card stayed greyed out in the tray, and "Check my
