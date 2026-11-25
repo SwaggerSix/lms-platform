@@ -4,6 +4,8 @@ import { authorize } from "@/lib/auth/authorize";
 import { createServiceClient } from "@/lib/supabase/service";
 import { rateLimit } from "@/lib/rate-limit";
 import { reviewPiece } from "@/lib/certifications/capstone-service";
+import { autoAwardIfComplete } from "@/lib/certifications/issue";
+import { sendAwardedEmail } from "@/lib/certifications/notify";
 
 const Schema = z.object({
   submission_id: z.string().uuid(),
@@ -37,5 +39,24 @@ export async function POST(request: NextRequest) {
     feedback: parsed.data.feedback,
   });
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
-  return NextResponse.json({ ok: true });
+
+  // A capstone that awards itself: the last pass issues the certificate.
+  let awarded = false;
+  if (parsed.data.decision === "passed") {
+    const a = await autoAwardIfComplete(service, {
+      certificationId: r.certificationId,
+      userId: r.userId,
+      awardedBy: auth.user.id,
+    }).catch((e) => {
+      console.error("Capstone auto-award error:", (e as Error)?.message);
+      return null;
+    });
+    if (a) {
+      awarded = true;
+      await sendAwardedEmail(service, a.userCertificationId).catch((e) =>
+        console.error("Award email error:", (e as Error)?.message)
+      );
+    }
+  }
+  return NextResponse.json({ ok: true, awarded });
 }

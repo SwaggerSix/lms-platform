@@ -155,6 +155,8 @@ export interface CapstoneConfig {
   secondFail?: string;
   /** False: not a credential the Mosaic partner portal tracks, so awards aren't sent there. */
   partnerPortal?: boolean;
+  /** Award the certificate as soon as the last piece passes, without the assessor pressing Award. */
+  autoAward?: boolean;
 }
 
 /** After a resubmission doesn't pass: what happens next, unless the capstone says otherwise. */
@@ -192,28 +194,28 @@ const WORD_TYPES = {
 };
 
 /**
- * The Art of Presentation capstone, the same for both versions of the course
- * apart from who issues it. The two documents are not named yet (their titles
- * and instructions are placeholders until the course owner supplies them).
+ * The Art of Presentation capstone (course AOP-100), the same for both
+ * versions of the course apart from who issues it and which package its
+ * templates and rubric come from. The two documents are the ones the course
+ * gives Word templates for: the session plan, and the self-review and action
+ * plan. Passing all three pieces awards the certificate with no further step.
  */
-function artOfPresentation(issuer: string): CapstoneConfig {
-  const document = (n: 1 | 2): PieceConfig => ({
-    kind: `document_${n}`,
-    label: `Document ${n}`,
-    noun: `Word document ${n}`,
-    title: `Word document ${n}`,
-    file: "document",
-    types: WORD_TYPES,
-    link: "none",
-    instructions: ["Upload a Word document (.docx or .doc), up to 50 MB."],
-  });
+function artOfPresentation(v: { issuer: string; packageId: string; tag: string; suffix: string }): CapstoneConfig {
+  const file = (path: string) => `/scorm-content/${v.packageId}/${encodeURI(path)}`;
+  const rubric: CapstoneDownload = {
+    label: "marking rubric",
+    href: file(`downloads/AOP-100-${v.tag}-rubric.pdf`),
+    detail: "PDF",
+  };
   return {
     title: "Capstone: The Art of Presentation",
     intro:
-      "Hand in three pieces of work: your recorded presentation and two Word documents. Only your assessors can see what you hand in. Each piece is marked Pass or Not yet, with written feedback. If a piece isn't there yet, you get one resubmission of that piece.",
-    summary: "Hand in your recorded presentation and two Word documents. It opens once you've passed the course's final exam.",
-    issuer,
+      "Hand in three pieces of work: your recorded presentation, your session plan, and your self-review and action plan. Only your assessors can see what you hand in. Each piece is marked Pass or Not yet, with written feedback. If a piece isn't there yet, you get one resubmission of that piece. Pass all three and your certificate is awarded straight away.",
+    summary:
+      "Hand in your recorded presentation, session plan, and self-review and action plan. It opens once you've passed the course's final exam.",
+    issuer: v.issuer,
     partnerPortal: false,
+    autoAward: true,
     secondFail: "Your assessor will be in touch about next steps.",
     pieces: [
       {
@@ -225,13 +227,52 @@ function artOfPresentation(issuer: string): CapstoneConfig {
         types: { "video/mp4": "mp4", "video/quicktime": "mov" },
         maxBytes: MAX_VIDEO_BYTES,
         link: "none",
+        downloads: [rubric],
         instructions: [
           "Upload your recording as an MP4 or MOV file, up to 5 GB.",
           "A large video can take a while to upload. Keep this page open until it says it's handed in; if your connection drops, the upload picks up where it left off.",
         ],
       },
-      document(1),
-      document(2),
+      {
+        kind: "document_1",
+        label: "Session plan",
+        noun: "session plan",
+        title: "Session plan",
+        file: "document",
+        types: WORD_TYPES,
+        link: "none",
+        downloads: [
+          {
+            label: "session plan template (Word)",
+            href: file(`templates/AOP-100 Session plan template${v.suffix}.docx`),
+            detail: "ready to fill in",
+          },
+        ],
+        instructions: [
+          "Fill in the session plan template (download it above) for the presentation you recorded.",
+          "Upload it as a Word document (.docx or .doc), up to 50 MB.",
+        ],
+      },
+      {
+        kind: "document_2",
+        label: "Self-review and action plan",
+        noun: "self-review and action plan",
+        title: "Self-review and action plan",
+        file: "document",
+        types: WORD_TYPES,
+        link: "none",
+        downloads: [
+          {
+            label: "self-review and action plan template (Word)",
+            href: file(`templates/AOP-100 Self-review and action plan template${v.suffix}.docx`),
+            detail: "ready to fill in",
+          },
+        ],
+        instructions: [
+          "Watch your recording back, then fill in the self-review and action plan template (download it above).",
+          "Upload it as a Word document (.docx or .doc), up to 50 MB.",
+        ],
+      },
     ],
     pushback: null,
     turnaround: "about 10 business days",
@@ -383,8 +424,19 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
     turnaround: "about 10 business days",
   },
 
-  "art-of-presentation-gc": artOfPresentation("gothamCulture"),
-  "art-of-presentation-ggs": artOfPresentation("Gotham Government Services"),
+  // Package ids: the SCORM packages imported 2026-11-25 (course-content/scorm/<id>/).
+  "art-of-presentation-gc": artOfPresentation({
+    issuer: "gothamCulture",
+    packageId: "db27cf49-aace-45a7-956c-60b8ad6c2bc9",
+    tag: "gC",
+    suffix: "",
+  }),
+  "art-of-presentation-ggs": artOfPresentation({
+    issuer: "Gotham Government Services",
+    packageId: "f806115b-114a-41c1-814e-1b7d01cab3d2",
+    tag: "GGS",
+    suffix: " (GGS)",
+  }),
 };
 
 

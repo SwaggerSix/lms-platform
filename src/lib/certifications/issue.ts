@@ -201,6 +201,26 @@ export async function awardCertification(
   return { ok: true, userCertificationId: row.id, reawarded: false };
 }
 
+/**
+ * For a capstone that awards itself (CapstoneConfig.autoAward): once a piece
+ * has just been passed, award the certificate if that was the last one.
+ * Returns null when there is nothing to do: not such a capstone, pieces still
+ * to pass, courses unfinished, or already held.
+ */
+export async function autoAwardIfComplete(
+  service: SupabaseClient,
+  args: { certificationId: string; userId: string; awardedBy: string; now?: Date }
+): Promise<{ userCertificationId: string } | null> {
+  const { data: cert } = await service
+    .from("certifications")
+    .select("capstone_key")
+    .eq("id", args.certificationId)
+    .maybeSingle();
+  if (!capstoneFor(cert?.capstone_key)?.autoAward) return null;
+  const r = await awardCertification(service, { ...args, note: "Awarded automatically when the last capstone piece passed." });
+  return r.ok ? { userCertificationId: r.userCertificationId } : null;
+}
+
 /** Revoke a held certification. The row stays, marked revoked, for the record. */
 export async function revokeCertification(
   service: SupabaseClient,
