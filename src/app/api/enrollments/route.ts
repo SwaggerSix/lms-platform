@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { canEnrolOthers } from "@/lib/enrollments/assign-scope";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
   let targetUserId = profile.id;
   let assignedBy = null;
   if (validation.data.user_id && validation.data.user_id !== profile.id) {
-    if (!["admin", "manager"].includes(profile.role)) {
+    if (!canEnrolOthers(profile.role)) {
       return NextResponse.json({ error: "Forbidden: cannot enroll other users" }, { status: 403 });
     }
     targetUserId = validation.data.user_id;
@@ -216,7 +217,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (course?.enrollment_type === "approval" && !["admin", "manager"].includes(profile.role)) {
+  if (course?.enrollment_type === "approval" && !canEnrolOthers(profile.role)) {
     // Check for an existing pending request
     const { data: existingRequest } = await service
       .from("enrollment_approvals")

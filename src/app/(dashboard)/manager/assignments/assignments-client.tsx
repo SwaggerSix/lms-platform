@@ -63,6 +63,8 @@ interface AssignmentsClientProps {
   courses: Course[];
   teamMembers: TeamMemberOption[];
   paths: PathOption[];
+  /** The list is every learner the viewer may assign to (an admin), not just their direct reports. */
+  anyone?: boolean;
 }
 
 const priorityStyles: Record<string, string> = {
@@ -82,7 +84,10 @@ export default function AssignmentsClient({
   courses,
   teamMembers,
   paths,
+  anyone = false,
 }: AssignmentsClientProps) {
+  const [memberSearch, setMemberSearch] = useState("");
+  const shownMembers = teamMembers.filter((m) => m.name.toLowerCase().includes(memberSearch.trim().toLowerCase()));
   const [localAssignments, setLocalAssignments] = useState<Assignment[]>(assignments);
   const [activeTab, setActiveTab] = useState<"active" | "completed" | "overdue">("active");
   const [showModal, setShowModal] = useState(false);
@@ -784,10 +789,29 @@ export default function AssignmentsClient({
               {/* Select Team Members */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                  Select Team Members
+                  {anyone ? "Select Learners" : "Select Team Members"}
                 </label>
+                {teamMembers.length > 8 && (
+                  <input
+                    type="search"
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder="Search people..."
+                    aria-label="Search people"
+                    className="mb-2 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  />
+                )}
                 <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200">
-                  {teamMembers.map((member) => (
+                  {shownMembers.length === 0 && (
+                    <p className="px-3 py-2 text-sm text-gray-500">
+                      {teamMembers.length === 0
+                        ? anyone
+                          ? "There is nobody to assign to yet."
+                          : "Nobody reports to you yet, so there is nobody to assign to."
+                        : "Nobody matches that search."}
+                    </p>
+                  )}
+                  {shownMembers.map((member) => (
                     <label
                       key={member.id}
                       className="flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-gray-50 cursor-pointer"
