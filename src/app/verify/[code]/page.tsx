@@ -9,6 +9,7 @@ import {
   type CertificateData,
 } from "@/lib/certificates/renderer";
 import { CERTIFICATE_COMPANY_NAME } from "@/lib/branding";
+import { capstoneFor } from "@/lib/certifications/capstone";
 import { Award, CheckCircle2, XCircle, Clock, Download, Shield } from "lucide-react";
 
 interface VerifyPageProps {
@@ -56,8 +57,11 @@ const loadCertificate = cache(async (code: string) => {
     ? `${certUser.first_name || ""} ${certUser.last_name || ""}`.trim() || "Learner"
     : "Learner";
   const certification = userCert.certification as any;
-  // The Mosaic credentials are gothamCulture's, whatever this LMS is called.
-  const issuer = certification?.capstone_key ? "gothamCulture" : CERTIFICATE_COMPANY_NAME;
+  // The Mosaic credentials are gothamCulture's, whatever this LMS is called;
+  // a capstone may name its own issuer (The Art of Presentation, GGS version).
+  const issuer = certification?.capstone_key
+    ? (capstoneFor(certification.capstone_key)?.issuer ?? "gothamCulture")
+    : CERTIFICATE_COMPANY_NAME;
   return { service, userCert, learnerName, certification, issuer };
 });
 

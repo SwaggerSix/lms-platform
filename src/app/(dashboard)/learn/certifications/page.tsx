@@ -82,7 +82,7 @@ export default async function CertificationsPage() {
       status: deriveStatus(row.status, row.expires_at),
       credentialId,
       verificationCode: row.verification_code ?? null,
-      issuer: cert?.capstone_key ? "gothamCulture" : CERTIFICATE_COMPANY_NAME,
+      issuer: cert?.capstone_key ? (capstoneFor(cert.capstone_key)?.issuer ?? "gothamCulture") : CERTIFICATE_COMPANY_NAME,
       awarded: !cert?.course_id && !!cert?.capstone_key,
     };
   });

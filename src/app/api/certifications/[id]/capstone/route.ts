@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { learnerContext } from "./_shared";
 import { submissionsFor } from "@/lib/certifications/capstone-service";
-import { latestOf, nextAttempt } from "@/lib/certifications/capstone";
+import { SECOND_FAIL, latestOf, maxBytesOf, nextAttempt, sizeLabel, typesLabel, typesOf } from "@/lib/certifications/capstone";
 
 /** GET: the learner's own capstone — tasks, what they've handed in, marks, and pushback state. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -35,11 +35,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       title: cfg.title,
       intro: cfg.intro,
       turnaround: cfg.turnaround,
+      secondFail: cfg.secondFail ?? SECOND_FAIL,
       pieces: cfg.pieces.map((p) => ({
         kind: p.kind,
         title: p.title,
         instructions: p.instructions,
         file: p.file,
+        // What the file picker offers and what the label says: only set when the piece narrows or widens the defaults.
+        accept: p.types ? [...Object.values(p.types).map((e) => `.${e}`), ...Object.keys(p.types)].join(",") : null,
+        typesLabel: p.types ? typesLabel(typesOf(p)) : null,
+        maxLabel: sizeLabel(maxBytesOf(p)),
         link: p.link,
         linkLabel: p.linkLabel ?? null,
         requiredNote: p.requiredNote ?? null,

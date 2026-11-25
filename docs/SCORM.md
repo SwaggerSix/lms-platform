@@ -13,6 +13,11 @@ also subject to it.
 
 Nothing else is required: no migration, no new bucket, no env vars.
 
+The same global limit caps capstone hand-ins. The Art of Presentation capstone takes
+a recorded presentation of up to 5 GB (`MAX_VIDEO_BYTES` in
+`src/lib/certifications/capstone.ts`), so for that the global limit must be 5 GB or
+more. Videos over 50 MB are sent by resumable upload in 6 MB chunks.
+
 ## Workflow
 
 1. **Export** from your authoring tool as *LMS → SCORM 1.2* (most compatible) or

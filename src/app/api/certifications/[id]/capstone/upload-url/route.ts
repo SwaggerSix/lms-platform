@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
 import { learnerContext } from "../_shared";
-import { startUpload } from "@/lib/certifications/capstone-service";
+import { renewUpload, startUpload } from "@/lib/certifications/capstone-service";
 import { CAPSTONE_KINDS, pieceOf } from "@/lib/certifications/capstone";
 
 const Schema = z.object({
   slot: z.enum([...CAPSTONE_KINDS, "pushback"]),
   file_size: z.number().int().positive(),
   content_type: z.string().min(1).max(200),
+  /** A path this route gave earlier: sign it again (a long upload outlives its two-hour token). */
+  renew_path: z.string().min(1).max(500).optional(),
 });
 
 /** POST: a one-time signed URL the browser sends the file straight to (Vercel caps request bodies at ~4.5 MB). */
@@ -25,15 +27,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (slot === "pushback" ? !ctx.cfg.pushback : !piece) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const r = await startUpload(ctx.service, {
-    userId: ctx.auth.user.id,
-    certificationId: ctx.cert.id,
-    slot,
-    fileKind: piece ? piece.file : "video",
-    linkInstead: piece?.link === "or-file",
-    fileSize: parsed.data.file_size,
-    contentType: parsed.data.content_type,
-  });
+  const r = parsed.data.renew_path
+    ? await renewUpload(ctx.service, {
+        userId: ctx.auth.user.id,
+        certificationId: ctx.cert.id,
+        slot,
+        path: parsed.data.renew_path,
+      })
+    : await startUpload(ctx.service, {
+        userId: ctx.auth.user.id,
+        certificationId: ctx.cert.id,
+        slot,
+        fileKind: piece ? piece.file : "video",
+        linkInstead: piece?.link === "or-file",
+        types: piece?.types,
+        maxBytes: piece?.maxBytes,
+        fileSize: parsed.data.file_size,
+        contentType: parsed.data.content_type,
+      });
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
-  return NextResponse.json({ path: r.path, signedUrl: r.signedUrl });
+  return NextResponse.json({ path: r.path, signedUrl: r.signedUrl, token: r.token });
 }

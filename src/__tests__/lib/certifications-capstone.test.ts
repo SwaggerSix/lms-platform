@@ -4,6 +4,8 @@ vi.mock("@/lib/email/sender", () => ({ sendEmail: vi.fn(async () => ({ success: 
 
 import {
   CAPSTONES,
+  MAX_VIDEO_BYTES,
+  contentTypeFor,
   allowedDecisions,
   answeredLate,
   drawPrompts,
@@ -16,6 +18,9 @@ import {
   revealPushback,
   reviewPiece,
   startUpload,
+  renewUpload,
+  signedFileUrl,
+  courseShortName,
   submitPiece,
   reopenPiece,
   learnerBlockedReason,
@@ -23,6 +28,7 @@ import {
 } from "@/lib/certifications/capstone-service";
 import { awardCertification } from "@/lib/certifications/issue";
 import { sendEmail } from "@/lib/email/sender";
+import { resumableEndpoint, signedTarget } from "@/lib/certifications/capstone-upload";
 
 /**
  * Mosaic Practitioner Certified's one capstone (MOS-100 + MOS-230 + MOS-240):
@@ -35,6 +41,9 @@ import { sendEmail } from "@/lib/email/sender";
 type Row = Record<string, any>;
 let db: Record<string, Row[]>;
 let files: Set<string>;
+/** Sizes storage reports for uploaded files (default: unknown). */
+let sizes: Map<string, number>;
+let signedFor: { path: string; seconds: number; options: unknown }[];
 let n = 0;
 
 function table(name: string) {
@@ -97,9 +106,19 @@ const service: any = {
   from: (t: string) => table(t),
   storage: {
     from: () => ({
-      createSignedUploadUrl: async (path: string) => ({ data: { path, signedUrl: `https://up/${path}` }, error: null }),
+      createSignedUploadUrl: async (path: string) => ({ data: { path, signedUrl: `https://up/${path}`, token: `tok-${path}` }, error: null }),
+      createSignedUrl: async (path: string, seconds: number, options: unknown) => {
+        signedFor.push({ path, seconds, options });
+        return { data: { signedUrl: `https://dl/${path}` }, error: null };
+      },
+      remove: async (paths: string[]) => {
+        paths.forEach((p) => files.delete(p));
+        return { data: [], error: null };
+      },
       list: async (folder: string, o: { search: string }) => ({
-        data: [...files].filter((p) => p === `${folder}/${o.search}`).map((p) => ({ name: p.split("/").pop() })),
+        data: [...files]
+          .filter((p) => p === `${folder}/${o.search}`)
+          .map((p) => ({ name: p.split("/").pop(), metadata: sizes.has(p) ? { size: sizes.get(p) } : null })),
         error: null,
       }),
     }),
@@ -129,6 +148,8 @@ beforeEach(() => {
   n = 0;
   vi.mocked(sendEmail).mockClear();
   files = new Set([memoPath, digPath, signalPath, videoPath, pbPath(1), pbPath(2), pbPath(3)]);
+  sizes = new Map();
+  signedFor = [];
   db = {
     certifications: [{ id: "cert-mc", name: cert.name, course_id: null, status: "active", validity_months: 60, award_requires_course_id: null, award_requires_course_ids: BUNDLE, capstone_key: "mosaic-practitioner" }],
     users: [
@@ -426,3 +447,142 @@ describe("reopen after the call", () => {
   });
 });
 
+
+/**
+ * The Art of Presentation: one capstone per version of the course
+ * (gothamCulture, Gotham Government Services). After the final exam the
+ * learner hands in a recorded presentation (MP4 or MOV, up to 5 GB) and two
+ * Word documents; each is marked Pass or Not yet with feedback and one
+ * resubmission.
+ */
+describe("The Art of Presentation capstone", () => {
+  const aop = CAPSTONES["art-of-presentation-gc"];
+  const aopCert: CapstoneCert = {
+    id: "cert-aop",
+    name: "The Art of Presentation Capstone (gothamCulture)",
+    status: "active",
+    course_id: null,
+    award_requires_course_id: null,
+    award_requires_course_ids: ["aop"],
+    capstone_key: "art-of-presentation-gc",
+    notify_user_ids: ["chris"],
+  };
+  const dir = `${U}/cert-aop`;
+  const uuid = "0f8fad5b-d9cb-469f-a165-70867728950e";
+  const video = `${dir}/presentation-${uuid}.mov`;
+  const doc1 = `${dir}/document_1-${uuid}.docx`;
+  const doc2 = `${dir}/document_2-${uuid}.docx`;
+  const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  const up = (slot: "presentation" | "document_1", fileSize: number, contentType: string) => {
+    const piece = aop.pieces.find((p) => p.kind === slot)!;
+    return startUpload(service, {
+      userId: U, certificationId: "cert-aop", slot, fileKind: piece.file, types: piece.types, maxBytes: piece.maxBytes, fileSize, contentType,
+    });
+  };
+
+  beforeEach(() => {
+    [video, doc1, doc2].forEach((f) => files.add(f));
+    db.certifications.push({ id: "cert-aop", name: aopCert.name, course_id: null, status: "active", validity_months: null, award_requires_course_id: null, award_requires_course_ids: ["aop"], capstone_key: "art-of-presentation-gc" });
+    db.courses = [{ id: "aop", title: "The Art of Presentation (gothamCulture)" }];
+    db.enrollments.push({ id: "e-aop", user_id: U, course_id: "aop", status: "completed", completed_at: "2026-11-20T00:00:00Z" });
+  });
+
+  it("both versions ask for a video and two Word documents, and differ only in who issues them", () => {
+    const ggs = CAPSTONES["art-of-presentation-ggs"];
+    expect(aop.pieces.map((p) => [p.kind, p.file])).toEqual([["presentation", "video"], ["document_1", "document"], ["document_2", "document"]]);
+    expect(ggs.pieces).toEqual(aop.pieces);
+    expect([aop.issuer, ggs.issuer]).toEqual(["gothamCulture", "Gotham Government Services"]);
+    expect(aop.pushback).toBeNull();
+    // Not Mosaic credentials: awards stay out of the partner portal.
+    expect([aop.partnerPortal, ggs.partnerPortal]).toEqual([false, false]);
+  });
+
+  it("takes MP4 or MOV up to 5 GB for the video, and Word only up to 50 MB for the documents", async () => {
+    expect(await up("presentation", 3 * 1024 ** 3, "video/quicktime")).toMatchObject({ ok: true, token: expect.any(String) });
+    expect(await up("presentation", MAX_VIDEO_BYTES, "video/mp4")).toMatchObject({ ok: true });
+    expect(await up("presentation", MAX_VIDEO_BYTES + 1, "video/mp4")).toMatchObject({ ok: false, error: "That file is over 5 GB." });
+    expect(await up("presentation", 1000, "video/webm")).toMatchObject({ ok: false, error: "Upload an MP4 or MOV file." });
+    expect(await up("document_1", 1000, DOCX)).toMatchObject({ ok: true });
+    expect(await up("document_1", 1000, "application/msword")).toMatchObject({ ok: true });
+    expect(await up("document_1", 1000, "application/pdf")).toMatchObject({ ok: false, error: "Upload a DOCX or DOC file." });
+    expect(await up("document_1", 60 * 1024 * 1024, DOCX)).toMatchObject({ ok: false, error: "That file is over 50 MB." });
+  });
+
+  it("works out the file type from the name when the browser doesn't give one", () => {
+    expect(contentTypeFor({ type: "", name: "My Talk.MOV" })).toBe("video/quicktime");
+    expect(contentTypeFor({ type: "", name: "outline.docx" })).toBe(DOCX);
+    expect(contentTypeFor({ type: "video/mp4; codecs=avc1", name: "x.bin" })).toBe("video/mp4");
+    expect(contentTypeFor({ type: "", name: "notes" })).toBe("application/octet-stream");
+  });
+
+  it("opens only after the course's final exam, naming the course in full", async () => {
+    db.enrollments.find((e) => e.id === "e-aop")!.status = "in_progress";
+    expect(await learnerBlockedReason(service, U, aopCert)).toBe(
+      "Your capstone opens once you've also finished The Art of Presentation (gothamCulture), final exam included."
+    );
+    db.enrollments.find((e) => e.id === "e-aop")!.status = "completed";
+    expect(await learnerBlockedReason(service, U, aopCert)).toBeNull();
+    expect(courseShortName("MOS-100 Mosaic Practitioner Certification")).toBe("MOS-100");
+  });
+
+  it("a document can't be handed in as the video, and a file bigger than the piece allows is refused and removed", async () => {
+    expect(await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind: "presentation", filePath: doc1 })).toMatchObject({ ok: false, status: 400 });
+    // Signed as a small document, uploaded as 2 GB.
+    sizes.set(doc1, 2 * 1024 ** 3);
+    expect(await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind: "document_1", filePath: doc1 })).toMatchObject({ ok: false, error: "That file is over 50 MB." });
+    expect(files.has(doc1)).toBe(false);
+    // The same size is fine for the video.
+    sizes.set(video, 2 * 1024 ** 3);
+    expect(await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind: "presentation", filePath: video })).toMatchObject({ ok: true, attempt: 1 });
+  });
+
+  it("Not yet with feedback, one resubmission, then pass; Award once all three have passed", async () => {
+    const first = await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind: "presentation", filePath: video, fileName: "talk.mov" });
+    const id = (first as any).submissionId;
+    // Not yet needs written feedback.
+    expect(await reviewPiece(service, { submissionId: id, reviewerId: "chris", decision: "resubmit" })).toMatchObject({ ok: false, status: 400 });
+    expect(await reviewPiece(service, { submissionId: id, reviewerId: "chris", decision: "resubmit", feedback: "Slow down in the opening." })).toMatchObject({ ok: true });
+    const again = await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind: "presentation", filePath: video });
+    expect(again).toMatchObject({ ok: true, attempt: 2 });
+    // A resubmission can't be sent back a second time.
+    expect(await reviewPiece(service, { submissionId: (again as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "x" })).toMatchObject({ ok: false, status: 400 });
+    expect(await reviewPiece(service, { submissionId: (again as any).submissionId, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: true });
+
+    expect(await awardCertification(service, { certificationId: "cert-aop", userId: U, awardedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    for (const [kind, path] of [["document_1", doc1], ["document_2", doc2]] as const) {
+      const sub = await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind, filePath: path });
+      await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed" });
+    }
+    expect(await awardCertification(service, { certificationId: "cert-aop", userId: U, awardedBy: "chris" })).toMatchObject({ ok: true });
+  });
+
+  it("a second fail doesn't promise a call with Dr. Cancialosi", async () => {
+    db.certification_submissions.push({ id: "s2", user_id: U, certification_id: "cert-aop", kind: "document_2", attempt: 2, status: "submitted" });
+    await reviewPiece(service, { submissionId: "s2", reviewerId: "chris", decision: "not_passed", feedback: "Still missing the audience analysis." });
+    const mail = vi.mocked(sendEmail).mock.calls.at(-1)![0] as { text: string };
+    expect(mail.text).toContain("Your assessor will be in touch about next steps.");
+    expect(mail.text).not.toContain("Cancialosi");
+  });
+
+  it("renews an upload token only for a path it issued to this learner for this piece", async () => {
+    const ok = await renewUpload(service, { userId: U, certificationId: "cert-aop", slot: "presentation", path: video });
+    expect(ok).toMatchObject({ ok: true, path: video });
+    for (const path of [`u2/cert-aop/presentation-${uuid}.mov`, doc1, `${dir}/../x/presentation-${uuid}.mov`, `${dir}/presentation-x.mov`]) {
+      expect(await renewUpload(service, { userId: U, certificationId: "cert-aop", slot: "presentation", path })).toMatchObject({ ok: false, status: 400 });
+    }
+  });
+
+  it("a handed-in video plays in the browser on a long link; a document downloads on a short one", async () => {
+    await signedFileUrl(service, video, "talk.mov");
+    await signedFileUrl(service, doc1, "outline.docx");
+    expect(signedFor[0]).toEqual({ path: video, seconds: 6 * 3600, options: undefined });
+    expect(signedFor[1]).toEqual({ path: doc1, seconds: 600, options: { download: "outline.docx" } });
+  });
+
+  it("sends a large video to storage's resumable endpoint for the signed bucket and path", () => {
+    const signed = `https://abcdefgh.supabase.co/storage/v1/object/upload/sign/certification-submissions/${video}?token=t`;
+    expect(resumableEndpoint(signed)).toBe("https://abcdefgh.storage.supabase.co/storage/v1/upload/resumable");
+    expect(resumableEndpoint("http://localhost:54321/storage/v1/object/upload/sign/b/p?token=t")).toBe("http://localhost:54321/storage/v1/upload/resumable");
+    expect(signedTarget(signed)).toEqual({ bucket: "certification-submissions", object: video });
+  });
+});

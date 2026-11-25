@@ -10,6 +10,7 @@ import {
   ALLOWED_TYPES,
   CAPSTONE_BUCKET,
   MAX_FILE_BYTES,
+  SECOND_FAIL,
   allowedDecisions,
   capstoneFor,
   drawPrompts,
@@ -21,6 +22,10 @@ import {
   type CapstoneKind,
   type FileKind,
   type SubmissionStatus,
+  maxBytesOf,
+  sizeLabel,
+  typesLabel,
+  typesOf,
 } from "./capstone";
 import { enrolledInAny, hasFinishedAll, opensOnCompletion, requiredCourseIds } from "./requirements";
 
@@ -78,12 +83,19 @@ export async function learnerBlockedReason(service: SupabaseClient, userId: stri
     const left = ids.filter((id) => !finished.has(id));
     const { data: courses } = await service.from("courses").select("id, title").in("id", left);
     const names = left
-      .map((id) => (courses ?? []).find((c: { id: string; title: string }) => c.id === id)?.title?.split(" ")[0])
+      .map((id) => courseShortName((courses ?? []).find((c: { id: string; title: string }) => c.id === id)?.title))
       .filter(Boolean) as string[];
     const list = names.length ? listOf(names) : "the required courses";
     return `Your capstone opens once you've also finished ${list}, final ${names.length > 1 ? "exams" : "exam"} included.`;
   }
   return (await enrolledInAny(service, cert, userId)) ? null : "Enroll in the course first to hand in your capstone.";
+}
+
+/** "MOS-100 Mosaic Practitioner Certification" → "MOS-100"; a title without a course code stays whole. */
+export function courseShortName(title: string | null | undefined): string | null {
+  if (!title) return null;
+  const first = title.split(" ")[0];
+  return /^[A-Z]{2,}-\d+$/.test(first) ? first : title;
 }
 
 export interface SubmissionRow {
@@ -159,32 +171,62 @@ export async function startUpload(
     fileKind: FileKind;
     /** The piece also takes a link instead of a file (a big video). */
     linkInstead?: boolean;
+    /** The piece's own types and size cap, when narrower or larger than the file kind's (capstone.ts). */
+    types?: Record<string, string>;
+    maxBytes?: number;
     fileSize: number;
     contentType: string;
   }
-): Promise<{ ok: true; path: string; signedUrl: string } | Fail> {
-  const ext = ALLOWED_TYPES[args.fileKind][args.contentType.split(";")[0].trim().toLowerCase()];
+): Promise<{ ok: true; path: string; signedUrl: string; token: string } | Fail> {
+  const ext = (args.types ?? ALLOWED_TYPES[args.fileKind])[args.contentType.split(";")[0].trim().toLowerCase()];
   if (!ext) {
     return fail(
       400,
-      args.fileKind === "document" ? "Upload a PDF or Word (.docx) document." : "Upload an MP4, WebM or MOV video."
+      args.types
+        ? `Upload ${args.fileKind === "document" ? "a" : "an"} ${typesLabel(args.types)} file.`
+        : args.fileKind === "document"
+          ? "Upload a PDF or Word (.docx) document."
+          : "Upload an MP4, WebM or MOV video."
     );
   }
-  if (!(args.fileSize > 0) || args.fileSize > MAX_FILE_BYTES) {
+  const max = args.maxBytes ?? MAX_FILE_BYTES;
+  if (!(args.fileSize > 0) || args.fileSize > max) {
     return fail(
       400,
       args.linkInstead
         ? "That video is over 50 MB. Paste a link to the recording instead (Loom, unlisted YouTube, Drive or OneDrive)."
-        : "That file is over 50 MB."
+        : `That file is over ${sizeLabel(max)}.`
     );
   }
   const path = `${folderFor(args.userId, args.certificationId)}/${args.slot}-${crypto.randomUUID()}.${ext}`;
+  return signUpload(service, path);
+}
+
+async function signUpload(
+  service: SupabaseClient,
+  path: string
+): Promise<{ ok: true; path: string; signedUrl: string; token: string } | Fail> {
   const { data, error } = await service.storage.from(CAPSTONE_BUCKET).createSignedUploadUrl(path);
   if (error || !data) {
     console.error("Capstone upload URL error:", error?.message);
     return fail(500, "Could not start the upload.");
   }
-  return { ok: true, path: data.path, signedUrl: data.signedUrl };
+  return { ok: true, path: data.path, signedUrl: data.signedUrl, token: data.token };
+}
+
+/**
+ * A fresh upload token for a path this learner was already given. An upload
+ * token lasts two hours and a large video on a slow connection can take
+ * longer, so the browser asks again partway (capstone-upload.ts).
+ */
+export async function renewUpload(
+  service: SupabaseClient,
+  args: { userId: string; certificationId: string; slot: UploadSlot; path: string }
+): Promise<{ ok: true; path: string; signedUrl: string; token: string } | Fail> {
+  const folder = folderFor(args.userId, args.certificationId);
+  const name = args.path.startsWith(folder + "/") ? args.path.slice(folder.length + 1) : "";
+  if (!new RegExp(`^${args.slot}-[0-9a-f-]{36}\\.[a-z0-9]{2,5}$`).test(name)) return fail(400, "Invalid request");
+  return signUpload(service, args.path);
 }
 
 /** The path is in this learner's folder for this credential and the file is really there. */
@@ -192,21 +234,41 @@ export async function uploadedFileExists(
   service: SupabaseClient,
   args: { userId: string; certificationId: string; path: string }
 ): Promise<boolean> {
-  const folder = folderFor(args.userId, args.certificationId);
-  if (!args.path.startsWith(folder + "/") || args.path.includes("..")) return false;
-  const name = args.path.slice(folder.length + 1);
-  if (name.includes("/")) return false;
-  const { data } = await service.storage.from(CAPSTONE_BUCKET).list(folder, { search: name, limit: 5 });
-  return !!data?.some((f) => f.name === name);
+  return (await uploadedFileSize(service, args)) != null;
 }
 
+/** Its size in bytes (0 when storage doesn't say), or null when it isn't there. */
+export async function uploadedFileSize(
+  service: SupabaseClient,
+  args: { userId: string; certificationId: string; path: string }
+): Promise<number | null> {
+  const folder = folderFor(args.userId, args.certificationId);
+  if (!args.path.startsWith(folder + "/") || args.path.includes("..")) return null;
+  const name = args.path.slice(folder.length + 1);
+  if (name.includes("/")) return null;
+  const { data } = await service.storage.from(CAPSTONE_BUCKET).list(folder, { search: name, limit: 5 });
+  const hit = data?.find((f) => f.name === name);
+  if (!hit) return null;
+  return Number((hit.metadata as { size?: number } | null)?.size) || 0;
+}
+
+const VIDEO_FILE = /\.(mp4|mov|webm)$/i;
+
+/**
+ * A short-lived link to a handed-in file. A document downloads under its own
+ * name (10 minutes). A video plays in the browser instead, and its link lasts
+ * six hours: the player keeps asking for more of the file as it plays, and a
+ * multi-gigabyte recording shouldn't have to be downloaded whole to watch.
+ */
 export async function signedFileUrl(service: SupabaseClient, path: string, downloadName?: string) {
+  const video = VIDEO_FILE.test(path);
   const { data, error } = await service.storage
     .from(CAPSTONE_BUCKET)
-    .createSignedUrl(path, 600, downloadName ? { download: downloadName } : undefined);
+    .createSignedUrl(path, video ? 6 * 3600 : 600, downloadName && !video ? { download: downloadName } : undefined);
   if (error || !data) return null;
   return data.signedUrl;
 }
+
 
 // ---------------------------------------------------------------- hand in
 
@@ -244,13 +306,31 @@ export async function submitPiece(
   if (link && !isAcceptableLink(link)) return fail(400, "That link doesn't look right. Paste the full https:// link.");
   if (piece.link === "or-file" && !args.filePath && !link) return fail(400, "Upload a file or paste a link.");
   if (piece.link !== "or-file" && !args.filePath) {
-    return fail(400, piece.file === "document" ? "Upload your work as a PDF or Word document." : "Upload your video.");
+    return fail(
+      400,
+      piece.file !== "document"
+        ? "Upload your video."
+        : piece.types
+          ? `Upload your work as a ${typesLabel(piece.types)} file.`
+          : "Upload your work as a PDF or Word document."
+    );
   }
   if (piece.link === "required" && !link) return fail(400, `Add ${lowerFirst(piece.linkLabel ?? "the link")}.`);
   if (piece.requiredNote && !args.note?.trim()) return fail(400, `Add ${lowerFirst(piece.requiredNote)}.`);
   if (args.filePath) {
-    const there = await uploadedFileExists(service, { userId: args.userId, certificationId: args.cert.id, path: args.filePath });
-    if (!there) return fail(400, "The upload didn't arrive. Please try again.");
+    const size = await uploadedFileSize(service, { userId: args.userId, certificationId: args.cert.id, path: args.filePath });
+    if (size == null) return fail(400, "The upload didn't arrive. Please try again.");
+    // The upload link was signed for this piece: its name and type say which.
+    const name = args.filePath.split("/").pop() ?? "";
+    const ext = name.split(".").pop() ?? "";
+    if (!name.startsWith(`${args.kind}-`) || !Object.values(typesOf(piece)).includes(ext)) {
+      return fail(400, "That upload belongs to a different piece. Please upload it again here.");
+    }
+    // The size asked for when the link was signed is the browser's word; this is storage's.
+    if (size > maxBytesOf(piece)) {
+      await service.storage.from(CAPSTONE_BUCKET).remove([args.filePath]).catch(() => {});
+      return fail(400, `That file is over ${sizeLabel(maxBytesOf(piece))}.`);
+    }
   }
 
   const { data: row, error } = await service
@@ -413,7 +493,8 @@ export async function reviewPiece(
     .select("name, capstone_key")
     .eq("id", sub.certification_id)
     .maybeSingle();
-  const piece = pieceOf(capstoneFor(certRow?.capstone_key) ?? { pieces: [] } as unknown as CapstoneConfig, sub.kind);
+  const cfg = capstoneFor(certRow?.capstone_key);
+  const piece = pieceOf(cfg ?? ({ pieces: [] } as unknown as CapstoneConfig), sub.kind);
   if (piece?.pushback && args.decision === "passed") {
     const { data: pb } = await service
       .from("certification_pushback_answers")
@@ -439,7 +520,16 @@ export async function reviewPiece(
     return fail(500, "Internal server error");
   }
   if (!upd || upd.length === 0) return fail(409, "This piece has already been marked.");
-  await notifyLearner(service, sub.user_id, sub.certification_id, certRow?.name ?? null, piece?.noun ?? "work", args.decision, args.feedback).catch(() => {});
+  await notifyLearner(
+    service,
+    sub.user_id,
+    sub.certification_id,
+    certRow?.name ?? null,
+    piece?.noun ?? "work",
+    args.decision,
+    args.feedback,
+    cfg?.secondFail
+  ).catch(() => {});
   return { ok: true, userId: sub.user_id, certificationId: sub.certification_id };
 }
 
@@ -550,7 +640,8 @@ async function notifyLearner(
   certName: string | null,
   noun: string,
   decision: SubmissionStatus,
-  feedback?: string
+  feedback?: string,
+  secondFail: string = SECOND_FAIL
 ) {
   const { data: u } = await service.from("users").select("email, first_name").eq("id", userId).maybeSingle();
   if (!u?.email) return;
@@ -558,7 +649,7 @@ async function notifyLearner(
   const lines: Record<string, string> = {
     passed: `Your ${noun} for ${name} has passed.`,
     resubmit: `Your ${noun} for ${name} doesn't meet the bar yet. You have one resubmission.`,
-    not_passed: `Your resubmitted ${noun} for ${name} didn't meet the bar. Dr. Chris Cancialosi will be in touch to set up a call about next steps.`,
+    not_passed: `Your resubmitted ${noun} for ${name} didn't meet the bar. ${secondFail}`,
   };
   const tpl = customTemplate({
     subject: `${name}: your ${noun}`,
