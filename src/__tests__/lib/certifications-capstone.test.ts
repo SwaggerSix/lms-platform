@@ -26,7 +26,7 @@ import {
   learnerBlockedReason,
   type CapstoneCert,
 } from "@/lib/certifications/capstone-service";
-import { awardCertification } from "@/lib/certifications/issue";
+import { autoAwardIfComplete, awardCertification } from "@/lib/certifications/issue";
 import { sendEmail } from "@/lib/email/sender";
 import { resumableEndpoint, signedTarget } from "@/lib/certifications/capstone-upload";
 
@@ -490,7 +490,17 @@ describe("The Art of Presentation capstone", () => {
   it("both versions ask for a video and two Word documents, and differ only in who issues them", () => {
     const ggs = CAPSTONES["art-of-presentation-ggs"];
     expect(aop.pieces.map((p) => [p.kind, p.file])).toEqual([["presentation", "video"], ["document_1", "document"], ["document_2", "document"]]);
-    expect(ggs.pieces).toEqual(aop.pieces);
+    // Same pieces; only the templates and rubric come from each version's own package.
+    const bare = (c: typeof aop) => c.pieces.map(({ downloads: _d, ...p }) => p);
+    expect(bare(ggs)).toEqual(bare(aop));
+    expect(aop.pieces.map((p) => p.title)).toEqual(["Recorded presentation", "Session plan", "Self-review and action plan"]);
+    expect(aop.pieces[1].downloads![0].href).toBe(
+      "/scorm-content/db27cf49-aace-45a7-956c-60b8ad6c2bc9/templates/AOP-100%20Session%20plan%20template.docx"
+    );
+    expect(ggs.pieces[2].downloads![0].href).toBe(
+      "/scorm-content/f806115b-114a-41c1-814e-1b7d01cab3d2/templates/AOP-100%20Self-review%20and%20action%20plan%20template%20(GGS).docx"
+    );
+    expect(ggs.pieces[0].downloads![0].href).toContain("/downloads/AOP-100-GGS-rubric.pdf");
     expect([aop.issuer, ggs.issuer]).toEqual(["gothamCulture", "Gotham Government Services"]);
     expect(aop.pushback).toBeNull();
     // Not Mosaic credentials: awards stay out of the partner portal.
@@ -548,12 +558,22 @@ describe("The Art of Presentation capstone", () => {
     expect(await reviewPiece(service, { submissionId: (again as any).submissionId, reviewerId: "chris", decision: "resubmit", feedback: "x" })).toMatchObject({ ok: false, status: 400 });
     expect(await reviewPiece(service, { submissionId: (again as any).submissionId, reviewerId: "chris", decision: "passed" })).toMatchObject({ ok: true });
 
-    expect(await awardCertification(service, { certificationId: "cert-aop", userId: U, awardedBy: "chris" })).toMatchObject({ ok: false, status: 409 });
+    // One of three passed: nothing is awarded yet.
+    const auto = () => autoAwardIfComplete(service, { certificationId: "cert-aop", userId: U, awardedBy: "chris" });
+    expect(await auto()).toBeNull();
+    expect(db.user_certifications).toHaveLength(0);
     for (const [kind, path] of [["document_1", doc1], ["document_2", doc2]] as const) {
       const sub = await submitPiece(service, { userId: U, cert: aopCert, cfg: aop, kind, filePath: path });
       await reviewPiece(service, { submissionId: (sub as any).submissionId, reviewerId: "chris", decision: "passed" });
     }
-    expect(await awardCertification(service, { certificationId: "cert-aop", userId: U, awardedBy: "chris" })).toMatchObject({ ok: true });
+    // The last pass awards the certificate by itself, once.
+    expect(await auto()).toMatchObject({ userCertificationId: expect.any(String) });
+    expect(db.user_certifications).toHaveLength(1);
+    expect(db.user_certifications[0]).toMatchObject({ user_id: U, certification_id: "cert-aop", status: "active", expires_at: null });
+    expect(await auto()).toBeNull();
+    expect(db.user_certifications).toHaveLength(1);
+    // The Mosaic capstone still waits for the assessor to press Award.
+    expect(await autoAwardIfComplete(service, { certificationId: "cert-mc", userId: U, awardedBy: "chris" })).toBeNull();
   });
 
   it("a second fail doesn't promise a call with Dr. Cancialosi", async () => {

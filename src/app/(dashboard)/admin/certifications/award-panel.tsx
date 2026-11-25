@@ -67,6 +67,8 @@ interface Capstone {
   work: Record<string, Work>;
   handedIn: Ready[];
   notifyMe: boolean;
+  /** The certificate is awarded by itself when the last piece passes. */
+  autoAward?: boolean;
 }
 
 function fmt(d: string | null | undefined) {
@@ -545,7 +547,7 @@ export default function AwardPanel({
       <div className="space-y-6">
         <p className="text-sm text-gray-600">
           {capstone
-            ? `Mark each learner’s ${capstone.pieces.map((p) => p.label).join(', ')} here. Award appears once ${capstone.pieces.length > 1 ? 'every piece has' : 'it has'} passed and the required courses are finished. Finishing the courses alone does not certify anyone.`
+            ? `Mark each learner’s ${capstone.pieces.map((p) => p.label).join(', ')} here. ${capstone.autoAward ? 'The certificate is awarded automatically, and the learner emailed, as soon as' : 'Award appears once'} ${capstone.pieces.length > 1 ? 'every piece has' : 'it has'} passed and the required courses are finished. Finishing the courses alone does not certify anyone.`
             : 'Award this only after you have marked the learner’s work as passing. Passing the course exam alone does not certify anyone.'}
         </p>
 

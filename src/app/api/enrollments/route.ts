@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { canEnrolOthers } from "@/lib/enrollments/assign-scope";
+import { ASSIGNED_ONLY_MESSAGE, canEnrolOthers, selfEnrolBlocked } from "@/lib/enrollments/assign-scope";
 import { createServiceClient } from "@/lib/supabase/service";
 import { NextRequest, NextResponse } from "next/server";
 import { dispatchWebhook } from "@/lib/webhooks/dispatcher";
@@ -215,6 +215,12 @@ export async function POST(request: NextRequest) {
       { error: "This course is not currently available." },
       { status: 403 }
     );
+  }
+
+  // Sold or assigned only: a learner can't enrol themselves for free. Buying
+  // it enrols them from the store's checkout, which doesn't come through here.
+  if (targetUserId === profile.id && selfEnrolBlocked(course?.enrollment_type, profile.role)) {
+    return NextResponse.json({ error: ASSIGNED_ONLY_MESSAGE }, { status: 403 });
   }
 
   if (course?.enrollment_type === "approval" && !canEnrolOthers(profile.role)) {

@@ -159,6 +159,7 @@ export async function GET(request: NextRequest) {
       work,
       handedIn,
       notifyMe: (cert.notify_user_ids ?? []).includes(auth.user.id),
+      autoAward: !!cfg.autoAward,
     },
   });
 }

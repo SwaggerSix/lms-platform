@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { assignScope, canEnrolOthers } from "@/lib/enrollments/assign-scope";
+import { assignScope, canEnrolOthers, selfEnrolBlocked } from "@/lib/enrollments/assign-scope";
 
 describe("who can be picked on Assign Course", () => {
   it("a super admin can pick anyone", () => {
@@ -15,5 +15,13 @@ describe("who can be picked on Assign Course", () => {
   it("super admins, admins and managers may enrol someone else; learners and instructors may not", () => {
     expect(["super_admin", "admin", "manager"].every(canEnrolOthers)).toBe(true);
     expect(["learner", "instructor", "", null, undefined].some((r) => canEnrolOthers(r))).toBe(false);
+  });
+  it("a learner can't enrol themselves for free in a sold-or-assigned course; staff can, and open courses are unaffected", () => {
+    expect(selfEnrolBlocked("assigned", "learner")).toBe(true);
+    expect(selfEnrolBlocked("assigned", "instructor")).toBe(true);
+    expect(selfEnrolBlocked("assigned", "super_admin")).toBe(false);
+    expect(selfEnrolBlocked("assigned", "manager")).toBe(false);
+    expect(selfEnrolBlocked("open", "learner")).toBe(false);
+    expect(selfEnrolBlocked("approval", "learner")).toBe(false);
   });
 });
