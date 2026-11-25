@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { capstoneFor } from "@/lib/certifications/capstone";
 
 /**
  * LMS → Partner Portal: a staff-awarded credential (Mosaic Certified, a
@@ -37,6 +38,8 @@ export async function syncCertificationToPortal(
     const cert = data?.certification as { capstone_key?: string | null } | null;
     const user = data?.user as { email?: string | null; external_source?: string | null; external_id?: string | null } | null;
     if (!data || !cert?.capstone_key) return "skipped";
+    // Only the Mosaic credentials are the portal's; another capstone's learners aren't sent there.
+    if (capstoneFor(cert.capstone_key)?.partnerPortal === false) return "skipped";
 
     const base = process.env.PARTNER_PORTAL_WRITEBACK_URL;
     const secret = process.env.PROFILE_WRITEBACK_SECRET;

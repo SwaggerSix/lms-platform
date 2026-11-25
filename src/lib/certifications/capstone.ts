@@ -14,12 +14,26 @@
  *   Mosaic Signal Specialist certifications are retired.
  * - **Coaching Studio and SurveyCraft Specialist** (MOS-210, MOS-220) stay
  *   stand-alone, each with its own practical.
+ * - **The Art of Presentation** (2026-11-25): one capstone per version of the
+ *   course (gothamCulture, Gotham Government Services), opening once the
+ *   course's final exam is passed. Three pieces: a recorded presentation
+ *   (MP4 or MOV, up to MAX_VIDEO_BYTES, sent by resumable upload) and two
+ *   Word documents.
  *
  * Content comes from surveycraft docs/training/<course>/modules/*-M6/M10.
  * Pure rules and content live here; database work is in capstone-service.ts.
  */
 
-export const CAPSTONE_KINDS = ["memo", "dig", "signal", "briefing", "practical"] as const;
+export const CAPSTONE_KINDS = [
+  "memo",
+  "dig",
+  "signal",
+  "briefing",
+  "practical",
+  "presentation",
+  "document_1",
+  "document_2",
+] as const;
 export type CapstoneKind = (typeof CAPSTONE_KINDS)[number];
 export type SubmissionStatus = "submitted" | "passed" | "resubmit" | "not_passed";
 export type FileKind = "document" | "video";
@@ -40,6 +54,10 @@ export interface PieceConfig {
   instructions: string[];
   /** What a file must be. */
   file: FileKind;
+  /** Narrower than the file kind allows, as MIME type → extension (e.g. Word only, or MP4 and MOV only). */
+  types?: Record<string, string>;
+  /** Largest file for this piece. Default MAX_FILE_BYTES. Over RESUMABLE_OVER_BYTES it goes by resumable upload. */
+  maxBytes?: number;
   /**
    * How a link is used: "none" (file only), "or-file" (a link instead of a
    * file), "required" (a link and a file).
@@ -131,7 +149,16 @@ export interface CapstoneConfig {
   pieces: PieceConfig[];
   pushback: { count: number; prepSeconds: number; answerSeconds: number; bank: PushbackPrompt[] } | null;
   turnaround: string;
+  /** Who the certificate names as issuer. Default "gothamCulture". */
+  issuer?: string;
+  /** Told to the learner when a resubmission doesn't pass either. Default: SECOND_FAIL. */
+  secondFail?: string;
+  /** False: not a credential the Mosaic partner portal tracks, so awards aren't sent there. */
+  partnerPortal?: boolean;
 }
+
+/** After a resubmission doesn't pass: what happens next, unless the capstone says otherwise. */
+export const SECOND_FAIL = "Dr. Chris Cancialosi will be in touch to set up a call about next steps.";
 
 const ASSESSOR =
   "Dr. Chris Cancialosi scores it, usually within 10 business days. If any criterion is below 3, you'll get written feedback and one resubmission; if the resubmission doesn't pass either, he'll set up a call with you.";
@@ -144,6 +171,72 @@ const practical = (p: Omit<PieceConfig, "kind" | "label" | "noun" | "file" | "li
   link: "none",
   ...p,
 });
+
+export const CAPSTONE_BUCKET = "certification-submissions";
+export const MAX_FILE_BYTES = 50 * 1024 * 1024;
+/**
+ * Largest recorded presentation (The Art of Presentation). Storage allows up
+ * to 500 GB a file on this plan; 5 GB is a 15-minute 4K phone recording with
+ * room to spare. To change it: this number, the bucket's file_size_limit
+ * (migration 20261125120000) and Supabase's global file size limit, which
+ * must be at least as large.
+ */
+export const MAX_VIDEO_BYTES = 5 * 1024 * 1024 * 1024;
+/** Above this a file is sent in 6 MB chunks that survive a dropped connection (capstone-upload.ts). */
+export const RESUMABLE_OVER_BYTES = MAX_FILE_BYTES;
+export const MAX_ATTEMPTS = 2;
+
+const WORD_TYPES = {
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "application/msword": "doc",
+};
+
+/**
+ * The Art of Presentation capstone, the same for both versions of the course
+ * apart from who issues it. The two documents are not named yet (their titles
+ * and instructions are placeholders until the course owner supplies them).
+ */
+function artOfPresentation(issuer: string): CapstoneConfig {
+  const document = (n: 1 | 2): PieceConfig => ({
+    kind: `document_${n}`,
+    label: `Document ${n}`,
+    noun: `Word document ${n}`,
+    title: `Word document ${n}`,
+    file: "document",
+    types: WORD_TYPES,
+    link: "none",
+    instructions: ["Upload a Word document (.docx or .doc), up to 50 MB."],
+  });
+  return {
+    title: "Capstone: The Art of Presentation",
+    intro:
+      "Hand in three pieces of work: your recorded presentation and two Word documents. Only your assessors can see what you hand in. Each piece is marked Pass or Not yet, with written feedback. If a piece isn't there yet, you get one resubmission of that piece.",
+    summary: "Hand in your recorded presentation and two Word documents. It opens once you've passed the course's final exam.",
+    issuer,
+    partnerPortal: false,
+    secondFail: "Your assessor will be in touch about next steps.",
+    pieces: [
+      {
+        kind: "presentation",
+        label: "Presentation video",
+        noun: "presentation video",
+        title: "Recorded presentation",
+        file: "video",
+        types: { "video/mp4": "mp4", "video/quicktime": "mov" },
+        maxBytes: MAX_VIDEO_BYTES,
+        link: "none",
+        instructions: [
+          "Upload your recording as an MP4 or MOV file, up to 5 GB.",
+          "A large video can take a while to upload. Keep this page open until it says it's handed in; if your connection drops, the upload picks up where it left off.",
+        ],
+      },
+      document(1),
+      document(2),
+    ],
+    pushback: null,
+    turnaround: "about 10 business days",
+  };
+}
 
 export const CAPSTONES: Record<string, CapstoneConfig> = {
   "mosaic-practitioner": {
@@ -289,11 +382,11 @@ export const CAPSTONES: Record<string, CapstoneConfig> = {
     pushback: null,
     turnaround: "about 10 business days",
   },
+
+  "art-of-presentation-gc": artOfPresentation("gothamCulture"),
+  "art-of-presentation-ggs": artOfPresentation("Gotham Government Services"),
 };
 
-export const CAPSTONE_BUCKET = "certification-submissions";
-export const MAX_FILE_BYTES = 50 * 1024 * 1024;
-export const MAX_ATTEMPTS = 2;
 
 /** What may be uploaded, by file kind, as MIME type → extension. */
 export const ALLOWED_TYPES: Record<FileKind, Record<string, string>> = {
@@ -316,6 +409,49 @@ export function capstoneFor(key: string | null | undefined): CapstoneConfig | nu
 
 export function pieceOf(cfg: CapstoneConfig, kind: string): PieceConfig | null {
   return cfg.pieces.find((p) => p.kind === kind) ?? null;
+}
+
+/** MIME type → extension this piece accepts. */
+export function typesOf(piece: Pick<PieceConfig, "file" | "types">): Record<string, string> {
+  return piece.types ?? ALLOWED_TYPES[piece.file];
+}
+
+export function maxBytesOf(piece: Pick<PieceConfig, "maxBytes">): number {
+  return piece.maxBytes ?? MAX_FILE_BYTES;
+}
+
+/** "50 MB", "5 GB". */
+export function sizeLabel(bytes: number): string {
+  const gb = bytes / 1024 ** 3;
+  if (gb >= 1) return `${Number.isInteger(gb) ? gb : gb.toFixed(1)} GB`;
+  return `${Math.round(bytes / 1024 ** 2)} MB`;
+}
+
+/** "PDF or DOCX", "MP4 or MOV": the extensions a piece takes, for messages. */
+export function typesLabel(types: Record<string, string>): string {
+  const exts = [...new Set(Object.values(types))].map((e) => e.toUpperCase());
+  return exts.length <= 1 ? (exts[0] ?? "") : `${exts.slice(0, -1).join(", ")} or ${exts[exts.length - 1]}`;
+}
+
+const EXT_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  doc: "application/msword",
+  mp4: "video/mp4",
+  mov: "video/quicktime",
+  webm: "video/webm",
+};
+
+/**
+ * The MIME type to upload a file as. Browsers leave `type` empty when the
+ * computer has no program registered for the extension (a .docx without
+ * Word, a .mov on Windows), so fall back to the file name.
+ */
+export function contentTypeFor(file: { type?: string; name?: string }): string {
+  const given = (file.type || "").split(";")[0].trim().toLowerCase();
+  if (given && given !== "application/octet-stream") return given;
+  const ext = (file.name ?? "").split(".").pop()?.toLowerCase() ?? "";
+  return EXT_TYPES[ext] ?? (given || "application/octet-stream");
 }
 
 /** A recording link must be an https URL; we never fetch it, the assessor opens it. */

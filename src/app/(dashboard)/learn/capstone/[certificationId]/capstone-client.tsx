@@ -36,6 +36,11 @@ interface Piece {
   title: string;
   instructions: string[];
   file: "document" | "video";
+  /** Set when the piece takes other types than its file kind's defaults (e.g. Word only). */
+  accept: string | null;
+  typesLabel: string | null;
+  /** "50 MB", "5 GB" */
+  maxLabel: string;
   link: "none" | "or-file" | "required";
   linkLabel: string | null;
   requiredNote: string | null;
@@ -50,6 +55,7 @@ interface View {
     intro: string;
     pieces: Piece[];
     turnaround: string;
+    secondFail: string;
     pushback: { count: number; prepSeconds: number; answerSeconds: number } | null;
   };
   certified: boolean;
@@ -65,12 +71,12 @@ const ACCEPT = {
 
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-function StatusLine({ s, turnaround }: { s: Submission; turnaround: string }) {
+function StatusLine({ s, turnaround, secondFail }: { s: Submission; turnaround: string; secondFail: string }) {
   const label: Record<Status, { text: string; cls: string }> = {
     submitted: { text: `Handed in ${fmtDate(s.submittedAt)}. Your assessor will reply in ${turnaround}.`, cls: "bg-blue-50 text-blue-800 border-blue-200" },
     passed: { text: `Passed${s.reviewedAt ? ` on ${fmtDate(s.reviewedAt)}` : ""}.`, cls: "bg-green-50 text-green-800 border-green-200" },
     resubmit: { text: "Not there yet. Read the feedback below and hand in your one resubmission.", cls: "bg-amber-50 text-amber-800 border-amber-200" },
-    not_passed: { text: "Your resubmission didn't meet the bar. Dr. Chris Cancialosi will be in touch to set up a call about next steps.", cls: "bg-red-50 text-red-800 border-red-200" },
+    not_passed: { text: `Your resubmission didn't meet the bar. ${secondFail}`, cls: "bg-red-50 text-red-800 border-red-200" },
   };
   // Reopened after the call: the learner can hand this piece in once more.
   const l =
@@ -102,6 +108,14 @@ function HandIn({ certificationId, piece, onDone }: { certificationId: string; p
   const [busy, setBusy] = useState(false);
   const [pct, setPct] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // A large video takes a while: warn before the tab is closed mid-upload.
+  useEffect(() => {
+    if (!busy) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [busy]);
 
   const submit = async () => {
     setBusy(true);
@@ -151,10 +165,14 @@ function HandIn({ certificationId, piece, onDone }: { certificationId: string; p
         </label>
       )}
       <label className="block text-sm font-medium text-gray-700">
-        {piece.file === "video" ? "Upload a video file (up to 50 MB)" : "Upload your document (PDF or Word, up to 50 MB)"}
+        {piece.typesLabel
+          ? `Upload your ${piece.file === "video" ? "video" : "document"} (${piece.typesLabel}, up to ${piece.maxLabel})`
+          : piece.file === "video"
+            ? "Upload a video file (up to 50 MB)"
+            : "Upload your document (PDF or Word, up to 50 MB)"}
         <input
           type="file"
-          accept={ACCEPT[piece.file]}
+          accept={piece.accept ?? ACCEPT[piece.file]}
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-primary-700"
         />
@@ -190,6 +208,21 @@ function HandIn({ certificationId, piece, onDone }: { certificationId: string; p
         <p role="alert" className="text-sm text-red-700">
           {error}
         </p>
+      )}
+      {busy && pct != null && (
+        <div>
+          <div
+            role="progressbar"
+            aria-label="Upload progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={pct}
+            className="h-2 w-full overflow-hidden rounded-full bg-gray-200"
+          >
+            <div className="h-full bg-primary-600 transition-all" style={{ width: `${pct}%` }} />
+          </div>
+          <p className="mt-1 text-xs text-gray-600">Keep this page open until the upload finishes.</p>
+        </div>
       )}
       <button
         type="button"
@@ -544,7 +577,7 @@ export default function CapstoneClient({ certificationId }: { certificationId: s
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {piece.warning}
           </p>
         )}
-        {s && <StatusLine s={s} turnaround={view.config.turnaround} />}
+        {s && <StatusLine s={s} turnaround={view.config.turnaround} secondFail={view.config.secondFail} />}
         {next != null && <HandIn certificationId={certificationId} piece={piece} onDone={load} />}
       </section>
     );
