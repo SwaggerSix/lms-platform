@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import AssignmentsClient from "./assignments-client";
 import type { Assignment, Course, TeamMemberOption, PathOption } from "./assignments-client";
 import { formatDuration } from "@/utils/format";
+import { assignScope } from "@/lib/enrollments/assign-scope";
 
 export const metadata: Metadata = {
   title: "Assignments | LMS Platform",
@@ -80,7 +81,7 @@ export default async function AssignmentsPage() {
   const service = createServiceClient();
   const { data: currentUser } = await service
     .from("users")
-    .select("id, first_name, last_name")
+    .select("id, first_name, last_name, role, organization_id")
     .eq("auth_id", user.id)
     .single();
 
@@ -168,16 +169,31 @@ export default async function AssignmentsPage() {
     courseCount: Array.isArray(p.items) ? p.items.length : 0,
   }));
 
-  // Map team members for the modal
-  const teamMembers: TeamMemberOption[] = (teamMembersData ?? []).map(
-    (u: any) => ({
-      id: u.id,
-      name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || "Unknown",
-    })
-  );
+  // Who can be picked in the modal. A manager: their direct reports. A super
+  // admin: anyone (nobody reports to them, so the list used to be empty). An
+  // org admin: everyone in their organization.
+  const scope = assignScope(currentUser);
+  let pickable: any[] = teamMembersData ?? [];
+  if (scope.kind !== "team") {
+    let q = service
+      .from("users")
+      .select("id, first_name, last_name, email")
+      .eq("status", "active")
+      .order("last_name", { ascending: true })
+      .order("first_name", { ascending: true })
+      .limit(2000);
+    if (scope.kind === "organization") q = q.eq("organization_id", scope.organizationId);
+    const { data: everyone } = await q;
+    pickable = everyone ?? pickable;
+  }
+  const teamMembers: TeamMemberOption[] = pickable.map((u: any) => ({
+    id: u.id,
+    name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email || "Unknown",
+  }));
 
   return (
     <AssignmentsClient
+      anyone={scope.kind !== "team"}
       assignments={assignments}
       courses={courses}
       teamMembers={teamMembers}
