@@ -23,3 +23,15 @@ export const CAN_ENROL_OTHERS = ["super_admin", "admin", "manager"];
 export function canEnrolOthers(role?: string | null): boolean {
   return !!role && CAN_ENROL_OTHERS.includes(role);
 }
+
+/**
+ * A course whose enrollment_type is "assigned" is joined only by buying it in
+ * the store or by a member of staff assigning it. A learner can't enrol
+ * themselves for free; staff still can (to test a course).
+ */
+export const ASSIGNED_ONLY_MESSAGE =
+  "This course is available by purchase, or when an administrator assigns it to you.";
+
+export function selfEnrolBlocked(enrollmentType: string | null | undefined, role?: string | null): boolean {
+  return enrollmentType === "assigned" && !canEnrolOthers(role);
+}

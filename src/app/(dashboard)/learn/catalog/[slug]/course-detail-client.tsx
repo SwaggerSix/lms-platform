@@ -113,6 +113,10 @@ export interface CourseDetailClientProps {
   prerequisites: Prerequisite[];
   allPrerequisitesMet: boolean;
   requiresApproval?: boolean;
+  /** The course is joined only by buying it or being assigned it: no free Enroll button. */
+  assignedOnly?: boolean;
+  /** Its store product, when it is for sale. */
+  purchase?: { href: string; price: number } | null;
   hasPendingApproval?: boolean;
   recommendedAssessments?: RecommendedAssessment[];
 }
@@ -162,6 +166,8 @@ export default function CourseDetailClient({
   prerequisites,
   allPrerequisitesMet,
   requiresApproval = false,
+  assignedOnly = false,
+  purchase = null,
   hasPendingApproval = false,
   recommendedAssessments = [],
 }: CourseDetailClientProps) {
@@ -574,6 +580,31 @@ export default function CourseDetailClient({
                   </button>
                   <p className="mt-2 text-center text-xs text-gray-500">
                     {prerequisites.filter((p) => !p.met).length} prerequisite{prerequisites.filter((p) => !p.met).length !== 1 ? "s" : ""} remaining
+                  </p>
+                </div>
+              ) : assignedOnly ? (
+                <div>
+                  {purchase ? (
+                    <a
+                      href={purchase.href}
+                      className="block w-full rounded-lg bg-primary-600 py-3 text-center text-sm font-semibold text-white hover:bg-primary-700"
+                    >
+                      Buy this course ·{" "}
+                      {purchase.price.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                    </a>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full rounded-lg bg-gray-400 py-3 text-sm font-semibold text-white cursor-not-allowed"
+                    >
+                      <Lock className="mr-1.5 inline h-4 w-4" />
+                      Assigned Only
+                    </button>
+                  )}
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    {purchase
+                      ? "Or ask your administrator to assign it to you."
+                      : "Ask your administrator to assign this course to you."}
                   </p>
                 </div>
               ) : requiresApproval ? (

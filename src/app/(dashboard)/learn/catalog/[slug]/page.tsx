@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { selfEnrolBlocked } from "@/lib/enrollments/assign-scope";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import CourseDetailClient from "./course-detail-client";
@@ -156,6 +157,33 @@ export default async function CourseDetailPage({
     .maybeSingle();
 
   const isEnrolled = !!enrollmentRow && enrollmentRow.status !== "dropped";
+
+  // Sold or assigned only (enrollment_type "assigned"): offer the store
+  // product instead of a free Enroll button. Staff can still enrol themselves.
+  const assignedOnly = !isEnrolled && selfEnrolBlocked(course.enrollment_type, (dbUser as { role?: string }).role);
+  let purchase: { href: string; price: number } | null = null;
+  if (assignedOnly) {
+    const { data: product } = await service
+      .from("products")
+      .select("id, price, discount_price, discount_ends_at, storefront:storefronts(slug)")
+      .eq("course_id", course.id)
+      .eq("status", "active")
+      .eq("listed_in_storefront", true)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const store = product?.storefront as { slug?: string } | { slug?: string }[] | null | undefined;
+    const slug = Array.isArray(store) ? store[0]?.slug : store?.slug;
+    if (product && slug) {
+      const onSale =
+        product.discount_price != null &&
+        (!product.discount_ends_at || new Date(product.discount_ends_at).getTime() > Date.now());
+      purchase = {
+        href: `/store/${slug}/product/${product.id}`,
+        price: Number(onSale ? product.discount_price : product.price),
+      };
+    }
+  }
 
   // Check if the user has a pending approval request for this course
   let hasPendingApproval = false;
@@ -366,6 +394,8 @@ export default async function CourseDetailPage({
       prerequisites={prerequisites}
       allPrerequisitesMet={allPrerequisitesMet}
       requiresApproval={course.enrollment_type === "approval"}
+      assignedOnly={assignedOnly}
+      purchase={purchase}
       hasPendingApproval={hasPendingApproval}
       recommendedAssessments={recommendedAssessments}
     />
